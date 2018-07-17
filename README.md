@@ -4,34 +4,24 @@
 原始项目，使用graphql方式开发的接口。支持1.4版本的app，小程序，h5 等。
 
 #### 软件架构
-软件架构说明
-
-
+aobei-common     短信和推送定义的公共bean
+aobei-common-spring-boot-start   短信，推送，MQ 等第三方服务的配置信息。使用spring方式注入。
+authserver       API接口的统一授权服务。获取访问接口必须的token信息。
+mbg              mybaties 的mgb 插件，生成dao层和service层的代码。自动实现一些常用的单表操作方法。
+sms-server       目前用来实现第三方服务的调用。采用redis队列读取的方式。来发送短信。推送等。
+train-console    浦尔家 后台管理系统。
+train-daoservice 浦尔家 dao和service 数据库操作。使用mbg工具生成的。
+trainapi         浦尔家 API接口服务，供小程序，app，h5 等客户端调用。
+parent           定义一些基本的依赖包的版本
+cas-overlay-template  后台管理系统的单点登录系统      
 #### 安装教程
 
-1. xxxx
-2. xxxx
-3. xxxx
-
-#### 使用说明
-
-1. xxxx
-2. xxxx
-3. xxxx
-
-#### 参与贡献
-
-1. Fork 本项目
-2. 新建 Feat_xxx 分支
-3. 提交代码
-4. 新建 Pull Request
+1. 首次 clone 代码  首先install parent->install mbg->install aobei-common -> 
+                      install aobei-commmon-spring-boot-start ->install train-daoservice ->
+                      install train-console->install trainapi
+2. sms-server，authserver ，cas-overlay-template 单独部署
 
 
-#### 码云特技
+开发人员名单：
 
-1. 使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2. 码云官方博客 [blog.gitee.com](https://blog.gitee.com)
-3. 你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解码云上的优秀开源项目
-4. [GVP](https://gitee.com/gvp) 全称是码云最有价值开源项目，是码云综合评定出的优秀开源项目
-5. 码云官方提供的使用手册 [http://git.mydoc.io/](http://git.mydoc.io/)
-6. 码云封面人物是一档用来展示码云会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+卜利文，李毅，刘永强，李歧珍，李硕，任丕明，许康
