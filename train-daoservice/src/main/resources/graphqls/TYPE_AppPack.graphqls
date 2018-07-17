@@ -1,0 +1,21 @@
+#app 应用
+type AppPack{
+
+    app_pack_id : String
+
+    #应用名称
+    app_pack_name : String
+
+    #分组名称
+    group_name : String
+
+    #1 微信小程序   2  h5   3 安卓  4 ios
+    type : Int
+
+    #小程序  appid, h5 应用 URL 地址, 安卓  下载地址 url , IOS 应用商店地址
+    app_url : String
+
+    #数字 id
+    sid : Int
+}
+

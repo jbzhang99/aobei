@@ -1,0 +1,13 @@
+#课程包含的服务项
+type CourseServiceitem{
+
+    #课程id
+    course_id : Long
+
+    #服务项id
+    serviceitem_id : Long
+
+    #无用字段
+    none : Int
+}
+

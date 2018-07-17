@@ -1,0 +1,29 @@
+#取消策略
+type CancleStrategy{
+
+    #自增长
+    cancle_strategy_id : Int
+
+    name : String
+
+    #取消策略JSON 数据 [{“d” : 9  , "v" :  3}, {“d” : 13  , "v" :  12}]
+    cancle_strategy : String
+
+    #取消策略方式  1 订单金额  2 实付金额   3 固定金额
+    cancle_type : Int
+
+    create_datetime : Date
+
+    #是后一人操作人id    system_user_id
+    operator_id : Long
+
+    #操作人名称
+    operator_name : String
+
+    #操作时间
+    operator_datetime : Date
+
+    #0 未删除  1 已删除
+    deleted : Int
+}
+

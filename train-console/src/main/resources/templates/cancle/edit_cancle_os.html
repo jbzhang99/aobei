@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>订单取消策略编辑</title>
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            var val = [[${list}]];
+            var data = $.parseJSON(val);
+            $.each(data,function (i,k) {
+                if(k.value!=0){
+                    show_back_plus(k);
+                }else{
+                    if(k.allow){
+                        $("#end_time").val(k.beforeHour)
+                    }else{
+                        $("#init_begin_time").val(k.beforeHour)
+                    }
+                }
+            })
+            var type = $("#cancle_type").val();
+            load(type);
+            /*$(".begin_time").click(function () {
+                $(this).
+            })*/
+            //提交数据
+            $("#save_btn").click(function () {
+                var regex_number = /^[0-9]*$/;
+                var regex_fixed = /^([1-9]\d?|100)$/;
+                var regex_double = /^[0-9]+(.[0-9]{1,2})?$/;
+                var name = $("#name").val();
+                var list = [];
+                var first_time = $("#init_begin_time").val();
+                var last_time = $("#end_time").val();
+                list.push(first_time+"-0-1");
+                var list_data = $("#div_content").children();
+                var flag = true;
+
+                var c_type = $("#cancle_type").val();
+                if(name==''){
+                    reset();
+                    alertify.alert("请输入策略名称");
+                    return false;
+                }
+                if(c_type==0){
+                    reset();
+                    alertify.alert("请选择策略类型");
+                    return false;
+                }
+
+                $.each(list_data,function (i,k) {
+                    var begin_time = $(k).children('div').children().eq(1).val();
+                    var price = $(k).children('div').children().eq(3).val();
+                    var is = $(k).children('div').children().eq(4).val();
+                    if(i==0){
+                        var val = $("#init_begin_time").val();
+                        if(!regex_number.test(begin_time)){
+                            flag=false;
+                            reset();
+                            alertify.alert("第"+(i+2)+"条取消策略的小时数只能为数字");
+                            return false;
+                        }else {
+                            if($("#cancle_type").val()!=3){
+                                if(!regex_fixed.test(price)){
+                                    reset();
+                                    alertify.alert("扣除金额为百分比，请输入1-100的整数！");
+                                    flag=false;
+                                    return false;
+                                }
+                            }else {
+                                if(!regex_double.test(price)){
+                                    reset();
+                                    alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                                    flag=false;
+                                    return false;
+                                }
+                            }
+                        }
+                        if(val!=begin_time){
+                            flag =false;
+                            reset();
+                            alertify.alert("第二条取消策略的小时数必须等于第一条！");
+                            return false;
+                        }
+                    }
+                    if(i>0){
+                        var prev_ele = $(k).prev();
+                        var prev_begin_time = prev_ele.children('div').find(".input_hour").val();
+                        var prev_price = prev_ele.children('div').find(".input_price").val();
+                        if(!regex_number.test(begin_time)){
+                            flag=false;
+                            reset();
+                            alertify.alert("第"+(i+2)+"条取消策略的小时数只能为数字");
+                            return false;
+                        }else {
+                            if($("#cancle_type").val()!=3){
+                                if(!regex_fixed.test(price)){
+                                    reset();
+                                    alertify.alert("扣除金额为百分比，请输入1-100的整数！");
+                                    flag=false;
+                                    return false;
+                                }
+                            }else {
+                                if(!regex_double.test(price)){
+                                    reset();
+                                    alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                                    flag=false;
+                                    return false;
+                                }
+                            }
+                        }
+
+                        if(Number(prev_begin_time)>=Number(begin_time)){
+                            flag =false;
+                            reset();
+                            alertify.alert("第"+(i+2)+"条取消策略的小时数 不能小于等于第"+(i+1)+"条取消策略");
+                            return false;
+                        }else if(Number(prev_price)<=Number(price)){
+                            flag=false;
+                            reset();
+                            alertify.alert("第"+(i+2)+"条取消策略的金额 不能大于等于第"+(i+1)+"条取消策略");
+                            return false;
+                        }
+                   }
+
+                })
+
+                var regex_number = /^[0-9]*$/;
+                var div_length=$("#div_content").children("div").length;
+                var last_div = $("#div_content").children("div").last();
+                var last_hour = last_div.find(".input_hour").val();
+                var val = $("#end_time").val();
+
+                if(Number(div_length)==0){
+                    /*var d_begin = $("#init_begin_time").val();
+                    var last_div = $("#div_content").children("div").last();
+                    var last_hour = last_div.find(".input_hour").val();
+                    var last_end = last_div.find(".input_price").val();
+                    if(Number(d_begin)<Number(last_hour)){
+                        reset();
+                        alertify.alert("第二行取消策略小时数不能小于等于第一条取消策略！");
+                        flag=false;
+                        return false;
+                    }
+                    if(last_end==''){
+                        reset();
+                        alertify.alert("第二条取消策略金额数不能为空！");
+                        flag=false;
+                        return false;
+                    }*/
+                    var begin = $("#init_begin_time").val();
+                    var end = $("#end_time").val();
+                    if(Number(begin)!=Number(end)){
+                        reset();
+                        alertify.alert("只有两条策略时，第一条和第二条的小时数应相等！");
+                        flag=false;
+                        return false;
+                    }else if(!regex_number.test(begin)){
+                        reset();
+                        alertify.alert("小时数只能为数字！");
+                        flag=false;
+                        return false;
+                    }else if(!regex_number.test(end)){
+                        reset();
+                        alertify.alert("小时数只能为数字！");
+                        flag=false;
+                        return false;
+                    }
+                }
+                if(Number(div_length)>1){
+                    if(Number(val)<=Number(last_hour)){
+                        $("#end_time").val('');
+                        reset();
+                        alertify.alert("最后一行小时数应比所有取消策略都大！");
+                        flag=false;
+                        return false;
+                    }else if(!regex_number.test(val)){
+                        reset();
+                        alertify.alert("小时数只能为数字！");
+                        flag=false;
+                        return false;
+                    }
+                }/*else{
+                    if(Number(val)<=$("#init_begin_time").val()){
+                        $("#init_begin_time").val('');
+                        reset();
+                        alertify.alert("最后一行小时数应比所有取消策略都大！");
+                        flag=false;
+                        return false;
+                    }
+                }*/
+                //组装数据
+                $.each(list_data,function (i,k) {
+                    var begin_time = $(k).children('div').children().eq(1).val();
+                    var price = $(k).children('div').children().eq(3).val();
+                    var is = $(k).children('div').children().eq(4).val();
+                    var data = begin_time+"-"+price+"-"+is
+                    list.push(data);
+                })
+                list.push(last_time+"-0-0")
+                $("#hide_cancle_os").val(JSON.stringify(list));
+                if($("#end_time").val()==''){
+                    flag=false;
+                    reset();
+                    alertify.alert("最后一条取消策略小时数不能为空，请输入！");
+                    return false;
+                }
+
+                //send
+                if(flag){
+                    $.ajax({
+                        url:'/cancleStrategy/edit_cancle_os',
+                        type:'POST',
+                        data:$("#form1").serializeArray(),
+                        success:function (data) {
+                            reset();
+                            alertify.success(data.result);
+                            setTimeout(function () {
+                                window.location.href = '/cancleStrategy/CancleStrategyList'
+                            },1500)
+                        }
+                    })
+                }
+            })
+            //cancle
+            $("#back_butn").click(function () {
+                window.location.href='/cancleStrategy/CancleStrategyList'
+            })
+
+            /*$("#end_time").blur(function () {
+                var regex_number = /^[0-9]*$/;
+                var div_length=$("#div_content").children("div").length;
+                var last_div = $("#div_content").children("div").last();
+                var prev_div = last_div.prev().children("div");
+                var last_hour = last_div.find(".input_hour").val();
+                if(div_length>1){
+                    var val = $("#end_time").val();
+                    if(val<=last_hour){
+                        $("#end_time").val('');
+                        reset();
+                        alertify.alert("最后一行小时数应比所有取消策略都大！");
+                        return false;
+                    }else if(!regex_number.test(val)){
+                        reset();
+                        alertify.alert("小时数只能为数字！");
+                        return false;
+                    }
+                }else{
+                    var val = $("#init_begin_time").val();
+                    if(val<=$("#init_begin_time").val()){
+                        $("#init_begin_time").val('');
+                        reset();
+                        alertify.alert("最后一行小时数应比所有取消策略都大！");
+                        return false;
+                    }
+                }
+            })*/
+        })
+
+        function load(val) {
+            if(val!=0){
+                $("#plus_btn").show();
+            }else{
+                $("#plus_btn").hide();
+            }
+        }
+
+        function minus(obj) {
+            $(obj).parent().parent().remove();
+        }
+        function plus(obj) {
+            var regex_number = /^[0-9]*$/;
+            var regex_fixed = /^([1-9]\d?|100)$/;
+            var regex_double = /^[0-9]+(.[0-9]{1,2})?$/;
+            var div_length=$("#div_content").children("div").length;
+            var last_div = $("#div_content").children("div").last();
+            var prev_div = last_div.prev().children("div");
+            var d_begin = $("#init_begin_time").val();
+            if(d_begin==''){
+                reset();
+                alertify.alert("第一条取消策略请输入小时数！");
+                return false;
+            }
+            if(!regex_number.test(d_begin)){
+                reset();
+                alertify.alert("第一条取消策略只能是小时数！");
+                return false;
+            }
+            if(Number(div_length)==8){
+                reset();
+                alertify.alert("最多只能添加10条取消策略！");
+                return false;
+            }
+            if(div_length==0){
+                var begin = $("#init_begin_time").val();
+                var end = $("#end_time").val();
+                if(Number(begin)!=Number(end)){
+                    reset();
+                    alertify.alert("只有两条策略时，第一条和第二条的小时数应相等！");
+                    flag=false;
+                    return false;
+                }else if(!regex_number.test(begin)){
+                    reset();
+                    alertify.alert("小时数只能为数字！");
+                    flag=false;
+                    return false;
+                }else if(!regex_number.test(end)){
+                    reset();
+                    alertify.alert("小时数只能为数字！");
+                    flag=false;
+                    return false;
+                }
+            }
+            if(div_length==1){
+
+                var init_time = $("#init_begin_time").val();
+                var last_hour = last_div.find(".input_hour").val();
+                var last_price = last_div.find(".input_price").val();
+                var flag = true;
+                if(Number(last_hour)!=Number(init_time)){
+                    reset();
+                    alertify.alert("第二条取消策略的小时数不能小于等于第一条！");
+                    flag = false;
+                    return false;
+                }else if(!regex_number.test(last_hour)){
+                    reset();
+                    alertify.alert("小时数只能是数字！");
+                    flag = false;
+                    return false;
+                }else{
+                    if($("#cancle_type").val()!=3){
+                        if(!regex_fixed.test(last_price)){
+                            reset();
+                            alertify.alert("扣除金额为百分比，请输入1-100的整数！");
+                            flag=false;
+                            return false;
+                        }
+                    }else {
+                        if(!regex_double.test(last_price)){
+                            reset();
+                            alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                            flag=false;
+                            return false;
+                        }
+                    }
+                }
+                last_div.find(".input_hour").attr("readonly",true);
+                last_div.find(".input_price").attr("readonly",true);
+            }else if(div_length>1){
+                var flag = true;
+                var last_hour = last_div.find(".input_hour").val();
+                var last_price = last_div.find(".input_price").val();
+                var prev_hour = prev_div.find(".input_hour").val();
+                var prev_price = prev_div.find(".input_price").val();
+                if(Number(last_hour)<=Number(prev_hour)){
+                    reset();
+                    alertify.alert("不能小于等于上一条取消策略的小时数！");
+                    flag=false;
+                    return false;
+                }else if(!regex_number.test(last_hour)){
+                    reset();
+                    alertify.alert("小时数只能是数字！");
+                    flag=false;
+                    return false;
+                }else if(Number(last_price)>=Number(prev_price)){
+                    reset();
+                    alertify.alert("不能大于等于第一条取消策略扣除金额百分比！");
+                    flag=false;
+                    return false;
+                }else{
+                    if($("#cancle_type").val()!=3){
+                        if(!regex_fixed.test(last_price)){
+                            reset();
+                            alertify.alert("扣除金额为百分比，请输入1-100的整数！");
+                            flag=false;
+                            return false;
+                        }
+                    }else {
+                        if(!regex_double.test(last_price)){
+                            reset();
+                            alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                            flag=false;
+                            return false;
+                        }
+                    }
+                }
+                if(flag){
+                    last_div.find(".input_hour").attr("readonly",true);
+                    last_div.find(".input_price").attr("readonly",true);
+                }
+            }
+
+            var sel = $("#cancle_type").val();
+            var html = [];
+            html.push("<div class='form-group form-inline'><label class='col-sm-3 control-label'></label>");
+            html.push("<div class='col-sm-8' style='margin-left: 5px'>");
+            html.push("<span>距离服务开始时间</span>");
+            html.push("<input type='text' name='begin_time' class='input_hour form-control input-sm' style='width: 60px;margin-left: 13px' placeholder='小时'/>");
+            html.push("<span>小时前<span style='margin-left: 40px'></span>扣除</span>");
+            html.push("<input type='text' name='price' class='input_price form-control input-sm' style='width: 60px' placeholder='金额'/>");
+            html.push("<input type='hidden' name='is_oper_end' value='0'/>");
+            if(sel==2 || sel ==1){
+                html.push("%");
+            }
+            if(sel == 3){
+                html.push('');
+            }
+            //html.push("<button type='button' onclick='plus(this)' class='btn btn-primary'>+</button>");
+            html.push("<button type='button' onclick='minus(this)' class='btn btn-primary'>-</button>");
+            html.push("</div></div>")
+
+            $("#div_content").append(html.join(" "));
+        }
+        function show_back_plus(k) {
+            var sel = $("#cancle_type").val();
+            var html = [];
+            html.push("<div class='form-group form-inline'><label class='col-sm-3 control-label'></label>");
+            html.push("<div class='col-sm-8' style='margin-left: 5px'>");
+            html.push("<span>距离服务开始时间</span>");
+            html.push("<input type='text' name='begin_time' class='input_hour form-control input-sm' style='width: 60px;margin-left: 13px' value="+k.beforeHour+" placeholder='小时'/>");
+            html.push("<span>小时前<span style='margin-left: 40px'></span>扣除</span>");
+            html.push("<input type='text' name='price' class='input_price form-control input-sm' style='width: 60px' value="+k.value+" placeholder='金额'/>");
+            html.push("<input type='hidden' name='is_oper_end' value='0'/>");
+            if(sel==2 || sel ==1){
+                html.push("%");
+            }
+            if(sel == 3){
+                html.push('');
+            }
+            //html.push("<button type='button' onclick='plus(this)' class='btn btn-primary'>+</button>");
+            html.push("<button type='button' onclick='minus(this)' class='btn btn-primary'>-</button>");
+            html.push("</div></div>")
+
+            $("#div_content").append(html.join(" "));
+        }
+        function show_sub(obj,val) {
+            $("#div_content").html('');
+            $("#end_time").val('');
+        }
+    </script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+    <!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+    <div class="page_content_bar">
+        <!--/* 面包屑  */-->
+        <ol class="breadcrumb clearfix">
+            <li><a href="/cancleStrategy/CancleStrategyList">订单取消策略</a></li>
+            <li class="active">编辑</li>
+        </ol>
+    </div>
+    <!--/* 页面部分二              页面主内容  */-->
+    <div class="page_content_main" data-sidea="side_47">
+        <!--/* 动态   */-->
+        <form id="form1" class="form-horizontal" method="post" th:object="${cancleStrategy}">
+            <input id="hide_cancle_os" name="list" type="hidden"/>
+            <input name="cancle_strategy_id" th:value="${cancle_strategy_id}" type="hidden"/>
+            <input type="hidden" name="mts"  th:value="${application.mts}"/>
+            <div class="form-group">
+                <label class="col-sm-3 control-label"><span style="color: #ff0000">*</span>取消策略名称:</label>
+                <div class="col-sm-3">
+                    <input id="name" type="text" class="form-control" name="name" th:value="*{name}" placeholder="请输入策略名称"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label"><span style="color: red">*</span>取消策略类型:</label>
+                <div class="col-sm-3">
+                    <select id="cancle_type" name="cancle_type" class="form-control" onchange="show_sub(this,this.options[this.options.selectedIndex].value)">
+                        <option th:selected="*{cancle_type eq 0}" value="0">请选择</option>
+                        <option th:selected="*{cancle_type eq 1}" value="1">订单金额</option>
+                        <option th:selected="*{cancle_type eq 2}" value="2">实付金额</option>
+                        <option th:selected="*{cancle_type eq 3}" value="3">固定金额</option>
+                    </select>
+                </div>
+            </div>
+            <!--<div class="form-group" >
+                <label class="col-sm-3 control-label"><span style="color: red">*</span>服务商品:</label>
+                <div class="col-sm-3">
+                    <select id="product" name="product" class="form-control">
+                        <option th:each="pro:${products}" th:value="${pro.product_id}" th:text="${pro.name}"></option>
+                    </select>
+                </div>
+            </div>-->
+            <div class="form-group"  id="div_init">
+                <label class="col-sm-3 control-label"><span style="color: red">*</span>取消策略:</label>
+                <div class="col-sm-9 form-inline">
+                    <span>距离服务开始时间前</span><input type="text" id="init_begin_time" name="begin_time" class="form-control input-sm" style="width: 60px" placeholder="小时"/>小时及之后，不允许取消订单
+                    <input type="hidden" id="is_oper_begin" value="1"/>
+                    <button id="plus_btn" type="button" class="btn btn-primary" onclick="plus(this)"  hidden="hidden">+</button>
+                </div>
+            </div>
+            <div class="form-group" id="div_content">
+
+            </div>
+            <div class="form-group"  id="div_end">
+                <label class="col-sm-3 control-label"></label>
+                <div class="col-sm-9 form-inline">
+                    <span>距离服务开始时间前</span>
+                    <input type="text" id="end_time" name="end_time" class="form-control input-sm"  style="width: 60px" placeholder="小时"/>小时及之前，取消订单全额退款
+                    <input type="hidden" id="is_oper_end" value="0"/>
+                    <!--<button id="plus_btn" type="button" class="btn btn-primary" onclick="plus(this)"  hidden="hidden">+</button>-->
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-7 col-sm-offset-4">
+                    <button id="save_btn" type="button" class="btn btn-primary" >确定</button>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input id="back_butn" class="btn btn-primary" type="button" value="取消" />
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+#老师
+type Teacher{
+
+    #教师信息表id
+    teacher_id : Long
+
+    #教师姓名
+    name : String
+
+    #教师联系电话
+    phone : String
+
+    #培训地址
+    train_address : String
+
+    #教师性别;1为男，0为女
+    sex : Int
+
+    #教师年龄
+    age : Int
+
+    #创建时间
+    create_time : Date
+
+    #状态；1为在职，0为离职
+    state : Int
+
+    #教师头像
+    icon : String
+
+    #身份证
+    identity_card : String
+
+    #教师资格证书
+    certification : String
+
+    #教师类型；1为教师，0为助教
+    type : Int
+
+    #教师简介
+    intro : String
+
+    #用户id
+    user_id : Long
+
+    #0 未删除，1 已删除
+    deleted : Int
+}
+

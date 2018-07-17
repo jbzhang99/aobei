@@ -1,0 +1,295 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}">
+<head>
+<title>退款单信息</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+		ymd();
+
+		var partner_id = [[${partner_id}]];
+		var status = [[${status}]];
+		if(partner_id){
+			$(".partner_id option").each(function(){
+				if($(this).val() == partner_id){
+					$(this).prop("selected",true);
+				}
+			});
+		}
+		if(status != null){
+			$(".status option").each(function(){
+				if($(this).val() == status){
+					$(this).prop("selected",true);
+				}
+			});
+		}
+		
+		$(".query").click(function(){
+			var pay_order_id = $(".pay_order_id").val();
+			var begin_date = $(".begin_date").val();
+			var end_date = $(".end_date").val();
+			var cuname = $(".cuname").val();
+			var uphone = $(".uphone").val();
+			var student_name = $(".student_name").val();
+			var partner_id = $(".partner_id").val();
+			var status = $(".status").val();
+			if(begin_date != '' && end_date != ''){
+				if(end_date < begin_date){
+					reset();
+					alertify.alert("查询结束时间不得小于查询开始时间！");
+					return;
+				}else{
+					window.location.href = "/ordermanager/goto_order_refunds?pay_order_id="+pay_order_id+"&begin_date="+begin_date+
+														"&end_date="+end_date+"&cuname="+cuname+"&uphone="+uphone+"&student_name="+student_name+
+														"&partner_id="+partner_id+"&status="+status;
+				}
+			}else{
+				window.location.href = "/ordermanager/goto_order_refunds?pay_order_id="+pay_order_id+"&cuname="+cuname+"&uphone="+uphone+"&student_name="+student_name+
+											"&partner_id="+partner_id+"&status="+status;
+			}
+		});
+	});
+	
+	function detail(pay_order_id,pageNo){
+		window.location.href = "/ordermanager/order_detail?page_current_page="+pageNo+"&pay_order_id="+pay_order_id;
+	}
+	
+	function exportRefundsExcel(){
+        var mts = [[${application.mts}]];
+        reset();
+        alertify.confirm("确定要以当前条件生成excel列表吗？", function (e) {
+            if (e) {
+                var pay_order_id = $(".pay_order_id").val();
+                var begin_date = $(".begin_date").val();
+                var end_date = $(".end_date").val();
+                var cuname = $(".cuname").val();
+                var uphone = $(".uphone").val();
+                var student_name = $(".student_name").val();
+                var partner_id = $(".partner_id").val();
+                var status = $(".status").val();
+
+                var json = {"pay_order_id":pay_order_id,"begin_date":begin_date,"end_date":end_date,"cuname":cuname,"uphone":uphone,"student_name":student_name,"partner_id":partner_id,"status":status,"mts":mts};
+
+                reset = function () {
+                    $("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+                    alertify.set({
+                        labels : {
+                            ok   : "确认",
+                            cancel : "取消"
+                        },
+                        delay : 5000,
+                        buttonReverse : false,
+                        buttonFocus  : "ok"
+                    });
+                };
+
+                $.ajax({
+                    url:"/ordermanager/exportRefundsExcel",
+                    type : 'post',
+                    data :{
+                        params:JSON.stringify(json)
+                    },
+                    success:function(data){
+                        reset();
+                        alertify.success(data.msg);
+                    }
+                });
+            } else {
+                reset();
+                alertify.log("已取消操作。");
+            }
+        });
+	}
+
+    function refund(refund_id,pay_order_id){
+        var mts = [[${application.mts}]];
+        $.ajax({
+			url:"/ordermanager/refund",
+			type : 'post',
+			data :{
+				refund_id:refund_id,
+				pay_order_id:pay_order_id,
+				mts:mts
+			},
+			success:function(data){
+				reset();
+				alertify.success(data.msg);
+                setTimeout(function (){
+                    location.reload(true);
+                }, 1500);
+			}
+		});
+    }
+</script>
+</head>
+<body>
+<div layout:fragment="content">
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+		  <li class="active">退款单列表</li>
+		  <li class="libtn">
+			<button sec:authorize="hasRole('ROLE_REFUND_EXPORT')" id="export_btn" name="file" class="btn btn-primary" onclick="exportRefundsExcel()">
+				<span class="fas fa-sign-out-alt"></span>导出
+			</button>
+		  </li>
+		</ol>
+	</div>
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_22">
+		<div style="padding:10px 10px; background:#fff" class="screen">
+               <div class="ab_screen">
+                   <div class="form-inline">
+					<div class="form-group"  style="margin-right: 20px">
+					    <label>订单号：</label>
+					    <input type="text" name="pay_order_id" th:if="${pay_order_id != ''}" th:value="${pay_order_id}" class="form-control pay_order_id input-sm"/>
+					</div>
+						<div class="form-group">
+							<label>退款申请时间：</label>
+							<div class="input-group date datetimepicker1">
+								<input class="form-control begin_date input-sm" 
+										type="text" 
+										name="begin_date" 
+										th:if="${begin_date != ''}" 
+										th:value="${begin_date}" 
+										style="width: 130px;" /> 
+										<span class="input-group-addon" style="width: 50px; height: 30px;"> 
+											<span class="glyphicon glyphicon-calendar"></span>
+										</span>
+							</div>
+							<label>~</label>
+							<div class="input-group date datetimepicker1">
+								<input class="form-control end_date input-sm" 
+										type="text"
+										name="end_date" 
+										th:if="${end_date != ''}"
+										th:value="${end_date}"
+										style="width: 130px;" /> 
+										<span class="input-group-addon" style="width: 50px; height: 30px;"> 
+											<span class="glyphicon glyphicon-calendar"></span>
+										</span>
+							</div>
+						</div>
+					</div>
+                   <br/>
+                   <div class="form-inline">
+					<div class="form-group"  style="margin-right: 20px">
+					    <label>顾客姓名：</label>
+					    <input type="text" name="cuname" th:if="${cuname != ''}" th:value="${cuname}" class="form-control cuname input-sm">
+					</div>
+				    <div class="form-group"  style="margin-right: 20px">
+					    <label>顾客电话：</label>
+					    <input type="text" name="uphone" th:if="${uphone != ''}" th:value="${uphone}" class="form-control uphone input-sm">
+					  </div>
+					<div class="form-group">
+					    <label>服务人员姓名：</label>
+					    <input type="text" name="student_name" th:if="${student_name != ''}" th:value="${student_name}" class="form-control student_name input-sm">
+					</div>
+				</div>
+				<br/>
+				<div class="form-inline">
+				    <div class="form-group">
+					    <label>合伙人：</label>
+					    <select class="form-control partner_id input-sm" name="partner_id"  style="margin-right: 20px">
+					    	<option value=''>请选择</option>
+					    	<option th:each="partner:${partners}" th:value="${partner.partner_id}" th:text="${partner.name}"></option>
+					    </select>
+					  </div>
+					<div class="form-group">
+					    <label>退款状态：</label>
+					    <select class="form-control status input-sm" name="status"  style="margin-right: 20px">
+					    	<option value=''>全部</option>
+					    	<option value="0">待退款</option>
+					    	<option value="1">退款中</option>
+					    	<option value="2">已退款</option>
+					    	<option value="3">退款调度失败</option>
+					    	<!-- /* <option value="4">申请被拒绝</option> */-->
+					    </select>
+					</div>
+					<button class="btn btn-primary query btn-sm">查询</button>
+				</div>
+               </div>
+           </div>
+		
+		<!--/* 以下为自定义代码块  */-->
+		<div class="table-responsive">
+		<!--/* 动态 */-->
+		<table id="table-cont" class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th width="100px" sec:authorize="hasRole('ROLE_ORDER_BROWSE')">订单号</th>
+					<th width="100px">退款状态</th>
+					<th width="100px">服务名称</th>
+					<th width="100px">用户姓名</th>
+					<th width="100px">顾客电话</th>
+					<th width="100px">服务地址</th>
+					<th width="100px">服务价格</th>
+					<th width="100px">实付金额</th>
+					<th width="100px">退款金额</th>
+					<th width="100px">退款原因</th>
+					<th width="100px">退款申请人</th>
+					<th width="100px">合伙人公司名</th>
+					<th width="100px">服务人员</th>
+					<th width="100px">退款申请时间</th>
+					<th width="100px" sec:authorize="hasRole('ROLE_REFUND')">操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="refund:${refunds}">
+					<td style="vertical-align: middle;" sec:authorize="hasRole('ROLE_ORDER_BROWSE')">
+						<a class="btn btn-link btn-xs" href="javascript:;" style="outline:none;" th:onclick="|detail('${refund.pay_order_id}','${page.pageNo}');|" th:text="${refund.pay_order_id}"></a>
+					</td>
+					<td style="vertical-align: middle;" th:switch="${refund.status}">
+						<span th:case="0">待退款</span>
+	                  	<span th:case="1">退款中</span>
+	                  	<span th:case="2">已退款</span>
+	                  	<span th:case="3">退款调度失败</span>
+	                  	<span th:case="4">申请被拒绝</span>
+					</td>
+					<td style="vertical-align: middle;" th:text="${refund.order_name}"></td>
+					<td style="vertical-align: middle;word-break:break-all" th:text="${refund.cuname}"></td>
+					<td style="vertical-align: middle;" th:text="${refund.uphone}"></td>
+					<td style="vertical-align: middle;" th:text="${refund.cus_address}" width="100px"></td>
+					<td style="vertical-align: middle;" th:text="${#numbers.formatDecimal(refund.price_total*0.01,1,2)}"></td>
+					<td style="vertical-align: middle;" th:text="${#numbers.formatDecimal(refund.price_pay*0.01,1,2)}"></td>
+					<td style="vertical-align: middle;" th:text="${#numbers.formatDecimal(refund.fee*0.01,1,2)}"></td>
+					<td style="vertical-align: middle;word-break:break-all" th:text="${refund.info}"></td>
+					<td style="vertical-align: middle;">
+						<th:block th:each="users:${userses}">
+							<span th:if="${users.user_id eq refund.user_id}" th:text="${users.username}"></span>
+						</th:block>
+					</td>
+					<td style="vertical-align: middle;">
+						<th:block th:each="partner:${partners}">
+							<span th:if="${partner.partner_id eq refund.partner_id}" th:text="${partner.name}"></span>
+						</th:block>
+					</td>
+					<td style="vertical-align: middle">
+						<th:block th:if="${refund.student_name != null}" th:text="${refund.student_name}"></th:block>
+						<th:block th:unless="${refund.student_name != null}" th:text="未指派服务人员"></th:block>
+					</td>
+					<td style="vertical-align: middle" th:text="${#dates.format(refund.create_date,'yyyy-MM-dd')}"></td>
+					<td style="vertical-align: middle" sec:authorize="hasRole('ROLE_REFUND')">
+						<th:block th:if="${#lists.contains({0,3}, refund.status)}">
+							<a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|refund('${refund.refund_id}','${refund.pay_order_id}');|"><i class="fab fa-bitcoin"></i>退款</a>
+						</th:block>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		</div>
+		<div th:include="~{tags/pagination::p1(@{/ordermanager/goto_order_refunds(pay_order_id=${pay_order_id},begin_date=${begin_date},end_date=${end_date},
+			cuname=${cuname},uphone=${uphone},student_name=${student_name},partner_id=${partner_id},status=${status})},${page.total}
+					,${page.pageSize},${page.pageNo},${page.totalPage},right,p)}">
+		</div>
+	</div>
+
+</div>
+</body>
+</html>

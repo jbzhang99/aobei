@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{base_layout}">
+<head>
+<title>添加教师信息</title>
+
+
+<link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/citydata.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}" ></script>
+<script type="text/javascript" th:src="@{/js/cityPicker-1.0.0.js?v=1}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-select.min.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+$(function(){
+	var select = $('.city-picker-select').cityPicker({
+		dataJson: cityData,
+		renderMode: false,
+		linkage: false
+	});
+	 $('#form1').bootstrapValidator({
+         message: 'This value is not valid',
+         feedbackIcons: {
+             /* valid: 'glyphicon glyphicon-ok',
+             invalid: 'glyphicon glyphicon-remove',
+             validating: 'glyphicon glyphicon-refresh' */
+         },
+         submitHandler: function (validator, form, submitButton) {
+        	alert("submit");
+         },
+         fields: { 
+        	 
+             name: {
+                
+                 validators: {
+                     notEmpty: {
+                         message: '姓名不能为空'
+                     },
+                     regexp: {
+                         regexp: /^[\u4e00-\u9fa5]+(·[\u4e00-\u9fa5]+)*$/,
+                         message: '姓名只能包含中文，请输入正确的信息'
+                         
+                     }
+                 }
+             },
+             age: {
+                 validators: {
+                     notEmpty: {
+                         message: '年龄不能为空'
+                     },
+                     regexp: {
+                         regexp: /^(1[89]|[2-8]\d|90)$/,
+                         message: '年龄范围在18到90'
+                     }
+                 }
+             },
+             intro:{
+            	 validators: {            		 
+	            	 notEmpty: {
+	                     message: '请输入教师简介'
+	                 },
+	                 stringLength:{
+	                	min:'0',
+	                	max:'500',
+	                	message:'教师简介不能低于5不能超过500字'
+	                 }
+            	 }
+             },
+             teacher_type:{
+            	 notEmpty: {
+                     message: '请选择教师类别'
+                 }
+             },
+             phone:{
+            	 validators: {
+                     notEmpty: {
+                         message: '手机号不能为空'
+                     },
+                     regexp: {
+                         regexp: /^1(3|4|5|7|8|9)\d{9}$/,
+                         message: '手机号格式输入不正确'
+                     }
+                 }
+             },
+             train_course:{
+            	 validators: {
+                     notEmpty: {
+                         message: '请选择培训课程'
+                     },
+                 }
+             },
+             userProvinceId:{
+            	 validators: {
+                     notEmpty: {
+                         message: '请选择省份'
+                     },
+                 }
+             },
+             userCityId:{
+            	 validators: {
+                     notEmpty: {
+                         message: '请选择城市'
+                     },
+                 }
+             },
+             userDistrictId:{
+            	 validators: {
+                     notEmpty: {
+                         message: '请选择区县'
+                     },
+                 }
+             },
+             img_icon:{
+            	 validators: {
+                     notEmpty: {
+                         message: '请选择上传头像图片'
+                     },
+                 }
+             },
+             identity_card:{
+            	 validators: {
+                     notEmpty: {
+                         message: '请输入身份证号码'
+                     },
+                     regexp:{
+		                	regexp: /^\d{15,18}$/,
+		                	message:"请输入15-18正确位数的身份证号"
+		            }
+                 }
+             },
+         }
+         
+     });		
+	 $(".btn_cancel").click(function(){
+		var current = [[${current}]];
+		if(current==0){
+			window.location.href="/teacherManager/teacherInfo/teacherInfoList?p="+1;
+		}else{			
+			window.location.href="/teacherManager/teacherInfo/teacherInfoList?p="+current;
+		}
+	 });
+	
+	 
+	 $("#img_icon").fileinput({
+	        language: 'zh', //设置语言
+	        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+	        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+	        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+	        //uploadAsync: true, //默认异步上传
+	        showUpload:false, //是否显示上传按钮
+	        showRemove :false, //显示移除按钮
+	        showPreview :true, //是否显示预览
+	        showCaption:false,//是否显示标题
+	        //browseClass:"btn btn-primary", //按钮样式    
+	        dropZoneEnabled: false,//是否显示拖拽区域
+	        minImageWidth: 50, //图片的最小宽度
+	        minImageHeight: 50,//图片的最小高度
+	        maxImageWidth: 1000,//图片的最大宽度
+	        maxImageHeight: 1000,//图片的最大高度
+	        maxFileSize:1000,//单位为kb，如果为0表示不限制文件大小
+	        //minFileCount: 0,
+	        //maxFileCount:10, //表示允许同时上传的最大文件个数
+	        enctype:'multipart/form-data',
+	        validateInitialCount:true,
+	        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+	        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+	    });
+	 
+	 $("#img_certification").fileinput({
+	        language: 'zh', //设置语言
+	        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+	        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+	        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+	        //uploadAsync: true, //默认异步上传
+	        showUpload:false, //是否显示上传按钮
+	        showRemove :false, //显示移除按钮
+	        showPreview :true, //是否显示预览
+	        showCaption:false,//是否显示标题
+	        //browseClass:"btn btn-primary", //按钮样式    
+	        dropZoneEnabled: false,//是否显示拖拽区域
+	        minImageWidth: 50, //图片的最小宽度
+	        minImageHeight: 50,//图片的最小高度
+	        maxImageWidth: 1000,//图片的最大宽度
+	        maxImageHeight: 1000,//图片的最大高度
+	        maxFileSize:1000,//单位为kb，如果为0表示不限制文件大小
+	        //minFileCount: 0,
+	        //maxFileCount:10, //表示允许同时上传的最大文件个数
+	        enctype:'multipart/form-data',
+	        validateInitialCount:true,
+	        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+	        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+	    });
+});	
+	function check(){
+		
+		var p = $("select[name=userProvinceId] option:selected").val();
+		var c = $("select[name=userCityId] option:selected").val();
+		var a = $("select[name=userDistrictId] option:selected").val();
+		if(p=="请选择省"){
+			reset();
+			alertify.alert("请选择省！")
+			return false;
+		}
+		if(c=="请选择市"){
+			reset();
+			alertify.alert("请选择市！")
+			return false;
+		}
+		if(a=="请选择区"){
+			reset();
+			alertify.alert("请选择区！")
+			return false;
+		}
+	}
+</script>
+
+</head>
+<body>
+
+	<div layout:fragment="content">
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li> <a style="cursor:pointer" class="btn_cancel">教师信息管理</a></li>
+			  <li class="active">添加</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_3">
+					<form id="form1" class="form-horizontal" action="#"
+						th:action="@{/teacherManager/teacherInfo/addTeacherInfo}"
+						method="post" enctype="multipart/form-data" onsubmit="return check();">
+
+						<input type="hidden" name="mts"  th:value="${mts}"/>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="name"><span
+								style="color: red">*</span> 姓名</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control" id="name" name="name"
+									placeholder="请输入姓名" required />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="sex" class="col-sm-3 control-label"><span
+								style="color: red">*</span> 性别</label>
+							<div class="col-sm-4">
+								<select class="form-control" id="sex" name="sex">
+									<option value="1">男</option>
+									<option value="0">女</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="age"><span
+								style="color: red">*</span> 年龄</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control" id="age" name="age"
+									placeholder="请输入年龄" required />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="type" class="col-sm-3 control-label"><span
+								style="color: red">*</span> 类别</label>
+							<div class="col-sm-4">
+								<select class="form-control" id="type" name="type">
+									<option value="1">老师</option>
+									<option value="0">助教</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="img_icon"><span
+								style="color: red">*</span>头像</label>
+							<div class="col-sm-4">
+								<input type="file" class="form-control" id="img_icon"
+									name="img_icon" placeholder="点击上传头像" required /><br /> <span>建议图片分辨率为600*450，最大不能超过1M</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="img_certification">资格证</label>
+							<div class="col-sm-4">
+								<input type="file" class="form-control" id="img_certification"
+									name="img_certification" placeholder="点击上传电子版" /><br /> <span>建议图片分辨率为600*450，最大不能超过1M</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="intro" class="col-sm-3 control-label"><span
+								style="color: red">*</span> 简介</label>
+							<div class="col-sm-5">
+								<textarea class="form-control" id="intro" name="intro"
+									placeholder="请输入教师简介信息" required></textarea>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="phone"><span
+								style="color: red">*</span> 联系电话</label>
+							<div class="col-sm-5">
+								<input type="text" class="form-control" id="phone" name="phone"
+									placeholder="请输入联系电话" required />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="train_address" class="col-sm-3 control-label"><span
+								style="color: red">*</span> 所在地</label>
+							<div class="col-sm-7">
+								<!--省市县三级 -->
+								<div class="city-picker-select form-inline"></div>
+								<!--  -->
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="identity_card"><span
+								style="color: red">*</span> 身份证号码</label>
+							<div class="col-sm-5">
+								<input type="text" class="form-control" id="identity_card"
+									name="identity_card" placeholder="请输入身份证号码" required />
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label for="state" class="col-sm-3 control-label"><span
+								style="color: red">*</span> 状态</label>
+							<div class="col-sm-5">
+								<select class="form-control" id="state" name="state" required>
+									<option value="1">在职</option>
+									<option value="0">兼职</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="train_course"><span
+								style="color: red">*</span> 培训课程</label>
+							<div class="col-sm-5">
+								<select class="form-control selectpicker" title="请选择支持课程"
+									multiple name="train_course">
+									<option th:each="course:${list_course}"
+										th:value="${course.course_id}" th:text="${course.name}"></option>
+								</select>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<div class="col-sm-5 col-sm-offset-3">
+								<input type="submit" value="确定" class="btn btn-primary" />&nbsp;&nbsp;&nbsp;&nbsp;
+								<input type="button" class="btn btn-default btn_cancel" value="取消" />
+							</div>
+						</div>
+					</form>
+		</div>
+</div>
+	
+	</body>
+</html>

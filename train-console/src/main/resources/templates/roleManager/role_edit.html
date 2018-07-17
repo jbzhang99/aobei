@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{base_layout}">
+<head> 
+<meta charset="UTF-8" />
+<title>角色编辑</title>
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}" ></script>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+		
+		$('#form1').bootstrapValidator({
+	         message: 'This value is not valid',
+	         feedbackIcons: {
+	             /* valid: 'glyphicon glyphicon-ok',
+	             invalid: 'glyphicon glyphicon-remove',
+	             validating: 'glyphicon glyphicon-refresh' */
+	         },
+	         fields: { 
+	        	 
+	             role: {
+	                 validators: {
+	                     notEmpty: {
+	                         message: '角色姓名不能为空'
+	                     },
+	                     regexp: {
+	                         regexp: /^[\u4e00-\u9fa5]+(·[\u4e00-\u9fa5]+)*$/,
+	                         message: '姓名只能包含中文，请输入正确的信息'
+	                         
+	                     }
+	                 }
+	             },
+	         }
+		 })
+		var roleName = [[${roleName}]]
+		$("#role").val(roleName);
+		//加载已选中的权限数据
+		var set = [[${set}]];
+		$.each(set,function(index,obj){
+			$("input:checkbox").each(function(i,ele){
+				if(obj==ele.value){
+					ele.checked=true;
+				}
+			})
+		})
+		//取消按钮，回到当前页
+		$("#cancel_btn").click(function(){
+			var p = [[${current}]]
+			window.location.href="/roleManager/role/role_list?p="+p
+		})
+		
+		
+		
+		$("#edit_btn").click(function(){
+			var resIds = [];
+			var privileges = $("input[name=privilege]:checkbox:checked").length;
+			$("input[name=privilege]:checkbox:checked").each(function(i,obj){
+				var data = $(obj).val();
+				resIds.push(data);
+			});
+            var mts = [[${application.mts}]];
+			if(privileges==0){
+				reset();
+				alertify.alert("请至少选择一项权限！")
+				return ;
+			}else if($("#role").val()==""||$("#role").val()==null){
+				reset();
+				alertify.alert("请填写角色姓名！")
+				return ;
+			}else{
+				var role_name = $("#role").val();
+				var role_id = $("#role_id").val()
+				$.ajax({
+					url:'/roleManager/role/role_edit',
+					type:'post',
+					data:{
+						role_name:role_name,
+						resIds:JSON.stringify(resIds),
+						roleId:role_id,
+						mts:mts
+					},
+					dataType:'json',
+					success:function(data){
+						var p = [[${current}]];
+						reset();
+						alertify.success(data.message)
+						setTimeout(function(){							
+							window.location.href="/roleManager/role/role_list?p="+p
+						},2000)
+					}
+				})
+			}
+		})
+	})
+</script>
+</head>
+<body>
+
+	<div layout:fragment="content">
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li><a th:href="@{/roleManager/role/role_list}">角色管理</a></li>
+			  <li class="active">角色修改</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_18">
+				<form id="form1" class="form-horizontal" action="">
+					<input id="roleName" th:value="${roleName}" hidden="hidden"/>
+					<input id="role_id" th:value="${role_id}" name="roleId" hidden="hidden" />
+					<div class="form-group">
+						<label class="col-sm-4 control-label" for="name"><span
+							style="color: red">*</span> 姓名</label>
+						<div class="col-sm-3">
+							<input id="role" class="form-control" type="text" name="role"
+								placeholder="请输入角色名称" required>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-4 control-label" for="role_keys"><span
+							style="color: red">*</span> 权限</label>
+						<div class="col-sm-3">
+							<ul id="tree" class="filetree" th:each="map:${map2}"> 
+								<li ><span class="tagLeader" th:text="${map.key}"></span>
+									<ul th:each="authResTag:${map.value}"  >
+										<th:block th:each="res:${authResTag}" th:if="${res.value.tag==map.key}">
+										<li class="from-control" ><input type="checkbox" th:text="${res.value.name}" name="privilege" th:value="${res.value.res_id}"/></li>
+										</th:block>
+									</ul>
+								</li>
+								<!-- <li ><span class="folder">课程管理</span>
+									<ul th:each="authResTag:${list_authRes}" th:if="${authResTag.tag}=='课程管理'" >
+										<li class="from-control"><input type="checkbox" th:text="${authResTag.name}" name="privilege" th:value="${authResTag.res_id}"/></li>
+									</ul>
+								</li> -->
+							</ul>
+						</div>
+					</div>
+
+					<!-- 确定取消按钮 -->
+					<div class="form-group">
+						<div class="col-sm-4 col-sm-offset-4">
+							<input id="edit_btn" type="button" value="确定"
+								class="btn btn-primary" />&nbsp;&nbsp;&nbsp;&nbsp; <input
+								id="cancel_btn" type="button" value="取消"
+								class="btn btn-default btn_cancel" />
+						</div>
+					</div>
+				</form>
+		</div>
+	</div>
+
+</body>
+</html>

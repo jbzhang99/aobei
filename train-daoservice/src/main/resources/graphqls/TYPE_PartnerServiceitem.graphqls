@@ -1,0 +1,12 @@
+#合伙人 服务项关联表
+type PartnerServiceitem{
+
+    #合伙人编号
+    partner_id : Long
+
+    #服务项id
+    serviceitem_id : Long
+
+    none : Int
+}
+

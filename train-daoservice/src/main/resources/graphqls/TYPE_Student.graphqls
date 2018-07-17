@@ -1,0 +1,66 @@
+type Student{
+
+    #学员编号
+    student_id : Long
+
+    #学员名称
+    name : String
+
+    #学员隶属合伙人编号
+    partner_id : Long
+
+    #身份证号
+    identity_card : String
+
+    #联系电话
+    phone : String
+
+    #性别(0:女 1:男)
+    sex : Int
+
+    #年龄
+    age : Int
+
+    #创建日期
+    cdate : Date
+
+    #状态(0:离职 1:在职)
+    state : Int
+
+    #等级(1:高级2:中级3:初级)
+    grade : Int
+
+    #头像id
+    logo_img : String
+
+    #籍贯
+    native_place : String
+
+    #学员身份证正面
+    card_just : String
+
+    #学员身份证反面
+    card_against : String
+
+    #学员健康证信息
+    health : String
+
+    #服务站点id
+    station_id : Long
+
+    #学员使用
+    user_id : Long
+
+    #0 未删除，1 已删除
+    deleted : Int
+
+    #学员工号，10位数字字母组合
+    job_number : String
+
+    # 工作证书，图片JSON 数据 [{id:图片id,url:“图片访问url”}]
+    job_cert : String
+
+    #无犯罪证明，图片JSON 数据 {id:图片id,url:“图片访问url”}
+    innocence_proof : String
+}
+

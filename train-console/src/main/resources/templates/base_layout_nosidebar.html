@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <!-- ie 让ie以最新版本渲染 -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">  
+    <!-- 禁止缩放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>aobei ke ji</title>
+    <link th:href="@{/web/css/bootstrap.min.css}" href="css/bootstrap.min.css" rel="stylesheet">
+    <link th:href="@{/web/icon/iconfont.css}" rel="stylesheet" href="./icon/iconfont.css">
+    <link th:href="@{/web/css/base.css}" href="css/base.css" rel="stylesheet">
+    <link th:href="@{/css/alertify.core.css}" href="css/alertify.core.css" rel="stylesheet">
+    <link th:href="@{/css/alertify.bootstrap.css}" href="css/alertify.bootstrap.css" rel="stylesheet">
+    <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+  </head>
+  <body>
+    <!--/* 导航条  */-->
+  	<nav class="navbar navbar-default" id="ab_navbar">
+	  <div class="container-fluid">
+	    <!-- Brand and toggle get grouped for better mobile display -->
+	    <div class="navbar-header">
+	      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+	        <span class="sr-only">Toggle navigation</span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	      </button>
+	      <a class="navbar-brand" th:href="@{/}">Beijing AllBay Technology Co.Ltd</a>
+	    </div>
+	
+	    <!-- Collect the nav links, forms, and other content for toggling -->
+	    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+	      <ul class="nav navbar-nav navbar-right">
+	        <li class="dropdown">
+	          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">[[${#authentication.principal.username}]] <span class="caret"></span></a>
+	          <ul class="dropdown-menu">
+	          	<th:block sec:authorize="hasRole('ROLE_TMANAGER')">
+	            <li><a th:href="@{/ordermanager/download_task}" target="_blank">任务</a></li>
+	            <li role="separator" class="divider"></li>
+	          	</th:block>
+	            <li><a th:href="@{/logout}">退出</a></li>
+	          </ul>
+	        </li>
+	      </ul>
+	    </div><!-- /.navbar-collapse -->
+	  </div><!-- /.container-fluid -->
+	</nav>
+  
+	<div class="container-fluid" id="col_page_main">
+		<div class="row" id="page_main">
+			<!--/* 主窗口  */-->
+			<div class="col-xs-12 page_content" layout:fragment="content">
+			</div>
+		</div>
+	</div>
+	
+	<script th:src="@{/web/js/bootstrap.min.js}" src="js/bootstrap.min.js"></script>
+    <script th:src="@{/js/alertify.min.js}" src="js/alertify.min.js"></script>
+    <script th:src="@{/js/jquery.pin.min.js}" src="/js/jquery.pin.min.js"></script>
+    <script>
+    <!--/* pin 固定  */-->
+    $('.page_content_bar').pin({containerSelector:'.page_content'});
+    $(window).resize(function(){
+    	setTimeout(function(){
+    	$('.page_content_bar').width($('.page_content').width());
+    	$('.page_content_bar').offset({left:$('.page_content').offset().left});
+    	},100);
+    });
+   </script>
+  </body>
+ </html>

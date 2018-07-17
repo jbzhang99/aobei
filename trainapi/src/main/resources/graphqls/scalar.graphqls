@@ -1,0 +1,8 @@
+# Date implementation
+scalar Date
+# LocalDate implementation
+scalar LocalDate
+# LocalDateTime implementation
+scalar LocalDateTime
+# LocalTime implementation
+scalar LocalTime

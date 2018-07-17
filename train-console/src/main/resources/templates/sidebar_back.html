@@ -1,0 +1,233 @@
+<th:block th:fragment="list" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
+<!--角色列表
+拥有角色：
+
+
+
+
+-->
+
+    <th:block sec:authorize="hasRole('ROLE_COURSE_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+       <span>
+         <i class="icon iconfont icon-arrRight-fill"></i>
+       </span>课程管理
+            </h5>
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item">
+                    <a id="side_-1" th:href="@{/courseTeam/showCourseTeam}" >课程列表</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+<!--/** 经理端角色  */-->
+<th:block sec:authorize="hasRole('ROLE_TMANAGER')">
+<div class="list-group ti">
+     <h5 class="ab_f13 ab_cursor">
+       <span>
+         <i class="icon iconfont icon-arrRight-fill"></i>
+       </span>课程管理
+     </h5>
+     <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+       <li class="list-group-item">
+         <a id="side_0" th:href="@{/courseTeam/showCourseTeam}" >课程列表</a>
+       </li>
+     </ul>
+</div>
+
+
+<div class="list-group ti">
+    <h5 class="ab_f13 ab_cursor"><span>
+        <i class="icon iconfont icon-arrRight-fill"></i>
+      </span>培训学校信息管理</h5>
+    <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+      <li class="list-group-item">
+        <a id="side_1" th:href="@{/schoolmanager/goto_school_list}">学校信息管理</a>
+      </li>
+      <li class="list-group-item">
+        <a id="side_2" th:href="@{/classroommanager/goto_classroom_list}">教室信息管理</a>
+      </li>
+    </ul>
+</div>
+
+<div class="list-group ti">
+     <h5 class="ab_f13 ab_cursor">
+       <span>
+         <i class="icon iconfont icon-arrRight-fill"></i>
+       </span>教师信息
+     </h5>
+     <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+       <li class="list-group-item">
+         <a id="side_3" th:href="@{/teacherManager/teacherInfo/teacherInfoList}">教师信息管理</a>
+       </li>
+     </ul>
+</div>
+
+<div class="list-group ti">
+    <h5 class="ab_f13 ab_cursor"><span>
+        <i class="icon iconfont icon-arrRight-fill"></i>
+      </span>培训管理</h5>
+    <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+      <li class="list-group-item">
+        <a id="side_4" th:href="@{/planmanager/goto_plan_list}">培训计划</a>
+      </li>
+      <!-- <li class="list-group-item">
+        <a th:href="@{/videomanager/goto_video_list}">培训视屏</a>
+      </li> -->
+    </ul>
+</div>
+
+<div class="list-group ti">
+     <h5 class="ab_f13 ab_cursor">
+       <span>
+         <i class="icon iconfont icon-arrRight-fill"></i>
+       </span>考试管理
+     </h5>
+     <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+       <li class="list-group-item">
+         <a  id="side_5" th:href="@{/questionBankManager/question/questionBankList}">题库管理 </a>
+       </li>
+       <li class="list-group-item">
+         <a  id="side_6" th:href="@{/questionPaperManager/questionPaper/questionPaperList}">试卷管理 </a>
+       </li>
+        <li class="list-group-item">
+         <a  id="side_7" th:href="@{/scoreInfoManager/scoreInfo/scoreInfoList}">成绩管理 </a>
+       </li>
+     </ul>
+</div>
+
+<div class="list-group ti">
+     <h5 class="ab_f13 ab_cursor">
+       <span>
+         <i class="icon iconfont icon-arrRight-fill"></i>
+       </span>内容管理
+     </h5>
+     <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+       <li class="list-group-item">
+         <a id="side_8" th:href="@{/bannermanager/goto_banner_list}">内容推荐 </a>
+       </li>
+     </ul>
+</div>
+</th:block>
+
+<!--/** 质量监控角色  */-->
+<th:block sec:authorize="hasRole('ROLE_ZLJC')">
+	<div class="list-group ti" >
+	     <h5 class="ab_f13 ab_cursor">
+	       <span>
+	         <i class="icon iconfont icon-arrRight-fill"></i>
+	       </span>产品类目管理
+	     </h5>
+	     <!--  -->
+	     <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+	       <li class="list-group-item">
+	         <a id="side_10" th:href="@{/categorySun/showCategorySun}" >类目管理</a>
+	       </li>
+	     </ul>
+	</div>
+	<div class="list-group ti" >
+	     <h5 class="ab_f13 ab_cursor">
+	       <span>
+	         <i class="icon iconfont icon-arrRight-fill"></i>
+	       </span>产品管理
+	     </h5>
+	     <!--  -->
+	     <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+	       <li class="list-group-item">
+	         <a id="side_9" th:href="@{/product/showProductList}" >产品管理</a>
+	       </li>
+	     </ul>
+	</div>
+</th:block>
+
+<!--/** 合伙人角色  */-->
+<div class="list-group ti" sec:authorize="hasRole('ROLE_PARTNER')">
+     <h5 class="ab_f13 ab_cursor">
+       <span>
+         <i class="icon iconfont icon-arrRight-fill"></i>
+       </span>合伙人信息管理
+     </h5>
+     <!--  -->
+     <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+       <li class="list-group-item">
+         <a id="side_11" th:href="@{/partner/showPartner}" >合伙人信息</a>
+       </li>
+       <li class="list-group-item">
+         <a id="side_12" th:href="@{/student/showStudent}" >学员信息</a>
+       </li>
+     </ul>
+</div>
+
+
+<!--/** 订单管理  */-->
+<div class="list-group ti" sec:authorize="hasRole('ROLE_TMANAGER')">
+     <h5 class="ab_f13 ab_cursor">
+       <span>
+         <i class="icon iconfont icon-arrRight-fill"></i>
+       </span>订单管理
+     </h5>
+     <!--  -->
+     <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+       <li class="list-group-item">
+         <a id="side_13" th:href="@{/ordermanager/goto_order_list}" >订单信息管理</a>
+       </li>
+       <li class="list-group-item">
+         <a id="side_14" th:href="@{/ordermanager/area_partner_info}" >地区商家信息</a>
+       </li>
+     </ul>
+</div>
+
+
+<!--/** 优惠券管理  */-->
+<div class="list-group ti" sec:authorize="hasRole('ROLE_TMANAGER')">
+     <h5 class="ab_f13 ab_cursor">
+       <span>
+         <i class="icon iconfont icon-arrRight-fill"></i>
+       </span>优惠券管理
+     </h5>
+     <!--  -->
+     <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+       <li class="list-group-item">
+         <a id="side_15" th:href="@{/couponmanager/coupon_list}" >优惠券列表</a>
+       </li>
+       <li class="list-group-item">
+         <a id="side_16" th:href="@{/couponmanager/record_detail}" >使用记录</a>
+       </li>
+     </ul>
+</div>
+
+<!--/** 账号角色管理  */-->
+<div class="list-group ti" sec:authorize="hasRole('ROLE_TMANAGER')">
+     <h5 class="ab_f13 ab_cursor">
+       <span>
+         <i class="icon iconfont icon-arrRight-fill"></i>
+       </span>账号角色权限管理
+     </h5>
+     <!--  -->
+     <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+       <li class="list-group-item">
+         <a id="side_17" th:href="@{/userManager/user/user_list}" >用户管理</a>
+       </li>
+       <li class="list-group-item">
+         <a id="side_18" th:href="@{/roleManager/role/role_list}" >角色管理</a>
+       </li>
+     </ul>
+</div>
+
+<!--/** 顾客管理  */-->
+<div class="list-group ti" sec:authorize="hasRole('ROLE_TMANAGER')">
+     <h5 class="ab_f13 ab_cursor">
+       <span>
+         <i class="icon iconfont icon-arrRight-fill"></i>
+       </span>顾客管理
+     </h5>
+     <!--  -->
+     <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+       <li class="list-group-item">
+         <a id="side_19" th:href="@{/customermanager/goto_customer_list}" >顾客列表</a>
+       </li>
+     </ul>
+</div>
+</th:block>

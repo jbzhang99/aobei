@@ -1,0 +1,67 @@
+#微信支付回调通知数据
+type PayWxNotify{
+
+    #交易号
+    transaction_id : String
+
+    appid : String
+
+    #签名类型
+    sign_type : String
+
+    #字符集
+    input_charset : String
+
+    #签名
+    sign : String
+
+    #交易模式
+    trade_mode : Int
+
+    #支付结果，0 成功，其它保留
+    trade_state : Int
+
+    #商户号
+    partner : String
+
+    #付款银行，银行类型，在微信中使用WX
+    bank_type : String
+
+    #银行订单号
+    bank_billno : String
+
+    #总金额
+    total_fee : Int
+
+    #现金支付币种,目前只支持人民币 1
+    fee_type : String
+
+    #支付结果通知id，对于某些特定商户，只返回通知id，要求商户据此查询交易结果
+    notify_id : String
+
+    #商户订单号
+    out_trade_no : String
+
+    #商户数据包
+    attach : String
+
+    #支付完成时间
+    time_end : String
+
+    #物流费用，单位分，默认0。如果有值， 必须保证transport_fee +product_fee = total_fee
+    transport_fee : Int
+
+    #物品费用，单位分。如果有值，必须保证transport_fee +product_fee=total_fee
+    product_fee : Int
+
+    #折扣价格，单位分，如果有值，通知的total_fee + discount = 请求的total_fee
+    discount : Int
+
+    data_openid : String
+
+    data_issubscribe : String
+
+    #JSAPI、NATIVE、APP
+    trade_type : String
+}
+

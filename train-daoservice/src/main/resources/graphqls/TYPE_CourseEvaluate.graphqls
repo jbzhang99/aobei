@@ -1,0 +1,36 @@
+#课程 学习  评价
+type CourseEvaluate{
+
+    id : Long
+
+    #课程上课排期id
+    train_schedule_id : Long
+
+    #学生id
+    student_id : Long
+
+    #评价
+    comment : String
+
+    #评分
+    score : Int
+
+    #老师id
+    teacher_id : Long
+
+    #助教id
+    assistant : Long
+
+    #课节id
+    chapter_id : Long
+
+    #课程id
+    course_id : Long
+
+    #创建日期
+    create_datetime : Date
+
+    #0 未删除，1 已删除
+    deleted : Int
+}
+

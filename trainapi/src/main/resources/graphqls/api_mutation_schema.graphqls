@@ -1,0 +1,121 @@
+# mutation status result
+type MutationResult{
+	status: Int!
+	extra:String
+}
+
+type Mutation {
+	#学员端绑定用户信息（姓名,手机号,身份证号）
+	my_student_binduser(	
+		phone:String!,
+		id_num:String!):MutationResult
+	#学员课程章节添加评价	（课程安排id,评分,评论）
+	my_student_insert_course_evaluate(
+		train_schedule_id:String!
+		score:Int!
+		comment:String
+		):MutationResult	
+	#老师端绑定用户信息（姓名,手机号,身份证号）
+	my_teacher_binduser(	
+		phone:String!,
+		id_num:String!):MutationResult
+
+
+
+
+    #  请求发送验证吗
+	customer_n_send_verification_code(
+	    phone:String!):MutationResult
+	#请求发送验证吗 顾客已经绑定的情况下（适用修改密码，更换手机号码等）
+	customer_o_send_verification_code(
+	    phone:String!):MutationResult
+	#仅做手机号验证码是否匹配。
+	customer_checking_code(phone:String!code:String):Boolean
+    # 创建顾客信息
+	customer_bind_user(
+	    code:String!,
+	    phone:String!):MutationResult
+	#顾客手机号码变更
+	customer_change_phone(
+	    phone:String!,
+	    code:String!):MutationResult
+	#用户新增一个服务地址
+    customer_address_add(
+        customer_address_input:CustomerAddressInput):CustomerAddress
+    #用户编辑一个服务地址
+    customer_address_update(
+        customer_address_input:CustomerAddressInput):CustomerAddress
+    #删除服务地址
+    customer_address_delete(customer_address_id:Long):MutationResult
+    #用户设定一个默认地址
+    customer_set_default_address(
+        customer_address_id:Long):MutationResult
+
+    #创建订单
+    customer_create_order(
+        order_input:OrderInput):Order
+    #订单支付成功
+    #customer_order_pay_success()
+    #取消订单，以支付状态下进行取消
+    customer_order_cancel(
+       pay_order_id:String!,
+       remark_cancel:String):MutationResult
+    #顾客提交评价
+    customer_service_evaluate(
+       pay_order_id:String!,
+       score:Int!
+       comment:String):MutationResult
+    #设置密码
+    customer_set_password(
+       password:String!,
+       repeat:String!,phone:String!,code:String!):MutationResult
+	#顾客确定,修改订单状态
+    customer_service_complete(pay_order_id:String!):MutationResult
+    #0元支付订单
+    customer_pay_free_charge(pay_order_id:String!):Order
+    #领取优惠券接口
+    customer_get_coupons(coupon_id:Long!):MutationResult
+    #顾客修改信息
+	customer_info_modification(name:String,logo_img:String,gender:Int,idcard:String):MutationResult
+	#使用兑换码兑换优惠券
+	customer_exchange_code_to_coupon(exchange_code:String!):MutationResult
+	#推送，绑定设备和推送账户
+	mutation_push_bind(push_client_id:String):MutationResult
+
+    #合伙人端绑定用户信息（姓名,手机号,身份证号）
+    partner_binduser(	
+		phone:String!,
+		linkman:String!):MutationResult  
+		
+   #接单 同时指派服务人员
+   #指派服务人员(接单)
+   partner_confirm_order(pay_order_id:String!,student_id:[Long!]):MutationResult
+   #修改服务人员	
+   partner_alter_order(pay_order_id:String!,student_id:[Long!]):MutationResult
+   #拒绝接单
+   partner_refused_order(pay_order_id:String!,orderStr:String!):MutationResult	
+   #员工停单指定
+   partner_stop_order(student_id:Long,date:String,start:String,end:String,statu:Boolean):MutationResult
+   #修改学员服务站
+   partner_update_station(station_id:Long,student_id:Long):MutationResult
+   #抢单
+   partner_order_robbing(pay_order_id:String,student_ids:[Long]):MutationResult
+   #学员停单(多个日期)
+   partner_stop_order_dates(student_id:Long,dates:[String],start:String,end:String,statu:Int!):MutationResult
+
+
+   #修改服务单状态
+   student_update_work_status(pay_order_id:String,serviceStatus:String,remark:String,lbs_lat:String,lbs_lng:String):WorkStatusResult
+   #服务人员下单
+   student_create_order(student_order_input:StudentOrderInput):Order
+   #服务人员取消订单
+   student_order_cancel(pay_order_id:String!):MutationResult
+
+
+   #==============================0.6新增的接口========================================
+   #合伙人上传头像
+   partner_upload_logimg(logoImg:String):MutationResult
+   #合伙人消息状态修改
+   partner_message_status_alter(message_id:Long):MutationResult
+}
+

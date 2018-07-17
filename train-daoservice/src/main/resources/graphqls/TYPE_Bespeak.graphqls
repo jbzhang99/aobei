@@ -1,0 +1,14 @@
+#预约策略
+type Bespeak{
+
+    #自增长
+    bespeak_strategy_id : Int
+
+    name : String
+
+    #预约策略JSON 数据 [{“before_hour” : 9  , "after_minutes" :  3}, {“before_hour” : 13  , "after_minutes" :  12}]
+    bespeak_strategy : String
+
+    create_datetime : Date
+}
+

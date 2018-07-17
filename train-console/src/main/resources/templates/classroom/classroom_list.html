@@ -1,0 +1,185 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+<title>教室信息列表</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<style type="text/css">
+
+	.tdCell{
+		cursor: pointer;
+	}
+
+	.tdCellActive{
+		background-color: #1AAD16;
+	}
+</style>
+<script type="text/javascript" th:src="@{/js/custom/classroom-func.js}"></script>
+<!-- <script type="text/javascript" th:src="@{/js/custom/classroom-list-onload.js}"></script> -->
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+		$("#add_butn").click(function(){
+			var page_current_page = [[${page.pageNo}]];
+			if(page_current_page == 0){
+				window.location.href = "/classroommanager/classroom_add?page_current_page="+1;
+			}else{
+				window.location.href = "/classroommanager/classroom_add?page_current_page="+page_current_page;
+			}
+		});
+		
+		var base_wse_data = [];
+		(function(){
+			for(var i = 1; i <= 7 ; i++){
+				var d = {w:i,se:[
+					{
+						s:"96",
+						s_text:"8:00",
+						e:"114",
+						e_text:"9:30",
+						active:0
+					},
+					{
+						s:"120",
+						s_text:"10:00",
+						e:"138",
+						e_text:"11:30",
+						active:0
+					},
+					{
+						s:"168",
+						s_text:"14:00",
+						e:"186",
+						e_text:"15:30",
+						active:0
+					},
+					{
+						s:"192",
+						s_text:"16:00",
+						e:"210",
+						e_text:"17:30",
+						active:0
+					}
+				]};
+			 	base_wse_data.push(d);
+			 };
+		})();
+		
+		function buildHtml(){
+			var html = [];
+			html.push('<tbody>');
+			html.push('<tr>');
+			html.push('<th>####</th>');
+			html.push('<th>星期一</th>');
+			html.push('<th>星期二</th>');
+			html.push('<th>星期三</th>');
+			html.push('<th>星期四</th>');
+			html.push('<th>星期五</th>');
+			html.push('<th>星期六</th>');
+			html.push('<th>星期日</th>');
+			html.push('</tr>');
+			for(var i = 0;i< base_wse_data[0].se.length;i++){//4
+				var jc = base_wse_data[0].se[i];
+				var end = jc.e;
+				var s_text = jc.s_text;
+				var e_text = jc.e_text;
+				var interval = '';
+				if(end < 150){
+					interval = "上午"+ s_text + " ~ "+ e_text;
+				} else {
+					interval = "下午"+ s_text + " ~ "+ e_text;
+				}
+				html.push('<tr>');
+				html.push('<td>'+interval+'</td>');
+				for(var j = 0;j< base_wse_data.length;j++){//7
+					var obj = base_wse_data[j].se[i];
+					html.push('<td data-wd="'+(j+1)+'" data-s="'+obj.s+'" data-e="'+obj.e+'" data-active="'+obj.active+'" class="tdCell"></td>');
+				}
+				html.push('</tr>');
+			}
+			html.push('</tbody>');
+			$("#aa").html(html.join(''));
+		}
+		buildHtml();
+	});
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+		  <li class="active">教室信息管理</li>
+		  <li class="libtn">
+		  	<button sec:authorize="hasRole('ROLE_CLASSROOM_EDIT')" id="add_butn" class="btn btn-primary pull-right">
+		  		<i class="fas fa-plus"></i>&nbsp;添加
+		  	</button>
+		  </li>
+		</ol>
+	</div>
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_2">
+		<!--/* 以下为自定义代码块  */-->
+		<div class="table-responsive">
+		<!--/* 动态  */-->
+		<table id="table-cont" class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th>隶属学校</th>
+					<th>教学楼号</th>
+					<th>支持课程</th>
+					<th>可容纳人数</th>
+					<th>是否可用</th>
+					<th>创建时间</th>
+					<th sec:authorize="hasAnyRole('ROLE_CLASSROOM_EDIT,ROLE_CLASSROOM_DEL')">操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="classroom:${classroom_list}">
+					<td style="vertical-align: middle" th:text="${classroom.school_name}">xx</td>
+					<td style="vertical-align: middle" th:text="${classroom.block_number}">xx</td>
+					<td style="vertical-align: middle">
+						<th:block th:if="${not #lists.isEmpty(classroom.courses)}" th:each="support_course,size:${classroom.courses}">
+							<span th:text="${support_course}"></span></br>
+						</th:block> 
+						<th:block th:if="${#lists.isEmpty(classroom.courses)}">
+							<span>支持课程已删除</span>
+						</th:block>
+					</td>
+					<td style="vertical-align: middle" th:text="${classroom.capacity}">人数</td>
+					<td style="vertical-align: middle" th:switch="${classroom.useable}">
+						<a th:case="1" th:href="|javascript:class_schedule_show(1,'${classroom.classroom_id}');|">是</a>
+						<a th:case="0" href="javascript:class_schedule_show(0);">否</a>
+					</td>
+					<td style="vertical-align: middle" th:text="${#dates.format(classroom.create_time,'yyyy-MM-dd HH:mm:ss')}"></td>
+					<td style="vertical-align: middle" sec:authorize="hasAnyRole('ROLE_CLASSROOM_EDIT,ROLE_CLASSROOM_DEL')">
+						<a sec:authorize="hasRole('ROLE_CLASSROOM_EDIT')" class="btn btn-link btn-xs" href="javascript:;" style="outline:none" 
+							th:onclick="|classroom_edit('${classroom.classroom_id}','${page.pageNo}');|"><i class="fas fa-edit"></i>编辑</a>
+						<a sec:authorize="hasRole('ROLE_CLASSROOM_DEL')" class="btn btn-link btn-xs" href="javascript:;" style="outline:none" 
+							th:onclick="|classroom_del('${classroom.classroom_id}','${page.pageNo}');|"><i class="far fa-trash-alt"></i>删除</a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<div class="modal fade" id="class_schedule">
+		  <div class="modal-dialog" role="document">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		        <h4 class="modal-title">课程表</h4>
+		      </div>
+		      <div class="modal-body">
+		        <table id="aa" class="table table-bordered">
+		        
+				</table>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+		</div>
+		<div th:include="~{tags/pagination::p1(@{/classroommanager/goto_classroom_list},${page.total},${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+	</div>
+</div>
+</body>
+</html>

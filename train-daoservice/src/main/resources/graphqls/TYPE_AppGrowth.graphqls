@@ -1,0 +1,20 @@
+#应用升级
+type AppGrowth{
+
+    id : Int
+
+    #app pack id
+    app_pack_id : String
+
+    #当前版本
+    current_version : String
+
+    #最小升级版本  与当前版本一致 表示 所有
+    growth_version : String
+
+    create_datetime : Date
+
+    #当前版本的主要版本描述
+    descr_version : String
+}
+

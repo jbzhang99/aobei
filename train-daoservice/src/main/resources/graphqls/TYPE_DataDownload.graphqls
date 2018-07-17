@@ -1,0 +1,33 @@
+#数据下载任务
+type DataDownload{
+
+    data_download_id : Long
+
+    #下载的任务名称
+    name : String
+
+    #创建时间
+    create_datetime : Date
+
+    #类型   1 订单数据下载
+    type : Int
+
+    #参数JSON数据
+    params : String
+
+    #0 生成中，1 已生成
+    status : Int
+
+    #统一用户 id
+    user_id : Long
+
+    #执行完成的时间点
+    finish_datetime : Date
+
+    #文件存储id
+    oss_file : String
+
+    #0 未删除 1 已删除
+    deleted : Int
+}
+

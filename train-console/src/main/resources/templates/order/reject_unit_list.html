@@ -1,0 +1,383 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}">
+<head>
+<title>罚款查询</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+		ymd();
+        var mts = [[${application.mts}]];
+		var partner_id = [[${partner_id}]];
+		if(partner_id){
+			$(".partner_id option").each(function(){
+				if($(this).val() == partner_id){
+					$(this).prop("selected",true);
+				}
+			});
+		}
+
+		$(".query").click(function(){
+		    var partner_id = $(".partner_id").val();
+			var qs_create_time = $(".qs_create_time").val();
+			var qe_create_time = $(".qe_create_time").val();
+			var qs_pay_time = $(".qs_pay_time").val();
+			var qe_pay_time = $(".qe_pay_time").val();
+
+			var url = "/ordermanager/reject_unit_list?partner_id="+partner_id;
+
+			if(qs_create_time != '' && qe_create_time != ''){
+				if(qe_create_time < qs_create_time){
+					reset();
+					alertify.alert("查询结束时间不得小于查询开始时间！");
+					return;
+				}else{
+					var cr_be = "&qs_create_time="+qs_create_time+"&qe_create_time="+qe_create_time;
+					url = url + cr_be;
+				}
+			}else if(qs_create_time != '' || qe_create_time != ''){
+				reset();
+				alertify.alert("查询开始、结束时间不可以有空值！");
+				return;
+			}
+
+			if(qs_pay_time != '' && qe_pay_time != ''){
+				if(qe_pay_time < qs_pay_time){
+					reset();
+					alertify.alert("查询结束时间不得小于查询开始时间！");
+					return;
+				}else{
+					var pay_be = "&qs_pay_time="+qs_pay_time+"&qe_pay_time="+qe_pay_time;
+					url = url + pay_be;
+				}
+			}else if(qs_pay_time != '' || qe_pay_time != ''){
+				reset();
+				alertify.alert("查询开始、结束时间不可以有空值！");
+				return;
+			}
+			window.location.href = url;
+		});
+
+        $('#form1').bootstrapValidator({
+            message: '这个值是无效的！',
+            live: 'enabled',
+            feedbackIcons: {
+//		            valid: 'glyphicon glyphicon-ok',
+//		            invalid: 'glyphicon glyphicon-remove',
+//		            validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                fine_amount: {
+                    validators: {
+                        notEmpty: {
+                            message: '请填写扣款金额！'
+                        },
+                        regexp: {
+                            regexp: /(^[1-9]([0-9]+)?(\.[0-9]{1,2})?$)|(^(0){1}$)|(^[0-9]\.[0-9]([0-9])?$)/,
+                            message: '请输入正确的扣款金额信息！'
+                        }
+                    }
+                },
+                fine_info: {
+                    validators: {
+                        notEmpty: {
+                            message: '请填写扣款原因！'
+                        },
+                        stringLength: {
+                            min: 5,
+                            max: 200,
+                            message: '扣款原因最短不得低于5个字符，最长不得多于200个字符'
+                        }
+                    }
+                }
+            }
+        });
+
+        $("#save_btn").click(function () {
+            $("#form1").bootstrapValidator('validate');
+            if ($("#form1").data('bootstrapValidator').isValid()) {
+                var fine_amount = $("#fine_amount").val();
+                var fine_info = $("#fine_info").val();
+                var pay_order_id = $("#pay_order_id").val();
+                var partner_id = $("#partner_id").val();
+                if(Number(fine_amount) > 1000000){
+                    reset();
+                    alertify.alert("扣款金额最大不能超过1000000.00元！");
+                    return false;
+                }
+                $.ajax({
+                    url:"/ordermanager/fine_money_add",
+                    type : 'post',
+                    data :{
+                        pay_order_id:pay_order_id,
+                        fine_info:fine_info,
+                        fine_amount:fine_amount*100,
+                        partner_id:partner_id,
+                        mts:mts
+                    },
+                    success:function(data){
+                        reset();
+                        alertify.success(data.msg);
+                        setTimeout(function (){
+                            location.reload(true);
+                        }, 1500);
+                    }
+                });
+            }
+        });
+	});
+
+	function detail(pay_order_id,pageNo){
+		window.location.href = "/ordermanager/order_detail?page_current_page="+pageNo+"&pay_order_id="+pay_order_id;
+	}
+
+	function fine_money(pay_order_id,partner_id){
+        $.ajax({
+            url:"/ordermanager/fine_money_check_exist",
+            type : 'post',
+            data :{
+                pay_order_id:pay_order_id,
+				partner_id:partner_id
+            },
+            success:function(data){
+                if(data.pay_order_id != null){
+                    $("#fine_info").val(data.fine_info);
+                    $("#fine_amount").val(data.fine_amount);
+                    $("#fine_money").modal('show');
+                    $(".modal-footer").hide();
+                }else{
+                    $("#pay_order_id").val(pay_order_id);
+                    $("#partner_id").val(partner_id);
+                    $("#fine_money").modal('show');
+                }
+            }
+        });
+	}
+
+    function exportExcel(){
+        var mts = [[${application.mts}]];
+        reset();
+        alertify.confirm("确定要以当前条件生成excel列表吗？", function (e) {
+            if (e) {
+                var partner_id = $(".partner_id").val();
+                var qs_create_time = $(".qs_create_time").val();
+                var qe_create_time = $(".qe_create_time").val();
+                var qs_pay_time = $(".qs_pay_time").val();
+                var qe_pay_time = $(".qe_pay_time").val();
+
+                var json = {"partner_id":partner_id,"qs_create_time":qs_create_time,"qe_create_time":qe_create_time
+                    ,"qs_pay_time":qs_pay_time,"qe_pay_time":qe_pay_time,"mts":mts};
+
+                reset = function () {
+                    $("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+                    alertify.set({
+                        labels : {
+                            ok   : "确认",
+                            cancel : "取消"
+                        },
+                        delay : 5000,
+                        buttonReverse : false,
+                        buttonFocus  : "ok"
+                    });
+                };
+
+                $.ajax({
+                    url:"/ordermanager/exportRejectUnitExcel",
+                    type : 'post',
+                    data :{
+                        params:JSON.stringify(json)
+                    },
+                    success:function(data){
+                        reset();
+                        alertify.success(data.msg);
+                    }
+                });
+            } else {
+                reset();
+                alertify.log("已取消操作。");
+            }
+        });
+    }
+</script>
+</head>
+<body>
+<div layout:fragment="content">
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+			<li class="active">罚款查询</li>
+			<li class="libtn">
+				<button sec:authorize="hasRole('ROLE_REJECT_UNIT_EXPORT')" id="export_btn" name="file" class="btn btn-primary" onclick="exportExcel()">
+					<span class="fas fa-sign-out-alt"></span>导出
+				</button>
+			</li>
+		</ol>
+	</div>
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_42">
+		<div style="padding:10px 10px; background:#fff" class="screen">
+			<div class="ab_screen">
+				<div class="form-inline">
+					<div class="form-group">
+						<label>合伙人：</label>
+						<select class="form-control partner_id input-sm" name="partner_id"  style="margin-right: 20px">
+							<option value=''>请选择</option>
+							<option th:each="partner:${partners}" th:value="${partner.partner_id}" th:text="${partner.name}"></option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label>下单时间：</label>
+						<div class="input-group date datetimepicker1">
+							<input class="form-control  qs_create_time input-sm" type="text" name="qs_create_time" th:if="${qs_create_time != ''}"
+								   th:value="${#dates.format(qs_create_time,'yyyy-MM-dd')}" style="width: 130px;" />
+							<span class="input-group-addon" style="width: 50px; height: 30px;">
+										<span class="glyphicon glyphicon-calendar"></span>
+									</span>
+						</div>
+						<label>~</label>
+						<div class="input-group date datetimepicker1">
+							<input class="form-control  qe_create_time input-sm" type="text" name="qe_create_time" th:if="${qe_create_time != ''}"
+								   th:value="${#dates.format(qe_create_time,'yyyy-MM-dd')}" style="width: 130px;" />
+							<span class="input-group-addon" style="width: 50px; height: 30px;">
+										<span class="glyphicon glyphicon-calendar"></span>
+									</span>
+						</div>
+					</div>
+				</div>
+				<br/>
+				<div class="form-inline">
+					<div class="form-group" style="margin-right: 20px">
+						<label>支付时间：</label>
+						<div class="input-group date datetimepicker1">
+							<input class="form-control  qs_pay_time input-sm" type="text" name="qs_pay_time" th:if="${qs_pay_time != ''}"
+								   th:value="${#dates.format(qs_pay_time,'yyyy-MM-dd')}" style="width: 130px;" />
+							<span class="input-group-addon" style="width: 50px; height: 30px;">
+										<span class="glyphicon glyphicon-calendar"></span>
+									</span>
+						</div>
+						<label>~</label>
+						<div class="input-group date datetimepicker1">
+							<input class="form-control  qe_pay_time input-sm" type="text" name="qe_pay_time" th:if="${qe_pay_time != ''}"
+								   th:value="${#dates.format(qe_pay_time,'yyyy-MM-dd')}" style="width: 130px;" />
+							<span class="input-group-addon" style="width: 50px; height: 30px;">
+										<span class="glyphicon glyphicon-calendar"></span>
+									</span>
+						</div>
+					</div>
+					<button class="btn btn-primary query btn-sm">查询</button>
+
+				</div>
+			</div>
+		</div>
+		<!--/* 以下为自定义代码块  */-->
+		<div class="table-responsive">
+			<!--/* 动态  */-->
+			<table id="table-cont" class="table table-striped table-hover">
+				<thead>
+				<tr>
+					<th width="100px" sec:authorize="hasRole('ROLE_ORDER_BROWSE')">订单号</th>
+					<th width="100px">服务名称</th>
+					<th width="100px">用户姓名</th>
+					<th width="100px">顾客电话</th>
+					<th width="100px">服务地址</th>
+					<th width="100px">服务价格</th>
+					<th width="100px">实付金额</th>
+					<th width="100px">拒单类型</th>
+					<th width="100px">拒单原因</th>
+					<th width="100px">合伙人公司名</th>
+					<th width="100px">预约时间</th>
+					<th width="100px" sec:authorize="hasAnyRole('ROLE_FINE_MONEY_BROWSE','ROLE_FINE_MONEY_ADD')">操作</th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr th:each="info:${list}">
+					<td style="vertical-align: middle" sec:authorize="hasRole('ROLE_ORDER_BROWSE')">
+						<a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|detail('${info.pay_order_id}','${page.pageNo}');|" th:text="${info.pay_order_id}"></a>
+					</td>
+					<td style="vertical-align: middle;width: 100px;" th:text="${info.name}" ></td>
+					<td style="vertical-align: middle;" th:text="${info.cus_username}"></td>
+					<td style="vertical-align: middle" th:text="${info.cus_phone}"></td>
+					<td style="vertical-align: middle" th:text="${info.customer_address}"></td>
+					<td style="vertical-align: middle" th:text="${#numbers.formatDecimal(info.price_total*0.01,1,2)}"></td>
+					<td style="vertical-align: middle">
+						<th:block th:if="${info.price_pay != null}" th:text="${#numbers.formatDecimal(info.price_pay*0.01,1,2)}"></th:block>
+						<th:block th:unless="${info.price_pay != null}" th:text="订单未支付"></th:block>
+					</td>
+					<td style="vertical-align: middle">
+						<th:blcok th:if="${info.serviceUnit.reject_type != null}" th:switch="${info.serviceUnit.reject_type}">
+							<span th:case="0">超时拒单</span>
+							<span th:case="1">主动拒单</span>
+							<span th:case="2">改派拒单</span>
+						</th:blcok>
+					</td>
+					<td style="vertical-align: middle">
+						<th:block th:if="${info.p_reject_remark != null}">
+							<span th:text="${info.p_reject_remark}"></span>
+						</th:block>
+					</td>
+					<td style="vertical-align: middle">
+						<th:block th:if="${info.partner_id != null}">
+							<th:block th:each="partner:${partners}">
+								<span th:if="${partner.partner_id eq info.partner_id}" th:text="${partner.name}"></span>
+							</th:block>
+						</th:block>
+						<th:block th:unless="${info.partner_id != null}" th:text="还未指派合伙人"></th:block>
+					</td>
+					<td style="vertical-align: middle">
+						<span th:text="${#dates.format(info.serviceUnit.c_begin_datetime,'yyyy-MM-dd HH:mm:ss')}"></span>
+					</td>
+					<td style="vertical-align: middle">
+						<a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|fine_money('${info.pay_order_id}','${info.partner_id}');|"><i class="fab fa-bitcoin"></i>罚款</a>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+		<div th:include="~{tags/pagination::p1(@{/ordermanager/reject_unit_list(partner_id=${partner_id},qs_create_time=${#dates.format(qs_create_time,'yyyy-MM-dd')},qe_create_time=${#dates.format(qe_create_time,'yyyy-MM-dd')},qs_pay_time=${#dates.format(qs_pay_time,'yyyy-MM-dd')},
+			qe_pay_time=${#dates.format(qe_pay_time,'yyyy-MM-dd')})},${page.total}
+					,${page.pageSize},${page.pageNo},${page.totalPage},right,p)}">
+		</div>
+		<div class="modal fade" id="fine_money" data-keyboard="false"
+			 data-backdrop="static" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+							&times;
+						</button>
+						<h4 class="modal-title">发起罚款</h4>
+					</div>
+					<form id="form1">
+						<div class="modal-body ">
+							<input type="hidden" name="pay_order_id" id="pay_order_id"/>
+							<input type="hidden" name="partner_id" id="partner_id"/>
+							<div class="form-group">
+								<label>罚款原因：</label>
+								<textarea class="form-control" id="fine_info"
+										  name="fine_info" placeholder="请输入罚款原因" style="height: 70px" required></textarea>
+							</div>
+							<div class="form-group">
+								<label>罚款金额：</label>
+								<input id="fine_amount" type="text"
+									   name="fine_amount" class="form-control" placeholder="请输入罚款金额" required/>
+							</div>
+						</div>
+						<div class="modal-footer form-group">
+							<button sec:authorize="hasRole('ROLE_ORDER_EDIT')" id="save_btn" type="button" class="btn btn-primary">确定</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

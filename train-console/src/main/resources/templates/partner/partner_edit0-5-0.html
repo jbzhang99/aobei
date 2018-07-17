@@ -1,0 +1,585 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}">
+<head>
+<title>合伙人信息编辑页面</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<style>
+	.form-style .file-input{float:left; margin-right:10px;}
+	.file-drag-handle{
+		display: none;
+	}
+	.kv-file-remove{
+		display: none;
+	}
+	.file-upload-indicator{
+		display: none;
+	}
+</style>
+<script type="text/javascript" th:inline="javascript">
+
+//初始化alertify
+reset = function () {
+	$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+	alertify.set({
+	  labels : {
+	    ok   : "确认",
+	    cancel : "取消"
+	  },
+	  delay : 3000,
+	  buttonReverse : false,
+	  buttonFocus  : "ok"
+    });
+};
+
+	$(function(){
+		$('form').bootstrapValidator({
+	         message: 'This value is not valid',
+	         feedbackIcons: {
+	             /* valid: 'glyphicon glyphicon-ok',
+	             invalid: 'glyphicon glyphicon-remove',
+	             validating: 'glyphicon glyphicon-refresh' */
+	         },
+	         fields: { 
+	        	name: {
+	                 validators: {
+	                     notEmpty: {
+	                         message: '合伙人名称不能为空'
+	                     },
+	                     stringLength: {
+	                         max: 20,
+	                         message: '合伙人名称最长不得多于20个字符'
+	                     }
+	                 }
+	             },
+	             address: {
+	                 validators: {
+	                     notEmpty: {
+	                         message: '合伙人门店地址不能为空'
+	                     },
+	                     stringLength: {
+	                         max: 30,
+	                         message: '合伙人门店地址最长不得多于30个字符'
+	                     } 
+	                 }
+	             },
+	             linkman:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '联系人不能为空'
+	                     },
+	                     stringLength: {
+	                         max: 10,
+	                         message: '联系人最长不得多于10个字符'
+	                     }
+	                 }
+	             },
+	             phone:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '联系人电话不能为空'
+	                     },
+	                     regexp: {
+	                         regexp: /^[1][3,4,5,7,8][0-9]{9}$/,
+	                         message: '请输入正确手机格式'
+	                     }
+	                 }
+	             },
+	             code:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '统一社会信用代码不能为空'
+	                     },
+	                     regexp: {
+	                         regexp:  /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{18}$/,
+	                         message: '请输入18位统一社会信用代码（由数字和字母组成）'
+	                     }
+	                 }
+	             },
+	             bank_name:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '开户银行信息不能为空'
+	                     },
+	                     stringLength: {
+	                         max: 30,
+	                         message: '开户银行信息最长不得多于30个字符'
+	                     }
+	                 }
+	             },
+	             bank_code:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '银行账号不能为空'
+	                     },
+	                     regexp: {
+	                    	 regexp: /^\d{0,30}$/,
+	                         message: '必须输入有效长度的银行卡号(不能超过30位)'
+	                     }
+	                 }
+	             },
+	             coo_start:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '合作开始日期不能为空'
+	                     }
+	             
+	                 }
+	             },
+	             coo_end:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '合作结束日期不能为空'
+	                     }
+	                 }
+	             }
+	         }
+	     });
+		
+		
+		var img_url = $('#i_url').val();
+		if(img_url==null || img_url==""){
+			$("#business_license").fileinput({
+	            language: 'zh', //设置语言
+	            allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+	            showUpload:false, //是否显示上传按钮
+	            showRemove :true, //显示移除按钮
+	            showPreview :true, //是否显示预览
+	            showCaption:false,//是否显示标题
+	            dropZoneEnabled: false,//是否显示拖拽区域
+	            minImageWidth: 50, //图片的最小宽度
+	            minImageHeight: 50,//图片的最小高度
+	            maxImageWidth: 2000,//图片的最大宽度
+	            maxImageHeight: 2000,//图片的最大高度
+	            maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+	            enctype:'multipart/form-data',
+	            validateInitialCount:true,
+	        });
+		}
+			 
+		if(img_url!=null || img_url!=""){
+		    var img_name =$('#i_name').val();
+		    var img_use = $('#i_use').val();
+		    $("#business_license").fileinput({
+		    	language: 'zh', //设置语言
+		        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+		        showUpload:false, //是否显示上传按钮
+		        showRemove :true, //显示移除按钮
+		        showPreview :true, //是否显示预览
+		        showCaption:false,//是否显示标题
+		        dropZoneEnabled: false,//是否显示拖拽区域
+		        minImageWidth: 50, //图片的最小宽度
+		        minImageHeight: 50,//图片的最小高度
+		        maxImageWidth: 2000,//图片的最大宽度
+		        maxImageHeight: 2000,//图片的最大高度
+		        maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+		        enctype:'multipart/form-data',
+		        validateInitialCount:true,
+		    	initialPreview: [
+		           "<img src='"+img_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+img_use+"' title='"+img_use+"'>"
+		    	],
+			    initialPreviewConfig: [
+			        {
+			            caption: img_name
+			        }
+			    ]
+		    });
+		}
+		 
+		var just_url=$('#just_url').val();
+		 if(just_url==null || just_url==""){
+			 $("#identity_card_just").fileinput({
+		            language: 'zh', //设置语言
+		            //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+		            allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+		            //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+		            //uploadAsync: true, //默认异步上传
+		            showUpload:false, //是否显示上传按钮
+		            showRemove :true, //显示移除按钮
+		            showPreview :true, //是否显示预览
+		            showCaption:false,//是否显示标题
+		            //browseClass:"btn btn-primary", //按钮样式    
+		            dropZoneEnabled: false,//是否显示拖拽区域
+		            minImageWidth: 50, //图片的最小宽度
+		            minImageHeight: 50,//图片的最小高度
+		            maxImageWidth: 2000,//图片的最大宽度
+		            maxImageHeight: 2000,//图片的最大高度
+		            maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+		            //minFileCount: 0,
+		            //maxFileCount:10, //表示允许同时上传的最大文件个数
+		            enctype:'multipart/form-data',
+		            validateInitialCount:true,
+		            //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+		            //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+		        });
+		 }
+		 if(just_url!=null || just_url!=""){
+				//var img_url = $('#i_url').val();
+			    var just_name =$('#just_name').val();
+			    var just_use = $('#just_use').val();
+			    $("#identity_card_just").fileinput({
+			    	language: 'zh', //设置语言
+			        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+			        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+			        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+			        //uploadAsync: true, //默认异步上传
+			        showUpload:false, //是否显示上传按钮
+			        showRemove :true, //显示移除按钮
+			        showPreview :true, //是否显示预览
+			        showCaption:false,//是否显示标题
+			        //browseClass:"btn btn-primary", //按钮样式    
+			        dropZoneEnabled: false,//是否显示拖拽区域
+			        minImageWidth: 50, //图片的最小宽度
+			        minImageHeight: 50,//图片的最小高度
+			        maxImageWidth: 2000,//图片的最大宽度
+			        maxImageHeight: 2000,//图片的最大高度
+			        maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+			        //minFileCount: 0,
+			        //maxFileCount:10, //表示允许同时上传的最大文件个数
+			        enctype:'multipart/form-data',
+			        validateInitialCount:true,
+			        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+			        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+			    	initialPreview: [
+			           "<img src='"+just_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+just_use+"' title='"+just_use+"'>"
+			    	],
+				    initialPreviewConfig: [
+				        {
+				            caption: img_name
+				        }
+				    ]
+			    });
+			}
+		 
+		  var against_url=$('#against_url').val();
+		  if(against_url==null || against_url==""){
+			  $("#identity_card_against").fileinput({
+		            language: 'zh', //设置语言
+		            //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+		            allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+		            //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+		            //uploadAsync: true, //默认异步上传
+		            showUpload:false, //是否显示上传按钮
+		            showRemove :true, //显示移除按钮
+		            showPreview :true, //是否显示预览
+		            showCaption:false,//是否显示标题
+		            //browseClass:"btn btn-primary", //按钮样式    
+		            dropZoneEnabled: false,//是否显示拖拽区域
+		            minImageWidth: 50, //图片的最小宽度
+		            minImageHeight: 50,//图片的最小高度
+		            maxImageWidth: 2000,//图片的最大宽度
+		            maxImageHeight: 2000,//图片的最大高度
+		            maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+		            //minFileCount: 0,
+		            //maxFileCount:10, //表示允许同时上传的最大文件个数
+		            enctype:'multipart/form-data',
+		            validateInitialCount:true,
+		            //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+		            //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+		        });
+		  }
+		  if(against_url!=null || against_url!=""){
+			  var against_name =$('#against_name').val();
+			    var against_use = $('#against_use').val();
+			    $("#identity_card_against").fileinput({
+			    	language: 'zh', //设置语言
+			        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+			        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+			        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+			        //uploadAsync: true, //默认异步上传
+			        showUpload:false, //是否显示上传按钮
+			        showRemove :true, //显示移除按钮
+			        showPreview :true, //是否显示预览
+			        showCaption:false,//是否显示标题
+			        //browseClass:"btn btn-primary", //按钮样式    
+			        dropZoneEnabled: false,//是否显示拖拽区域
+			        minImageWidth: 50, //图片的最小宽度
+			        minImageHeight: 50,//图片的最小高度
+			        maxImageWidth: 2000,//图片的最大宽度
+			        maxImageHeight: 2000,//图片的最大高度
+			        maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+			        //minFileCount: 0,
+			        //maxFileCount:10, //表示允许同时上传的最大文件个数
+			        enctype:'multipart/form-data',
+			        validateInitialCount:true,
+			        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+			        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+			    	initialPreview: [
+			           "<img src='"+against_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+against_use+"' title='"+against_use+"'>"
+			    	],
+				    initialPreviewConfig: [
+				        {
+				            caption: img_name
+				        }
+				    ]
+			    });
+		  }
+        var logo_url=$('#logo_url').val();
+        if(logo_url==null || logo_url==""){
+            $("#partnerImg").fileinput({
+                language: 'zh', //设置语言
+                //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+                allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+                //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+                //uploadAsync: true, //默认异步上传
+                showUpload:false, //是否显示上传按钮
+                showRemove :true, //显示移除按钮
+                showPreview :true, //是否显示预览
+                showCaption:false,//是否显示标题
+                //browseClass:"btn btn-primary", //按钮样式
+                dropZoneEnabled: false,//是否显示拖拽区域
+                minImageWidth: 50, //图片的最小宽度
+                minImageHeight: 50,//图片的最小高度
+                maxImageWidth: 2000,//图片的最大宽度
+                maxImageHeight: 2000,//图片的最大高度
+                maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+                //minFileCount: 0,
+                //maxFileCount:10, //表示允许同时上传的最大文件个数
+                enctype:'multipart/form-data',
+                validateInitialCount:true,
+                //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+                //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+            });
+        }
+        if(logo_url!=null || logo_url!=""){
+            $("#partnerImg").fileinput({
+                language: 'zh', //设置语言
+                //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+                allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+                //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+                //uploadAsync: true, //默认异步上传
+                showUpload:false, //是否显示上传按钮
+                showRemove :true, //显示移除按钮
+                showPreview :true, //是否显示预览
+                showCaption:false,//是否显示标题
+                //browseClass:"btn btn-primary", //按钮样式
+                dropZoneEnabled: false,//是否显示拖拽区域
+                minImageWidth: 50, //图片的最小宽度
+                minImageHeight: 50,//图片的最小高度
+                maxImageWidth: 2000,//图片的最大宽度
+                maxImageHeight: 2000,//图片的最大高度
+                maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+                //minFileCount: 0,
+                //maxFileCount:10, //表示允许同时上传的最大文件个数
+                enctype:'multipart/form-data',
+                validateInitialCount:true,
+                //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+                //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+                initialPreview: [
+                    "<img src='"+logo_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;'>"
+                ]
+            });
+        }
+		
+	});
+	
+	function check() {  
+		//营业日期判断
+		 var ostart=$("#operation_start").val(); 
+		 var oend=$("#operation_end").val();
+		 //合作日期判断
+	    var start = $("#coo_start").val(); 
+	    var end = $("#coo_end").val();
+		    
+		 if (ostart > oend) {  
+		    	reset();
+				alertify.alert("营业开始日期应在营业结束日期之前，请重新选择！"); 
+				 $('#save_btn').removeAttr("disabled"); 
+		        return false;
+		    }else if(start > end){
+		    	reset();
+				alertify.alert("合作开始日期应在合作结束日期之前，请重新选择！"); 
+				$('#save_btn').removeAttr("disabled");
+		        return false;
+		    }else {  
+		        return true;  
+		    }
+	}
+</script>
+</head>
+<body>
+	<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <!-- <li><a href="#">一级目录</a></li> -->
+			  <li><a href="/partner/showPartner" class="back_butn" style="cursor: pointer;">合伙人信息</a></li>
+			  <li class="active">编辑</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_11">
+			<input type="text" th:value="${pageNo}" hidden="hidden"/>
+	   		<input type="hidden" id="studentL" name="studentL"/>
+			<input type="hidden" id="pageNo" name="pageNo" th:value="${pageNo}"/>
+			<input type="hidden" id="i_url" name="i_url" th:value="${licenseUrl.url}"/>
+			<input type="hidden" id="i_name" name="i_name" th:value="${licenseUrl.name}"/>
+			<input type="hidden" id="i_use" name="i_use" th:value="${licenseUrl.effect}"/>
+			
+			<input type="hidden" id="just_url" name="just_url" th:value="${justUrl.url}"/>
+			<input type="hidden" id="just_name" name="just_name" th:value="${justUrl.name}"/>
+			<input type="hidden" id="just_use" name="just_use" th:value="${justUrl.effect}"/>
+			
+			<input type="hidden" id="against_url" name="against_url" th:value="${againstUrl.url}"/>
+			<input type="hidden" id="against_name" name="against_name" th:value="${againstUrl.name}"/>
+			<input type="hidden" id="against_use" name="against_use" th:value="${againstUrl.effect}"/>
+
+			<input type="hidden" id="logo_url" name="logo_url" th:value="${logoUrl.url}"/>
+			<form id="form1" class="form-horizontal" enctype="multipart/form-data"
+				action="#" th:action="@{'/partner/nextEdit/'+${pageNo}}"  method="post" onsubmit="return check();">
+				<div class="form-group">
+					<label class="col-sm-4 control-label">
+						<span style="color: red">*</span>合伙人名称:</label>
+					<div class="col-sm-3">
+						<input id="partner_id" name="partner_id" type="hidden" class="form-control" th:value="${partner.partner_id}" >
+						<input id="name" name="name" type="text" class="form-control" th:value="${partner.name}" placeholder="请输入合伙人名称">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">
+						<span style="color: red">*</span>合伙人门店地址:</label>
+					<div class="col-sm-4">
+						<input id="address" name="address" type="text" class="form-control" th:value="${partner.address}" placeholder="请输入合伙人门店地址">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span
+					style="color: red">*</span>合伙人等级:</label>
+					<div class="col-sm-3">
+						<select id="level" name="level" class="form-control">
+							<option value="1" th:selected="${partner.level==1}">A级</option>
+							<option value="2" th:selected="${partner.level==2}">B级</option>
+							<option value="3" th:selected="${partner.level==3}">C级</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span
+					style="color: red">*</span>派单优先级 :</label>
+					<div class="col-sm-3">
+						<select id="dispatch_priority" name="dispatch_priority" class="form-control">
+							<option value="1" th:selected="${partner.dispatch_priority==1}">1</option>
+							<option value="2" th:selected="${partner.dispatch_priority==2}">2</option>
+							<option value="3" th:selected="${partner.dispatch_priority==3}">3</option>
+							<option value="4" th:selected="${partner.dispatch_priority==4}">4</option>
+							<option value="5" th:selected="${partner.dispatch_priority==5}">5</option>
+							<option value="6" th:selected="${partner.dispatch_priority==6}">6</option>
+							<option value="7" th:selected="${partner.dispatch_priority==7}">7</option>
+							<option value="8" th:selected="${partner.dispatch_priority==8}">8</option>
+							<option value="9" th:selected="${partner.dispatch_priority==9}">9</option>
+							<option value="10" th:selected="${partner.dispatch_priority==10}">10</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">
+						<span style="color: red">*</span>联系人姓名:</label>
+					<div class="col-sm-2">
+						<input id="linkman" name="linkman" type="text" class="form-control" th:value="${partner.linkman}" placeholder="请输入联系人姓名">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">
+						<span style="color: red">*</span>联系电话:</label>
+					<div class="col-sm-3">
+						<input id="phone" name="phone" type="text" class="form-control" th:value="${partner.phone}" placeholder="请输入联系电话">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">
+						<span style="color: red">*</span>统一社会信用代码:</label>
+					<div class="col-sm-3">
+						<input id="code" name="code" type="text" class="form-control" th:value="${partner.code}" placeholder="请输入统一社会信用代码">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">合伙人头像:</label>
+					<div class="col-sm-5 form-style">
+						<input type="file" class="form-control" id="partnerImg"
+							   name="partnerImg" placeholder="请选择要上传的图片"  /><br/><br/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">营业执照:</label>
+					<div class="col-sm-5 form-style" >
+						<!-- <input type="file" class="form-control" id="business_license" 
+							 placeholder="请选择要上传的图片"  />
+						<span style="color:red">营业执照、组织机构代码证和税务登记证三证合为一证</span> -->
+						<div id="license1">
+							<input name="license" type="file" class="form-control" id="business_license" 
+							 placeholder="请选择要上传的图片"/><br/><br/>
+							<span id="spa" style="color:red">营业执照、组织机构代码证和税务登记证三证合为一证</span>
+						</div>
+					</div>
+				</div>
+				<div class="form-group form-inline">
+					<label class="col-sm-4 control-label">营业期限:</label>
+					<div class="col-sm-5">
+						<input id="operation_start" class="form-control" type="date" name="ope_start" th:value="*{#dates.format(partner.operation_start,'yyyy-MM-dd')}"/>-
+						<input id="operation_end" class="form-control" type="date" name="ope_end" th:value="*{#dates.format(partner.operation_end,'yyyy-MM-dd')}"/> 
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">
+						<span style="color: red">*</span>法人身份证信息:</label>
+					<div class="col-sm-5 form-style">
+						<input name="just" type="file" class="form-control" id="identity_card_just" 
+							 placeholder="点击上传身份证正面" hidden="hidden" /><br/><br/>
+						<span class="cardSpan" style="color:red">身份证(正)面图片</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">			</label>
+					<div class="col-sm-5 form-style">
+						<input name="against" type="file" class="form-control" id="identity_card_against" 
+							 placeholder="点击上传身份证反面" hidden="hidden" /><br/>
+						<span class="cardSpan" style="color:red">身份证(反)面图片</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">
+						<span style="color: red">*</span>银行开户银行:</label>
+					<div class="col-sm-3">
+						<input id="bank_name" name="bank_name" type="text" class="form-control" th:value="${partner.bank_name}" placeholder="请输入开户银行">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">
+						<span style="color: red">*</span>银行账号:</label>
+					<div class="col-sm-4">
+						<input id="bank_code" name="bank_code" type="text" class="form-control" th:value="${partner.bank_code}" placeholder="请输入银行账号">
+					</div>
+				</div>
+				<div class="form-group form-inline">
+					<label class="col-sm-4 control-label">
+						<span style="color: red">*</span>合作起止日期:</label>
+					<div class="col-sm-5">
+						<input id="coo_start" class="form-control" type="date" name="coo_start" th:value="*{#dates.format(partner.cooperation_start,'yyyy-MM-dd')}" required="required"/>-
+						<input id="coo_end" class="form-control" type="date" name="coo_end" th:value="*{#dates.format(partner.cooperation_end,'yyyy-MM-dd')}" required="required"/> 
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-8 col-sm-offset-4">
+						<button id="save_btn" class="btn btn-primary" type="submit" >确定</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	
+</body>
+</html>

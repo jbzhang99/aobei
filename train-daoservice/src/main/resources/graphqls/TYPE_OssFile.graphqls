@@ -1,0 +1,28 @@
+#对象存储 文件数据
+type OssFile{
+
+    #id
+    oss_file_id : Long
+
+    #文件名称
+    name : String
+
+    #文件地址
+    url : String
+
+    #文件格式
+    format : String
+
+    #文件大小 单位 kb
+    file_size : Int
+
+    #创建时间
+    create_time : Date
+
+    #文件上传到阿里云oss的bucket
+    bucket : String
+
+    #文件的访问权限
+    access_permissions : String
+}
+

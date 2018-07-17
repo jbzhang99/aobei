@@ -1,0 +1,60 @@
+#商品单项
+type ProSku{
+
+    psku_id : Long
+
+    #商品id
+    product_id : Long
+
+    #名称
+    name : String
+
+    #描述
+    descript : String
+
+    #市场价 ，单位分
+    pricev : Int
+
+    #价格 ，单位分
+    price : Int
+
+    #服务时长，单位 分钟
+    service_time_length : Int
+
+    #服务时间段 JSON 数据 [{s:5,e:6}]   s e 的值为 0-47 ,1=30 分钟
+    service_times : String
+
+    #排序号 1 开始 升序
+    sort_num : Int
+
+    #一天最多购买次数
+    buy_limit : Int
+
+    #删除状态  1 已删除  0 未删除
+    deleted : Int
+
+    #一次购买多件  是否允许    1 是 0 否
+    buy_multiple : Int
+
+    #一次购买多件  最小购买件数
+    buy_multiple_min : Int
+
+    #一次购买多件  最大购买件数  无最大限制时 0
+    buy_multiple_max : Int
+
+    #一次购买多件  派遣服务人员一对一   1 是 0 否
+    buy_multiple_o2o : Int
+
+    #预约策略id
+    bespeak_strategy_id : Int
+
+    #sku的单位。如米，件，个等 直接存文字
+    unit : String
+
+    #展示位置 0 顾客端，1服务人员端 
+    dispaly : Int
+
+    #默认sku   1 是 0 否
+    default_sku : Int
+}
+

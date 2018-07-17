@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}" xmlns:sec="http://www.w3.org/1999/xhtml">
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"> -->
+<head>
+<meta charset="UTF-8"></meta>
+<meta name="context-path" th:content="@{/}" />
+<title>类目管理</title>
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<style>
+.glyphicon{position:inherit}
+.item{cursor:pointer;}
+</style>
+<script type="text/javascript" th:inline="javascript">
+
+//初始化alertify
+reset = function () {
+	$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+	alertify.set({
+	  labels : {
+	    ok   : "确认",
+	    cancel : "取消"
+	  },
+	  delay : 1000,
+	  buttonReverse : false,
+	  buttonFocus  : "ok"
+    });
+};
+
+$(function(){
+	
+	var list=[[${list}]];
+	console.log(list);
+	var ml=13;
+	var result='';
+	eachList(list);
+ 	event();
+  function eachList(data){
+      if(data.length==0 && typeof data != 'object'){return false};
+      for(let i=0; i<data.length; i++) {
+    	  //转换时间格式
+    	 // var up = new Date(data[i].upTime);
+    	  //var down=new Date(data[i].downTime);
+    	  //var upTime=up.getFullYear() + "-" + ("0" + (up.getMonth() + 1)).slice(-2) + "-" + ("0" + down.getDate()).slice(-2);
+    	  //var downTime=down.getFullYear() + "-" + ("0" + (up.getMonth() + 1)).slice(-2) + "-" + ("0" + down.getDate()).slice(-2);
+    	  if(data[i].child && data[i].child.length>0){
+    		  //判断是否是已上线，已下线
+    		  if(data[i].pid =='a'){
+    			  //有子类的第一级分类
+    			  pakge(data[i]);
+    		  }else{
+    			  //有子类的子分类
+    			  Erpakge(data[i]);
+       		  } 
+        	  eachList(data[i].child);
+          }else{
+        	  //服务项目
+        	  if(data[i].serviceItem ==1){
+        		  if(data[i].status==1){
+        	  		result += "<tr class='"+data[i].arr.join(' ')+"' aid="+data[i].id+" pid="+data[i].pid+" isOpen='0' >"+
+        	  						"<td>"+
+        	  							"<div class='item' style='padding-left:"+ml*data[i].arr.length+"px; cursor:pointer;'>"+ data[i].name + "</div>"+
+        	  						"</td>"+
+        	  						"<td>"+
+        	  							"<a onclick=editServiceItemShow(this,'"+data[i].id+"') style='cursor: pointer;'><i class='fas fa-edit'></i>编辑</a>&nbsp;&nbsp;&nbsp;"+
+        	  							"<a onclick=downServiceItem(this,'"+data[i].id+"') style='cursor: pointer;'><i class='fa fa-arrow-circle-down' aria-hidden='true'></i>下线</a>"+
+        	  						"</td>"+
+        	  					"</tr>";
+        		  }else{
+        	  		result += "<tr class='"+data[i].arr.join(' ')+"' aid="+data[i].id+" pid="+data[i].pid+" isOpen='0' >"+
+        	  						"<td>"+
+        	  							"<div class='item' style='padding-left:"+ml*data[i].arr.length+"px; cursor:pointer;'>"+ data[i].name + "</div>"+
+        	  						"</td>"+
+        	  						"<td>"+
+        	  							"<a onclick=editServiceItemShow(this,'"+data[i].id+"') style='cursor: pointer;'><i class='fas fa-edit'></i>编辑</a>&nbsp;&nbsp;&nbsp;"+
+        	  							"<a onclick=upServiceItem(this,'"+data[i].id+"') style='cursor: pointer;'><i class='fa fa-arrow-circle-up' aria-hidden='true'></i>上线</a>"+
+        	  						"</td>"+
+        	  					"</tr>";
+        		  }
+        	  }else{
+        		  //无子类的分类
+        		  noPakge(data[i]);
+        	  }
+          }
+      }
+      $('#tabList').find("tbody").html(result);
+      
+      $('#tabList tbody').find('tr').each(function(i,v){
+    	  if($(v).attr('pid') != 'a'){
+    		  $(v).css('display','none').attr('isopen',0)
+    	  }
+      })
+      
+  }
+  var length=$('#tabList').find('th').length;
+  if(length==1){
+	  $('#tabList tbody').find('tr').each(function(){
+		  $(this).find('td:eq(1)').html("");
+	  });
+  }
+  
+  function event(){
+    $('#tabList').on('click','.item',function(){
+		var tid=$(this).parents('tr').attr('aid');
+// 		var reg=new RegExp(tid,'g')
+        var isOpen=$(this).parents('tr').attr('isOpen');
+        
+        
+        if($(this).hasClass('ab_navTitle')){
+        	$(this).removeClass('ab_navTitle')
+        }else{
+        	$(this).addClass('ab_navTitle')
+        }
+        
+        $('#tabList tbody').find('tr').each(function(){
+        	 if($(this).hasClass(tid)){
+                 if(isOpen!='1'){
+                     $(this).css('display','table-row').attr('isOpen','1');
+                 }else {
+                     $(this).css('display', 'none').attr('isOpen','0');
+                 }
+             }
+           
+       	 });
+
+	        if(isOpen == '1'){
+	            $(this).parents('tr').attr('isOpen','0');
+	        }else{
+	            $(this).parents('tr').attr('isOpen','1');
+	        }
+	
+	        $(this).parents('tr').css('display','table-row');
+	        return false;
+    	});
+	}
+ 
+  
+  //最大级分类加了字前面图标
+  function pakge(data){
+	  if(data.actived==0){//未点击
+			if(data.status==0){//下线---->上
+				//添加子分类暂时不用
+				//不能删除
+				//&nbsp;&nbsp;&nbsp;<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal-lg' class='addcate'><i class='fa fa-plus-square' aria-hidden='true'></i>添加分类</a>
+        		result += "<tr class='"+data.arr.join(' ')+"' aid="+data.id+" pid="+data.pid+" isOpen='0'>"+
+	        				"<td>"+
+	        					"<div class='item' style='padding-left:"+ml*data.arr.length+"px; cursor:pointer;'><span><i class='fa fa-caret-right' aria-hidden='true' style='font-size: 20px'></i></span>&nbsp;" + data.name + "</div>"+
+	        				"</td>"+ 
+	        				"<td>"+
+	        					"<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal' class='cateEdit'><i class='fas fa-edit'></i>编辑</a>&nbsp;&nbsp;&nbsp;"+
+	        					"<a onclick=upCategory(this,'"+data.id+"') style='cursor: pointer;'><i class='fa fa-arrow-circle-up' aria-hidden='true'></i>上线</a> &nbsp;&nbsp;&nbsp;"+
+	        					"<a onclick=delcategoryParent(this,'"+data.id+"') style='cursor: pointer;'><i class='far fa-trash-alt'></i>删除</a>&nbsp;&nbsp;&nbsp;"+
+	        					"<a style='cursor: pointer;' class='addServiceitemShow'><i class='fa fa-plus-circle' aria-hidden='true'></i>添加服务项目</a>"+
+	        				"</td>"+
+        				"</tr>";
+			}
+		}else{
+			if(data.status==0){//点击，下线---->上
+				//添加子分类暂时不用
+				//不能删除
+				//&nbsp;&nbsp;&nbsp;<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal-lg' class='addcate'><i class='fa fa-plus-square' aria-hidden='true'></i>添加分类</a>
+        		result += "<tr class='"+data.arr.join(' ')+"' aid="+data.id+" pid="+data.pid+" isOpen='0'>"+
+		        				"<td>"+
+		        					"<div class='item' style='padding-left:"+ml*data.arr.length+"px; cursor:pointer;'><span><i class='fa fa-caret-right' aria-hidden='true' style='font-size: 20px'></i></span>&nbsp;" + data.name + "</div>"+
+		        				"</td>"+ 
+		        				"<td>"+
+		        					"<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal' class='cateEdit'><i class='fas fa-edit'></i>编辑</a>&nbsp;&nbsp;&nbsp;"+
+		        					"<a onclick=upCategory(this,'"+data.id+"') style='cursor: pointer;'><i class='fa fa-arrow-circle-up' aria-hidden='true'></i>上线</a>&nbsp;&nbsp;&nbsp;"+
+		        					"<a style='cursor: pointer;' class='addServiceitemShow'><i class='fa fa-plus-circle' aria-hidden='true'></i>添加服务项目</a>"+
+		        				"</td>"+
+        				   "</tr>";
+			}else{//点击，上线---->下
+				//添加子分类暂时不用
+				//不能删除
+				//&nbsp;&nbsp;&nbsp;<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal-lg' class='addcate'><i class='fa fa-plus-square' aria-hidden='true'></i>添加分类</a>
+        		result +="<tr class='"+data.arr.join(' ')+"' aid="+data.id+" pid="+data.pid+" isOpen='0'>"+
+		        				"<td>"+
+		        					"<div class='item' style='padding-left:"+ml*data.arr.length+"px; cursor:pointer;'><span><i class='fa fa-caret-right' aria-hidden='true' style='font-size: 20px'></i></span>&nbsp;" + data.name + "</div>"+
+		        				"</td>"+
+		        				"<td>"+
+		        					"<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal' class='cateEdit'><i class='fas fa-edit'></i>编辑</a>&nbsp;&nbsp;&nbsp;"+
+		        					"<a onclick=downCategory(this,'"+data.id+"') style='cursor: pointer;'><i class='fa fa-arrow-circle-down' aria-hidden='true'></i>下线</a>&nbsp;&nbsp;&nbsp;"+
+		        					"<a style='cursor: pointer;' class='addServiceitemShow'><i class='fa fa-plus-circle' aria-hidden='true'></i>添加服务项目</a>"+
+		        				"</td>"+
+		        			"</tr>";
+			}
+		}
+  }
+  
+  //子分类加了字前面图标
+  function Erpakge(data){
+	  if(data.actived==0){//未点击
+			if(data.status==0){//下线---->上
+				//添加子分类暂时不用
+				//不能删除
+				//&nbsp;&nbsp;&nbsp;<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal-lg' class='addcate'><i class='fa fa-plus-square' aria-hidden='true'></i>添加分类</a>
+        		result +="<tr class='"+data.arr.join(' ')+"' aid="+data.id+" pid="+data.pid+" isOpen='0'>"+
+		       				"<td>"+
+		       					"<div class='item ab_navTitle' style='padding-left:"+ml*data.arr.length+"px; cursor:pointer;'><span><i class='fa fa-caret-right' aria-hidden='true' style='font-size: 20px'></i></span>&nbsp;" + data.name + "</div>"+
+		       				"</td>"+ 
+		       				"<td>"+
+		       					"<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal' class='cateEdit'><i class='fas fa-edit'></i>编辑</a>&nbsp;&nbsp;&nbsp;"+
+		       					"<a onclick=upCategory(this,'"+data.id+"') style='cursor: pointer;'><i class='fa fa-arrow-circle-up' aria-hidden='true'></i>上线</a> &nbsp;&nbsp;&nbsp;"+
+		       					"<a onclick=delcategoryParent(this,'"+data.id+"') style='cursor: pointer;'><i class='far fa-trash-alt'></i>删除</a>&nbsp;&nbsp;&nbsp;"+
+		       					"<a style='cursor: pointer;' class='addServiceitemShow'><i class='fa fa-plus-circle' aria-hidden='true'></i>添加服务项目</a>"+
+		       				"</td>"+
+		       			"</tr>";
+			}
+		}else{
+			if(data.status==0){//点击，下线---->上
+				//添加子分类暂时不用
+				//不能删除
+				//&nbsp;&nbsp;&nbsp;<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal-lg' class='addcate'><i class='fa fa-plus-square' aria-hidden='true'></i>添加分类</a>
+        		result +="<tr class='"+data.arr.join(' ')+"' aid="+data.id+" pid="+data.pid+" isOpen='0'>"+
+        						"<td>"+
+        							"<div class='item ab_navTitle' style='padding-left:"+ml*data.arr.length+"px; cursor:pointer;'><span><i class='fa fa-caret-right' aria-hidden='true' style='font-size: 20px'></i></span>&nbsp;" + data.name + "</div>"+
+        						"</td>"+ 
+        						"<td>"+
+        							"<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal' class='cateEdit'><i class='fas fa-edit'></i>编辑</a>&nbsp;&nbsp;&nbsp;"+
+        							"<a onclick=upCategory(this,'"+data.id+"') style='cursor: pointer;'><i class='fa fa-arrow-circle-up' aria-hidden='true'></i>上线</a>&nbsp;&nbsp;&nbsp;"+
+        							"<a style='cursor: pointer;' class='addServiceitemShow'><i class='fa fa-plus-circle' aria-hidden='true'></i>添加服务项目</a>"+
+        						"</td>"+
+        					"</tr>";
+			}else{//点击，上线---->下
+				//添加子分类暂时不用
+				//不能删除
+				//&nbsp;&nbsp;&nbsp;<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal-lg' class='addcate'><i class='fa fa-plus-square' aria-hidden='true'></i>添加分类</a>
+        		result +="<tr class='"+data.arr.join(' ')+"' aid="+data.id+" pid="+data.pid+" isOpen='0'>"+
+        						"<td>"+
+        							"<div class='item ab_navTitle' style='padding-left:"+ml*data.arr.length+"px; cursor:pointer;'><span><i class='fa fa-caret-right' aria-hidden='true' style='font-size: 20px'></i></span>&nbsp;" + data.name + "</div>"+
+        						"</td>"+ 
+        						"<td>"+
+        							"<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal' class='cateEdit'><i class='fas fa-edit'></i>编辑</a>&nbsp;&nbsp;&nbsp;"+
+        							"<a onclick=downCategory(this,'"+data.id+"') style='cursor: pointer;'><i class='fa fa-arrow-circle-down' aria-hidden='true'></i>下线</a>&nbsp;&nbsp;&nbsp;"+
+        							"<a style='cursor: pointer;' class='addServiceitemShow'><i class='fa fa-plus-circle' aria-hidden='true'></i>添加服务项目</a>"+
+        						"</td>"+
+        					"</tr>";
+			}
+		}
+  }
+  
+  //无子项目的分类
+  function noPakge(data){
+	  if(data.actived==0){//未点击
+			if(data.status==0){//下线---->上
+				//添加子分类暂时不用
+				//不能删除
+				//&nbsp;&nbsp;&nbsp;<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal-lg' class='addcate'><i class='fa fa-plus-square' aria-hidden='true'></i>添加分类</a>
+        		result += "<tr class='"+data.arr.join(' ')+"' aid="+data.id+" pid="+data.pid+" isOpen='0'>"+
+        						"<td>"+
+        							"<div class='item' style='padding-left:"+ml*data.arr.length+"px; cursor:pointer;'>" + data.name + "</div>"+
+        						"</td>"+
+        						"<td>"+
+        							"<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal' class='cateEdit'><i class='fas fa-edit'></i>编辑</a>&nbsp;&nbsp;&nbsp;"+
+        							"<a onclick=upCategory(this,'"+data.id+"') style='cursor: pointer;'><i class='fa fa-arrow-circle-up' aria-hidden='true'></i>上线</a>&nbsp;&nbsp;&nbsp;"+
+        							"<a onclick=delcategoryParent(this,'"+data.id+"') style='cursor: pointer;'><i class='far fa-trash-alt'></i>删除</a>&nbsp;&nbsp;&nbsp;"+
+        							"<a style='cursor: pointer;' class='addServiceitemShow'><i class='fa fa-plus-circle' aria-hidden='true'></i>添加服务项目</a>"+
+        						"</td>"+
+        					"</tr>";
+			}
+		}else{
+			if(data.status==0){//点击，下线---->上
+				//添加子分类暂时不用
+				//不能删除
+				//&nbsp;&nbsp;&nbsp;<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal-lg' class='addcate'><i class='fa fa-plus-square' aria-hidden='true'></i>添加分类</a>
+        		result +="<tr class='"+data.arr.join(' ')+"' aid="+data.id+" pid="+data.pid+" isOpen='0'>"+
+        						"<td>"+
+        							"<div class='item' style='padding-left:"+ml*data.arr.length+"px; cursor:pointer;'>" + data.name + "</div>"+
+        						"</td>"+
+        						"<td>"+
+        							"<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal' class='cateEdit'><i class='fas fa-edit'></i>编辑</a>&nbsp;&nbsp;&nbsp;"+
+        							"<a onclick=upCategory(this,'"+data.id+"') style='cursor: pointer;'><i class='fa fa-arrow-circle-up' aria-hidden='true'></i>上线</a>&nbsp;&nbsp;&nbsp;"+
+        							"<a style='cursor: pointer;' class='addServiceitemShow'><i class='fa fa-plus-circle' aria-hidden='true'></i>添加服务项目</a>"+
+        						"</td>"+
+        					"</tr>";
+			}else{//点击，上线---->下
+				//添加子分类暂时不用
+				//不能删除
+				//&nbsp;&nbsp;&nbsp;<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal-lg' class='addcate'><i class='fa fa-plus-square' aria-hidden='true'></i>添加分类</a>
+        		result +="<tr class='"+data.arr.join(' ')+"' aid="+data.id+" pid="+data.pid+" isOpen='0'>"+
+        						"<td>"+
+        							"<div class='item' style='padding-left:"+ml*data.arr.length+"px; cursor:pointer;'>" + data.name + "</div>"+
+        						"</td>"+
+        						"<td>"+
+        							"<a style='cursor: pointer;' data-toggle='modal' data-target='.bs-example-modal' class='cateEdit'><i class='fas fa-edit'></i>编辑</a>&nbsp;&nbsp;&nbsp;"+
+        							"<a onclick=downCategory(this,'"+data.id+"') style='cursor: pointer;'><i class='fa fa-arrow-circle-down' aria-hidden='true'></i>下线</a>&nbsp;&nbsp;&nbsp;"+
+        							"<a style='cursor: pointer;' class='addServiceitemShow'><i class='fa fa-plus-circle' aria-hidden='true'></i>添加服务项目</a>"+
+        						"</td>"+
+        					"</tr>";
+			}
+		}
+  }
+  
+  //添加分类(模态框)
+  $(document).on('click','.addcate',function(){
+		$('#pid').val($(this).closest('tr').attr('aid'));
+	});
+  
+  //编辑分类 跳转页面
+  $(document).on('click','.cateEdit',function(){
+	  var category_id=$(this).closest('tr').attr('aid');
+	  window.location.href="/categorySun/showCategoryEdit/"+category_id;
+	});
+  
+  //跳转服务项目添加页面
+  $(document).on('click','.addServiceitemShow',function(){
+	  var category_id=$(this).closest('tr').attr('aid');
+	  window.location.href="/categorySun/addServiceitemShow/"+category_id;
+	});
+  
+    //点击form1模态框关闭按钮
+    $(document).on('click','#closePage',function(){
+    	//重置表单
+    	document.getElementById("form1").reset();
+	}); 
+  
+    //点击form2模态框关闭按钮
+    $(document).on('click','#editclosePage',function(){
+    	$('#form2 input').attr("value","");
+    	$('#form2 textarea').val("");
+    	//重置表单
+    	//document.getElementById("form2").reset();
+	});  
+  
+    //点击添加按钮加入表单验证
+    $(document).on('click','#add_butn,.addcate',function(){
+    	 $("#form1").bootstrapValidator('addField','name',{
+			 validators: {  
+                 notEmpty: {  
+                     message: '名称不能为空'  
+                 },
+	                stringLength: {
+	                    max: 20,
+	                    message: '名称最长不得多于20个字符'
+	                }
+			 }
+		 });
+    	 $("#form1").bootstrapValidator('addField','descr',{
+			 validators: {  
+                 notEmpty: {  
+                     message: '描述不能为空'  
+                 },
+	                stringLength: {
+	                    max: 100,
+	                    message: '描述最长不得多于100个字符'
+	                }
+			 }
+		 });
+    	 $("#form1").bootstrapValidator('addField','logo',{
+			 validators: {  
+                 notEmpty: {  
+                     message: '分类logo不能为空'  
+			 	}
+			 }
+		 });
+	}); 
+  
+    $("#logo").fileinput({
+        language: 'zh', //设置语言
+        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+        //uploadAsync: true, //默认异步上传
+        showUpload:false, //是否显示上传按钮
+        showRemove :true, //显示移除按钮
+        showPreview :true, //是否显示预览
+        showCaption:false,//是否显示标题
+        //browseClass:"btn btn-primary", //按钮样式    
+        dropZoneEnabled: false,//是否显示拖拽区域
+        minImageWidth: 50, //图片的最小宽度
+        minImageHeight: 50,//图片的最小高度
+        maxImageWidth: 3000,//图片的最大宽度
+        maxImageHeight: 3000,//图片的最大高度
+        maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+        //minFileCount: 0,
+        //maxFileCount:10, //表示允许同时上传的最大文件个数
+        enctype:'multipart/form-data',
+        validateInitialCount:true,
+        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+    });
+    
+});
+
+//添加分类功能
+function addcategoryBtn(){
+  $('#form1').data('bootstrapValidator').validate(); 
+  if($('#form1').data('bootstrapValidator').isValid()){ 
+	  document.getElementById("form1").submit();//提交表单
+  }
+}
+
+
+//添加子分类
+function addErCategoryShow(){
+	  window.location.href="/categorySun/addErCategoryShow";
+}
+
+
+//删除(分类)
+function delcategoryParent(obj,category_id){
+		reset();
+		alertify.confirm("删除后服务项目将全部删除，建议谨慎操作！", function (e) {
+			if(e){
+                var mts = [[${application.mts}]];
+				$.ajax({
+				    url:'/categorySun/delCategory/'+category_id,
+					type:"POST",
+					data:{
+				        mts:mts
+                    },
+				    dataType:'json',
+				    success:function(data){
+				    	//请求成功时
+						reset();
+						alertify.success(data.msg);
+						setTimeout(function (){
+							window.location.href = "/categorySun/showCategorySun";
+				    	}, 500);
+				    }
+				});
+			}else {
+		    	reset();
+				alertify.log("已取消操作。");
+		    }
+		});
+}
+
+//分类上线
+function upCategory(obj,category_id){
+    var mts = [[${application.mts}]];
+	reset();
+	alertify.confirm("确定要上线该条信息吗？其服务项,关联产品将全部上线!", function (e) {
+		if(e){
+			$.ajax({
+			    url:'/categorySun/upCategory/'+category_id,
+			    dataType:'json',
+				data:{
+			        mts:mts
+				},
+			    success:function(data){
+			    	reset();
+					alertify.success(data.msg);
+					setTimeout(function (){
+						window.location.href = "/categorySun/showCategorySun";
+					}, 1000);
+			    }
+			});
+		}else {
+	    	reset();
+			alertify.log("已取消操作。");
+	    }
+	});
+}
+
+//分类下线
+function downCategory(obj,category_id){
+    var mts = [[${application.mts}]];
+		reset();
+		alertify.confirm("确定要下线该条信息吗？其服务项,关联产品将全部下线!", function (e) {
+		if(e){
+			$.ajax({
+			    url:'/categorySun/downCategory/'+category_id,
+			    dataType:'json',
+                data:{
+                    mts:mts
+                },
+			    success:function(data){
+			    	reset();
+					alertify.success(data.msg);
+					setTimeout(function (){
+						window.location.href = "/categorySun/showCategorySun";
+					}, 1000);
+			    }
+			});
+		}else {
+	    	reset();
+			alertify.log("已取消操作。");
+	    }
+	});
+} 
+
+//下线(服务项目)
+function downServiceItem(obj,service_id){
+    var mts = [[${application.mts}]];
+		reset();
+		alertify.confirm("确定要下线该条信息吗？", function (e) {
+			if(e){
+				$.ajax({
+				    url:'/categorySun/downServiceItem/'+service_id,
+				    dataType:'json',
+                    data:{
+                        mts:mts
+                    },
+				    success:function(data){
+				    	reset();
+						alertify.success(data.msg);
+						setTimeout(function (){
+							window.location.href = "/categorySun/showCategorySun";
+						}, 1000);
+				    }
+				});
+			}else {
+		    	reset();
+				alertify.log("已取消操作。");
+		    }
+		});
+	
+}
+//上线（服务项目）
+function upServiceItem(obj,service_id){
+    var mts = [[${application.mts}]];
+	reset();
+	alertify.confirm("确定要上线该条信息吗？", function (e) {
+		if(e){
+			$.ajax({
+			    url:'/categorySun/upServiceItem/'+service_id,
+			    dataType:'json',
+                data:{
+                    mts:mts
+                },
+			    success:function(data){
+			    	reset();
+					alertify.success(data.msg);
+					setTimeout(function (){
+						window.location.href = "/categorySun/showCategorySun";
+					}, 1000);
+			    }
+			});
+		}else {
+	    	reset();
+			alertify.log("已取消操作。");
+	    }
+	});
+
+}
+
+//编辑服务项目
+function editServiceItemShow(obj,serviceitem_id){
+	//二级分类
+	window.location.href = "/categorySun/editServiceItemShow/"+serviceitem_id;
+}
+
+</script>
+</head>
+<body>
+
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+	
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+		  <li class="active">类目管理</li>
+		  
+		  <li class="libtn">
+			<button sec:authorize="hasRole('ROLE_CATEGORY_EDIT')"  id="add_butn" class="btn btn-primary pull-right" data-toggle="modal" data-target=".bs-example-modal-lg"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;添加</button>
+		  </li>
+		</ol>
+		
+	</div>
+	
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main"  data-sidea="side_9">
+		
+		
+		<!--/* 以下为自定义代码块  */-->
+		<div class="table-responsive">
+		<!-- 动态 -->
+		<!-- <table id="table-cont" > -->
+			<input type="text" id="list" th:value="${list}" hidden="hidden"/>
+            <table class="table table-striped table-hover" id="tabList">
+                <thead>
+	                <tr>
+	                	<th>服务项目</th>
+	                    <th sec:authorize="hasRole('ROLE_CATEGORY_EDIT')">操作</th>
+	                </tr>
+                </thead>
+                <tbody>
+					
+                </tbody>
+            </table>
+		</div>
+		
+		 <!--分类添加 -->
+        <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+		   <div class="modal-dialog modal-lg" role="document">
+		    <div class="modal-content">
+		    	<div class="modal-header">
+		    	 	<h4 class="modal-title" id="gridSystemModalLabel">添加分类</h4>
+		    	 </div>
+		      		<div class="modal-body">
+		      			<div>
+		   		 			<form id="form1" action="#" th:action="@{/categorySun/addCategorySun}" method="post" enctype="multipart/form-data">
+			   		 			<div class="row">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>名称:</label>
+										<div class="col-sm-4">
+											<input type="hidden" name="mts"  th:value="${application.mts}"/>
+										<input type="hidden" class="form-control" id="pid" name="pid" />
+											<input type="text" class="form-control" id="name"
+												name="name" placeholder="请输入名称" required />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>内容描述:</label>
+										<div class="col-sm-5">
+											<textarea  class="form-control" id="descr" name="descr" placeholder="请输入描述内容"></textarea>
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>分类图标:</label>
+										<div class="col-sm-5">
+											<!-- <textarea  class="form-control" id="descr" name="descr" placeholder="请输入描述内容"></textarea> -->
+											<input type="file" class="form-control" id="logo" name="logo"/>
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="modal-footer">
+							        <button type="button" class="btn btn-default" data-dismiss="modal" id="closePage">关闭</button>
+							        <button type="button" class="btn btn-primary" onclick="addcategoryBtn()">确定</button>
+							    </div>
+	                		</form>
+		      			</div>
+		      			<div id="kartik-file-errors"></div>
+                 	</div>
+		    </div>
+		  </div>
+		</div>
+		
+	</div>
+
+</div>
+	
+</body>

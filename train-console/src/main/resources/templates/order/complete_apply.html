@@ -1,0 +1,222 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}">
+<head>
+<title>申请完成列表</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript" th:inline="javascript">
+    $(function(){
+        $(".query").click(function(){
+            var pay_order_id = $(".pay_order_id").val();
+            var apply_status = $(".apply_status").val();
+            window.location.href = "/ordermanager/complete_apply_list?apply_status="+apply_status+"&pay_order_id="+pay_order_id;
+        });
+    });
+
+    function detail(pay_order_id,pageNo){
+        window.location.href = "/ordermanager/order_detail?page_current_page="+pageNo+"&pay_order_id="+pay_order_id;
+    }
+
+    function confirm(complete_apply_id) {
+        $.ajax({
+            url:"/ordermanager/complete_apply_confirm",
+            type : 'post',
+            data :{
+                complete_apply_id:complete_apply_id
+            },
+            success:function(data){
+                reset();
+                alertify.success(data.msg);
+                setTimeout(function (){
+                    location.reload(true);
+                }, 1500);
+            }
+        });
+    }
+
+    function reject(complete_apply_id) {
+        $.ajax({
+            url:"/ordermanager/complete_apply_reject",
+            type : 'post',
+            data :{
+                complete_apply_id:complete_apply_id
+            },
+            success:function(data){
+                reset();
+                alertify.success(data.msg);
+                setTimeout(function (){
+                    location.reload(true);
+                }, 1500);
+            }
+        });
+    }
+
+    function exportExcel(){
+        var mts = [[${application.mts}]];
+        reset();
+        alertify.confirm("确定要以当前条件生成excel列表吗？", function (e) {
+            if (e) {
+                var pay_order_id = $(".pay_order_id").val();
+                var apply_status = $(".apply_status").val();
+
+                var json = {"pay_order_id":pay_order_id,"apply_status":apply_status,"mts":mts};
+
+                reset = function () {
+                    $("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+                    alertify.set({
+                        labels : {
+                            ok   : "确认",
+                            cancel : "取消"
+                        },
+                        delay : 5000,
+                        buttonReverse : false,
+                        buttonFocus  : "ok"
+                    });
+                };
+
+                $.ajax({
+                    url:"/ordermanager/exportCompleteApplyExcel",
+                    type : 'post',
+                    data :{
+                        params:JSON.stringify(json)
+                    },
+                    success:function(data){
+                        reset();
+                        alertify.success(data.msg);
+                    }
+                });
+            } else {
+                reset();
+                alertify.log("已取消操作。");
+            }
+        });
+    }
+</script>
+</head>
+<body>
+<div layout:fragment="content">
+    <!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+    <div class="page_content_bar">
+        <!--/* 面包屑  */-->
+        <ol class="breadcrumb clearfix">
+            <li class="active">申请完成列表</li>
+            <li class="libtn">
+                <button sec:authorize="hasRole('ROLE_COMPLETE_APPLY_EXPORT')" id="export_btn" name="file" class="btn btn-primary" onclick="exportExcel()">
+                    <span class="fas fa-sign-out-alt"></span>导出
+                </button>
+            </li>
+        </ol>
+    </div>
+    <!--/* 页面部分二              页面主内容  */-->
+    <div class="page_content_main" data-sidea="side_37">
+        <div style="padding:10px 10px; background:#fff" class="screen">
+            <div class="ab_screen">
+                <div class="form-inline">
+                    <div class="form-group"  style="margin-right: 20px">
+                        <label>订单号：</label>
+                        <input type="text" name="pay_order_id" th:if="${pay_order_id != ''}" th:value="${pay_order_id}" class="form-control pay_order_id input-sm"/>
+                    </div>
+                    <div class="form-group">
+                        <label>申请状态：</label>
+                        <select class="form-control apply_status input-sm" name="apply_status"  style="margin-right: 20px">
+                            <option value=''>全部</option>
+                            <option value="1" th:if="${apply_status != null or apply_status != ''}"
+                                    th:selected="${apply_status == 1} ? 'selected'">待处理</option>
+                            <option value="2" th:if="${apply_status != null or apply_status != ''}"
+                                    th:selected="${apply_status == 2} ? 'selected'">已完成</option>
+                            <option value="3" th:if="${apply_status != null or apply_status != ''}"
+                                    th:selected="${apply_status == 3} ? 'selected'">驳回</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary query btn-sm">查询</button>
+                </div>
+            </div>
+        </div>
+        <!--/* 以下为自定义代码块  */-->
+        <div class="table-responsive" style="overflow:auto;">
+            <!--/* 动态  */-->
+            <table id="table-cont" class="table table-striped table-hover">
+                <thead>
+                <tr>
+                    <th width="100px">申请单号</th>
+                    <th width="100px" sec:authorize="hasRole('ROLE_ORDER_BROWSE')">订单号</th>
+                    <th width="100px">订单状态</th>
+                    <th width="100px">服务名称</th>
+                    <th width="100px">用户姓名</th>
+                    <th width="100px">顾客电话</th>
+                    <th width="100px">服务地址</th>
+                    <th width="100px">服务价格</th>
+                    <th width="100px">实付金额</th>
+                    <th width="100px">订单服务时间</th>
+                    <th width="100px">服务完成申请人</th>
+                    <th width="100px">申请时间</th>
+                    <th width="100px">申请原因</th>
+                    <th width="100px">申请状态</th>
+                    <th width="100px">确认时间</th>
+                    <th width="100px">确认人</th>
+                    <th width="100px" sec:authorize="hasRole('ROLE_COMPLETE_APPLY_OP')">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="info:${infos}">
+                    <td style="vertical-align: middle" th:text="${info.complete_apply_id}"></td>
+                    <td style="vertical-align: middle">
+                        <a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|detail('${info.pay_order_id}','${page.pageNo}');|" th:text="${info.pay_order_id}"></a>
+                    </td>
+                    <td style="vertical-align: middle" th:switch="${info.order.status_active}">
+                        <span th:case="1">待付款</span>
+                        <span th:case="2">
+	                  		<th:block th:if="${info.unit.status_active eq 6}" th:text="已拒单"></th:block>
+	                  		<th:block th:unless="${info.unit.status_active eq 6}" th:text="待确认"></th:block>
+	                  	</span>
+                        <span th:case="3">待服务</span>
+                        <span th:case="4">
+							<th:block th:if="${info.order.r_status eq 2}" th:text="已退款"></th:block>
+							<th:block th:unless="${info.order.r_status eq 2}" th:text="已取消"></th:block>
+						</span>
+                        <span th:case="5">已完成</span>
+                    </td>
+                    <td style="vertical-align: middle;width: 100px;" th:text="${info.order.name}"></td>
+                    <td style="vertical-align: middle;" th:text="${info.order.cus_username}"></td>
+                    <td style="vertical-align: middle" th:text="${info.order.cus_phone}"></td>
+                    <td style="vertical-align: middle" th:text="${info.order.cus_address}"></td>
+                    <td style="vertical-align: middle" th:text="${#numbers.formatDecimal(info.order.price_total*0.01,1,2)}"></td>
+                    <td style="vertical-align: middle">
+                        <th:block th:if="${info.order.price_pay != null}" th:text="${#numbers.formatDecimal(info.order.price_pay*0.01,1,2)}"></th:block>
+                        <th:block th:unless="${info.order.price_pay != null}" th:text="订单未支付"></th:block>
+                    </td>
+                    <td style="vertical-align: middle;" th:text="${#dates.format(info.unit.c_begin_datetime,'yyyy-MM-dd HH:mm')}"></td>
+                    <td style="vertical-align: middle;" th:text="${info.apply_operator.username}"></td>
+                    <td style="vertical-align: middle;" th:text="${#dates.format(info.create_datetime,'yyyy-MM-dd HH:mm')}"></td>
+                    <td style="vertical-align: middle;" th:text="${info.complete_info}"></td>
+                    <td style="vertical-align: middle;" th:switch="${info.apply_status}">
+                        <span th:case="1">待处理</span>
+                        <span th:case="2">完成</span>
+                        <span th:case="3">驳回</span>
+                    </td>
+                    <td style="vertical-align: middle;">
+                        <span th:if="${info.confirm_datetime != null}" th:text="${#dates.format(info.confirm_datetime,'yyyy-MM-dd HH:mm')}"></span>
+                    </td>
+                    <td style="vertical-align: middle;">
+                        <th:block th:if="${info.confirm_operators != null}" th:text="${info.confirm_operators.username}"></th:block>
+                        <th:block th:unless="${info.confirm_operators != null}" th:text="无操作人"></th:block>
+                    </td>
+                    <td style="vertical-align: middle">
+                        <th:block th:if="${info.apply_status eq 1}">
+                            <a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|reject('${info.complete_apply_id}');|"><i class="fas fa-times-circle"></i>驳回</a>
+                        </th:block>
+                        <th:block th:if="${info.apply_status eq 1}">
+                            <a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|confirm('${info.complete_apply_id}');|"><i class="fas fa-check-circle"></i>确认</a>
+                        </th:block>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:include="~{tags/pagination::p1(@{/ordermanager/complete_apply_list(pay_order_id=${pay_order_id},apply_status=${apply_status})},${page.total}
+					,${page.pageSize},${page.pageNo},${page.totalPage},right,p)}">
+        </div>
+    </div>
+</div>
+</body>
+</html>

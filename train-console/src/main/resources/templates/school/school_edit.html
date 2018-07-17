@@ -1,0 +1,123 @@
+<!DOCTYPE HTML>
+<html layout:decorate="~{base_layout}">
+<head>
+<title>学校信息编辑页面</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/custom/school-func.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+		form_validator();
+		
+		$("#save_edit_btn").click(function(){
+			$("#form1").bootstrapValidator('validate');//提交验证
+	 		if ($("#form1").data('bootstrapValidator').isValid()) {
+// 				var cooperation_start = $("#start").val();
+// 				var cooperation_end = $("#end").val();
+// 				if(cooperation_start >= cooperation_end){
+// 					reset();
+// 					alertify.alert("合作开始日期应在合作结束日期之前，请重新选择！");
+// 					return false;
+// 				}
+		    	//序列化获得表单数据，结果为：user_id=12&user_name=John&user_age=20
+		    	var data=$("#form1").serializeArray();
+		    	//submitData是解码后的表单数据，结果同上
+		    	//var submitData=decodeURIComponent(data,true);
+		    	$.ajax({
+		    	    url:'/schoolmanager/school_edit_save',
+		    	    data:data,
+		    	    cache:false,//false是不缓存，true为缓存
+		    	    async:true,//true为异步，false为同步
+		    	    dataType:'json',
+		    	    success:function(data){
+		    	    	var page_current_page = [[${page_current_page}]];
+		    	        //请求成功时
+		    	        reset();
+						alertify.success(data.msg);
+						setTimeout(function (){
+							window.location.href = "/schoolmanager/goto_school_list?p="+page_current_page;
+						}, 1500);
+		    	    }
+		    	});
+		    	return false;
+	 		}	
+		});
+		
+		$(".back_butn").click(function(){
+			var page_current_page = [[${page_current_page}]];
+			window.location.href = "/schoolmanager/goto_school_list?p="+page_current_page;
+		});
+	});
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+		  <li><a class="back_butn" style="cursor: pointer;">学校信息</a></li>
+		  <li class="active">编辑</li>
+		</ol>
+	</div>
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_1">
+		<form id="form1" class="form-horizontal" action="#" th:action="@{/schoolmanager/school_edit_save}" th:object="${school_info}" method="post" th:method="post">
+			<input type="hidden" name="school_id" th:value="*{school_id}"/>
+			<input type="hidden" name="mts" th:value="${application.mts}"/>
+			<div class="form-group">
+				<label class="col-sm-4 text-right control-label" for="name"><span style="color: red;">* </span>学校名称:</label>
+				<div class="col-sm-4">
+					<input type="text" class="form-control" id="name"
+						name="name" th:field="*{name}" required />
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 text-right control-label" for="address"><span style="color: red;">* </span>学校地点:</label>
+				<div class="col-sm-4">
+					<input type="text" class="form-control" id="address"
+						name="address" th:field="*{address}" required />
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 text-right control-label" for="intro"><span style="color: red;">* </span>学校简介:</label>
+				<div class="col-sm-4">
+					<textarea  class="form-control" id="intro"
+						name="intro" th:field="*{intro}" required style="height: 130px"></textarea>
+				</div>
+			</div>
+			<!--/* <div class="form-group form-inline">
+				<label class="col-sm-4 text-right control-label">合作起止日期:</label>
+				<div class="col-sm-5">
+					<input id="start" type="date" class="form-control" name="cooperation_start" th:value="*{#dates.format(cooperation_start,'yyyy-MM-dd')}"/>
+					至&nbsp;<input id="end" type="date" class="form-control" name="cooperation_end" th:value="*{#dates.format(cooperation_end,'yyyy-MM-dd')}"/>
+				</div>
+			</div> */-->
+			<div class="form-group">
+				<label class="col-sm-4 text-right control-label" for="linkman"><span style="color: red;">* </span>联系人:</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control" id="linkman"
+						name="linkman" th:field="*{linkman}" required />
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 text-right control-label" for="contact_number"><span style="color: red;">* </span>联系电话:</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control" id="contact_number"
+						name="contact_number" th:field="*{contact_number}" required />
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-5 col-sm-offset-4">
+					<button id="save_edit_btn" type="submit" class="btn btn-primary" >确定</button>&nbsp;&nbsp;&nbsp;&nbsp;
+					<input class="btn btn-primary back_butn" type="button" value="取消" />
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+</body>
+</html>

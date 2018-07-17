@@ -1,0 +1,63 @@
+#对账批次
+type BillBatch{
+
+    bill_batch_id : String
+
+    #支付方式 1 微信
+    pay_type : Int
+
+    #对账日期时间
+    bill_datetime : Date
+
+    #对账日期
+    bill_date : Date
+
+    #我方总单数
+    my_total_orders : Int
+
+    #我方总金额   单位分
+    my_total_fee : Int
+
+    #我方总退款金额
+    my_total_refund_fee : Int
+
+    #第三方平台总订单数
+    p_total_orders : Int
+
+    #第三方平台总金额  单位分
+    p_total_fee : Int
+
+    #第三方平台总手续费
+    p_total_service_charge : Int
+
+    #第三方平台总退款金额
+    p_total_refund_fee : Int
+
+    #对账正常 的总数
+    status_count_1 : Int
+
+    #对账长账 总数
+    status_count_2 : Int
+
+    #对账短账 总数
+    status_count_3 : Int
+
+    #对账支付金额不一致总数
+    status_count_4 : Int
+
+    #对账退款金额不一致总数
+    status_count_5 : Int
+
+    #对账时间范围 开始
+    start_datetime : Date
+
+    #对账时间范围 结束
+    end_datetime : Date
+
+    #第三方平台返回错误信息
+    error_info : String
+
+    #程序异常信息
+    exception_info : String
+}
+

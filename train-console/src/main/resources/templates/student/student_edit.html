@@ -1,0 +1,1167 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}">
+<head>
+	<title>学员信息编辑页面</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
+	<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+	<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+	<script type="text/javascript" th:src="@{/js/bootstrap-select.js}"></script>
+	<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+	<script TYPE="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+	<script TYPE="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+	<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+	<style>
+		.form-style .file-input{float:left; margin-right:10px;}
+		.file-drag-handle{
+			display: none;
+		}
+		.kv-file-remove{
+			display: none;
+		}
+		.file-upload-indicator{
+			display: none;
+		}
+	</style>
+	<script type="text/javascript" th:inline="javascript">
+        //初始化alertify
+        reset = function () {
+            $("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+            alertify.set({
+                labels : {
+                    ok   : "确认",
+                    cancel : "取消"
+                },
+                delay : 5000,
+                buttonReverse : false,
+                buttonFocus  : "ok"
+            });
+        };
+
+	$(function(){
+
+//	    var weekList=[[${weeks}]];
+//	    console.log(weekList);
+//        $('input:checkbox[name=week]').each(function(i){
+//            var dd=$(this);
+//            var value=$(this).val();
+//            console.log(value);
+//            for(var i in weekList) {
+//                if(i==value){
+//                    dd.attr("checked");
+//                }
+//            }
+//        });
+		//是否又具备的服务项目
+		var sslist=[[${ssList}]];
+		if(sslist.length == 0 ){
+			$('#notHaveSer').show();
+
+		}else{
+			$('#HaveSer').show();
+		}
+		//判断是否只有一条服务项目
+		if($('.redutBtn').length==1){
+			$('.redutBtn').hide();
+		}
+		$('form').bootstrapValidator({
+	         message: 'This value is not valid',
+	         feedbackIcons: {
+	             /* valid: 'glyphicon glyphicon-ok',
+	             invalid: 'glyphicon glyphicon-remove',
+	             validating: 'glyphicon glyphicon-refresh' */
+	         },
+	         fields: {
+	        	 name: {
+	                 validators: {
+	                     notEmpty: {
+	                         message: '学员名称不能为空'
+	                     },
+	                     stringLength: {
+	                         max: 10,
+	                         message: '学员名称最长不得多于10个字符'
+	                     }
+	                 }
+	             },
+	             sex: {
+	                 validators: {
+	                     notEmpty: {
+	                         message: '学员性别不能为空'
+	                     }
+	                 }
+	             },
+	             native_place:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '学员籍贯不能为空'
+	                     },
+	                     stringLength: {
+	                         max: 50,
+	                         message: '学员籍贯最长不得多于50个字符'
+	                     }
+	                 }
+	             },
+	             job_number:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '员工工号不能为空'
+	                     },
+	                     regexp: {
+	                         regexp: /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{10}$/,
+	                         message: '员工工号可以为字母和数字，不能超过10位'
+	                     }
+	                 }
+	             },
+	             identity_card:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '学员身份证号不能为空'
+	                     },
+	                     regexp: {
+	                         regexp:  /^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/,
+	                         message: '请输入正确的身份证号'
+	                     }
+	                 }
+	             },
+	             partner_id:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '隶属合伙人不能为空'
+	                     }
+	                 }
+	             },
+	             phone:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '学员联系电话不能为空'
+	                     },
+	                     regexp: {
+	                         regexp: /^[1][3,4,5,7,8,9][0-9]{9}$/,
+	                         message: '请输入正确手机格式'
+	                     }
+	                 }
+	             },
+	             age:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '学员年龄不能为空'
+	                     },
+	                     regexp: {
+	                         regexp: /^(?:[1-9][0-9]?|1[01][0-9]|120)$/,
+	                         message: '请输入年龄在0-120之间'
+	                     }
+	                 }
+	             },
+	             state:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '学员状态不能为空'
+	                     }
+	                 }
+	             }
+	         }
+	     });
+
+		var logo_url=$('#logo_url').val();
+		if(logo_url==null || logo_url==""){
+			$("#s_logo").fileinput({
+	            language: 'zh', //设置语言
+	            //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+	            allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+	            //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+	            //uploadAsync: true, //默认异步上传
+	            showUpload:false, //是否显示上传按钮
+	            showRemove :true, //显示移除按钮
+	            showPreview :true, //是否显示预览
+	            showCaption:false,//是否显示标题
+	            //browseClass:"btn btn-primary", //按钮样式
+	            dropZoneEnabled: false,//是否显示拖拽区域
+	            minImageWidth: 50, //图片的最小宽度
+	            minImageHeight: 50,//图片的最小高度
+	            maxImageWidth: 3000,//图片的最大宽度
+	            maxImageHeight: 3000,//图片的最大高度
+	            maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+	            //minFileCount: 0,
+	            //maxFileCount:10, //表示允许同时上传的最大文件个数
+	            enctype:'multipart/form-data',
+	            validateInitialCount:true,
+	            //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+	            //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+	        });
+		}
+		if(logo_url!=null || logo_url!=""){
+			var logo_use = $('#logo_use').val();
+			var logo_name = $('#logo_name').val();
+
+		    $("#s_logo").fileinput({
+		    	language: 'zh', //设置语言
+		        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+		        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+		        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+		        //uploadAsync: true, //默认异步上传
+		        showUpload:false, //是否显示上传按钮
+		        showRemove :true, //显示移除按钮
+		        showPreview :true, //是否显示预览
+		        showCaption:false,//是否显示标题
+		        //browseClass:"btn btn-primary", //按钮样式
+		        dropZoneEnabled: false,//是否显示拖拽区域
+		        minImageWidth: 50, //图片的最小宽度
+		        minImageHeight: 50,//图片的最小高度
+		        maxImageWidth: 3000,//图片的最大宽度
+		        maxImageHeight: 3000,//图片的最大高度
+		        maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+		        //minFileCount: 0,
+		        //maxFileCount:10, //表示允许同时上传的最大文件个数
+		        enctype:'multipart/form-data',
+		        validateInitialCount:true,
+		        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+		        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+		    	initialPreview: [
+		           "<img src='"+logo_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+logo_use+"' title='"+logo_use+"'>"
+		    	],
+			    initialPreviewConfig: [
+			        {
+			            caption: name
+			        }
+			    ]
+		    });
+		}
+		var img_url = $('#i_url').val();
+		if(img_url==null || img_url==""){
+			$("#health").fileinput({
+	            language: 'zh', //设置语言
+	            //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+	            allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+	            //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+	            //uploadAsync: true, //默认异步上传
+	            showUpload:false, //是否显示上传按钮
+	            showRemove :true, //显示移除按钮
+	            showPreview :true, //是否显示预览
+	            showCaption:false,//是否显示标题
+	            //browseClass:"btn btn-primary", //按钮样式
+	            dropZoneEnabled: false,//是否显示拖拽区域
+	            minImageWidth: 50, //图片的最小宽度
+	            minImageHeight: 50,//图片的最小高度
+	            maxImageWidth: 3000,//图片的最大宽度
+	            maxImageHeight: 3000,//图片的最大高度
+	            maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+	            //minFileCount: 0,
+	            //maxFileCount:10, //表示允许同时上传的最大文件个数
+	            enctype:'multipart/form-data',
+	            validateInitialCount:true,
+	            //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+	            //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+	        });
+		}
+
+		if(img_url!=null || img_url!=""){
+			//var img_url = $('#i_url').val();
+		    var img_name =$('#i_name').val();
+		    var img_use = $('#i_use').val();
+		    $("#health").fileinput({
+		    	language: 'zh', //设置语言
+		        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+		        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+		        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+		        //uploadAsync: true, //默认异步上传
+		        showUpload:false, //是否显示上传按钮
+		        showRemove :true, //显示移除按钮
+		        showPreview :true, //是否显示预览
+		        showCaption:false,//是否显示标题
+		        //browseClass:"btn btn-primary", //按钮样式
+		        dropZoneEnabled: false,//是否显示拖拽区域
+		        minImageWidth: 50, //图片的最小宽度
+		        minImageHeight: 50,//图片的最小高度
+		        maxImageWidth: 3000,//图片的最大宽度
+		        maxImageHeight: 3000,//图片的最大高度
+		        maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+		        //minFileCount: 0,
+		        //maxFileCount:10, //表示允许同时上传的最大文件个数
+		        enctype:'multipart/form-data',
+		        validateInitialCount:true,
+		        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+		        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+		    	initialPreview: [
+		           "<img src='"+img_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+img_use+"' title='"+img_use+"'>"
+		    	],
+			    initialPreviewConfig: [
+			        {
+			            caption: img_name
+			        }
+			    ]
+		    });
+		}
+
+		var just_url=$('#just_url').val();
+		 if(just_url==null || just_url==""){
+			 $("#card_just").fileinput({
+		            language: 'zh', //设置语言
+		            //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+		            allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+		            //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+		            //uploadAsync: true, //默认异步上传
+		            showUpload:false, //是否显示上传按钮
+		            showRemove :true, //显示移除按钮
+		            showPreview :true, //是否显示预览
+		            showCaption:false,//是否显示标题
+		            //browseClass:"btn btn-primary", //按钮样式
+		            dropZoneEnabled: false,//是否显示拖拽区域
+		            minImageWidth: 50, //图片的最小宽度
+		            minImageHeight: 50,//图片的最小高度
+		            maxImageWidth: 3000,//图片的最大宽度
+		            maxImageHeight: 3000,//图片的最大高度
+		            maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+		            //minFileCount: 0,
+		            //maxFileCount:10, //表示允许同时上传的最大文件个数
+		            enctype:'multipart/form-data',
+		            validateInitialCount:true,
+		            //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+		            //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+		        });
+		 }
+		 if(just_url!=null || just_url!=""){
+				//var img_url = $('#i_url').val();
+			    var just_name =$('#just_name').val();
+			    var just_use = $('#just_use').val();
+			    $("#card_just").fileinput({
+			    	language: 'zh', //设置语言
+			        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+			        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+			        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+			        //uploadAsync: true, //默认异步上传
+			        showUpload:false, //是否显示上传按钮
+			        showRemove :true, //显示移除按钮
+			        showPreview :true, //是否显示预览
+			        showCaption:false,//是否显示标题
+			        //browseClass:"btn btn-primary", //按钮样式
+			        dropZoneEnabled: false,//是否显示拖拽区域
+			        minImageWidth: 50, //图片的最小宽度
+			        minImageHeight: 50,//图片的最小高度
+			        maxImageWidth: 3000,//图片的最大宽度
+			        maxImageHeight: 3000,//图片的最大高度
+			        maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+			        //minFileCount: 0,
+			        //maxFileCount:10, //表示允许同时上传的最大文件个数
+			        enctype:'multipart/form-data',
+			        validateInitialCount:true,
+			        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+			        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+			    	initialPreview: [
+			           "<img src='"+just_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+just_use+"' title='"+just_use+"'>"
+			    	],
+				    initialPreviewConfig: [
+				        {
+				            caption: just_name
+				        }
+				    ]
+			    });
+			}
+
+		  var against_url=$('#against_url').val();
+		  if(against_url==null || against_url==""){
+			  $("#card_against").fileinput({
+		            language: 'zh', //设置语言
+		            //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+		            allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+		            //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+		            //uploadAsync: true, //默认异步上传
+		            showUpload:false, //是否显示上传按钮
+		            showRemove :true, //显示移除按钮
+		            showPreview :true, //是否显示预览
+		            showCaption:false,//是否显示标题
+		            //browseClass:"btn btn-primary", //按钮样式
+		            dropZoneEnabled: false,//是否显示拖拽区域
+		            minImageWidth: 50, //图片的最小宽度
+		            minImageHeight: 50,//图片的最小高度
+		            maxImageWidth: 3000,//图片的最大宽度
+		            maxImageHeight: 3000,//图片的最大高度
+		            maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+		            //minFileCount: 0,
+		            //maxFileCount:10, //表示允许同时上传的最大文件个数
+		            enctype:'multipart/form-data',
+		            validateInitialCount:true,
+		            //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+		            //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+		        });
+		  }
+		  if(against_url!=null || against_url!=""){
+			  var just_name =$('#against_name').val();
+			    var just_use = $('#against_use').val();
+			    $("#card_against").fileinput({
+			    	language: 'zh', //设置语言
+			        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+			        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+			        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+			        //uploadAsync: true, //默认异步上传
+			        showUpload:false, //是否显示上传按钮
+			        showRemove :true, //显示移除按钮
+			        showPreview :true, //是否显示预览
+			        showCaption:false,//是否显示标题
+			        //browseClass:"btn btn-primary", //按钮样式
+			        dropZoneEnabled: false,//是否显示拖拽区域
+			        minImageWidth: 50, //图片的最小宽度
+			        minImageHeight: 50,//图片的最小高度
+			        maxImageWidth: 3000,//图片的最大宽度
+			        maxImageHeight: 3000,//图片的最大高度
+			        maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+			        //minFileCount: 0,
+			        //maxFileCount:10, //表示允许同时上传的最大文件个数
+			        enctype:'multipart/form-data',
+			        validateInitialCount:true,
+			        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+			        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+			    	initialPreview: [
+			           "<img src='"+against_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+just_use+"' title='"+just_use+"'>"
+			    	]
+
+			    });
+		  }
+
+        var img_innocence_url=$('#img_innocence_url').val();
+        if(img_innocence_url==null || img_innocence_url==""){
+            $("#innocence_proof").fileinput({
+                language: 'zh', //设置语言
+                //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+                allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+                //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+                //uploadAsync: true, //默认异步上传
+                showUpload:false, //是否显示上传按钮
+                showRemove :true, //显示移除按钮
+                showPreview :true, //是否显示预览
+                showCaption:false,//是否显示标题
+                //browseClass:"btn btn-primary", //按钮样式
+                dropZoneEnabled: false,//是否显示拖拽区域
+                minImageWidth: 50, //图片的最小宽度
+                minImageHeight: 50,//图片的最小高度
+                maxImageWidth: 3000,//图片的最大宽度
+                maxImageHeight: 3000,//图片的最大高度
+                maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+                //minFileCount: 0,
+                //maxFileCount:10, //表示允许同时上传的最大文件个数
+                enctype:'multipart/form-data',
+                validateInitialCount:true,
+                //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+                //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+            });
+        }
+        if(img_innocence_url!=null || img_innocence_url!=""){
+            $("#innocence_proof").fileinput({
+                language: 'zh', //设置语言
+                //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+                allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+                //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+                //uploadAsync: true, //默认异步上传
+                showUpload:false, //是否显示上传按钮
+                showRemove :true, //显示移除按钮
+                showPreview :true, //是否显示预览
+                showCaption:false,//是否显示标题
+                //browseClass:"btn btn-primary", //按钮样式
+                dropZoneEnabled: false,//是否显示拖拽区域
+                minImageWidth: 50, //图片的最小宽度
+                minImageHeight: 50,//图片的最小高度
+                maxImageWidth: 3000,//图片的最大宽度
+                maxImageHeight: 3000,//图片的最大高度
+                maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+                //minFileCount: 0,
+                //maxFileCount:10, //表示允许同时上传的最大文件个数
+                enctype:'multipart/form-data',
+                validateInitialCount:true,
+                //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+                //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+                initialPreview: [
+                    "<img src='"+img_innocence_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;'>"
+                ]
+
+                });
+            }
+            $(".job_c_multi").fileinput({
+                language: 'zh', //设置语言
+                //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+                allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+                //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+                //uploadAsync: true, //默认异步上传
+                showUpload:false, //是否显示上传按钮
+                showRemove :true, //显示移除按钮
+                showPreview :true, //是否显示预览
+                showCaption:false,//是否显示标题
+                //browseClass:"btn btn-primary", //按钮样式
+                dropZoneEnabled: false,//是否显示拖拽区域
+                minImageWidth: 50, //图片的最小宽度
+                minImageHeight: 50,//图片的最小高度
+                maxImageWidth: 3000,//图片的最大宽度
+                maxImageHeight: 3000,//图片的最大高度
+                maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+                //minFileCount: 0,
+                //maxFileCount:10, //表示允许同时上传的最大文件个数
+                enctype:'multipart/form-data',
+                validateInitialCount:true,
+                //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+                //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+				/* initialPreview: [
+				 "<img src='"+just_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+just_use+"' title='"+just_use+"'>"
+				 ],
+				 initialPreviewConfig: [
+				 {
+				 caption: just_name
+				 }
+				 ] */
+            });
+            //点击+号按钮
+            $('#btnGoAddServiceItem').click(function(){
+                var haveServiceItem=[];
+                //获取到已存在服务项目id
+                $('.my_service_items').find('span').each(function(i,v){
+                    var serid=$(v).attr("serid");
+                    haveServiceItem.push(serid);
+                });
+
+                $('.new_service_items').find('span').each(function(i,v){
+                    var serid=$(v).attr("serid");
+
+                    haveServiceItem.push(serid);
+                });
+                $.ajax({
+                    url:'/student/screenServiceItem',//提交的位置
+                    data:{
+                        result:JSON.stringify(haveServiceItem)
+                    },//提交的数据
+                    type:'POST',
+                    success:function(data){
+                        console.log(data);
+                        $("#notHaveServiceItem option").remove();
+                        //请求成功时
+                        for(var i=0; i<data.length; i++){
+                            $("#notHaveServiceItem").append("<option value="+data[i].serviceitem_id+">"+data[i].name+"</option>");
+                        }
+                    },
+                    dataType:'json'
+                });
+                $(this).next().toggleClass('show hide');
+            });
+
+            $('#btnGoAddStation').click(function(){
+                $(this).next().toggleClass('show hide');
+            });
+
+            $(".add_job_cret").click(function(i,ele){
+                var s =  $("#div_begin").children().length;
+                if(s>6){//包含lable标签和加号按钮
+                    reset();
+                    alertify.alert("最多只能添加5张技能证书图片！");
+                    return false;
+                }
+                var html = "";
+                html += '<div class="form_group data">'
+                html +='<lable class="col-sm-4 control-label"></lable>'
+                html += '<div id=\"div_data\" class=\"col-sm-5 form-style form-inline\">';
+                html += '<input img_id=\"0\" type=\"file\" class=\"form-control job_c_multi\" id=\"job_cret\"   name=\"job_cret\" placeholder=\"点击上传电子件\" />';
+                html += '<button  type=\"button\" class=\"btn  pull-left add_job_cret minus\" onclick=\"after_minus(this)\"><i class=\"fas fa-minus-circle fa-lg text-warning\"></i></button>';
+                html += '</div>';
+                html += '</div>';
+                $("#div_begin").append(html);
+                format();
+            })
+            //回显方法
+            show_cert();
+
+			/* $(".minus").click(function(){
+			 alert(1)
+			 $(this).prev().remove();
+			 $(this).remove();
+			 }) */
+        });
+
+
+        //增加行（分类）
+        var num=0;
+        var categoryRowNum=[[${pfsList.size()}]];
+        function insertRow(obj) {
+
+            if(categoryRowNum==1){
+                //style.attr("display","none")
+                $('.item:first').find('button:last').toggle();
+            }
+            var tr = $(obj).parents('.item').html();
+            tr=tr.replace(/redut/,'redut'+num++).replace(/none/,'inline-block');
+            // form-inline
+            var html="<div class='item' style='margin-bottom:10px;margin-left: 14px'>"+tr+"</div>";
+            $('#categoryRow').append(html);
+            categoryRowNum++;
+        }
+
+
+
+        //移除行（分类）
+        function deleteRow(obj) {
+            categoryRowNum--;
+			/* if(categoryRowNum==1){
+			 document.getElementById("redut").style.display = 'none';
+			 } */
+            $(obj).parent().remove();
+            $('.btn-success').parent('div').hide();
+        }
+
+        //提取数据
+        function tiqu(student_id) {
+            var flag=[];
+            var phone=$('#phone').val();
+            var oldPhone=[[${student.phone}]];
+            if(phone != oldPhone){
+                $.ajax({
+                    url:"/student/student_phone_check_exist",
+                    type : 'post',
+                    async:false,
+                    data :{
+                        student_phone:phone
+                    },
+                    success:function(data){
+                        if(data==false){
+                            flag.push(1);
+                        }
+                    }
+                });
+            }
+
+            if(flag.length>0){
+                reset();
+                alertify.alert("该手机号已存在!");
+                return false;
+            }
+            var start=$("#startTime").val();
+            var end=$("#endTime").val();
+            if(end<=start){
+                reset();
+                alertify.alert("接单结束时间不能和接单开始时间相同，且不能小于接单开始时间！");
+                return false;
+            }
+            var list=[];
+            $('input:checkbox[name=week]:checked').each(function(i){
+                list.push($(this).val());
+            });
+            $(".form-horizontal").bootstrapValidator('validate');//提交验证
+            if ($(".form-horizontal").data('bootstrapValidator').isValid()) { //获取验证结果，如果成功，执行下面代码
+                var map={};
+                map["s"]=start;
+                map["e"]=end;
+                var station=$('#station').val();
+                var student_id=$('#student_id').val();
+                var student_name=$('#name').val();
+                var student_sex=$("#sex").val();
+                var student_native=$("#native_place").val();
+                var identity_card=$("#identity_card").val();
+                var student_card_just=$("#card_just").val();
+                var student_card_against=$("#card_against").val();
+                var partner_id=$("#partner_id").val();
+                var student_phone=$("#phone").val();
+                var student_age=$("#age").val();
+                var student_state=$("#state").val();
+                var student_grade=$("#grade").val();
+                var student_health=$("#health").val();
+                var pageNo=[[${pageNo}]];
+                var job_number=$("#job_number").val();
+                //var job_img_ids = $("input[name='job_cret']").attr('img_id');
+                var job_cret = $("input[name='job_cret']").val();
+                //var json_img_id = JSON.stringify(job_img_ids);
+                var json_job_cret = JSON.stringify(job_cret);
+                var students=[];
+                students.push({
+                    student_id:student_id,
+                    name:student_name,
+                    sex:student_sex,
+                    native_place:student_native,
+                    identity_card:identity_card,
+                    card_just:student_card_just,
+                    card_against:student_card_against,
+                    partner_id:partner_id,
+                    phone:student_phone,
+                    age:student_age,
+                    state:student_state,
+                    grade:student_grade,
+                    health:student_health,
+                    station_id:station,
+                    job_number:job_number,
+                    job_cret:json_job_cret,
+                    service_times:map,
+                    service_cycle:list.length>0?list:null
+                    //job_img_ids:json_img_id
+                });
+                //封装服务项目
+                //提取分类
+                var categorys=[];
+				/* $(".item").find("#categoryAll option:selected").each(function(){
+				 var text= $(this).val();
+				 categorys.push(text);
+				 }); */
+                $('.new_service_items').find('span').each(function(i,v){
+                    var serid=$(v).attr("serid");
+                    categorys.push(serid);
+                });
+                var img_ids = [];
+                $(".data").each(function(s,obj){
+                    var s = $(obj).find("input").attr('img_id');
+                    img_ids.push(s);
+                    console.log(s);
+                });
+                //alert(JSON.stringify(categorys));
+                var params = {studentList:JSON.stringify(students),categoryAllList:JSON.stringify(categorys),img_list:JSON.stringify(img_ids)};
+                $("#studentL").val(JSON.stringify(params));
+                document.getElementById("form1").submit();
+            }
+
+        }
+
+        //取消按钮事件
+        function cancel(pageNo){
+            window.location.href="[(@{/student/showStudent})]?p="+pageNo;
+        }
+
+	//点击+里面的添加按钮
+	function addNotHaveServiceItem(obj){
+		//获取select的值
+		var id=$('#notHaveServiceItem').val();
+		$.ajax({
+		        url:'/student/ServiceItemSelect/'+id,//提交的位置
+		        type:'POST',
+		        success:function(data){
+		        	//请求成功时
+		         	$('#moban span').text(data.name);
+		         	$('#moban span').attr("serid",data.serviceitem_id);
+		        	var mobanHtml=$('#moban').html();
+		        	var ht="<div id='ser"+data.serviceitem_id+"' style='margin-left:15px'>"+mobanHtml+"</div>"
+		        	$('.new_service_items').append(ht);
+		        	$('.new_service_items button').css("display","inline-block");
+		        	$(obj).parent('div').toggleClass('show hide');
+		        },
+		        dataType:'json'
+		    });
+		//添加到新具备的服务项目里面
+		//$('#moban span').attr("serid",id);
+		//$('#moban span').text(name);
+
+	}
+
+	//根据合伙人显示对应的所有服务站点
+	function show_editsub(obj,partner_id){
+		$.ajax({
+	        url:'/student/partnerSelectStation/'+partner_id,//提交的位置
+	        type:'POST',
+	        success:function(data){
+	        	$("#station option").remove();
+	        	if(data.length==0){
+	        		$("#station").append("<option value=''>暂无站点</option>");
+	        	}else{
+		        	//请求成功时
+		         	for(var i=0; i<data.length; i++){
+		         		$("#station").append("<option value="+data[i].station_id+">"+data[i].address+"</option>");
+		         	}
+	        	}
+	        },
+	        dataType:'json'
+	    });
+	}
+	//初始化技能图片
+	function show_job(url,id,name){
+		//$(".job_c_multi").fileinput('destory');
+		$(".job_c_multi").fileinput({
+			language: 'zh', //设置语言
+	        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+	        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+	        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+	        //uploadAsync: true, //默认异步上传
+	        showUpload:false, //是否显示上传按钮
+	        showRemove :false, //显示移除按钮
+	        showPreview :true, //是否显示预览
+	        showCaption:false,//是否显示标题
+	        //browseClass:"btn btn-primary", //按钮样式
+	        dropZoneEnabled: false,//是否显示拖拽区域
+	        minImageWidth: 50, //图片的最小宽度
+	        minImageHeight: 50,//图片的最小高度
+	        maxImageWidth: 3000,//图片的最大宽度
+	        maxImageHeight: 3000,//图片的最大高度
+	        maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+	        //minFileCount: 0,
+	        maxFileCount:2, //表示允许同时上传的最大文件个数
+	        enctype:'multipart/form-data',
+	        validateInitialCount:true,
+	        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+	        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+	    	 initialPreview: [
+	           "<img src='"+url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' >"
+	    	]
+	    	/* initialPreviewConfig: [
+		        {
+		            caption: just_name
+		        }
+		    ]  */
+		});
+	}
+	function format(){
+		$(".job_c_multi").fileinput({
+			language: 'zh', //设置语言
+	        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+	        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+	        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+	        //uploadAsync: true, //默认异步上传
+	        showUpload:false, //是否显示上传按钮
+	        showRemove :true, //显示移除按钮
+	        showPreview :true, //是否显示预览
+	        showCaption:false,//是否显示标题
+	        //browseClass:"btn btn-primary", //按钮样式
+	        dropZoneEnabled: false,//是否显示拖拽区域
+	        removeFromPreviewOnError:true,
+	        minImageWidth: 50, //图片的最小宽度
+	        minImageHeight: 50,//图片的最小高度
+	        maxImageWidth: 3000,//图片的最大宽度
+	        maxImageHeight: 3000,//图片的最大高度
+	        maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+	        //minFileCount: 0,
+	        //maxFileCount:10, //表示允许同时上传的最大文件个数
+	        enctype:'multipart/form-data',
+	        validateInitialCount:true
+	        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+	        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+	    	/*  initialPreview: [
+	           "<img src='"+url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' >"
+	    	] */
+	    	/*initialPreviewConfig: [
+		        {
+		            caption: just_name
+		        }
+		    ] */
+		});
+	}
+
+
+	//回显
+	function show_cert(){
+		//$("#add_job_cret").hide();
+		$("#job_cret").parent().parent().hide();
+		  var list = [[${list_cert}]];
+
+		  $.each(list,function(i,ele){
+			  var html = "";
+			  html += '<div class="form_group data">'
+			  html +='<lable class="col-sm-4 control-label"></lable>'
+			  html += '<div id=\"div_data\" class=\"col-sm-5 form-style form-inline\">';
+			  html += '<input img_id='+ele.id+' type=\"file\" class=\"form-control job_c_multi\" id=\"job_cret\"   name=\"job_cret\" placeholder=\"点击上传电子件\" />';
+			  html += '<button  type=\"button\" class=\"btn  pull-left add_job_cret minus\" onclick=\"after_minus(this)\"><i class=\"fas fa-minus-circle fa-lg text-warning\"></i></button>';
+			  html += '</div>';
+			  html += '</div>';
+			  $("#div_begin").append(html);
+			  show_job(ele.url,ele.id);
+		  })
+	  }
+	function after_minus(obj){
+		  $(obj).parent().parent().remove();
+	}
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <!-- <li><a href="#">一级目录</a></li> -->
+			  <li><a href="/student/showStudent" class="back_butn" style="cursor: pointer;">学员信息</a></li>
+			  <li class="active">编辑</li>
+			</ol>
+
+		</div>
+
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_12">
+			<form id="form1" class="form-horizontal" enctype="multipart/form-data"
+				action="#"  th:action="@{/student/editStudent/}+${student_id}" method="post">
+				<input type="hidden" id="studentL" name="studentL"/>
+				<input type="hidden" name="mts"  th:value="${application.mts}"/>
+				<input type="hidden" id="pageNo" name="pageNo" th:value="${pageNo}"/>
+				<input type="hidden" id="i_url" name="i_url" th:value="${img.url}"/>
+				<input type="hidden" id="i_name" name="i_name" th:value="${img.name}"/>
+				<input type="hidden" id="i_use" name="i_use" th:value="${img.effect}"/>
+
+				<input type="hidden" id="just_url" name="just_url" th:value="${img_just.url}"/>
+				<input type="hidden" id="just_name" name="just_name" th:value="${img_just.name}"/>
+				<input type="hidden" id="just_use" name="just_use" th:value="${img_just.effect}"/>
+
+				<input type="hidden" id="against_url" name="against_url" th:value="${img_against.url}"/>
+				<input type="hidden" id="against_name" name="against_name" th:value="${img_against.name}"/>
+				<input type="hidden" id="against_use" name="against_use" th:value="${img_against.effect}"/>
+
+				<input type="hidden" id="logo_url" name="logo_url" th:value="${logo_img.url}"/>
+				<input type="hidden" id="logo_name" name="logo_name" th:value="${logo_img.name}"/>
+				<input type="hidden" id="logo_use" name="logo_use" th:value="${logo_img.effect}"/>
+
+				<input type="hidden" id="img_innocence_url" name="img_innocence_url" th:value="${img_innocence.url}"/>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span
+					style="color: red">*</span>学员名称:</label>
+					<div class="col-sm-3">
+						<input id="student_id" name="student_id" type="text" hidden="hidden" th:value="${student.student_id}">
+						<input id="name" name="name" type="text" class="form-control" th:value="${student.name}" placeholder="请输入学员名称">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span
+					style="color: red">*</span>学员性别:</label>
+					<div class="col-sm-2">
+						<select id="sex" name="sex" class="form-control">
+							<option value="1" th:selected="${student.sex==1}">男</option>
+							<option value="0" th:selected="${student.sex==0}">女</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span
+					style="color: red">*</span>学员籍贯:</label>
+					<div class="col-sm-3">
+						<input id="native_place" name="native_place" type="text" class="form-control" th:value="${student.native_place}" placeholder="请输入学员籍贯">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span
+					style="color: red">*</span>学员工号:</label>
+					<div class="col-sm-3">
+						<input id="job_number" name="job_number" type="text" class="form-control" placeholder="请输入员工工号" th:value="${student.job_number}" >
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span
+					style="color: red">*</span>学员身份证号:</label>
+					<div class="col-sm-3">
+						<input id="identity_card" name="identity_card" type="text" class="form-control" th:value="${student.identity_card}" placeholder="请输入学员身份证号">
+					</div>
+				</div>
+				<div class="form-group ">
+					<label class="col-sm-4 control-label">学员头像图片:</label>
+					<div class="col-sm-5 form-style" >
+						 <input type="file" style="float:left" class="form-control" id="s_logo"
+							name="logo" placeholder="点击上传电子件"/>
+					</div>
+				</div>
+				<div class="form-group ">
+					<label class="col-sm-4 control-label">学员身份证信息:</label>
+					<div class="col-sm-5 form-style" >
+						 <input type="file" style="float:left" class="form-control" id="card_just"
+							name="s_just" placeholder="点击上传电子件"/>
+						<span style="color: red">身份证(正)面</span>
+					</div>
+				</div>
+				<div class="form-group ">
+					<label class="col-sm-4 control-label">			</label>
+					<div class="col-sm-5 form-style" >
+						<input type="file" class="form-control" id="card_against"
+							name="s_against" placeholder="点击上传电子件"/>
+						<span style="color: red">身份证(反)面</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span
+					style="color: red">*</span>隶属合伙人:</label>
+					<div class="col-sm-3">
+						<select id="partner_id" name="partner_id" class="form-control" onchange="show_editsub(this,this.options[this.options.selectedIndex].value)">
+							<option th:each="plist:${pList}" th:selected="${student.partner_id==plist.partner_id}" th:value="${plist.partner_id}" th:text="${plist.name}"></option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span
+					style="color: red">*</span>联系电话:</label>
+					<div class="col-sm-3">
+						<input id="phone" name="phone" type="text" class="form-control" th:value="${student.phone}" placeholder="请输入联系电话">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span
+					style="color: red">*</span>年龄:</label>
+					<div class="col-sm-2">
+						<input id="age" name="age" type="text" class="form-control" th:value="${student.age}" placeholder="请输入年龄">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span
+					style="color: red">*</span>状态:</label>
+					<div class="col-sm-2">
+						<select id="state" name="state" class="form-control">
+							<option value="1" th:selected="${student.state==1}">在职</option>
+							<option value="0" th:selected="${student.state==0}">离职</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label">服务项目:</label>
+					<div class="col-sm-5 form-inline row"  id="categoryRow">
+						<div class="my_service_items">
+							<th:block th:each="s:${ssList}">
+								<th:block th:each="per:${perList}">
+									<div th:if="${s.serviceitem_id==per.serviceitem_id}">
+										<span th:text="${per.name}" th:serid="${per.serviceitem_id}" style="margin-left:15px"></span>
+										<button id="redut" class="btn btn-link redutBtn text-warning" onclick="deleteRow(this)" style="display:none">
+											<i class="fas fa-minus-circle fa-lg text-warning"></i>
+										</button>
+									</div>
+								</th:block>
+							</th:block>
+						</div>
+						<div class="new_service_items">
+							<th:block th:each="pfs:${pfsList}">
+								<th:block th:each="per:${perList}">
+									<div th:if="${pfs.serviceitem_id==per.serviceitem_id}" th:id='${pfs.serviceitem_id}'>
+										<span  th:serid="${pfs.serviceitem_id}" th:text="${per.name}" style="margin-left:15px"></span>
+										<button type="button" id="redut" class="btn btn-link redutBtn text-warning" onclick="deleteRow(this)" style="display:ininer-block">
+											<i class="fas fa-minus-circle fa-lg text-warning"></i>
+										</button>
+									</div>
+								</th:block>
+							</th:block>
+						</div>
+						<div id="moban" hidden="hidden">
+							<span></span>
+							<button type="button" id="redut" class="btn btn-link redutBtn text-warning" onclick="deleteRow(this)" style="display:ininer-block">
+								<i class="fas fa-minus-circle fa-lg text-warning"></i>
+							</button>
+						</div>
+						<div class="clearfix" style="margin-left: 15px">
+							<button  id="btnGoAddServiceItem" class="btn btn-primary pull-left">
+									<span  aria-hidden="true"
+										class="glyphicon glyphicon glyphicon-plus ab_font12">
+									</span>
+						</button>
+						<div class="pull-left hide" style="margin-left: 50px">
+							<select class="form-control" id="notHaveServiceItem" style="width:150px">
+							</select>
+							<button class="btn btn-success" style="margin-left: 5px" onclick="javascript:addNotHaveServiceItem(this)">
+								添加
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label"><span
+						style="color: red">*</span>服务站点:</label>
+				<div class="col-sm-6 form-inline row">
+					<div class="pull-left" style="margin-left:15px">
+						<select class="form-control" id="station" style="width:350px">
+							<th:block th:if="${stationList.isEmpty()}">
+								<option value="">暂无站点</option>
+							</th:block>
+							<th:block th:each="station:${stationList}">
+								<option th:selected="${student.station_id==station.station_id}" th:value="${station.station_id}" th:text="${station.address}"></option>
+							</th:block>
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" >等级:</label>
+				<div class="col-sm-3">
+					<select id="grade" name="grade" class="form-control">
+						<option value="">-请选择等级-</option>
+						<option value="1" th:selected="${student.grade==1}">高级</option>
+						<option value="2" th:selected="${student.grade==2}">中级</option>
+						<option value="3" th:selected="${student.grade==3}">初级</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group form-inline">
+				<label class="col-sm-4 control-label" ><span
+						style="color: red">*</span>接单时间:</label>
+				<div class="col-sm-8">
+					<select id="startTime" name="startTime">
+						<option value="16" th:selected="${Times.s==16}">08:00</option>
+						<option value="18" th:selected="${Times.s==18}">09:00</option>
+						<option value="20" th:selected="${Times.s==20}">10:00</option>
+						<option value="22" th:selected="${Times.s==22}">11:00</option>
+						<option value="24" th:selected="${Times.s==24}">12:00</option>
+						<option value="26" th:selected="${Times.s==26}">13:00</option>
+						<option value="28" th:selected="${Times.s==28}">14:00</option>
+						<option value="30" th:selected="${Times.s==30}">15:00</option>
+						<option value="32" th:selected="${Times.s==32}">16:00</option>
+						<option value="34" th:selected="${Times.s==34}">17:00</option>
+						<option value="36" th:selected="${Times.s==36}">18:00</option>
+						<option value="38" th:selected="${Times.s==38}">19:00</option>
+						<option value="40" th:selected="${Times.s==40}">20:00</option>
+						<option value="42" th:selected="${Times.s==42}">21:00</option>
+					</select>至
+					<select id="endTime" name="endTime">
+						<option value="16" th:selected="${Times.e==16}">08:00</option>
+						<option value="18" th:selected="${Times.e==18}">09:00</option>
+						<option value="20" th:selected="${Times.e==20}">10:00</option>
+						<option value="22" th:selected="${Times.e==22}">11:00</option>
+						<option value="24" th:selected="${Times.e==24}">12:00</option>
+						<option value="26" th:selected="${Times.e==26}">13:00</option>
+						<option value="28" th:selected="${Times.e==28}">14:00</option>
+						<option value="30" th:selected="${Times.e==30}">15:00</option>
+						<option value="32" th:selected="${Times.e==32}">16:00</option>
+						<option value="34" th:selected="${Times.e==34}">17:00</option>
+						<option value="36" th:selected="${Times.e==36}">18:00</option>
+						<option value="38" th:selected="${Times.e==38}">19:00</option>
+						<option value="40" th:selected="${Times.e==40}">20:00</option>
+						<th:block th:if="${Times.e==0}">
+							<option value="42" selected="selected">21:00</option>
+						</th:block>
+						<th:block th:unless="${Times.e==0}">
+							<option value="42" th:selected="${Times.e==42}">21:00</option>
+						</th:block>
+					</select>
+					<th:block th:if="${weeks.isEmpty()}">
+						<input type="checkbox" name="week" value="1"  checked/>星期一&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="2"  checked/>星期二&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="3"  checked/>星期三&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="4"  checked/>星期四&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="5"  checked/>星期五&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="6"  checked/>星期六&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="7"  checked/>星期天
+					</th:block>
+					<th:block th:unless="${weeks.isEmpty()}">
+						<input type="checkbox" name="week" value="1"  th:checked="*{#lists.contains(weeks,1)}"/>星期一&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="2"  th:checked="*{#lists.contains(weeks,2)}"/>星期二&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="3"  th:checked="*{#lists.contains(weeks,3)}"/>星期三&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="4"  th:checked="*{#lists.contains(weeks,4)}"/>星期四&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="5"  th:checked="*{#lists.contains(weeks,5)}"/>星期五&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="6"  th:checked="*{#lists.contains(weeks,6)}"/>星期六&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="7"  th:checked="*{#lists.contains(weeks,7)}"/>星期天
+					</th:block>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label">学员健康证信息:</label>
+				<div class="col-sm-5 form-style">
+					<input type="file" class="form-control" id="health"
+						   name="s_health" placeholder="点击上传电子件"/>
+					<span style="color: red">学员健康证</span>
+				</div>
+			</div>
+			<div class="form-group" id="div_begin">
+				<label class="col-sm-4 control-label"><span
+						style="color: red">*</span>技能证书:</label>
+				<div id="first_job_cret" class="col-sm-5 form-style form-inline">
+					<div id="div_job_body">
+						<input img_id="0" type="file" style="display: none" class="form-control job_c_multi" id="job_cret"   name="job_cret[]" placeholder="点击上传电子件"/>
+						<button id="add_job_cret" type="button" class="btn btn-primary pull-left add_job_cret"><span aria-hidden="false" class="glyphicon glyphicon glyphicon-plus "></span></button>
+					</div><br>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label">无犯罪证明:</label>
+				<div class="col-sm-5 form-style">
+					<input type="file" class="form-control" id="innocence_proof"
+						   name="s_Innocence_proof" placeholder="点击上传电子件"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-8 col-sm-offset-4">
+					<button class="btn btn-primary" th:onclick="|tiqu('${student.student_id}')|">确定</button>&nbsp;&nbsp;&nbsp;&nbsp;
+					<button type="button" class="btn btn-default" th:onclick="|cancel(${pageNo})|">取消</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+</body>
+</html>

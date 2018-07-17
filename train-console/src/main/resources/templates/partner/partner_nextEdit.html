@@ -1,0 +1,572 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}">
+<head>
+<title>合伙人信息编辑-下一步页面</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script TYPE="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/citydata.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/cityPicker-1.0.0.js?v=1}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-select.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<style>
+	.form-style .file-input{float:left; margin-right:10px;}
+</style>
+<script type="text/javascript" th:inline="javascript">
+//初始化alertify
+reset = function () {
+	$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+	alertify.set({
+	  labels : {
+	    ok   : "确认",
+	    cancel : "取消"
+	  },
+	  delay : 3000,
+	  buttonReverse : false,
+	  buttonFocus  : "ok"
+    });
+};
+
+	$(function(){
+		
+		//页面加载默认显示第一个li对应的服务项目
+		$(".nav-tabs li:first-child").addClass("active");
+		$(".tab-content").children("div").eq(0).addClass("active");
+		
+		var select = $('.city-picker-select').cityPicker({
+			dataJson: cityData,
+			renderMode: false,
+			linkage: false
+		});
+		
+		//页面加载默认显示第一个li对应的服务项目
+		$(".nav-tabs li:first-child").addClass("active");
+		$(".tab-content").children("div").eq(0).addClass("active");
+		
+		//页面加载的时候根据合伙人对应服务项目选中
+		var pfplist=[[${pfpList}]];
+		//封装所有选中状态的对象的编号
+		 $("input[name='check']").each(function(){ 
+			var text=$(this).val();
+			 for(var i=0;i<pfplist.length;i++){
+				if(text==pfplist[i].serviceitem_id){
+					$(this).prop("checked", true);
+				}
+			}
+			 
+			 
+		});
+		//var stationList = [[${list_station}]];
+		var json = [[${list_station}]]
+		var stationList = $.parseJSON(json);
+		//回显虚拟地址表格
+		$.each(stationList,function(index,data){			
+			var address = data.address;
+			var online = data.online_datetime;
+			
+			var up = new Date(online);
+	    	var b_time=up.getFullYear() + "-" + ("0" + (up.getMonth() + 1)).slice(-2) + "-" + ("0" + up.getDate()).slice(-2);
+	    	var online = b_time;
+	    	
+	    	var upline = data.offline_datetime;
+	    	var sp = new Date(upline);
+	    	var a_time=sp.getFullYear() + "-" + ("0" + (sp.getMonth() + 1)).slice(-2) + "-" + ("0" + sp.getDate()).slice(-2);
+			var upline = a_time;
+			var addressV = data.province+" "+data.city+" "+data.area;
+			//获取到table
+			var tab=document.getElementById("tabList");			
+			var id = data.station_id
+			//rowid+=1;
+			//拼接html，拼一行数据
+			var tr='<tr id='+id+'><td>'+address+'</td><td>'+online+'</td><td>'+upline+'</td><td style="display:none;">'+addressV+'</td><td style="display:none;">'+id+'</td><td><a data-toggle="modal" data-target=".bs-example-modal-lg" onclick="addressEdit('+rowid+',this);" style="cursor: pointer;"><i class="fas fa-edit"></i>编辑</a>&nbsp;&nbsp;&nbsp;<a onclick="addressdel('+rowid+',this)" style="cursor: pointer;"><i class="far fa-trash-alt"></i>删除</a></td></tr>';
+			$('#tabList').append(tr); 
+		})
+		
+	});
+	
+	
+	var ids =[]; 
+	function editpartner(){
+		//封装所有选中状态的对象的编号
+		 $("input[name='check']:checked").each(function(){ 
+				var text=$(this).val();
+				ids.push(text);
+		});
+		
+		if(ids.length==0){
+			reset();
+			alertify.alert("请至少选择一项服务项目！");
+			return false;
+		}
+		//获取到填写的合伙人信息
+		var list=[];
+		 $("#tabList").find('tr').each(function(index,data){
+			 if(index>0){
+				
+				// $.each(function(i,ele){
+					// var datas = $(ele).find('td');
+					 list.push({
+					 	address : $(data).find('td').eq(0).text(),
+					 	online : $(data).find('td').eq(1).text(),
+					 	upline : $(data).find('td').eq(2).text(),
+					 	addressV:$(data).find('td').eq(3).text(),
+					 	id : $(data).find('td').eq(4).text()
+					 	})
+				 //})
+			 }
+		 });
+		
+		//获取到上次的页数
+		 var pageNo=[[${pageNo}]];
+		 var partner=$('#par').val();
+		var params={ids:JSON.stringify(ids),parList:partner};
+        var mts = [[${application.mts}]];
+		     $.ajax({
+		        url:'/partner/updatePartner',//提交的位置
+		        data:{
+		        	result:JSON.stringify(params),
+		        	stationList : JSON.stringify(list),
+					mts:mts
+		        },//提交的数据
+		        type:'POST',
+		        success:function(data){
+		        	//请求成功时
+					reset();
+					alertify.success(data.message);
+					setTimeout(function (){
+		        		window.location.href="[(@{/partner/showPartner})]?p="+pageNo;
+					}, 1000);
+		        },//提交成功回调函数 
+		        dataType:'json'
+		    });  
+		  /* $("#partnerList").val(JSON.stringify(ids));
+		 document.getElementById("formid").submit(); */ 
+	}
+	var rowid = 0;
+	/* 
+	var tab = $("#tableList").find("tr").length
+	alert(tab);
+	var rowid = tab  */
+	var addressList = [];
+	function addAddress(){
+		var online = $("#online").val();
+		var upline = $("#upline").val();
+		var pro = $("#gloab_address select[name=userProvinceId] option:checked").text();
+		var city = $("#gloab_address select[name=userCityId] option:checked").text();
+		var area = $("#gloab_address select[name=userDistrictId] option:checked").text();
+		
+		var proV = $("#gloab_address select[name=userProvinceId] option:checked").val();
+		var cityV = $("#gloab_address select[name=userCityId] option:checked").val();
+		var areaV = $("#gloab_address select[name=userDistrictId] option:checked").val();
+		var addressV =proV+" "+cityV+" "+areaV;
+		if(pro=="请选择省" ||  city=="请选择市" || area=="请选择区"){
+			reset();
+			alertify.alert("请选择地址后再添加！")
+			return false;
+		}
+		var street = $("#street").val();
+		var address =pro+" "+city+" "+area+" "+street;
+		if(online > upline ){
+			reset();
+			alertify.alert("上线时间不能大于下线时间，请重新选择")
+			return false;
+		}
+		if(online==null || online==""){
+			reset();
+			alertify.alert("请选择上线时间")
+			return false;
+		}
+		if(upline==null || upline==""){
+			reset();
+			alertify.alert("请选择下线时间")
+			return false;
+		}
+		if(online==upline){
+			reset();
+			alertify.alert("请重新选择，上线时间和下线时间不能相同")
+			return false;
+		}
+		var sm = $("#street").val();
+		if(sm==""){
+			reset();
+			alertify.alert("请输入街道信息！")
+			return false;
+		}
+		if(pro=="请选择省" | city=="请选择市" | area=="请选择区"){
+			reset();
+			alertify.alert("请填写完整省市区地址!");
+			return false;
+		}
+		if(pro !="" | city!="" | area!=""){
+			<!--/* 如果集合为空，rowid重新开始自增*/-->
+			if(addressList.length==0){
+				rowid=0;
+			}
+			<!--/* 获取到table*/-->
+			var tab=document.getElementById("tabList");
+			rowid+=1;
+ 			var tr='<tr id='+rowid+'><td>'+address+'</td><td>'+online+'</td><td>'+upline+'</td><td style="display:none;">'+addressV+'</td><td style="display:none;">'+rowid+'</td><td><a data-toggle="modal" data-target=".bs-example-modal-lg" onclick="addressEdit('+rowid+',this);"  style="cursor: pointer;"><i class="fas fa-edit"></i>编辑</a>&nbsp;&nbsp;&nbsp;<a onclick="addressdel('+rowid+',this)" style="cursor: pointer;"><i class="far fa-trash-alt"></i>删除</a></td></tr>';
+			$('#tabList').append(tr);
+			<!--/* 每次新增的添加到集合中*/-->
+			addressList.push({
+				select_row:rowid,
+				online:online,
+	     		upline:upline,
+	     		pro:pro,
+	     		city:city,
+	     		area:area
+	     			
+			});
+			<!--/* 清空输入框*/-->
+			$("#gloab_address select[name=userProvinceId]").val('请选择省');
+			$("#gloab_address select[name=userCityId]").val('请选择市');
+			$("#gloab_address select[name=userDistrictId]").val('请选择区');
+			$("#street").val("");
+			$("#online").val("");
+			$("#upline").val("");
+		}else{			
+			reset();
+			alertify.alert("请填写地址，地址不能为空");
+			return false;
+		}
+	}
+	<!--/* 模态框编辑 */-->
+	function addressEdit(id,obj){
+		$("#list_id").val($(obj).parent().parent().attr("id"))
+		var select = $('#modal_address').cityPicker({
+			dataJson: cityData,
+			renderMode: false,
+			linkage: false
+		});
+		<!--/* 回显功能*/-->
+		$(obj).parent().parent().each(function(index,data){
+			$(data).each(function(i,d){
+				var datas = $(d).find('td');
+				var list=[];
+				var str=datas.eq(0).text();
+				var sid = datas.eq(3).text();
+				list=str.split(" ");
+				list1=sid.split(" ");
+				
+				var pid = "";
+				var pname= "";
+				var cid = "";
+				var cname= "";
+				var aid = "";
+				var aname= "";
+				$.each(list,function(j,s){
+					$.each(list1,function(i,k){		
+						if(j==0 & i==0){
+							pname= s;
+							pid = k;
+						}
+						if(j==1 & i==1){
+							cname =  s;
+							cid =  k;
+						}
+						if(j==2 & i==2){
+							aid = k;
+							aname = s;
+						} 
+					})	
+					if(j==3){
+						$("#street_modal").val(s);
+					}
+		        	$("#online_modal").val(datas.eq(1).text());
+		        	$("#upline_modal").val(datas.eq(2).text());
+				})  
+	        	select.setCityVal([{ 'id':pid,'name':pname},{'id':cid,'name':cname},{'id':aid,'name':aname}])
+			})
+		});
+		
+		$("#motifiction_btn").modal('show'); 
+	}
+	<!--/* 删除虚拟地址 */-->
+	function addressdel(rowid,obj){
+		
+		alertify.confirm("确定要删除吗？！",function(e){
+			if(e){
+				var v_id = $(obj).parent().parent().attr('id');
+				$.post('/partner/del_station',{station_id:v_id},function(data){					
+					$(obj).parent().parent().remove();
+					
+				})
+			}else{
+				reset();
+				alertify.log("已取消操作！");
+			}
+		})
+	}
+	
+	<!--/* 取消 */-->
+	function editCancelpartner(){
+		reset();
+		alertify.confirm("确定要取消吗？", function (e) {
+			if(e){
+				<!--/* 获取到上次的页数 */-->
+				var pageNo=[[${pageNo}]];
+				window.location.href="[(@{/partner/showPartner})]?p="+pageNo; 
+			}
+		});
+		
+	}
+	<!--/* 模态框的确认编辑 */-->
+	function editModal(obj){
+		var data_id = $("#list_id").val();
+		var online = $("#online_modal").val();
+		var upline = $("#upline_modal").val();
+		var pro = $("#modal_address select[name=userProvinceId] option:checked").text();
+		var city = $("#modal_address select[name=userCityId] option:checked").text();
+		var area = $("#modal_address select[name=userDistrictId] option:checked").text();
+		
+		var pid = $("#modal_address select[name=userProvinceId] option:checked").val();
+		var cid = $("#modal_address select[name=userCityId] option:checked").val();
+		var aid = $("#modal_address select[name=userDistrictId] option:checked").val();
+		
+		var street = $("#street_modal").val();
+		var addressp = pid+" "+cid+" "+aid;
+		var address =pro+" "+city+" "+area+" "+street;
+		if(online > upline ){
+			reset();
+			alertify.alert("上线时间不能大于下线时间，请重新选择")
+			return false;
+		}
+		if(online==null || online==""){
+			reset();
+			alertify.alert("请选择上线时间")
+			return false;
+		}
+		if(upline==null || upline==""){
+			reset();
+			alertify.alert("请选择下线时间")
+			return false;
+		}
+		if(online==upline){
+			reset();
+			alertify.alert("请重新选择，上线时间和下线时间不能相同")
+			return false;
+		}
+		var sm = $("#street_motal").val();
+		if(sm==""){
+			reset();
+			alertify.alert("请输入街道信息！")
+			return false;
+		}
+		if(pro=="请选择省" | city=="请选择市" | area=="请选择区"){
+			reset();
+			alertify.alert("请填写完整省市区地址!");
+			return false;
+		}
+		if(pro !="" | city!="" | area!=""){
+			var tr = $('#tabList tr[id="'+data_id+'"]');
+			tr.find('td:eq(0)').text(address);
+			tr.find('td:eq(1)').text(online);
+			tr.find('td:eq(2)').text(upline);
+			tr.find('td:eq(3)').text(addressp);
+		}else{
+			reset();
+			alertify.alert("请勿提交空值");
+			return false;
+		}
+		
+		$("#motifiction_btn").modal('hide'); 
+		
+	}
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <!-- <li><a href="#">一级目录</a></li> -->
+			  <li class="active"><input class="btn btn-primary" type="button" value="上一步" onclick="javascript:history.go(-1)"></li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_11">
+			<form id="formid" class="form-horizontal"  method="post">
+			<input type="hidden" id="par" name="par" th:value="${partner}"/>
+			<input type="hidden" id="partnerList" name="partnerList" />
+			  <nav>
+				<label class="col-sm-2 control-label" ><span
+					style="color: red">*</span>服务项目</label>
+				<ul class="nav nav-tabs" role="tablist">
+					<th:block th:each="pclist:${pcList}">
+						<li role="presentation"><a th:href="@{'#a'+${pclist.category_id}}" th:aria-controls="${pclist.category_id}" role="tab" data-toggle="tab" th:text="${pclist.name}"></a></li>
+					</th:block>
+				</ul>
+			 </nav>
+
+			   <div class="tab-content form-group">
+			   		<th:block th:each="pclist:${pcList}">
+			   			<div role="tabpanel" class="tab-pane" th:id="@{'a'+${pclist.category_id}}">
+			   				<!-- <input type="text" th:value="${partner}"/> -->
+			   				
+			   				<table class="table  table-bordered" id="tab" style="width: 500px;margin-left: 300px;margin-top: 30px" >
+			   					<thead>
+									<tr bgcolor="#FFFFFF" align="center">
+										<!-- <th width="80px">序号</th> -->
+										<th width="130px" style="vertical-align:middle;">服务项目</th>
+										<th width="100px" style="vertical-align:middle;">操作</th>
+									</tr>
+								</thead>
+								<tbody>
+									<th:block th:each="perlist,index:${perList}">
+										<tr th:if="${perlist.category_id==pclist.category_id}">
+											<!-- <td th:text="${index.index+1}"></td> -->
+											<td th:text="${perlist.serviceitem_id}" hidden="hidden"></td>
+											<td th:text="${perlist.name}" style="vertical-align:middle;"></td>
+											<td style="vertical-align:middle;">
+												<!-- <th:block th:each="pfplist:${pfpList}"> -->
+												<!-- th:if="${pfplist.ercategory_id==perlist.ercategory_id}" -->
+													<input name="check" type="checkbox"  th:value="${perlist.serviceitem_id}"/>
+												<!-- </th:block> -->
+											</td>
+										</tr>
+									</th:block>
+								</tbody>
+			   				</table>
+			   			</div>
+			   		</th:block>
+			  </div> 
+			  
+			  <div class="form-group">
+					<label for="train_address" class="col-sm-4 control-label"><span
+						style="color: red">*</span>&nbsp;&nbsp;服务地址:</label>
+					<div id="gloab_address" class="col-sm-6">
+						<!--省市县三级 -->
+						<div class="city-picker-select form-inline"></div>
+						<!--  -->
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="train_address" class="col-sm-4 control-label"><span style="color: red ">*</span>
+					&nbsp;&nbsp;街道信息：</label>
+					<div class="col-sm-4">
+						<input id="street" type="text" class="form-control" name="street"
+							placeholder="请输入街道信息" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="train_address" class="col-sm-4 control-label"><span
+						style="color: red">*</span>&nbsp;&nbsp;上线时间：</label>
+					<div class="col-sm-4">
+						<input id="online" type="date" class="form-control" name="online" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="train_address" class="col-sm-4 control-label"><span
+						style="color: red">*</span>&nbsp;&nbsp;下线时间：</label>
+					<div class="col-sm-4">
+						<input id="upline" type="date" class="form-control" name="upline" />
+					</div>
+				</div>
+				<div class="form-group">
+					<div id="addbtn" class="row col-sm-10 col-sm-offset-1">
+						<a class="btn btn-default nav-justified"
+							style="border: none; color: rgb(51, 122, 183);"
+							onclick="addAddress()"> <span aria-hidden="true"
+							class="glyphicon glyphicon glyphicon-plus ab_font12"> </span>
+							添加地址
+						</a>
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-offset-1 col-sm-10 ">
+						<table id="tabList" class="table table-bordered">
+
+							<tr>
+									<th style="width: 200px">服务地址</th>
+									<th>上线时间</th>
+									<th>下线时间</th>
+									<th>操作</th>
+							</tr>
+
+							<tbody>
+								<!-- <th:block th:each="station:${list_station}" th:if="${station.partner_id eq partner.partner_id}">
+									<th th:text="${station.address}" style="width: 200px">服务地址</th>
+								</th:block> -->
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</form>
+		</div>
+		
+		
+				  <div class="form-group">
+			<div class="form-inline text-center">
+				<button type="button" class="btn btn-primary" onclick="editpartner()">确定</button>&nbsp;&nbsp;&nbsp;&nbsp;
+				<button type="button" class="btn btn-default" onclick="editCancelpartner()">取消</button>
+			</div>
+		  </div>
+		  
+		  <div class="modal fade" id="motifiction_btn" data-keyboard="false" data-backdrop="static" aria-hidden="true">
+				  <div class="modal-dialog" role="document" style="width:900px">
+				    <div class="modal-content">
+					      <div class="modal-header">
+					        <h4 class="modal-title">修改信息</h4>
+					      </div>
+				      <div class="modal-body">
+				      	<input id="list_id" class="form-control" name="list_id" type="hidden"/>
+				        <table id="aa" class="table table-bordered">
+				       			 <div class="form-group">
+									<label for="train_address" class="col-sm-3 control-label"><span
+										style="color: red ">*</span> 服务地址:</label>
+									<div class="col-sm-8 form-inline" id="modal_address">
+										<!-- 省市县三级 -->
+										<div id="modal_address"  class="city-picker-select"></div>
+										
+									</div>
+								</div><br><br>
+								<div class="form-group">
+									<label for="train_address" class="col-sm-3 control-label"><span style="color: red ">*</span>
+									&nbsp;&nbsp;街道信息：</label>
+									
+									<div class="col-sm-4">
+										<input id="street_modal" type="text" class="form-control" name="street" placeholder="请输入街道信息"/>
+									</div>
+								</div><br><br>
+								<div class="form-group">
+									<label for="train_address" class="col-sm-3 control-label"><span
+										style="color: red">*</span> 上线时间：</label>
+									<div class="col-sm-4">
+										<input id="online_modal" type="date" class="form-control" name="online"/>
+									</div>
+								</div><br><br>
+								<div class="form-group">
+									<label for="train_address" class="col-sm-3 control-label"><span
+										style="color: red">*</span> 下线时间：</label>
+									<div class="col-sm-4">
+										<input id="upline_modal" type="date" class="form-control" name="upline"/>
+									</div>
+								</div>
+						</table>
+				      </div><!-- body结束标签 -->
+				      
+					 <div class="modal-footer form-group" style="margin-right:20px ; margin-left:20px">
+					    <div class="col-sm-5 col-sm-offset-2 ">
+							<button id="affirmAdd_btn" onclick="javascripet:editModal(this)" type="button" class="btn btn-primary">修改</button>
+					        <button id="close_btn" type="button" class="btn btn-default" data-dismiss="modal">关 闭</button>
+						</div>
+				    </div><!-- content结束标签 -->
+			  </div>
+			</div>
+		</div>
+	</div>
+	
+	
+</body>
+</html>

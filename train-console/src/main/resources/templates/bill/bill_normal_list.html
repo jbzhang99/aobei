@@ -1,0 +1,410 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}">
+<head>
+	<title>对账汇总数据</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+	<script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+	<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+	<script type="text/javascript" th:inline="javascript">
+        $(function(){
+            ymdhm();
+
+            $(".query").click(function(){
+                var bill_batch_id = $(".bill_batch_id").val();
+                var pay_order_id = $(".pay_order_id").val();
+                var bill_type = $(".bill_type").val();
+                var s_transaction_datetime = $(".s_transaction_datetime").val();
+                var e_transaction_datetime = $(".e_transaction_datetime").val();
+                var qs_create_time = $(".qs_create_time").val();
+                var qe_create_time = $(".qe_create_time").val();
+
+                var url = "/billmanager/goto_normal_list?bill_batch_id="+bill_batch_id+"&pay_order_id="+pay_order_id+"&bill_type="+bill_type;
+
+                if(s_transaction_datetime != '' && e_transaction_datetime != ''){
+                    if(e_transaction_datetime < s_transaction_datetime){
+                        reset();
+                        alertify.alert("查询结束时间不得小于查询开始时间！");
+                        return;
+                    }else{
+                        var c_be = "&s_transaction_datetime="+s_transaction_datetime+"&e_transaction_datetime="+e_transaction_datetime;
+                        url = url + c_be;
+                    }
+                }else if(s_transaction_datetime != '' || e_transaction_datetime != ''){
+                    reset();
+                    alertify.alert("查询开始、结束时间不可以有空值！");
+                    return;
+                }
+
+                if(qs_create_time != '' && qe_create_time != ''){
+                    if(qe_create_time < qs_create_time){
+                        reset();
+                        alertify.alert("查询结束时间不得小于查询开始时间！");
+                        return;
+                    }else{
+                        var cr_be = "&qs_create_time="+qs_create_time+"&qe_create_time="+qe_create_time;
+                        url = url + cr_be;
+                    }
+                }else if(qs_create_time != '' || qe_create_time != ''){
+                    reset();
+                    alertify.alert("查询开始、结束时间不可以有空值！");
+                    return;
+                }
+
+                window.location.href = url;
+            });
+		});
+
+        function exportExcel(){
+            reset();
+            alertify.confirm("确定要以当前条件生成excel列表吗？", function (e) {
+                if (e) {
+                    var bill_batch_id = $(".bill_batch_id").val();
+                    var pay_order_id = $(".pay_order_id").val();
+                    var s_transaction_datetime = $(".s_transaction_datetime").val();
+                    var e_transaction_datetime = $(".e_transaction_datetime").val();
+                    var bill_type = $(".bill_type").val();
+                    var qs_create_time = $(".qs_create_time").val();
+                    var qe_create_time = $(".qe_create_time").val();
+
+                    var json = {"bill_batch_id":bill_batch_id,"pay_order_id":pay_order_id,"s_transaction_datetime":s_transaction_datetime,"e_transaction_datetime":e_transaction_datetime,
+                        "qs_create_time":qs_create_time,"qe_create_time":qe_create_time,"bill_type":bill_type};
+
+                    reset = function () {
+                        $("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+                        alertify.set({
+                            labels : {
+                                ok   : "确认",
+                                cancel : "取消"
+                            },
+                            delay : 5000,
+                            buttonReverse : false,
+                            buttonFocus  : "ok"
+                        });
+                    };
+
+                    $.ajax({
+                        url:"/billmanager/exportExcel",
+                        type : 'post',
+                        data :{
+                            params:JSON.stringify(json)
+                        },
+                        success:function(data){
+                            reset();
+                            alertify.success(data.msg);
+                        }
+                    });
+                } else {
+                    reset();
+                    alertify.log("已取消操作。");
+                }
+            });
+        }
+	</script>
+</head>
+<body>
+<div layout:fragment="content">
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+			<li class="active">对账汇总数据</li>
+			<li class="libtn">
+				<button sec:authorize="hasRole('ROLE_BILL_EXPORT')" id="export_btn" name="file" class="btn btn-primary" onclick="exportExcel()">
+					<span class="fas fa-sign-out-alt"></span>导出
+				</button>
+			</li>
+		</ol>
+	</div>
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_30">
+		<div style="padding:10px 10px; background:#fff" class="screen">
+			<div class="ab_screen">
+				<div class="form-inline">
+					<div class="form-group"  style="margin-right: 20px">
+						<label>对账批次号：</label>
+						<input type="text" name="bill_batch_id" th:if="${bill_batch_id != ''}" th:value="${bill_batch_id}" class="form-control bill_batch_id input-sm"/>
+					</div>
+					<div class="form-group">
+						<label>对账方式：</label>
+						<select class="form-control bill_type input-sm" name="bill_type"  style="margin-right: 20px">
+							<option value=''>全部</option>
+							<option value="1" th:if="${bill_type != null or bill_type != ''}"
+									th:selected="${bill_type == 1} ? 'selected'">自动</option>
+							<option value="2" th:if="${bill_type != null or bill_type != ''}"
+									th:selected="${bill_type == 2} ? 'selected'">手动</option>
+						</select>
+					</div>
+					<div class="form-group"  style="margin-right: 20px">
+						<label>订单号：</label>
+						<input type="text" name="pay_order_id" th:if="${pay_order_id != ''}" th:value="${pay_order_id}" class="form-control pay_order_id input-sm"/>
+					</div>
+				</div>
+				<br/>
+				<div class="form-inline">
+					<div class="form-group" style="margin-right: 20px">
+						<label>交易时间：</label>
+						<div class="input-group date datetimepicker2">
+							<input class="form-control  s_transaction_datetime input-sm" type="text" name="s_transaction_datetime" th:if="${s_transaction_datetime != ''}"
+								   th:value="${#dates.format(s_transaction_datetime,'yyyy-MM-dd HH:mm')}" style="width: 130px;" />
+							<span class="input-group-addon" style="width: 50px; height: 30px;">
+								<span class="glyphicon glyphicon-calendar"></span>
+							</span>
+						</div>
+						<label>~</label>
+						<div class="input-group date datetimepicker2">
+							<input class="form-control  e_transaction_datetime input-sm" type="text" name="e_transaction_datetime" th:if="${e_transaction_datetime != ''}"
+								   th:value="${#dates.format(e_transaction_datetime,'yyyy-MM-dd HH:mm')}" style="width: 130px;" />
+							<span class="input-group-addon" style="width: 50px; height: 30px;">
+								<span class="glyphicon glyphicon-calendar"></span>
+							</span>
+						</div>
+					</div>
+					<div class="form-group" style="margin-right: 20px">
+						<label>对账完成时间：</label>
+						<div class="input-group date datetimepicker2">
+							<input class="form-control  qs_create_time input-sm" type="text" name="qs_create_time" th:if="${qs_create_time != ''}"
+								   th:value="${#dates.format(qs_create_time,'yyyy-MM-dd HH:mm')}" style="width: 130px;" />
+							<span class="input-group-addon" style="width: 50px; height: 30px;">
+								<span class="glyphicon glyphicon-calendar"></span>
+							</span>
+						</div>
+						<label>~</label>
+						<div class="input-group date datetimepicker2">
+							<input class="form-control  qe_create_time input-sm" type="text" name="qe_create_time" th:if="${qe_create_time != ''}"
+								   th:value="${#dates.format(qe_create_time,'yyyy-MM-dd HH:mm')}" style="width: 130px;" />
+							<span class="input-group-addon" style="width: 50px; height: 30px;">
+								<span class="glyphicon glyphicon-calendar"></span>
+							</span>
+						</div>
+					</div>
+					<button class="btn btn-primary query btn-sm">查询</button>
+				</div>
+			</div>
+		</div>
+		<!--/* 以下为自定义代码块  */-->
+		<div class="table-responsive">
+			<!--/* 动态  */-->
+			<table id="table-cont" class="table table-striped table-hover">
+				<thead>
+				<tr>
+					<th width="50px">序号</th>
+					<th width="100px">对账批次号</th>
+					<th width="100px">平台订单号</th>
+					<th width="100px">平台订单生成时间</th>
+					<th width="100px">平台订单支付时间</th>
+					<th width="100px">平台订单金额</th>
+					<th width="100px">应付金额</th>
+					<th width="100px">用户支付金额</th>
+					<th width="100px">平台交易类型</th>
+					<th width="100px">平台交易状态</th>
+					<th width="100px">平台退款单号</th>
+					<th width="100px">平台退款金额</th>
+					<th width="100px">平台退款类型</th>
+					<th width="100px">平台退款状态</th>
+					<th width="100px">支付方式</th>
+					<th width="100px">交易时间</th>
+					<th width="100px">交易流水号</th>
+					<th width="100px">交易类型</th>
+					<th width="100px">交易状态</th>
+					<th width="100px">付款银行</th>
+					<th width="100px">货币种类</th>
+					<th width="100px">第三方总金额</th>
+					<th width="100px">企业红包金额</th>
+					<th width="100px">第三方退款单号</th>
+					<th width="100px">退款金额</th>
+					<th width="100px">企业红包退款金额</th>
+					<th width="100px">wx退款类型</th>
+					<th width="100px">wx退款状态</th>
+					<th width="100px">手续费</th>
+					<th width="100px">费率</th>
+					<th width="100px">平账金额</th>
+					<th width="100px">手动平账原因</th>
+					<th width="100px">手动平账备注</th>
+					<th width="100px">对账完成时间</th>
+					<th width="100px">对账方式</th>
+				</tr>
+				</thead>
+				<tbody>
+					<tr th:each="bill,vst:${bills}">
+						<td style="vertical-align: middle" th:text="${'00'+(vst.index+1)}"></td>
+						<td style="vertical-align: middle" th:text="${bill.bill_batch_id}"></td>
+						<td style="vertical-align: middle" th:text="${bill.pay_order_id}"></td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.order_create_datetime != null}">
+								<span th:text="${#dates.format(bill.order_create_datetime,'yyyy-MM-dd HH:mm')}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.pay_datetime != null}">
+								<span th:text="${#dates.format(bill.pay_datetime,'yyyy-MM-dd HH:mm')}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.price_total != null}">
+								<span th:text="${#numbers.formatDecimal(bill.price_total*0.01,1,2)}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.price_pay != null}">
+								<span th:text="${#numbers.formatDecimal(bill.price_pay*0.01,1,2)}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.user_price_pay != null}">
+								<span th:text="${#numbers.formatDecimal(bill.user_price_pay*0.01,1,2)}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.refund_id_three == null}">
+								<span th:text="支付"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.pay_status != null}">
+								<span th:text="${bill.pay_status == 1} ? '已支付' : '待支付'"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.refund_id != null}">
+								<span th:text="${bill.refund_id}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.r_fee != null}">
+								<span th:text="${#numbers.formatDecimal(bill.r_fee*0.01,1,2)}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.refund_id_three != null}">
+								<span th:text="退款"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.r_status != null}" th:switch="${bill.r_status}">
+								<span th:case="0">待退款</span>
+								<span th:case="1">退款中</span>
+								<span th:case="2">已退全款</span>
+								<span th:case="3">已退部分款</span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle" th:switch="${bill.pay_type}">
+							<span th:case="1">微信</span>
+							<span th:case="2">支付宝</span>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.transaction_datetime != null}">
+								<span th:text="${#dates.format(bill.transaction_datetime,'yyyy-MM-dd HH:mm')}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.transaction_id != null}">
+								<span th:text="${bill.transaction_id}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.trade_type != null}">
+								<span th:text="${bill.trade_type}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.transaction_status != null}">
+								<span th:text="${bill.transaction_status == 1} ? '已支付' : '待支付'"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.bank_name != null}">
+								<span th:text="${bill.bank_name}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.currency_type  != null}">
+								<span th:text="${bill.currency_type}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle"  >
+							<th:block th:if="${bill.transaction_fee != null}">
+								<span th:text="${#numbers.formatDecimal(bill.transaction_fee*0.01,1,2)}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.corporate_red_envelope_amount != null}">
+								<span th:text="${#numbers.formatDecimal(bill.corporate_red_envelope_amount*0.01,1,2)}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.refund_id_three != null}">
+								<span th:text="${bill.refund_id_three}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.refund_fee != null}">
+								<span th:text="${#numbers.formatDecimal(bill.refund_fee*0.01,1,2)}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.corporate_red_envelope_refund_amount != null}">
+								<span th:text="${#numbers.formatDecimal(bill.corporate_red_envelope_refund_amount*0.01,1,2)}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.refund_id_three != null}">
+								<span th:text="ORIGINAL"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.refund_id_three != null}">
+								<span th:text="wx已退款"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.service_charge != null}">
+								<span th:text="${#numbers.formatDecimal(bill.service_charge*0.01,1,2)}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.rate != null}">
+								<span th:text="${#numbers.formatDecimal(bill.rate*0.01,1,2)}"></span><span>%</span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.bill_fee != null}">
+								<span th:text="${#numbers.formatDecimal(bill.bill_fee*0.01,1,2)}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.manual_info != null}">
+								<span  th:text="${bill.manual_info}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.manual_remark != null}">
+								<span th:text="${bill.manual_remark}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle">
+							<th:block th:if="${bill.create_datetime != null}">
+								<span th:text="${#dates.format(bill.create_datetime,'yyyy-MM-dd HH:mm')}"></span>
+							</th:block>
+						</td>
+						<td style="vertical-align: middle" th:if="${bill.bill_type != null}" th:text="${bill.bill_type == 1} ? '自动' : '手动'"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div th:include="~{tags/pagination::p1(@{/billmanager/goto_normal_list(bill_batch_id=${bill_batch_id},
+																				pay_order_id=${pay_order_id},
+																				s_transaction_datetime=${s_transaction_datetime},
+																				e_transaction_datetime=${e_transaction_datetime},
+																				qs_create_time=${qs_create_time},
+																				qe_create_time=${qe_create_time},
+																				bill_type=${bill_type})},${page.total}
+					,${page.pageSize},${page.pageNo},${page.totalPage},right,p)}">
+		</div>
+	</div>
+
+</div>
+</body>
+</html>

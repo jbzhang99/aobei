@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html layout:decorate="~{base_layout}" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+<title>JD授权</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+	    var token = [[${token}]];
+		if(token != null){
+		    reset();
+		    alertify.success("token获取成功");
+            setTimeout(function (){
+                window.close();
+            }, 3500);
+		}
+
+		$('#jdAuth').click(function(){
+			var datas = location.href.split(location.hostname);
+			var redirect_uri = datas[0] + location.hostname + [[${redirect_uri}]];
+			var url = ['https://oauth.jd.com/oauth/authorize?',
+					'response_type=code',
+					'client_id=' + [[${client_id}]],
+					'redirect_uri=' + redirect_uri].join('&');
+			window.open(url);
+		});
+	});
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+		  <li class="active">JD授权</li>
+		</ol>
+	</div>
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_44">
+		<!--/* 以下为自定义代码块  */-->
+		<a id="jdAuth" class="btn btn-link btn-xs" href="javascript:;"  style="outline:none">
+			跳转到京东商家账户授权登陆页面
+		</a><br/><br/>
+		<label>此跳转为跳转到jd第三方商户登陆地址，涉及商户数字证书授权等操作……</label>
+	</div>
+</div>
+</body>
+</html>

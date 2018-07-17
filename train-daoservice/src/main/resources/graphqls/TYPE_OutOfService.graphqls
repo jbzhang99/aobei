@@ -1,0 +1,30 @@
+#暂停服务记录
+type OutOfService{
+
+    out_of_service_id : Long
+
+    #月份
+    month : String
+
+    #日期
+    day : Date
+
+    #开始时间
+    start_time : String
+
+    #结束时间
+    end_time : String
+
+    #创建时间
+    create_datetime : Date
+
+    #服务人员id
+    student_id : Long
+
+    #合伙人id
+    partner_id : Long
+
+    #请假持续时长，默认为8小时工作日。如果存储时长满8小时按照1天计算。只支持整数小时计算
+    duration : Int
+}
+

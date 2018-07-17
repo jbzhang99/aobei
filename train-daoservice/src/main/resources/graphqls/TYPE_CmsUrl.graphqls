@@ -1,0 +1,19 @@
+type CmsUrl{
+
+    cms_url_id : Long
+
+    #标题
+    title : String
+
+    #连接地址
+    url : String
+
+    #类型1,http 跳转 ，2native跳转
+    type : Int
+
+    create_datetime : Date
+
+    #0 未删除 ，1 已删除
+    deleted : Int
+}
+

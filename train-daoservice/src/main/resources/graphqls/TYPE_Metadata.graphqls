@@ -1,0 +1,10 @@
+#元数据信息
+type Metadata{
+
+    meta_key : String
+
+    meta_value : String
+
+    descript : String
+}
+

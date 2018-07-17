@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+ <html layout:decorate="~{base_layout}">
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"> -->
+<head>
+<meta charset="UTF-8"></meta>
+<title>学员信息</title>
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script TYPE="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<meta name="context-path" th:content="@{/}" />
+<script type="text/javascript" th:inline="javascript">
+//初始化alertify
+reset = function () {
+	$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+	alertify.set({
+	  labels : {
+	    ok   : "确认",
+	    cancel : "取消"
+	  },
+	  delay : 3000,
+	  buttonReverse : false,
+	  buttonFocus  : "ok"
+    });
+};
+
+$(function(){
+	$("#excelFile").fileinput({
+		language: 'zh', //设置语言
+        showPreview: false,
+        showUpload: false,
+        elErrorContainer: '#kartik-file-errors',
+        allowedFileExtensions: ["xlsx", "xls"]
+    });
+	
+	$('#partner_name_selected,#state_selected,#sex_selected,#grade_selected,#serItem_selected,#insurance_selected').change(function(){
+		var sex =  $("#sex_selected").val();
+		var state = $("#state_selected").val();
+		var partner_name = $("#partner_name_selected").val();
+		var grade = $("#grade_selected").val();
+		var serItem=$("#serItem_selected").val();
+		var insurance=$("#insurance_selected").val();
+		var p = [[${page.pageNo}]];
+		var url  = "/student/showStudent?" + $.param({
+					partner_name_selected : partner_name?partner_name:2,
+				 	sex_selected : sex?sex:2,
+				 	state_selected : state?state:2,
+				 	grade_selected : grade?grade:0,
+				 	serItem_selected : serItem?serItem:0,
+                	insurance_selected : insurance?insurance:0,
+				 	p : p?p:1
+		});
+		window.location.href = url;
+	});
+	//筛选条件选择后显示在选择框里面
+ 	var sexBack = [[${sex_selected}]];
+	$("#sex_selected").val(sexBack);
+	var stateBack = [[${state_selected}]];
+	$("#state_selected").val(stateBack);
+	var gradeBack = [[${grade_selected}]]
+	$("#grade_selected").val(gradeBack);
+	//var partnerBack=[[${partner_name_selected}]];
+	var partnerBack=$("#pName").val();
+	$("#partner_name_selected").val(partnerBack);
+	var serviceBack=$('#serSeleted').val();
+	$("#serItem_selected").val(serviceBack);
+	var insuranceBank=$('#insuranceSeleted').val();
+	$('#insurance_selected').val(insuranceBank);
+	//$("#serItem_selected").val(serviceBack);
+		   /*  $(".table table-bordered").each(function() {
+		        if(("#status").val() == 0) {
+		            $(this).parent().css("color", "#f00");
+		        }
+		    }); */ 
+		
+	//搜索功能
+	$("#search_btn").click(function(){
+		var condition =$("#condition").val();
+		if(condition != ''){
+			var sex =  $("#sex_selected").val();
+			var state = $("#state_selected").val();
+			var partner_name = $("#partner_name_selected").val();
+			var grade = $("#grade_selected").val();
+			var serItem=$("#serItem_selected").val();
+            var insurance=$("#insurance_selected").val();
+			var p = [[${page.pageNo}]];
+			var url  = "/student/showStudent?" + $.param({
+				partner_name_selected : partner_name?partner_name:2,
+			 	sex_selected : sex?sex:2,
+			 	state_selected : state?state:2,
+			 	grade_selected : grade?grade:0,
+			 	serItem_selected : serItem?serItem:0,
+                    insurance_selected : insurance?insurance:0,
+			 	p : p?p:1,
+			 	conditions:condition
+			});
+			window.location.href = url;
+		}else{
+			window.location.href ="/student/showStudent";
+		}
+	});
+
+    //点击派单设置模态框上的加号
+    $('#btnGoAddInsurances').click(function(){
+
+        var stuid=$('#stuId').val();
+        var haveInsurance=[];
+        //获取到已存在服务项目id
+        $('#HaveInsurance').find('span').each(function(i,v){
+            var InsuranceId=$(v).attr("InsuranceId");
+            if(InsuranceId!=0){
+                haveInsurance.push(InsuranceId);
+            }
+        });
+
+        $.ajax({
+            url:'/student/screenInsurance/'+stuid,//提交的位置
+            data:{
+                result:JSON.stringify(haveInsurance)
+            },//提交的数据
+            type:'POST',
+            success:function(data){
+                var flag=$.isEmptyObject(data);
+                if(flag==true){
+                    reset();
+                    alertify.alert("没有存在的保险");
+                    $('#btnGoAddInsurances').next().attr("class","hide");
+                    return false;
+                }
+                $("#notHaveInsurances option").remove();
+                //请求成功时
+                for(var i=0; i<data.length; i++){
+                    $("#notHaveInsurances").append("<option value="+data[i].insurance_id+">"+data[i].insurance_name+"</option>");
+                }
+                $('#btnGoAddInsurances').next().toggleClass('show hide');
+            },
+            dataType:'json'
+        });
+
+    })
+});
+
+	//编辑按钮
+	function updStudent(student_id,pageNo){
+		 window.location.href="/student/updStudent/"+student_id+"/"+pageNo;
+	}
+	
+	//导出
+	function exportStudent(){
+		/* $.ajax({
+	        url:'/student/exportStudent',//提交的位置
+	        type:'POST',
+	        success:function(data){
+	        	  reset();
+		          alertify.success(data.msg);
+		          setTimeout(function (){
+	        		//window.location.href="[(@{/student/showStudent})]";
+		        	  window.open("getExcelList","_blank");
+		          },3000);	
+	        },//提交成功回调函数
+	        dataType:'json'
+	    }); */
+		window.location.href="[(@{/student/exportStudent})]";
+	}
+	
+	//导入
+	function leadStudent(){
+		$('.editBut').attr("data-dismiss","modal");
+		var formData = new FormData($("#form1")[0]);
+		
+		var filename = $("#excelFile").val();
+		if(filename == "" || filename == null){
+			reset();
+	        alertify.alert("请选择文件后在上传");
+			return false;
+		}else if(filename.lastIndexOf(".xlsx")<0 || filename.lastIndexOf(".xls")<0){
+			reset();
+	        alertify.alert("请上传标准模板格式的excel文件");
+			return false;
+		}else{ 
+			$.ajax({
+				url : '/student/leadStudent',
+		        type : 'POST',
+		        cache:false,//false是不缓存，true为缓存
+	    	    async:true,//true为异步，false为同步
+	    	    contentType:false,// 告诉jQuery不要去处理发送的数据
+                processData:false,// 告诉jQuery不要去设置Content-Type请求头
+		        data :formData,
+		        error:function(data){
+		        	alertify.success(data.Errorresult);
+		        }, 
+		        success:function(data){
+		        	if(data.result=='excel导入成功'){
+		        		reset();
+		        		alertify.success(data.result);
+				        setTimeout(function (){		
+			        	   	window.location.href="/student/showStudent";
+				        },3000);
+		        	}else{
+		        		
+		        		reset();
+				        alertify.alert(data.result);
+				        return false;
+		        	}
+		        }
+		    });				
+		}
+	}
+
+	//页面上的添加按钮
+	function addStudentShow(){
+        window.location.href="/student/addStudentShow";
+	}
+
+//点击页面上的保险设置按钮
+function sendInsurance(student_id,pageNo){
+    $('#notHaveInsurances').parent().attr("class","hide");
+    $('#stuId').val(student_id);
+    $.ajax({
+        url:"/student/sendInsurance/"+student_id+"/"+pageNo,//提交的位置
+        type:'GET',
+        success:function(data){
+            $('#selectInsuranceModal').modal('show');
+            var length=data.length;
+            if(length==0){
+                var spanHtml="<span InsuranceId='0'>暂无保险</span>";
+                var ht="<div style='margin-left:15px'>"+spanHtml+"</div>"
+                $('#HaveInsurance').append(ht);
+            }else{
+                $.each(data, function (n,insurance) {
+                    var spanHtml="<span insuranceId="+insurance.insurance_id+">"+insurance.insurance_name+"</span>";
+                    var buttonHtml='<button type="button" id="redut" class="btn btn-link redutBtn text-warning" onclick="deleteRow(this)" style="display:ininer-block">'+
+                        '<i class="fas fa-minus-circle fa-lg text-warning"></i>'+
+                        '</button>';
+                    var html=spanHtml+buttonHtml;
+                    var ht="<div id='ins"+insurance.insurance_id+"' style='margin-left:15px'>"+html+"</div>"
+                    $('#HaveInsurance').append(ht);
+                });
+            }
+        },//提交成功回调函数
+        dataType:'json'
+    });
+}
+
+//模态框关闭按钮
+function closeModel(){
+    $('#HaveInsurance').html('');
+}
+
+//点击+里面的添加按钮
+function addNotHaveInsurances(obj){
+
+    $('#HaveInsurance').find('span').each(function(i,v){
+        var InsuranceId=$(v).attr("InsuranceId");
+        if(InsuranceId==0){
+            $(v).parent('div').remove();
+        }
+    });
+    //获取select的值
+    var id=$('#notHaveInsurances').find("option:selected").val();
+    var text=$('#notHaveInsurances').find("option:selected").text();
+    var spanHtml="<span InsuranceId="+id+">"+text+"</span>";
+    var buttonHtml='<button type="button" id="redut" class="btn btn-link redutBtn text-warning" onclick="deleteRow(this)" style="display:ininer-block">'+
+        '<i class="fas fa-minus-circle fa-lg text-warning"></i>'+
+        '</button>';
+    var html=spanHtml+buttonHtml;
+    var ht="<div id='ins"+id+"' style='margin-left:15px'>"+html+"</div>"
+    $('#HaveInsurance').append(ht);
+    $(obj).parent('div').toggleClass('show hide');
+    /*var id=$('#HaveInsurance').find('span').attr('partnerid');
+    if(id!=0){
+        $('#addInsurance').attr("style","display:none");
+        return false;
+    }*/
+}
+
+//保险后面的-号按钮
+function deleteRow(obj){
+    //将删除的合伙人再次添加到下拉框中
+    $('#btnGoAddInsurances').next().attr("class","hide");
+    var InsuranceId=$(obj).prev().attr('InsuranceId');
+    var InsuranceName=$(obj).prev().text();
+    var html='<option value='+InsuranceId+'>'+InsuranceName+'</option>';
+    $('#notHaveInsurances').append(ht);
+    //再删除该行
+    $(obj).parent().remove();
+    var length=$('#HaveInsurance').find('span').length;
+    if(length==0){
+        var spanHtml="<span InsuranceId='0'>暂无保险</span>";
+        var ht="<div>"+spanHtml+"</div>"
+        $('#HaveInsurance').append(ht);
+    }
+    $('#addInsurance').attr("style","display:block");
+}
+
+//点击模态框的确认按钮
+function addInsurance(pageNo){
+    var addInsurance=[];
+    //获取到商品id
+    var student_id=$('#stuId').val();
+    //获取添加的合伙人
+    $('#HaveInsurance').find('span').each(function(i,v){
+        var InsuranceId=$(v).attr("InsuranceId");
+        if(InsuranceId!=0){
+            addInsurance.push(InsuranceId);
+        }
+    });
+    $.ajax({
+        url:'/student/addStudentInsurance/'+student_id,
+        type:'GET',
+        data:{
+            result:JSON.stringify(addInsurance)
+        },
+        success:function(data){
+            $('#selectInsuranceModal').modal('hide');
+            //请求成功时
+            reset();
+            alertify.success(data.msg);
+            setTimeout(function (){
+                window.location.href="/student/showStudent?p="+pageNo;
+            }, 500);
+        },
+        dataType:'json'
+    })
+}
+
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar form-inline" >
+	
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+		  <li class="active">学员信息</li>
+			<li class="libtn" >
+				<button sec:authorize="hasRole('ROLE_STUDENT_EDIT')" class="btn btn-primary" th:onclick="|addStudentShow()|"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;添加</button>
+			</li>
+		  <li class="libtn" >
+			<button sec:authorize="hasRole('ROLE_STUDENT_EXPORT')" class="btn btn-primary" th:onclick="|exportStudent()|"><i class="fas fa-sign-out-alt"></i>&nbsp;导出</button>
+		  </li>
+		  <li class="libtn" >
+			<button sec:authorize="hasRole('ROLE_STUDENT_IMPORT')" class="btn btn-primary" data-toggle="modal" data-target=".bs-example-modal-lg"><i class="fas fa-sign-in-alt"></i>&nbsp;导入</button>
+		  </li>
+		  <li class="libtn" style="margin-top:10px">
+			<a  href="http://aobei-public.oss-cn-beijing.aliyuncs.com/train/downfile/%E5%AD%A6%E5%91%98%E4%BF%A1%E6%81%AF.xlsx" ><i class="fa fa-download" aria-hidden="true"></i>下载导入模板</a>&nbsp;&nbsp;&nbsp;
+		  </li>
+		  <li >
+			<input class="form-control" type="text" id="condition" name="condition" placeholder="请输入搜索条件"/>&nbsp;<button id="search_btn" class="btn btn-primary"><span class="fa fa-search"></span>&nbsp;查询</button>
+		  </li>
+
+		</ol>
+		
+	</div>
+	
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_12">
+		
+		<div class="form-inline">
+				<div class="form-group">
+					<input type="hidden" id="pName" th:value='${partner_name_selected}'/>
+					<input type="hidden" id="serSeleted" th:value='${serItem_selected}'/>
+					<input type="hidden" id="insuranceSeleted" th:value='${insurance_selected}'/>
+					隶属合伙人：<select id="partner_name_selected" name="partner_name_selected" class="form-control input-sm" style="max-width: 153px;">
+								<option value="2">全部</option>
+								<option th:each="plist:${pList}"  th:value="${plist.partner_id}" th:text="${plist.name}"></option>
+							</select>&nbsp;&nbsp;&nbsp;&nbsp;
+					性别：<select id="sex_selected" name="sex_selected" class="form-control input-sm" style="max-width: 70px;">
+							<option value="2">全部</option>
+							<option value="1">男</option>
+							<option value="0">女</option>
+						</select>&nbsp;&nbsp;&nbsp;&nbsp;
+					状态：<select id="state_selected" name="state_selected" class="form-control input-sm" style="max-width: 70px;">
+							<option value="2">全部</option>
+							<option value="0">离职</option>
+							<option value="1">在职</option>
+						</select>&nbsp;&nbsp;&nbsp;&nbsp;
+					等级：<select id="grade_selected" name="grade_selected" class="form-control input-sm" style="max-width: 70px;">
+							<option value="0">全部</option>
+							<option value="1">高级</option>
+							<option value="2">中级</option>
+							<option value="3">初级</option>
+						</select>&nbsp;&nbsp;&nbsp;&nbsp;
+					服务项目：<select id="serItem_selected" name="serItem_selected" class="form-control input-sm" style="max-width:110px;">
+							<option value="0">全部</option>
+							<th:block th:each="serlist:${serList}">
+								<option th:value="${serlist.serviceitem_id}" th:text="${serlist.name}"></option>
+							</th:block>
+						</select>&nbsp;&nbsp;&nbsp;&nbsp;
+					保险信息：<select id="insurance_selected" name="insurance_selected" class="form-control input-sm" style="max-width:110px;">
+							<option value="0">全部</option>
+							<th:block th:each="inslist:${insuranceList}">
+								<option th:value="${inslist.insurance_id}" th:text="${inslist.insurance_name}"></option>
+							</th:block>
+						</select>
+				</div>
+			</div>
+			<hr/>
+		<!--/* 以下为自定义代码块  */-->
+		<div class="table-responsive">
+		<!-- 动态 -->
+		<table id="table-cont" class="table table-striped table-hover">
+			<thead>
+					<tr bgcolor="#FFFFFF">
+						<th width="100px">姓名</th>
+						<th width="150px">隶属合伙人</th>
+						<th width="130px">身份证号</th>
+						<th width="100px">联系电话</th>
+						<th width="65px" class="text-center">性别</th>
+						<!--<th width="50px">年龄</th>-->
+						<th width="160px">创建时间</th>
+						<th width="65px" class="text-center">状态</th>
+						<th width="200px">服务项目</th>
+						<th width="65px" class="text-center">等级</th>
+						<th width="150px">保险信息</th>
+						<th width="100px" sec:authorize="hasAnyRole('ROLE_STUDENT_EDIT','ROLE_INSURANCE_REGISTER')">操作</th>
+					</tr>
+				</thead>
+				<tbody>
+				<tr th:each="list:${stuList}" bgcolor="#FFFFFF" >
+					<td th:text="${list.student_id}" hidden="hidden"></td>
+					<td th:text="${list.name}" style="vertical-align:middle;" ></td>
+					<td style="vertical-align:middle;">
+						<th:block th:each="plist:${pList}">
+							<p th:if="${list.partner_id==plist.partner_id}" th:text="${plist.name}" style="margin:0px;padding:0px"></p>
+						</th:block>
+					</td>
+					<td th:text="${list.identity_card}" style="vertical-align:middle;"></td>
+					<td th:text="${list.phone}" style="vertical-align:middle;"></td>
+					<td class="text-center" style="vertical-align:middle;">
+						<span th:if="${list.sex==1}">男</span>
+						<span th:if="${list.sex==0}">女</span>
+					</td>
+					<!--<td th:text="${list.age}" style="vertical-align:middle;"></td>-->
+					<td th:text="${#dates.format(list.cdate,'yyyy-MM-dd HH:mm:ss')}" style="vertical-align:middle;"></td>
+					<td class="text-center" style="vertical-align:middle;">
+						<span th:if="${list.state==1}">在职</span>
+						<span th:if="${list.state==0}">离职</span>
+					</td>
+					<td style="vertical-align:middle;">
+						<th:block  th:each="sfslist:${stuSerList}">
+							<th:block  th:each="serlist:${serList}">
+								<p th:if="${list.student_id==sfslist.student_id}" style="margin:0px;padding:0px">
+									<span th:if="${sfslist.serviceitem_id==serlist.serviceitem_id}" th:text="${serlist.name}"></span>
+								</p>
+							</th:block>
+						</th:block>
+					</td>
+					<td class="text-center" style="vertical-align:middle;">
+						<span th:if="${list.grade==1}">高级</span>
+						<span th:if="${list.grade==2}">中级</span>
+						<span th:if="${list.grade==3}">初级</span>
+					</td>
+					<td style="vertical-align:middle;">
+						<th:block  th:each="inslist:${insuranceRegisterList}">
+							<p th:if="${list.student_id==inslist.uid}" style="margin:0px;padding:0px">
+								<span  th:text="${inslist.insurance_name}"></span>
+							</p>
+						</th:block>
+					</td>
+					<td style="vertical-align:middle;">
+					<!-- th:if="${list.deleted==0}" -->
+						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_STUDENT_EDIT')"  th:onclick="|updStudent('${list.student_id}','${page.pageNo}')|" style='cursor: pointer;'><i class="fas fa-edit"></i>编辑</a>
+						</br>
+						<!--/保险设置按钮-->
+						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_INSURANCE_REGISTER')" th:onclick="|sendInsurance('${list.student_id}','${page.pageNo}')|" style="cursor: pointer;" data-toggle="modal" data-target="#selectInsuranceModal"><i class="glyphicon glyphicon-lock"></i>保险设置</a>
+						<!-- <input class="btn btn-default" type="button" value="下线"
+						 		th:onclick="'javascript:delPartner('+${list.student_id}+','+${page.pageNo}+')'"> -->
+					</td> 
+				</tr>
+				</tbody>
+		</table>
+		</div>
+		
+		<div th:include="~{tags/pagination::p1(@{/student/showStudent(sex_selected=${sex_selected},state_selected=${state_selected},grade_selected=${grade_selected},partner_name_selected=${partner_name_selected},serItem_selected=${serItem_selected},insurance_selected=${insurance_selected},conditions=${conditions})},${page.total},${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+		
+	</div>
+	<!-- 模态框 -->
+	 <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel"> -->
+		   <div class="modal-dialog modal-lg" role="document">
+		    <div class="modal-content">
+		    	<div class="modal-header">
+		    	 	<h4 class="modal-title" id="gridSystemModalLabel">上传Excel文件</h4>
+		    	 </div>
+		      		<div class="modal-body">
+		      			<div>
+		   		 			<form	id="form1" action="#"  method="post">
+	                			<input id="excelFile" type="file"  name="file" > 
+	                		</form>
+		      			</div>
+		      			<div id="kartik-file-errors"></div>
+                 	</div>
+              <div class="modal-footer">
+		        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+		        <button type="button" class="btn btn-primary editBut" onclick="leadStudent()">上传</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+	<!--保险设置模态框 -->
+	<div id="selectInsuranceModal" class="modal fade bs-example-modal-lg-er" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title">保险设置</h4>
+				</div>
+				<div class="modal-body">
+					<div>
+						<form id="form2" action="#"  method="post">
+							<input type="hidden" id="stuId"/>
+							<div class="row">
+								<div class="form-group">
+									<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">已选择的保险:</label>
+									<div class="col-sm-8 form-inline row"  id="HaveInsurance">
+
+									</div>
+								</div>
+							</div>
+							</br>
+							<div class="row" id="addInsurance">
+								<div class="form-group">
+									<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">添加保险:</label>
+									<div class="col-sm-8 form-inline row">
+										<div class="clearfix" style="margin-left: 15px">
+											<button type="button" id="btnGoAddInsurances" class="btn btn-primary pull-left">
+													<span  aria-hidden="true"
+														   class="glyphicon glyphicon glyphicon-plus ab_font12">
+													</span>
+											</button>
+											<div class="pull-left hide" style="margin-left: 50px">
+												<select class="form-control" id="notHaveInsurances" style="width:250px">
+												</select>
+												<button type="button" class="btn btn-success" style="margin-left: 5px" onclick="javascript:addNotHaveInsurances(this)">
+													添加
+												</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							</br>
+						</form>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal" onclick="javascript:closeModel()">关闭</button>
+							<button type="button" class="btn btn-primary"  th:onclick="|addInsurance('${page.pageNo}')|">确定</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+		 
+</div>
+</body>
+</html>

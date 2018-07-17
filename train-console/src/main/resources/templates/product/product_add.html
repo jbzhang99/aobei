@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+ <html layout:decorate="~{base_layout}">
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"> -->
+<head>
+<meta charset="UTF-8"></meta>
+<meta name="context-path" th:content="@{/}" />
+<title>产品添加页面</title>
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+<style>
+.glyphicon{position:inherit}
+.item{cursor:pointer;}
+</style>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+		$("#table-cont").on('click','.categoryOne',function(){
+			$("#showText").hide();
+			$('#catBtn').attr("disabled",true); 
+			var cid=$(this).attr('value');
+			var name=$(this).text();
+			$(this).css("background","#99CCFF").siblings().css("background","#ffffff");
+			//删除所有的兄弟
+			$(this).parent().parent().siblings().remove();
+			$.ajax({
+		        url:'/product/selectCategory/'+cid,//提交的位置
+		        type:'POST',
+		        success:function(data){
+		        	//清空li
+		        	$('.cateDiv ul').html('');
+		        	var result="";
+		        	$.each(data,function(i,cMap){
+		        		result+='<li  style=" padding:5px 20px; list-style-type:none;" value='+cMap.id+' identify="'+cMap.identify+'" onclick="javascript:liClick(this)">'+cMap.name+'</li>';
+		        	});
+		        	$(".cateDiv ul").append(result);
+		        	var html=$('.cateDiv').html();
+		        	var divHTML='<div class="form-group" style="display:inline-block;margin-right: 10px;vertical-align: top;" id="childTow" pname="'+name+'">'+html+'</div>';
+		        	$('#table-cont').append(divHTML);
+		        },
+		        dataType:'json'
+		   });
+		});
+	});
+	
+	function liClick(obj){
+		$(obj).css("background","#99CCFF").siblings().css("background","#ffffff");
+		$('.cateDiv ul').html('');
+		//标识（1:分类   0:服务项目）
+		var idenID=$(obj).attr("identify");
+		var cid=$(obj).attr('value');
+		//获取父级名称
+		var pname=$(obj).parents('div').attr('pname');
+		var text=$(obj).text();
+		if(idenID =='1'){
+			//分类
+			$("#showText").hide();
+			$('#catBtn').attr("disabled",true); 
+			//当前div后的div全部删除
+			var oid=$(obj).parents('div').attr('id');
+			$('#'+oid+' ~ div').remove();
+			
+			 $.ajax({
+		        url:'/product/selectCategory/'+cid,//提交的位置
+		        type:'POST',
+		        success:function(data){
+		        	if(!data.length){return;}
+		        	$.each(data,function(i,cMap){
+		        		var liHtml='<li  style=" padding:5px 20px; list-style-type:none;" value='+cMap.id+' identify="'+cMap.identify+'" onclick="javascript:liClick(this)">'+cMap.name+'</li>';
+		        		 $(".cateDiv ul").append(liHtml);
+		        	});
+		        	var html=$('.cateDiv').html();
+		        	var divHTML='<div class="form-group" id="item'+data[0].id+'" style="display:inline-block;margin-right: 10px;vertical-align: top;" pname="'+text+'">'+html+'</div>';
+		        	$('#table-cont').append(divHTML);
+		        },
+		        dataType:'json'
+		   }); 
+		}else if(idenID =='0'){
+			//服务项目
+			var oid=$(obj).parents('div').attr('id');
+			$('#'+oid+' ~ div').remove();
+			$('#catBtn').attr("disabled",false);
+			//$("#showText input").val(cid);
+			$("#showText span").text("您现在选中的是："+pname+" >> "+text);
+			$("#serNextBtn").attr("ser-id",cid);
+			$("#showText").show();
+		}
+	}
+	
+	function categoryNext(obj){
+		var serid=$(obj).parent("div").attr("ser-id");
+		window.location.href="[(@{/product/showCategoryNext/})]" + serid; 
+	}
+</script>
+</head>
+<body>
+	
+<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <!-- <li><a href="#">一级目录</a></li> -->
+			  <li><a href="/product/showProductList" class="back_butn" style="cursor: pointer;">产品管理</a></li>
+			  <li class="active">添加</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_10">
+			 <div  style="margin-top: 10px;width:100%">
+				<div class="form-group" id="table-cont">
+	        		<div class="form-group" style="margin-right: 10px;display:inline-block;">
+	        			<!-- border:1px solid #ddd; -->
+			   			<ul style="border-bottom:none; padding:0px; width:150px ;border:1px solid #ddd;" >
+			       			<li class="categoryOne" th:each="category:${categoryList}" th:value="${category.category_id}" th:text="${category.name}" style="padding:5px 20px; list-style-type:none;"></li>
+			       		</ul>
+		        	</div>
+	        	</div>
+	        	<div class="form-group" id="showText" style="width:500px;height:30px;background-color:#F2F2F2" hidden="hidden">
+	        		<!-- <input type="hidden"/> -->
+	        		<span style="display:inline-block;width:500px;text-align:center;font-weight: bold;margin-top: 5px"></span>
+	        	</div>
+	        	<div class="form-group" id="serNextBtn">
+					<button type="button" id="catBtn" class="btn btn-primary" disabled="disabled" onclick="javascript:categoryNext(this)">下一步</button>
+	        	</div>
+	        </div>
+        	<div class="form-group cateDiv"  hidden="hidden">
+	   			<ul style="border:1px solid #ddd; padding:0px;  width:150px"></ul>
+	       	</div>
+		</div>
+	</div>
+</body>

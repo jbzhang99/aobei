@@ -1,0 +1,207 @@
+<!DOCTYPE HTML>
+<html layout:decorate="~{base_layout}">
+<head>
+<title>类目管理编辑页面</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<style type="text/css">
+	.glyphicon-move{
+		display: none;
+	}
+	button.kv-file-remove{
+		display: none;
+	}
+	.file-upload-indicator{
+		display: none;
+	}
+</style>
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+
+//初始化alertify
+reset = function () {
+	$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+	alertify.set({
+	  labels : {
+	    ok   : "确认",
+	    cancel : "取消"
+	  },
+	  delay : 1000,
+	  buttonReverse : false,
+	  buttonFocus  : "ok"
+    });
+}
+
+$(function(){
+	$('#form1').bootstrapValidator({
+    message: '这个值是无效的！',
+    live: 'enabled',
+    feedbackIcons: {
+//            valid: 'glyphicon glyphicon-ok',
+//            invalid: 'glyphicon glyphicon-remove',
+//            validating: 'glyphicon glyphicon-refresh'
+    },
+    fields: {
+    	name: {
+           // message: '此学校名称是无效的！',
+            validators: {
+                notEmpty: {
+                    message: '请填写名称！'
+                },
+                stringLength: {
+                    max: 20,
+                    message: '名称最长不得多于20个字符'
+                } 
+            }
+        },
+        descr: {
+            validators: {
+                notEmpty: {
+                    message: '请填写描述内容！'
+                },
+                stringLength: {
+                    max: 200,
+                    message: '描述内容不得多于200个字符'
+                }
+            }
+        }
+      }
+	}); 
+	
+	var url=$('#logourl').val();
+	if(url==null || url==""){
+		$("#category_logo").fileinput({
+	         language: 'zh', //设置语言
+	         //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+	         allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+	         //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+	         //uploadAsync: true, //默认异步上传
+	         showUpload:false, //是否显示上传按钮
+	         showRemove :true, //显示移除按钮
+	         showPreview :true, //是否显示预览
+	         showCaption:false,//是否显示标题
+	         //browseClass:"btn btn-primary", //按钮样式    
+	         dropZoneEnabled: false,//是否显示拖拽区域
+	         minImageWidth: 50, //图片的最小宽度
+	         minImageHeight: 50,//图片的最小高度
+	         maxImageWidth: 2000,//图片的最大宽度
+	         maxImageHeight: 2000,//图片的最大高度
+	         maxFileSize:2000,//单位为kb，如果为0表示不限制文件大小
+	         //minFileCount: 0,
+	         //maxFileCount:10, //表示允许同时上传的最大文件个数
+	         enctype:'multipart/form-data',
+	         validateInitialCount:true,
+	         //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+	         //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+	     }); 
+	}
+	if(url!=null || url!=""){
+		$("#category_logo").fileinput({
+	    	language: 'zh', //设置语言
+	        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+	        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+	        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+	        //uploadAsync: true, //默认异步上传
+	        showUpload:false, //是否显示上传按钮
+	        showRemove :true, //显示移除按钮
+	        showPreview :true, //是否显示预览
+	        showCaption:false,//是否显示标题
+	        //browseClass:"btn btn-primary", //按钮样式    
+	        dropZoneEnabled: false,//是否显示拖拽区域
+	        minImageWidth: 50, //图片的最小宽度
+	        minImageHeight: 50,//图片的最小高度
+	        maxImageWidth: 2000,//图片的最大宽度
+	        maxImageHeight: 2000,//图片的最大高度
+	        maxFileSize:3000,//单位为kb，如果为0表示不限制文件大小
+	        //minFileCount: 0,
+	        //maxFileCount:10, //表示允许同时上传的最大文件个数
+	        enctype:'multipart/form-data',
+	        validateInitialCount:true,
+	        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+	        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+	    	initialPreview: [
+	           "<img src='"+url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;'>"
+	    	],
+		    initialPreviewConfig: [
+		        {
+		            caption: name
+		        }
+		    ]
+	    });
+	}
+	
+}); 
+
+//取消按钮
+function cancel(){
+ window.location.href = "/categorySun/showCategorySun";
+}
+//编辑分类功能
+function editcategoryBtn(){
+  $('#form1').data('bootstrapValidator').validate(); 
+  if($('#form1').data('bootstrapValidator').isValid()){ 
+	  document.getElementById("form1").submit();//提交表单
+  }
+}
+
+</script>
+</head>
+<body>		
+		
+<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <!-- <li><a href="#">一级目录</a></li> -->
+			  <li><a href="/categorySun/showCategorySun" class="back_butn" style="cursor: pointer;">类目管理</a></li>
+			  <li class="active">编辑</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main"  data-sidea="side_9">
+			<form id="form1" class="form-horizontal"
+			action="#" th:action="@{/categorySun/editCategory}"  method="post" enctype="multipart/form-data">
+				<input type="hidden" name="mts"  th:value="${application.mts}"/>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>名称:</label>
+				<div class="col-sm-4">
+				<input type="hidden" class="form-control" id="category_id" name="category_id" th:value="${category.category_id}"/>
+				<input type="hidden" class="form-control" id="logourl" name="logourl" th:value="${category.logo}"/>
+					<input type="text" class="form-control" id="name"
+						name="name" placeholder="请输入名称" th:value="${category.name}"/>
+				</div>
+			</div>
+			<div class="form-group" >
+				<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">内容描述:</label>
+				<div class="col-sm-5">
+					<textarea  class="form-control" id="descr" name="descr" placeholder="请输入描述内容" th:text="${category.descr}"></textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">分类图标:</label>
+				<div class="col-sm-5">
+					<input type="file" class="form-control" id="category_logo" name="category_logo"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"></label>
+				<div class="col-sm-5">
+					<button type="button" class="btn btn-primary" onclick="javascript:editcategoryBtn()">确定</button>
+				 	<button type="button" class="btn btn-default" onclick="javascript:cancel()">取消</button>				</div>
+				</div>
+			</div>
+		</form>
+		</div>
+	</div>	
+</body>
+</html>

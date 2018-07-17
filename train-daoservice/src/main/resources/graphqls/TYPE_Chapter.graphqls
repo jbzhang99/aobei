@@ -1,0 +1,25 @@
+#课节
+type Chapter{
+
+    #课节id
+    chapter_id : Long
+
+    #标题
+    headline : String
+
+    #内容
+    section_content : String
+
+    #第 N 节
+    section_name : Int
+
+    #章节课时
+    time_length : Int
+
+    #课程id
+    course_id : Long
+
+    #0 未删除，1 已删除
+    deleted : Int
+}
+

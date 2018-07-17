@@ -1,0 +1,70 @@
+input CourseInput {
+	course_id:Int
+	section_content:String
+	id:String
+}
+#顾客在添加地址时需要填写的项目
+input CustomerAddressInput{
+    #顾客地址ID
+    customer_address_id:Long
+    #被服务者姓名
+    username:String
+    #被服务者电话
+    phone:String
+    #所在省
+    province:String!
+    #所在市
+    city:String!
+    #所在区
+    district:String!
+    #详细地址
+    address:String!
+    #纬度
+    lbs_lat:String!
+    #经度
+    lbs_lng:String!
+    #补充地址详细
+    sub_address:String
+    #是否设置为默认地址 0 否 1 是
+    default_address:Int
+}
+#下订单必备
+input OrderInput{
+    #选中的商品ID
+    product_id:Long!
+    #选中的商品skuID
+    psku_id:Long!
+    #服务开始时间
+    begin_datetime:String!
+    #服务结束时间
+    end_datatime:String
+    #用户选择的服务地址
+    customer_address_id:Long!
+    #是否选择了优惠券
+    coupon_receive_id:Long
+    #购买数量
+    num:Int!
+    #用户下单备注信息
+    remark:String
+}
+input StudentOrderInput{
+	#订单id
+	pay_order_id:String!
+	#商品id
+	product_id:Long!
+	#skuid
+	psku_id:Long!
+	#开始时间
+	begin_datetime:String
+	#结束时间
+	end_datatime:String
+	#顾客地址
+	customer_address_id:Long!
+	#购买数量
+	num:Int!
+	#备注
+	remark:String
+	#状态(不选预约时间为0  选择预约时间为1)
+	type:Int!
+
+}

@@ -1,0 +1,45 @@
+#考试申请（报考）
+type ExamApply{
+
+    exam_apply_id : Long
+
+    #培训计划id,可以为空
+    train_plan_id : Long
+
+    #考试计划id
+    exam_plan_id : Long
+
+    #学员id
+    student_id : Long
+
+    #对应学员的合伙人id
+    partner_id : Long
+
+    #考试科目id
+    exam_subject_id : Long
+
+    #申请日期
+    apply_datetime : Date
+
+    #身份核对状态 0 失败 1 成功
+    id_check : Int
+
+    #考试得分
+    score : Int
+
+    #考试是否通过  0 未通过  1 通过
+    passed : Int
+
+    #开考日期
+    exam_date : Date
+
+    #开考时间
+    exam_start_time : Date
+
+    #结束时间
+    exam_end_time : Date
+
+    #0 未删除 1 已删除
+    deleted : Int
+}
+

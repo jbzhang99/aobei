@@ -1,0 +1,13 @@
+#老师支持的考试科目
+type TeacherExamSubject{
+
+    #老师id
+    teacher_id : Long
+
+    #考试科目id
+    exam_subject_id : Long
+
+    #无用字段
+    none : Long
+}
+

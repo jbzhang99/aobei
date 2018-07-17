@@ -1,0 +1,109 @@
+#订单支付信息
+type Order{
+
+    #订单id   id格式   随机id+用户id 后5位
+    pay_order_id : String
+
+    #订单名称
+    name : String
+
+    #顾客id
+    uid : Long
+
+    #订单来源渠道
+    channel : String
+
+    #客户端 id
+    client_id : String
+
+    #总价，单位分
+    price_total : Int
+
+    #优惠金额，单位分
+    price_discount : Int
+
+    #实际支付金额 单位分
+    price_pay : Int
+
+    #JSON 优惠数据 [{id:优惠id,descript:优惠说明,price:优惠金额}]
+    discount_data : String
+
+    #支付方式  1 微信 2 支付宝
+    pay_type : Int
+
+    #支付状态 0 待支付  1 已支付
+    pay_status : Int
+
+    #下单时间
+    create_datetime : Date
+
+    #支付时间
+    pay_datetime : Date
+
+    #可退金额  单位分
+    r_fee : Int
+
+    #退款状态  0待退款 ,1退款中,2 已退全款 3 已部分退款
+    r_status : Int
+
+    #退款申请日期
+    r_datetime : Date
+
+    #退款完成日期
+    r_finish_datetime : Date
+
+    #客户联系人
+    cus_username : String
+
+    #顾客地址id，用户修改地址不影响已生成的订单数据
+    customer_address_id : Long
+
+    #客户手机号
+    cus_phone : String
+
+    #地址 省
+    cus_province : Int
+
+    #地址 市
+    cus_city : Int
+
+    #地址 区
+    cus_area : Int
+
+    #完整地址，格式  北京  北京 朝阳区 建国路89号
+    cus_address : String
+
+    #坐标 纬度
+    lbs_lat : String
+
+    #坐标 经度
+    lbs_lng : String
+
+    #用户下订单备注
+    remark : String
+
+    #用户取消订单备注
+    remark_cancel : String
+
+    #系统备注
+    sys_remark : String
+
+    #状态点    1 待付款  2 待确认  3 待服务 4 已取消 5 已完成
+    status_active : Int
+
+    #过期时间。当前时间+30分钟
+    expire_datetime : Date
+
+    #分组标记
+    group_tag : Long
+
+    #是否为代下单 1 是 0 否
+    proxyed : Int
+
+    #用户表中student_id
+    proxyed_uid : Long
+
+    #第三方商户订单
+    out_order_id : String
+}
+

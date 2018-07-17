@@ -1,0 +1,236 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+<title>库存剩余</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+		ymd();
+		$(".back_butn").click(function(){
+			window.history.go(-1);
+		});
+		
+		var product_id = [[${product_id}]];
+		var psku_id = [[${psku_id}]];
+		var station_id = [[${station_id}]];
+
+        if(station_id){
+            $(".station_id option").each(function(){
+                if($(this).val() == station_id){
+                    $(this).prop("selected",true);
+                }
+            });
+            sel_product(product_id);
+        }
+		if(product_id){
+			$(".product_id option").each(function(){
+				if($(this).val() == product_id){
+					$(this).prop("selected",true);
+				}
+			});
+			sel_product(product_id);
+		}
+        if(psku_id){
+            $(".psku_id option").each(function(){
+				if($(this).val() == psku_id){
+					$(this).prop("selected",true);
+				}
+			});
+        }
+
+
+        $(".query").click(function(){
+            var partner_id = [[${partner_id}]];
+            var station_id= $(".station_id").val();
+            if(station_id == ''){
+                reset();
+                alertify.alert("请选择查询站点！");
+                return;
+            }
+            var product_id = $(".product_id").val();
+            if(product_id == ''){
+                reset();
+                alertify.alert("请选择产品！");
+                return;
+            }
+            var psku_id = $(".psku_id").val();
+            if(psku_id == ''){
+                reset();
+                alertify.alert("请选择产品sku信息！");
+                return;
+            }
+			var c_begin_date = $(".c_begin_date").val();
+            if(c_begin_date == ''){
+                reset();
+                alertify.alert("请选择查询开始时间！");
+                return;
+            }
+			//c_begin_datetime = c_begin_datetime.replace("T"," ");
+			var c_end_date = $(".c_end_date").val();
+            if(c_end_date == ''){
+                reset();
+                alertify.alert("请选择查询结束时间！");
+                return;
+            }
+			//c_end_datetime = c_end_datetime.replace("T"," ");
+			if(c_begin_date != ''){
+				if(c_end_date != ''){
+					if(c_end_date < c_begin_date){
+						reset();
+						alertify.alert("查询结束时间不得小于查询开始时间！");
+						return;
+					}else{
+						window.location.href = "/ordermanager/scheduling_task?product_id="+product_id+"&psku_id="+psku_id+"&c_begin_date="+c_begin_date+
+															"&c_end_date="+c_end_date+"&partner_id="+partner_id+"&station_id="+station_id;
+					}
+				}else{
+					reset();
+					alertify.alert("请选择查询结束时间！");
+					return;
+				}
+			}else{
+				window.location.href = "/ordermanager/scheduling_task?product_id="+product_id+"&psku_id="+psku_id+"&c_begin_datetime="+c_begin_datetime+
+													"&c_end_datetime="+c_end_datetime+"&partner_id="+partner_id+"&station_id="+station_id;
+			}
+		});
+    });
+	
+	function sel_product(product_id){
+		var skus = [[${skus}]];
+		var skuss = $.parseJSON(skus);
+		var html_s = [];
+		html_s.push("<option value=''>请选择</option>");
+		
+		$.each(skuss,function(i,ele){
+			if(ele.product_id == product_id){
+				html_s.push("<option value="+ele.psku_id+">"+ele.name+"</option>");
+			}
+		});
+		$(".psku_id").html(html_s.join(''));
+	}
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+		  <li><a class="back_butn" style="cursor: pointer;">商家列表</a></li>
+		  <li class="active">库存查询</li>
+		</ol>
+	</div>
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_14">
+		<div style="padding:10px 10px; background:#fff" class="screen">
+                <div class="ab_screen">
+                    <div class="form-inline">
+						<div class="form-group" style="margin-right: 20px">
+						    <label>合伙人名称：</label>
+						    <span th:text="${partner.name}"></span>
+						</div>
+						<div class="form-group">
+							<label>联系人：</label>
+							<span th:text="${partner.linkman}"></span>
+						</div>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<div class="form-group">
+							<label>联系电话：</label>
+							<span th:text="${partner.phone}"></span>
+						</div>
+					</div>
+					<br>
+					<div class="form-inline">
+						<div class="form-group" style="margin-right: 20px">
+							<label>服务站点：</label>
+							<select class="form-control station_id input-sm" name="station_id" >
+								<option value=''>请选择</option>
+								<th:block th:each="station:${stations}">
+									<option th:value="${station.station_id}"  th:text="${station.address}"></option>
+								</th:block>
+							</select>
+						</div>
+					</div>
+					<br>
+					<div class="form-inline">
+						<div class="form-group" style="margin-right: 20px">
+						    <label>产品：</label>
+						    <select class="form-control product_id input-sm" name="product_id" onchange="sel_product(this.value)" style="width: 150px">
+						    	<option value=''>请选择</option>
+						    	<option th:each="product:${products}" th:value="${product.product_id}" th:text="${product.name}"></option>
+						    </select>
+						</div>
+						<div class="form-group" style="margin-right: 20px">
+						    <label>产品sku：</label>
+						    <select class="form-control psku_id input-sm" name="psku_id" >
+						    	<option value=''>请选择</option>
+						    </select>
+						</div>
+						<div class="form-group" style="margin-right: 20px">
+						    <label>日期：</label>
+                            <div class="input-group date datetimepicker1">
+								<input class="form-control  c_begin_date input-sm" type="text" name="c_begin_date" th:if="${c_begin_date != ''}" th:value="${c_begin_date}" style="width: 130px;"/>
+								<span class="input-group-addon" style="width: 50px; height: 30px;">
+				                    <span class="glyphicon glyphicon-calendar"></span>
+				                </span>
+			                </div>
+                            <label>~</label>
+                            <div class="input-group date datetimepicker1">
+								<input class="form-control  c_end_date input-sm" type="text" name="c_end_date" th:if="${c_end_date != ''}" th:value="${c_end_date}" style="width: 130px;"/>
+								<span class="input-group-addon" style="width: 50px; height: 30px;">
+				                    <span class="glyphicon glyphicon-calendar"></span>
+				                </span>
+			                </div>
+						</div>
+						<button class="btn btn-primary query btn-sm">查询</button>
+					</div>
+                </div>
+            </div>
+		
+		<!--/* 以下为自定义代码块  */-->
+		<div class="table-responsive">
+		<!--/* 动态 */-->
+		<table id="table-cont" class="table table-striped table-hover">
+			<thead>
+				<tr>
+					<th style="vertical-align: middle">日期</th>
+					<th style="vertical-align: middle">服务时间</th>
+					<th style="vertical-align: middle">库存数量</th>
+				</tr>
+			</thead>
+			<tbody>
+				<th:block th:each="store:${stores}">
+					<th:blcok th:if="${#lists.size(store.scopeStores) ge 1}">
+						<tr th:each="timeScopeStore,vst:${store.scopeStores}">
+							<td>
+								<span th:if="${vst.index eq 0}" th:text="${store.datetime}"></span>
+								<span th:unless="${vst.index ne 0}"> </span>
+							</td>
+							<td>
+								<th:block th:each="map:${timeUnisMap}">
+									<span th:if="${map.value eq timeScopeStore.skuTime.s}" th:text="${map.key} + ' - '"></span>
+								</th:block>
+								<th:block th:each="map:${timeUnisMap}">
+									<span th:if="${map.value eq timeScopeStore.skuTime.e}" th:text="${map.key}"></span>
+								</th:block>
+							</td>
+							<td th:text="${timeScopeStore.store}"></td>
+						</tr>
+					</th:blcok>
+				</th:block>
+			</tbody>
+		</table>
+		</div>
+		<div th:include="~{tags/pagination::p1(@{/ordermanager/scheduling_task(partner_id=${partner_id},product_id=${product_id},psku_id=${psku_id},c_begin_date=${c_begin_date},c_end_date=${c_end_date},station_id=${station_id})},${page.total}
+					,${page.pageSize},${page.pageNo},${page.totalPage},right,p)}">
+		</div>
+	</div>
+</div>
+</body>
+</html>

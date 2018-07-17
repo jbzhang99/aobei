@@ -1,0 +1,207 @@
+type Query {
+	# API CODE
+	apicode:ApiCode
+	#获取当前绑定信息
+    my_student_bindinfo:StudentInfo
+    #学员正在培训中的课程列表  
+    my_student_course_team_active_list(count:Int = 2):[StudingTrainCourseInfo]
+    #获取学员的课程表列表
+    my_student_courseinfo_active_list(count:Int = 10):[TrainScheduleInfo]
+	#获取学员的课程排期详情
+	train_schedule_info(train_schedule_id:String):TrainScheduleInfo
+	#学员考试成绩记录
+    my_student_exam_apply_result:[ExamApplyResult]
+    #学员考试成绩数量
+    my_student_exam_score_counts:ExamScoreCounts
+    #获取学员培训记录
+    my_student_trained_courseinfo_list:[CourseInfoEvaluate]
+    
+    
+    #获取图片信息
+    images(ids:[String]):[Image]
+	 #获取老师端bannar
+    teacher_cms_bannar_online_list:[CmsBanner]
+    #用户老师绑定信息
+    my_teacher_bindinfo:Teacher
+    #获取老师的课程表列表
+    my_teacher_courseinfo_active_list(count:Int = 10):[TrainScheduleInfo]
+    #获取老师的课程记录
+    my_teacher_courseinfo_list(dateStart:Date!,dateEnd:Date!,count:Int=10):[TrainScheduleInfo]
+	#获取学员已学习课程
+	my_student_trainedinfo_list:[TrainedInfo]
+	
+	
+	#根据user_id查询老师信息
+	id_teacher_info(user_id:String):Teacher
+	#根据user_id查询学生信息
+	id_student_info(user_id:String):Student
+	#根据student_id查询学员信息
+	id_student_info_by_student_id(student_id:String):Student
+	#根据teacher_id查询出老师信息
+	id_teacher_info_by_teacher_id(teacher_id:String):Teacher
+	#根据course_id查询出课程信息
+	id_course_information_by_team_Id(course_id:String):Course
+	#根据plan_id查询培训计划
+	id_training_plan_by_plan_id(train_plan_id:String):Plan
+
+	#根据exam_plan_id查询考试安排
+	id_examPlan_arrangement_by_id(exam_plan_id:String):ExamPlan
+	#根据exam_apply_id查询考试信息
+	id_examApply_information_by_id(exam_apply_id:String):ExamApply
+	#根据id查询课程评价
+	id_courseEvaluate_by_id(id:String):CourseEvaluate
+
+	#根据cms_bannar_id查询cms_bannar
+	id_cmsBanner_information_by_content_id(cms_bannar_id:String):CmsBanner
+	#根据school_id查询学校信息
+	id_school_information_by_school_id(school_id:String):School
+	#根据classroom_id查询教室信息
+	id_classroom_information_by_classroom_id(classroom_id:String):Classroom
+	#根据train_schedule_id查询上课排期
+	id_trainSchedule_information_by_id(train_schedule_id:String):TrainSchedule
+	#根据chapter_id查询课程章节信息
+	id_chapter_section_information_by_id(chapter_id:String):Chapter
+
+
+
+
+
+	# 顾客信息的绑定
+	customer_info:Customer
+	#获取banner图
+	customer_banner_list(position:String):[OssImg]
+	#获取首页分类块
+	customer_home_category_list:[Category]
+	# 根据分类ID获取到产品列表
+	customer_product_list_by_category_level_code(category_level_code:String!,page_index:Int!,count:Int!,city_id:String):[ProductWithCoupon]
+    #分页获取产品集合
+    customer_home_product_list(page_index:Int!,count:Int!,city_id:String):[ProductWithCoupon]
+    #获取一个产品的详细集合
+    customer_product_detail(product_id:Long!):ProductInfo
+    #分页获取产品SKU集合
+    customer_prosku_list(product_id:Long!,page_index:Int!,count:Int!):[ProSku]
+    #获取顾客填写过的所有服务地址的列表
+    customer_address_list:[CustomerAddress]
+    #获得上一次用户设置的默认地址
+    customer_get_default_address:CustomerAddress
+    #获得一个sku的可用时间
+    customer_product_available_times(product_id:Long!, psku_id:Long!, customer_address_id:Long!,num:Int!):[TimeModel]
+    #获得订单列表
+    customer_order_list(status:String,page_index:Int!,count:Int!):[OrderInfo]
+    #获取订单详情
+    customer_order_detail(pay_order_id:String!):OrderInfo
+    #获取自己的优惠券，仅查看已有优惠券
+    customer_coupon_list(page_index:Int!,count:Int!):[CouponResponse]
+    #获取自己的优惠券，和产品进行关联的
+    customer_coupon_list_by_product(psku_id:Long!,num:Int!,page_index:Int!,count:Int!):[CouponResponse]
+    #选择优惠券重新计算价格
+    customer_recalculate_price(psku_id:Long!,coupon_receive_id:Long!,num:Int!):Int
+    #获取即将支付的订单
+    customer_get_order_to_pay(pay_order_id:String!):Order
+    #获取统一下单返回的数据；
+    customer_wx_prepay(pay_order_id:String!,openid:String):WxPaymentBody
+    #支付后查看支付是否成功
+    customer_confirm_pay_status(pay_order_id:String!):Order
+    #直接返回的String类型
+    customer_test:String
+    #APP定制的接口
+    #APP获得轮播图
+    customer_banners(position:String):[CmsBanner]
+    #APP获得首页中的产品列表
+    customer_homePageProducts(page_index:Int!,count:Int!,city_id:String):[ProductWithCoupon]
+    #APP中获取推荐位的产品列表
+    customer_recommendProducts(city_id:String):[ProductWithCoupon]
+    #获取评价基础统计数据
+    customer_productEvaluateBase(product_id:Long!,num:Int!):EvaluateBase
+    #分页获取评价列表
+    customer_productEvaluates(product_id:Long!,page_index:Int,count:Int):[Evaluate]
+	#查询开通服务的城市
+	customer_open_cities:[TrainCity]
+	#查询可领取的优惠券
+	customer_query_conpon_list(product_id:Long,page_index:Int!,count:Int!):[CouponResponse]
+	#APP微信支付，获取统一下单返回的数据 appid 目前为固定值：wx_app_custom
+	customer_app_wx_prepay(pay_order_id:String!appid:String):MchPayApp
+	#App支付宝支付 获取下单返回的加密字符串 appid 目前为固定值：2018052960271202
+	customer_app_ali_prepay(pay_order_id:String!appid:String!):String
+    #顾客获取消息列表
+    customer_message_list(page_index:Int,count:Int):[MessageContent]
+    #获取一个用户的优惠券中优惠最大的优惠券(产品相关)
+    customer_best_coupon(psku_id:Long!,num:Int):CouponResponse
+    #实时获取预约数量接口
+    customer_get_number_of_appointments(product_id:Long!):Int
+
+    #获取合伙人信息
+    partner_bindinfo:Partner
+    #合伙人的员工信息
+    partner_employee_management(page_index:Int,count:Int):[EmployeeManagement]
+    #员工详情
+    partner_employee_detail(student_id:Long!):EmployeeManagement
+    #店铺信息
+    partner_store_information:[Station]
+    #本月累计订单
+    partner_accumulated_orders_month:AccumulatedOrdersMonth
+    #任务排期
+    partner_mission_is_scheduled_info(dateValue:Date!,page_index:Int!,count:Int!):[StudentServiceunit]
+    #获取合伙人订单列表
+    partner_order_list(status:String,page_index:Int,count:Int):[OrderInfo]
+	#订单详情
+	partner_order_detail(pay_order_id:String!):OrderInfo
+    #查看可进行指派的服务人员信息
+    partner_find_available_student(pay_order_id:String!):[StudentType]
+	#消息列表
+	partner_message_info(page_index:Int,count:Int):[MessageContent]
+	#消息详情
+	partner_message_detail(id:Long!):Message
+	#停单日期当前日期7天,实际天数可以在后台进行配置,属于动态范围。
+	partner_stop_date(student_id:Long):[StudentStopDate]
+	#服务单抢单
+	partner_robbing_list(page_index:Int,count:Int):[OrderInfo]
+    #获取服务人员的出勤情况的统计.参数yearAndMonth 格式：2018-06表示查询2018年6月份的统计数据。 不传该参数表示获取当前月份的数据
+    partnerGetStudentOutOfServices(student_id:Long!,yearAndMonth:String):OutOfServiceStatistics
+    #抢单详情
+    partner_robbing_detail(pay_order_id:String!):OrderInfo
+
+
+    #获取学员未完成订单
+    student_undone_orderinfo(page_index:Int,count:Int):[OrderInfo]
+    #根据指定日期获取学员已完成订单
+    student_complete_orderinfo(dateValue:Date,page_index:Int,count:Int):[OrderInfo]
+    #任务详情
+	student_show_taskdetail(pay_order_id:String):OrderInfo
+	#消息列表
+	student_show_massageInfo(page_index:Int,count:Int):[MessageContent]
+	#单个消息详情
+	student_message_detail(id:Long):Message
+	
+    #获取订单列表
+    student_order_list(status:String,page_index:Int,count:Int):[OrderInfo]
+    #商品详情(display = 1)
+    student_product_detail(product_id:Long):ProductInfo
+    #根据订单查询顾客信息
+    #student_customer_detail(pay_order_id:String):CustomerDetail
+    #服务人员的可预约时间
+    student_product_available_times(psku_id:Long,num:Int):[TimeModel]
+    
+    #阿里云返回信息
+    query_alioss_credentials:AliOssCredentials
+	#获取当前时间
+	query_current_time:PresentTime
+    #App版本控制
+    app_version_control(currentVersion:String,osVersion:String):AppVersion
+
+
+	#v2 版接口####################################################################################
+    customer_order_list_v2(status:String,next_id:String,pre_id:String,forward:Boolean):PageResult
+    customer_recalculate_price_v2(psku_id:Long!,coupon_receive_id:Long,num:Int!):OrderPrice
+    #参数：type 优惠券状态。type 1 表示可使用的，2表示已使用的，3表示已过期的。
+    customerCoupons(type:Int!,pageIndex:Int!):[CouponResponse]
+    #合伙人本月订单统计
+    partner_month_order_statistics:MonthOrderStatistics
+
+
+    #============================0.6接口===========================================================
+    customer_cancleStrategy(pay_order_id:String):CancleStrategyMethod
+}
+
+
+

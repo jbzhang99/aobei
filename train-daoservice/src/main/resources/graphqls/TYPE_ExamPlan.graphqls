@@ -1,0 +1,51 @@
+#考试计划
+type ExamPlan{
+
+    exam_plan_id : Long
+
+    #考试名称
+    name : String
+
+    #考试科目id
+    exam_subject_id : Long
+
+    #1 线下考试  2 线上考试
+    type : Int
+
+    #教室id
+    classroom_id : Long
+
+    #试卷id
+    question_paper_id : Long
+
+    #考试日期
+    exam_date : Date
+
+    #开考时间
+    exam_start_time : Date
+
+    #结束时间
+    exam_end_time : Date
+
+    #报考开始时间
+    apply_start_datetime : Date
+
+    #报考结束时间
+    apply_end_datetime : Date
+
+    #可申请人数  0 无限制
+    apply_number : Int
+
+    #创建日期
+    create_datetime : Date
+
+    #主考老师
+    teacher_id : Long
+
+    #助考老师
+    assistant : Long
+
+    #0 未删除 1 已删除
+    deleted : Int
+}
+

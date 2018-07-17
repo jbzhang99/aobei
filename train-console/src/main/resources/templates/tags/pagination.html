@@ -1,0 +1,67 @@
+<!-- /* 分页组件
+
+页面效果示例
+[1]...[12][13][14][15][16]...[100] 
+下拉页条数 10	 20	50，对应参数 ps
+
+
+
+@param url 		地址
+@param total 	总记录数
+@param pageSize	每页显示记录数
+@param pageNo	当前页码
+@param cCount	总页数
+@param pull		对齐方式 left or right
+@param pageNoParam 分页参数 p
+ */ -->
+<th:block th:fragment="p1(url,total,pageSize,pageNo,pCount,pull,pageNoParam)">
+	<th:block th:with="urlJoinChar=${#strings.indexOf(url,'?') gt 1 ?'&':'?' }">
+		<div class="clearfix">
+		<ul th:class="|pagination pull-${#strings.isEmpty(pull)?'right':pull}|" th:if="${pCount} > 0">
+			<li class="disabled" th:if="${pageNo eq 1}"><a href="javascript:">&laquo;</a></li>
+			<li th:unless="${pageNo == 1}"><a th:href="|${url}${urlJoinChar}${pageNoParam}=${pageNo-1}&ps=${pageSize}|">&laquo;</a></li>
+			<th:block th:if="${pCount<=10}" th:each="i : ${#numbers.sequence(1,pCount)}">
+			<li th:if="${i == pageNo}" class="active"><a href="javascript:">[[${i}]]</a></li>	
+			<li th:if="${i != pageNo}"><a th:href="|${url}${urlJoinChar}${pageNoParam}=${i}&ps=${pageSize}|">[[${i}]]</a></li>
+			</th:block>
+			
+			<th:block th:unless="${pCount<=10}" th:with="ps=${pageNo-2<1?1:pageNo-2},pe=${ps+4}">
+				<th:block th:if="${pe>pCount}" th:with="pe=${pCount},ps=${pe-4}">
+					<th:block th:if="${pe > 5}">
+					<li><a th:href="|${url}${urlJoinChar}${pageNoParam}=1&ps=${pageSize}|">1</a></li>
+	  		  		<li class="disabled"><a href="javascript:">...</a></li>
+					</th:block>
+					<th:block th:each="i : ${#numbers.sequence(ps,pe)}">
+					<li th:if="${i == pageNo}" class="active"><a href="javascript:">[[${i}]]</a></li>
+					<li th:if="${i != pageNo}"><a th:href="|${url}${urlJoinChar}${pageNoParam}=${i}&ps=${pageSize}|">[[${i}]]</a></li>
+					</th:block>
+					<th:block th:if="${pe<pCount}">
+					<li class="disabled"><a href="javascript:">...</a></li>
+	  		  		<li><a th:href="|${url}${urlJoinChar}${pageNoParam}=${pCount}&ps=${pageSize}|">[[${pCount}]]</a></li>
+					</th:block>
+				</th:block>
+				<th:block th:unless="${pe>pCount}">
+					<th:block th:if="${pe > 5}">
+					<li><a th:href="|${url}${urlJoinChar}${pageNoParam}=1&ps=${pageSize}|">1</a></li>
+	  		  		<li class="disabled"><a href="javascript:">...</a></li>
+					</th:block>
+					<th:block th:each="i : ${#numbers.sequence(ps,pe)}">
+					<li th:if="${i == pageNo}" class="active"><a href="javascript:">[[${i}]]</a></li>
+					<li th:if="${i != pageNo}"><a th:href="|${url}${urlJoinChar}${pageNoParam}=${i}&ps=${pageSize}|">[[${i}]]</a></li>
+					</th:block>
+					<th:block th:if="${pe<pCount}">
+					<li class="disabled"><a href="javascript:">...</a></li>
+	  		  		<li><a th:href="|${url}${urlJoinChar}${pageNoParam}=${pCount}&ps=${pageSize}|">[[${pCount}]]</a></li>
+					</th:block>
+				</th:block>
+			</th:block>
+			<th:block th:if="${pageNo eq pCount}">
+			<li class="disabled"><a href="javascript:">&raquo;</a></li>
+			</th:block>
+			<th:block th:unless="${pageNo eq pCount}">
+			<li><a th:href="|${url}${urlJoinChar}${pageNoParam}=${pageNo+1}&ps=${pageSize}|">&raquo;</a></li>
+			</th:block>
+		</ul>
+		</div>
+	</th:block>
+</th:block>

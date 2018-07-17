@@ -1,0 +1,70 @@
+#合伙人
+type Partner{
+
+    #合伙人编号
+    partner_id : Long
+
+    #合伙人名称
+    name : String
+
+    #合伙人门店地址
+    address : String
+
+    #联系人
+    linkman : String
+
+    #联系电话
+    phone : String
+
+    #统一社会信用代码
+    code : String
+
+    #营业执照
+    business_license : String
+
+    #营业日期开始
+    operation_start : Date
+
+    #营业日期结束
+    operation_end : Date
+
+    #法人身份证信息正面
+    identity_card_just : String
+
+    #法人身份证信息反面
+    identity_card_against : String
+
+    #开户银行信息
+    bank_name : String
+
+    #开户银行账号
+    bank_code : String
+
+    #合作日期开始
+    cooperation_start : Date
+
+    #合作日期结束
+    cooperation_end : Date
+
+    #合伙人 等级
+    level : Int
+
+    #派单优先级 优先级值越小的越优先级高     1-10 
+    dispatch_priority : Int
+
+    #创建时间
+    cdate : Date
+
+    #合伙人状态(0:下线 1:上线)
+    state : Int
+
+    #0 未删除，1 已删除
+    deleted : Int
+
+    #统一用户id
+    user_id : Long
+
+    #合伙人头像
+    logo_img : String
+}
+

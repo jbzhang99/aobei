@@ -1,0 +1,32 @@
+#结算策略
+type Fallinto{
+
+    fallinto_id : Long
+
+    fallinto_name : String
+
+    #千分比 1-1000
+    percent : Int
+
+    #底价   单位分
+    floor_price : Int
+
+    #创建时间
+    create_datetime : Date
+
+    #结算类型  1 底价  2 分成比例 3 单数阶梯 4 金额阶梯 5 客单价阶梯
+    fallinto_type : Int
+
+    #阶梯json 数据 [{"d":100,"v":20.05}]
+    step_data : String
+
+    #阶梯类型  1 按底价  2 比例
+    step_type : Int
+
+    #是否生效  1 已生效 0 未生效
+    actived : Int
+
+    #1 已删除 0 未删除
+    deleted : Int
+}
+

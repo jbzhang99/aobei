@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"> -->
+<head>
+<meta charset="UTF-8"></meta>
+<title>课程添加页面</title>
+<link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<style type="text/css">
+	.file-upload-indicator{
+		display: none;
+	}
+</style>
+<meta name="context-path" th:content="@{/}" />
+<script type="text/javascript" th:inline="javascript">
+
+//初始化alertify
+reset = function () {
+	$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+	alertify.set({
+	  labels : {
+	    ok   : "确认",
+	    cancel : "取消"
+	  },
+	  delay : 3000,
+	  buttonReverse : false,
+	  buttonFocus  : "ok"
+    });
+};
+
+$(function(){
+	var clist=[[${cList}]];
+	if(clist.length==0){
+		$('#adBtn').css("display","none");
+	}
+	$('#formid').bootstrapValidator({
+         message: 'This value is not valid',
+         feedbackIcons: {
+             /* valid: 'glyphicon glyphicon-ok',
+             invalid: 'glyphicon glyphicon-remove',
+             validating: 'glyphicon glyphicon-refresh' */
+         },
+         fields: { 
+        	 name: {
+                 validators: {
+                     notEmpty: {
+                         message: '课程名称不能为空'
+                     },
+                     stringLength: {
+                         max: 40,
+                         message: '课程名称最长不得多于40个字符'
+                     }
+                 }
+             },
+             credit:{
+            	 validators: {
+                     notEmpty: {
+                         message: '学分不能为空'
+                     },
+                     regexp: {
+                         regexp: /^[0-9]*$/,
+                         message: '请输入整数'
+                     },
+                     stringLength: {
+                         max: 10,
+                         message: '学分最长不得多于10个字符'
+                     }
+                 }
+             },
+             course_img:{
+            	 validators: {
+                     notEmpty: {
+                         message: '请上传课程封面图'
+                     }
+                 }
+             },
+             headline:{
+            	 validators: {
+                     stringLength: {
+                         max: 40,
+                         message: '章节标题最长不得多于40个字符'
+                     }
+                 }
+             },
+             s_section_content:{
+            	 validators: {
+                     stringLength: {
+                         max: 200,
+                         message: '授课内容不得多于200个字符'
+                     }
+                 }
+             }
+         }
+     });
+	
+		$('#form2').bootstrapValidator({
+	         message: 'This value is not valid',
+	         feedbackIcons: {
+	            /*  valid: 'glyphicon glyphicon-ok',
+	             invalid: 'glyphicon glyphicon-remove',
+	             validating: 'glyphicon glyphicon-refresh' */
+	         },
+	         fields: { 
+	        	 s_headline:{
+	            	 validators: {
+//	            		 notEmpty: {
+//                         	message: '章节标题不能为空'
+//                     	},
+	                     stringLength: {
+	                         max: 40,
+	                         message: '章节标题最长不得多于40个字符'
+	                     }
+	                 }
+	             },
+	             s_section_content:{
+	            	 validators: {
+	            		/* notEmpty: {
+	                         message: '授课内容不能为空'
+	                     },*/
+	                     stringLength: {
+	                         max: 200,
+	                         message: '授课内容不得多于200个字符'
+	                     }
+	                 }
+	             }
+	         }
+	     });
+		
+	 $("#course_img").fileinput({
+         language: 'zh', //设置语言
+         //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+         allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+         //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+         //uploadAsync: true, //默认异步上传
+         showUpload:false, //是否显示上传按钮
+         showRemove :true, //显示移除按钮
+         showPreview :true, //是否显示预览
+         showCaption:false,//是否显示标题
+         //browseClass:"btn btn-primary", //按钮样式    
+         dropZoneEnabled: false,//是否显示拖拽区域
+         minImageWidth: 50, //图片的最小宽度
+         minImageHeight: 50,//图片的最小高度
+         maxImageWidth: 2000,//图片的最大宽度
+         maxImageHeight: 2000,//图片的最大高度
+         maxFileSize:2000,//单位为kb，如果为0表示不限制文件大小
+         //minFileCount: 0,
+         //maxFileCount:10, //表示允许同时上传的最大文件个数
+         enctype:'multipart/form-data',
+         validateInitialCount:true,
+         //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+         //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+     });
+	 
+	//模态框的关闭按钮
+	$(document).on('click','#editClosePage',function(){
+    	//重置表单
+   		$('#form2').data('bootstrapValidator').resetForm(); 
+	});
+	
+
+	//update 数据回显（编辑按钮）
+	$(document).on('click','.btnUpdate',function(){
+		$('#form2').data('bootstrapValidator').resetForm(); 
+		//tang div
+		$('#chapter_id').val($(this).closest('tr').data('id'));
+		$("#s_headline").val($(this).closest('tr').find('td:eq(1)').text());
+		$("#s_section_content").val($(this).closest('tr').find('td:eq(2)').text());
+		$("#s_time_length").val($(this).closest('tr').find('td:eq(4)').text());
+		/* $("#addbtn").hide();
+		$("#editsavebtn").show(); */
+	});
+	
+	//tr行上的删除按钮
+	$(document).on('click','.btnDel',function(){
+		var obj=$(this);
+		reset();
+		alertify.confirm("确定要删除该条章节信息吗！", function (e) {
+			if(e){
+				var id = obj.closest('tr').data('id');
+				var nIndex=obj.attr('nIndex');
+				obj.closest('tr').remove();
+				courseTeamList.splice(parseInt(nIndex),1);
+				$.each(courseTeamList,function(i,v){
+					v.section_name=i+1;
+				});
+				$("#tabList tr:gt(0)").each(function(i,n){
+					$(n).find('td').eq(0).text(i+1);
+					$(n).attr("data-id",i+1);
+				});
+			}
+		});
+	});
+});
+	//增加行（分类）
+	var num=0;
+	var length=1;
+	function insertCategoryRow(obj) {
+		if(length==1){
+			$('.item:first').find('button:last').toggle();
+		} 
+		var tr = $('.itemAdd').html();
+		tr=tr.replace(/redut/,'redut'+num++).replace(/none/,'inline-block');
+		var html="<div class='item form-inline' style='margin-bottom:10px;'>"+tr+"</div>";
+		$('#categoryRow').append(html);
+		length++;
+	}
+	
+	//移除行（分类）
+	function deleteCategoryRow(obj) {
+		length--;
+		 $(obj).parent().remove();
+		 if($('.redutBtn').length==2){
+				$('.redutBtn').hide();
+			}
+	}
+	
+	//课程章节增加按钮
+	var rowid=0;
+	var courseTeamList=[];
+	function addcourse(){
+		var hl=$("#headline").val();
+		var sc=$("#section_content").val();
+		//获取到输入的标题和内容
+		if(hl==""){
+			reset();
+			alertify.alert("章节标题 不能为空!");
+			return false;
+		}
+		if(sc==""){
+			reset();
+			alertify.alert("授课内容不能为空!");
+			return false;
+		}
+		$("#formid").bootstrapValidator('validate');//提交验证
+ 		if ($("#formid").data('bootstrapValidator').isValid()) {
+ 			rowid=courseTeamList.length;
+ 			if(hl !="" & sc !=""){
+	 			//如果集合为空，rowid重新开始自增
+				if(courseTeamList.length==0){
+					rowid=0;
+				}
+				
+				var tr="<tr data-id='"+(parseInt(rowid)+1)+"'><td>"+(parseInt(rowid)+1)+"</td><td style='word-wrap:break-word' width='200'>"+$("#headline").val()+"</td><td style='word-wrap:break-word' width='300px'>"+$("#section_content").val()+"</td><td><a href='javascript:'  data-toggle='modal' data-target='.bs-example-modal-lg' class='btnUpdate' style='cursor: pointer;'><i class='fas fa-edit'></i>编辑</a>&nbsp;<a nIndex="+rowid+" href='javascript:' class='btnDel' style='cursor: pointer;'><i class='far fa-trash-alt'></i>删除</a></td><td hidden='hidden'>"+$("#time_length").val()+"</td></tr>";
+				$('#tabList').append(tr); 
+				rowid+=1;
+				
+				//每次新增的添加到集合中
+				courseTeamList.push({
+					course_id:0,
+					section_name:rowid,
+		     		headline:$("#headline").val(),
+		     		section_content:$("#section_content").val(),
+		     		time_length:$("#time_length").val()
+				});
+				
+				$('#course_id').val("");
+				$("#headline").val("");
+				$("#section_content").val(""); 
+ 			}
+ 		}
+	}
+
+	
+	//模态框 确认按钮
+	function editSaveCourse(){
+	 	$("#form2").bootstrapValidator('validate');//提交验证
+ 		if ($("#form2").data('bootstrapValidator').isValid()) {
+			$('#editsavebtn').attr("data-dismiss","modal");
+			var id= $('#chapter_id').val();
+			var tr = $('#tabList tr[data-id="'+id+'"]');
+			tr.find('td:eq(1)').text($("#s_headline").val());
+			tr.find('td:eq(2)').text($("#s_section_content").val());
+			tr.find('td:eq(4)').text($("#s_time_length").val());
+		}
+	}
+	
+	
+	//提取数据，进行传递(课程新增)
+ 	function tiqu() {
+ 		$(".form-horizontal").bootstrapValidator('validate');//提交验证
+ 		if ($(".form-horizontal").data('bootstrapValidator').isValid()) {
+ 			//获取验证结果，如果成功，执行下面代码  
+ 			//提取课程组名称
+ 		    var teamName=document.getElementById("name").value; 
+ 		    //var teamHour=document.getElementById("hour").value;
+ 		    var teamCredit=document.getElementById("credit").value;
+ 		   	var courseTeam=[];
+ 		    courseTeam.push({
+ 		    	name:teamName,
+ 		    	//hour:teamHour,
+ 		    	credit:teamCredit
+ 		    });
+ 		    //提取课程章节数组
+ 	        var courses = [];
+ 		     $('#tabList').find("tr").each(function(index,data){
+ 		    	 if(index>0){
+ 		    		$(data).each(function(i,d){
+ 	 		        	var datas = $(d).find('td');
+ 	 		        	 courses.push({
+ 	 		        		 section_name:datas.eq(0).text(),
+ 	 		        		 headline:datas.eq(1).text(),
+ 	 		        		 section_content:datas.eq(2).text(),
+ 	 		        		 time_length:datas.eq(4).text()
+ 	 		        	 });
+ 	 		         }); 
+ 		    	 }
+ 		    });
+ 		 	//提取分类
+  		    var categorys=[]; 
+  		     $(".item").find("#categoryAll option:selected").each(function(){
+  			  var text= $(this).val();
+  			  categorys.push(text);
+  			 });
+  		   var cs=categorys.sort();
+ 		    var num=0;
+ 		 	for(var i=0;i<categorys.length;i++){
+ 		 		if(categorys[i]==cs[i+1]){
+ 		 			num++;
+ 		 			reset();
+ 					alertify.alert("服务项不能存在重复选择！");
+ 					return false;
+ 		 		}
+ 		 		if(num>0){
+ 		 			return false;
+ 		 		}
+ 		 	}
+ 		    /* 将表单数据进行封装 */
+ 		    var params = {courseTeamList:JSON.stringify(courseTeam),chapterList:JSON.stringify(courses),categoryAllList:JSON.stringify(categorys)};
+ 		    $("#courseT").val(JSON.stringify(params));
+ 		   document.getElementById("formid").submit();
+        }  
+	    
+	}
+	
+ 
+ 	 
+	 //取消事件
+ 	 function cancel(pageNo){
+ 		window.location.href="[(@{/courseTeam/showCourseTeam})]?p=" + pageNo; 
+ 	 }
+	 
+	 
+ 	//获得父分类下拉框对象
+     function show_sub(obj,id) {
+  	   var ss=[];
+      	//获取当前点击对象的值
+        var proid = id;
+      	//获取到所有的分类集合
+      	var servicelist=$('#servicelist').val();
+      	var Childrens=$.parseJSON(servicelist);
+      	$.each(Childrens,function(i,ser){
+      		if(proid==ser.category_id){
+      			ss.push(ser);
+      		}
+		});
+      	//alert(JSON.stringify(ss));
+		var nextSelect=$(obj).next();
+       	var options='';
+       	$.each(ss,function(i,s){
+      		options+='<option value='+s.serviceitem_id+'>'+s.name+'</option>';
+		})
+       	nextSelect.html(options);
+      }
+	
+</script>
+
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <!-- <li><a href="#">一级目录</a></li> -->
+			  <li><a href="/courseTeam/showCourseTeam" class="back_butn" style="cursor: pointer;">课程列表</a></li>
+			  <li class="active">添加</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_0">
+			<form id="formid" class="form-horizontal" enctype="multipart/form-data"
+				action="#" th:action="@{/courseTeam/addCourseTeam}"  method="post" >
+				<div style="width: 1000px; margin: 0px auto; overflow: hidden;">
+					<div class="form-horizontal ab_mt20 col-sm-9">
+
+						<input type="hidden" name="mts"  th:value="${application.mts}"/>
+					    <input type="hidden" id="courseT" name="courseT"/>
+					    <input type="hidden" id="servicelist" name="servicelist" th:value="${serviceItemList}"/>
+						<div class="form-group">
+							<label class="col-sm-4 control-label"><span
+							style="color: red">*</span>课程名称:</label>
+							<div class="col-sm-4">
+								<input id="name" name="name" type="text" class="form-control" placeholder="请输入课程名称">
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-4 control-label"><span
+							style="color: red">*</span>课程封面图:</label>
+							<div class="col-sm-5 form-style">
+								<input type="file" class="form-control" id="course_img" 
+									name="course_img" placeholder="请选择要上传的图片"  />
+								<span style="color:red">建议图片分辨率为100*100，最大不能超过1M</span>
+							</div>
+						</div>
+						<!-- <div  class="form-group">
+							<label  class="col-sm-4 control-label"><span
+							style="color: red">*</span>课时:</label>
+							<div  class="col-sm-3">
+								<input id="hour" name="hour" type="text" class="form-control">
+							</div>
+						</div> -->
+						<div class="form-group">
+							<label  class="col-sm-4 control-label"><span
+							style="color: red">*</span>学分:</label>
+							<div  class="col-sm-3">
+								<input id="credit" name="credit" type="text" class="form-control" placeholder="请输入学分">
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-4 control-label"><span
+							style="color: red">*</span>包含服务项:</label>
+							<div class="col-sm-8 form-inline row"  id="categoryRow">
+								<div class="item" style="margin-bottom:10px;">
+									<select onchange="show_sub(this,this.options[this.options.selectedIndex].value)" style="margin-left:16px" class="form-control" id="province">
+										<th:block th:if="${cList.isEmpty()}">
+											<option value="">暂无分类</option>
+										</th:block>
+										<option th:each="plist:${cList}"
+											th:value="${plist.category_id}"
+											th:text="${plist.name}">
+										</option>
+									</select>
+									<select id="categoryAll" style="margin-left:16px;width: 130px"  class="form-control typeItem">
+										<th:block th:if="${sList.isEmpty()}">
+											<option value="">暂无服务</option>
+										</th:block>
+										<option th:each="erlist:${sList}"
+											th:if="${erlist.category_id==cgory.category_id}"
+											th:value="${erlist.serviceitem_id}"
+											th:text="${erlist.name}">
+										</option>
+									</select>
+									<button class="btn btn-primary" onclick="insertCategoryRow(this)">
+										<span aria-hidden="true"
+											class="glyphicon glyphicon glyphicon-plus ab_font12">
+										</span>
+									</button>
+									<button id="redut" class="btn btn-default redutBtn" onclick="deleteCategoryRow(this)" style="display: none">
+										<span aria-hidden="true"
+											class="glyphicon glyphicon glyphicon-minus ab_font12">
+										</span>
+									</button>
+								</div>
+							</div>
+						</div>
+						<div  style="margin-top: 15px;">
+							<div  class="ab_item">
+								<div  class="form-group" hidden="hidden">
+									<label  class="col-sm-4 control-label">章节时长:</label>
+									<div  class="col-sm-3">
+										<select class="form-control" id="time_length">
+											<option value="1">1课时</option>
+										</select>
+									</div>
+								</div>
+								<div  class="form-group">
+									<label  class="col-sm-4 control-label">章节标题:</label>
+									<div  class="col-sm-7">
+										<input id="chapter_id"  name="chapter_id" type="text" style="display:none" class="form-control">
+										<input id="section_name"  name="section_name" type="text" style="display:none" class="form-control">
+										<input id="headline"  name="headline" type="text" placeholder="请输入课程标题"
+											class="form-control">
+									</div>
+								</div>
+								<div  class="form-group">
+									<label  class="col-sm-4 control-label">授课内容:</label>
+									<div  class="col-sm-8">
+										<textarea id="section_content" name="section_content" type="text" placeholder="请输入授课内容"
+											class="form-control"></textarea>
+									</div>
+								</div>
+								<div  class="form-group">
+									<div id="addbtn" class="row col-sm-10 col-sm-offset-2" >
+										<a  class="btn btn-default nav-justified"
+											style="border: none; color: rgb(51, 122, 183);" onclick="javascript:addcourse()">
+											<span  aria-hidden="true"
+												class="glyphicon glyphicon glyphicon-plus ab_font12">
+											</span>
+											添加课程
+										</a> 
+									</div>
+								
+									<!-- <div id="editsavebtn" class="row col-sm-10 col-sm-offset-2" hidden="hidden">
+										<a class="btn btn-default nav-justified"
+											style="border: none; color: rgb(51, 122, 183);" onclick="javascript:editSaveCourse()">
+											编辑保存
+										</a> 
+									</div> -->
+								</div>
+								<div  class="form-group">
+									<div class="col-sm-offset-2 col-sm-10 ">
+										<table id="tabList" class="table table-bordered" style="table-layout:fixed" width="800px">
+											<thead>
+												<tr>
+													<th style="width: 50px">课程章节</th>
+													<th style="width: 200px">标题</th>
+													<th style="width: 300px">授课内容</th>
+													<th style="width: 150px">操作</th>
+												</tr>
+											</thead>
+											<tbody>
+											
+											</tbody>
+										</table>
+									</div>
+								</div>
+								<div  class="form-group">
+									<div  class="form-inline text-center">
+										<button class="btn btn-primary"  onclick="tiqu()">确定</button>&nbsp;&nbsp;&nbsp;&nbsp;
+										<button type="button" class="btn btn-default" th:onclick="'javascript:cancel('+${pageNo}+')'">取消</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+		
+		<div class="itemAdd" style="margin-bottom:10px;" hidden="hidden">
+			<select onchange="show_sub(this,this.options[this.options.selectedIndex].value)" style="margin-left:16px" class="form-control" id="province">
+				<option th:each="plist:${cList}"
+					th:value="${plist.category_id}"
+					th:text="${plist.name}">
+				</option>
+			</select>
+			<select id="categoryAll" style="margin-left:16px;width: 130px"  class="form-control typeItem">
+				<option th:each="erlist:${sList}"
+					th:if="${erlist.category_id==cgory.category_id}"
+					th:value="${erlist.serviceitem_id}"
+					th:text="${erlist.name}">
+				</option>
+			</select>
+			<button class="btn btn-primary" onclick="insertCategoryRow(this)">
+				<span aria-hidden="true"
+					class="glyphicon glyphicon glyphicon-plus ab_font12">
+				</span>
+			</button>
+			<button id="redut" class="btn btn-default redutBtn" onclick="deleteCategoryRow(this)" style="display: none">
+				<span aria-hidden="true"
+					class="glyphicon glyphicon glyphicon-minus ab_font12">
+				</span>
+			</button>
+		</div>
+		<!-- 模态框 -->
+		<div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" >
+		  <div class="modal-dialog modal-lg" role="document">
+		    <div class="modal-content">
+		    	<div class="modal-header">
+		    	 	<h4 class="modal-title" id="gridSystemModalLabel">课程章节修改</h4>
+		    	 </div>
+		    	 <div class="modal-body">
+		    	 <!-- hidden="hidden" -->
+		    	<form id="form2" action="#" method="post">
+		    	 	<div  class="row" hidden="hidden">
+						<label  class="col-sm-4 control-label">章节时长:</label>
+						<div  class="col-sm-3">
+							<select class="form-control" id="s_time_length">
+								<option value="1">1课时</option>
+							</select>
+						</div>
+					</div>
+	    			<div class="row">
+						<label  class="col-sm-2 control-label">课程标题</label>
+						<div  class="col-sm-5">
+							<input id="s_name"  name="s_name" type="text" style="display:none" class="form-control">
+							<input id="s_headline"  name="s_headline" type="text" placeholder="请输入课程标题"
+								class="form-control">
+						</div>
+					</div>
+					<br/>
+					<div class="row">
+						<label  class="col-sm-2 control-label">授课内容</label>
+						<div  class="col-sm-7">
+							<textarea id="s_section_content" name="s_section_content" type="text" placeholder="请输入授课内容"
+								class="form-control"></textarea>
+						</div>
+					</div>
+				</form>
+				</div>
+				<div class="modal-footer">
+			        <button type="button" class="btn btn-default" data-dismiss="modal" id="editClosePage">关闭</button>
+			        <button id="editsavebtn" type="button" class="btn btn-primary editBut" onclick="javascript:editSaveCourse()">确定</button>
+			    </div>
+		    </div>
+		  </div>
+		</div>
+	</div>
+	
+	<script type="text/javascript" src="/app.js"></script>
+</body>
+</html>

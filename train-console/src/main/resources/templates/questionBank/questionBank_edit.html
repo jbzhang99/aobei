@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<head>
+<meta charset="UTF-8"/>
+<title>修改题库信息</title>
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<script th:src="@{/js/bootstrapValidator.min.js}" type="text/javascript"></script>
+<script type="text/javascript" th:src="@{/js/jquery.form.min.js}"></script> 
+<script type="text/javascript" th:inline="javascript">
+
+$(function() {
+	$('#form1').bootstrapValidator({
+        message: 'This value is not valid',
+        feedbackIcons: {
+            valid: 'glyphicon glyphicon-ok',
+            invalid: 'glyphicon glyphicon-remove',
+            validating: 'glyphicon glyphicon-refresh' 
+        },
+        fields: { 
+            course_name:{
+           	 validators: {
+                    notEmpty: {
+                       message: '请选择课程'
+                    }
+                }
+            },
+        question_type: { 
+           	 validators: {
+                    notEmpty: {
+                        message: '请选择试题类型'
+                    }
+                }
+            },
+         topic: { 
+           	 validators: {
+                    notEmpty: {
+                        message: '请输入题目'
+                    }
+                }
+            },
+            optionA: { 
+           	 validators: {
+                    notEmpty: {
+                        message: '请输入选项'
+                    }
+                }
+            },
+            optionB: { 
+           	 validators: {
+                    notEmpty: {
+                        message: '请输入选项'
+                    }
+                }
+            },
+            optionC: { 
+           	 validators: {
+                    notEmpty: {
+                        message: '请输入选项'
+                    }
+                }
+            },
+            optionD: { 
+           	 validators: {
+                    notEmpty: {
+                        message: '请输入选项'
+                    }
+                }
+            },
+            answer: { 
+           	 validators: {
+                    notEmpty: {
+                        message: '请输入答案'
+                    },
+                    regexp:{
+                   	 regexp: /^(?!.*((A.*){2,}|(B.*){2,}|(C.*){2,}|(D.*){2,})$)[A-D]{1,4}$/,
+                   	 message:"请输入选项对应的ABCD，字母为大写"
+                    }
+                }
+            }
+	 	}
+        
+	 });
+        
+        //取消按钮，跳转回到当前页
+		$("#btn_updateCancel").click(function() {
+			var current =[[${current}]];
+			window.location.href = "/questionBankManager/question/questionBankList?p="+current;
+		});
+		
+		//异步上传编辑题库信息
+		$("#edit_btn").click(function(){
+			var jsonStr = [{"t":"A","o":$("#optionA").val(),"r":0},{"t":"B","o":$("#optionB").val(),"r":0},{"t":"C","o":$("#optionC").val(),"r":0},{"t":"D","o":$("#optionD").val(),"r":0}]
+			var course = $("#name").val();
+			var type = $("#type").val();
+			var topic = $("#topic").val();
+			var answer = $("#answer").val();
+			var current = [[${current}]];
+			var questionId = $('#idBack').val();
+			//$("#form1").serializeArray();
+			//submitData=decodeURIComponent(data,true);
+			$.each(jsonStr,function(i,n){
+				var option = n.t;
+				if(answer.indexOf(option) != -1){
+					n.r=1;
+				}
+			});
+			 if(type==1 & answer.length>1){
+				 alertify.alert("单选题只能输入一个答案");
+				 return ;
+			 }else if(type==2 & answer.length<=1){
+				 alertify.alert("多选题请至少输入两个答案");
+				 return ;
+			 }else{
+				 $.post("/questionBankManager/question/updateQuestionBank",
+					{
+						 question_id:questionId,
+						 course:course,
+						 type:type,
+						 topic:topic,
+						 param:JSON.stringify(jsonStr),
+						 answer:answer,
+						 mts:[[${application.mts.code}]]
+
+					},
+					function(data){
+						reset();
+						alertify.success(data.editMessage);
+						setTimeout(function (){
+							window.location.href="/questionBankManager/question/questionBankList?p="+current;
+						}, 1000);
+					},
+					 "json"
+				);
+			 }
+		});
+	//回显页面信息
+	var topic = [[${editQuestion.topic}]];
+	$("#topic").val(topic);
+	var answer = [[${editQuestion.answer}]];
+	$("#answer").val(answer);
+	var type = [[${editQuestion.type}]];
+	$("#type").val(type);
+	
+	var optionA = [[${option.o}]];
+	$("#optionA").val(optionA);
+	var optionB = [[${option1.o}]];
+	$("#optionB").val(optionB);
+	var optionC = [[${option2.o}]];
+	$("#optionC").val(optionC);
+	var optionD = [[${option3.o}]];
+	$("#optionD").val(optionD); 
+	
+});
+</script>
+
+
+</head>
+<body>
+	<div layout:fragment="content">
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li><a th:href="@{/questionBankManager/question/questionBankList}">题库管理</a></li>
+			  <li class="active">编辑</li>
+			  
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="侧边栏的id,用于统一设置选中状态">
+				<form id="form1" action="#" class="form-horizontal">
+					<input id="back" th:value="${list_course}" type="hidden" />
+					<input id="idBack" name="idBack" th:value="${editQuestion.question_id}" type="hidden">
+					<div class="form-group">
+						<label for="name" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 科目</label>
+						<div class="col-sm-3">
+							<select class="form-control coursename" id="name" name="name">
+								<option th:each="examSubject:${list_examSubject}"
+									th:value="${examSubject.exam_subject_id}"
+									th:text="${examSubject.name}"
+									th:selected="${editQuestion.exam_subject_id eq examSubject.exam_subject_id}">
+
+								</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="type" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 试题类型</label>
+						<div class="col-sm-3">
+							<select class="form-control" id="type" name="type">
+
+								<option value="1">单选题</option>
+								<option value="2">多选题</option>
+								<!-- <option value="3">判断题</option> -->
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="topic"><span
+							style="color: red">*</span> 题目</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="topic" name="topic"
+								placeholder="请输入题目" required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="optionA"><span
+							style="color: red">*</span> 选项A</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="optionA"
+								name="optionA" placeholder="请输入选项A" required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="optionB"><span
+							style="color: red">*</span> 选项B</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="optionB"
+								name="optionB" placeholder="请输入选项B" required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="optionC"><span
+							style="color: red">*</span> 选项C</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="optionC"
+								name="optionC" placeholder="请输入选项C" required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="optionD"><span
+							style="color: red">*</span> 选项D</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="optionD"
+								name="optionD" placeholder="请输入选项D" required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="answer"><span
+							style="color: red">*</span> 答案</label>
+						<div class="col-sm-6">
+							<input type="text" class="form-control" id="answer" name="answer"
+								placeholder="请输入答案" required />
+						</div>
+					</div>
+
+					<div class="form-group">
+						<div class="col-sm-5 col-sm-offset-3">
+							<input id="edit_btn" type="button" value="确定"
+								class="btn btn-primary" />&nbsp;&nbsp;&nbsp;&nbsp; <input
+								id="btn_updateCancel" type="button" class="btn btn-default"
+								value="取消" />
+						</div>
+
+					</div>
+				</form>
+			</div>
+	</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+#服务单  抢单记录
+type Robbing{
+
+    robbing_id : Long
+
+    #服务单id
+    serviceunit_id : Long
+
+    #合伙人id
+    partner_id : Long
+
+    #创建时间
+    create_datetime : Date
+
+    #过期时间
+    expire_datetime : Date
+
+    #是否抢中   1 是  0 否
+    actived : Int
+
+    #是否有效    1 是  0 否
+    status : Int
+
+    #作为唯一值，防止重复插入
+    unique_key : String
+}
+

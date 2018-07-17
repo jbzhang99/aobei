@@ -1,0 +1,33 @@
+#商品评价
+type ProEvaluate{
+
+    product_evaluate_id : Long
+
+    #商品id
+    product_id : Long
+
+    #商品skuid
+    psku_id : Long
+
+    #订单id
+    pay_order_id : String
+
+    #顾客id
+    customer_id : Long
+
+    #评分
+    score : Int
+
+    #评价
+    comment : String
+
+    #创建时间
+    create_datetime : Date
+
+    #是否已删除  0 未删除 1 已删除
+    deleted : Int
+
+    # 0 未经审核的，1审核通过 ，2 审核未通过
+    verify : Int
+}
+

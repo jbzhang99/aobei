@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+ <html layout:decorate="~{base_layout}">
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"> -->
+<head>
+<meta charset="UTF-8"></meta>
+<title>合伙人信息</title>
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<meta name="context-path" th:content="@{/}" />
+
+<script type="text/javascript" th:inline="javascript">
+	//初始化alertify
+	reset = function () {
+		$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+		alertify.set({
+		  labels : {
+		    ok   : "确认",
+		    cancel : "取消"
+		  },
+		  delay : 1000,
+		  buttonReverse : false,
+		  buttonFocus  : "ok"
+	    });
+	};
+
+	 function createPartner(pageNo){
+		 window.location.href="/partner/addpartnerShow/"+pageNo; 
+	 }
+	 
+	
+	function editPartner(partner_id,pageNo){
+		 window.location.href="/partner/editPartner/"+partner_id+"/"+pageNo;
+	}
+
+	function delPartner(partner_id,pageNo){
+		reset();
+		alertify.confirm("确定要下线该条信息吗？下线其包含的学员也一并删除，请慎重！", function (e) {
+			if(e){
+                var mts = [[${application.mts}]];
+				$.ajax({
+					url:'/partner/delPartner/'+partner_id,
+					type:'POST',
+					data:{
+					    mts:mts
+					},
+					success:function(data){
+						//请求成功时
+						reset();
+						alertify.success(data.msg);
+						setTimeout(function (){
+							window.location.href="/partner/showPartner?p="+pageNo; 
+						}, 1000);
+					},
+					dataType:'json'
+				});
+			}else{
+				reset();
+				alertify.success("已取消操作.");
+			}
+		});
+	}
+
+    function upPartner(partner_id,pageNo){
+        reset();
+        alertify.confirm("确定要上线该条信息吗？", function (e) {
+            if(e){
+                var mts = [[${application.mts}]];
+                $.ajax({
+                    url:'/partner/upPartner/'+partner_id,
+                    type:'POST',
+                    data:{
+                        mts:mts
+                    },
+                    success:function(data){
+                        //请求成功时
+                        reset();
+                        alertify.alert(data.msg);
+                        setTimeout(function (){
+                            window.location.href="/partner/showPartner?p="+pageNo;
+                        }, 3000);
+                    },
+                    dataType:'json'
+                });
+            }else{
+                reset();
+                alertify.success("已取消操作.");
+            }
+        });
+    }
+
+	function addFallinto(partner_id,pageNo) {
+	    $('#parId').val(partner_id);
+	    //先去判断有没有分成策略
+        $.ajax({
+            url:'/partner/isHaveFallinto',
+            type:'GET',
+            success:function(data){
+                var flag=$.isEmptyObject(data);
+                if(flag){
+                    reset();
+                    alertify.alert("目前没有存在的分成策略，请先去添加再进行此操作！");
+                    return false;
+				}else{
+                    window.location.href="/partner/addFallintoShow/"+partner_id+"/"+pageNo;
+				}
+            },
+            dataType:'json'
+        });
+
+
+
+        /*$.ajax({
+            url:'/partner/addFallinto/'+partner_id,
+            type:'GET',
+            success:function(data){
+                var flag=$.isEmptyObject(data);
+                var html="";
+                if(flag==false){
+                    $.each(data, function (n,map) {
+                        html+="<tr><td productid="+map["product"].product_id+">"+map["product"].name+"</td><td><select class='form-control' id='fallino_id'>";
+                        var fallintos=map["fallintos"];
+                        $.each(fallintos, function (m,fall) {
+                            html+="<option id="+fall.fallinto_id+">"+fall.fallinto_name+"</option>";
+                        });
+                        console.log(map["partnerFallinto"]);
+                        var partnerFallinto=map["partnerFallinto"];
+                        partnerFallinto.start_datetime;
+
+                        if(partnerFallinto==null){
+                            html+="</select></td><td>" +
+                                "<div class='form-inline'><input id='start' class='form-control' type='date' name='start'/>-<input id='end' class='form-control' type='date' name='end'/></div>" +
+                                "</td></tr>";
+						}else{
+                            html+="</select></td><td>" +
+                                "<div class='form-inline'><input id='start' class='form-control' type='date' name='start' value="+partnerFallinto.start_datetime+" />-<input id='end' class='form-control' type='date' name='end'/></div>" +
+                                "</td></tr>";
+						}
+
+                    });
+				}
+                $('#fallinoBody').append(html);
+            },
+            dataType:'json'
+        });*/
+    }
+
+    //分成策略模态框上面的关闭按钮
+    /*function closeModel(){
+        $('#fallinoBody').empty();
+	}*/
+
+	//分成策略模态框上面的确定按钮
+	/*function saveFallinto(){
+        var list=[];
+        var partnerid=$("#parId").val();
+        $('#tabList').find("tr").each(function(index,data){
+            if(index>0){
+                $(data).each(function(i,d){
+                    var datas = $(d).find('td');
+                    //获取到产品id
+                    var productid=datas.eq(0).attr('productid');
+                    var fallino_id=datas.eq(1).find('#fallino_id option:selected').attr('id');
+                    var start=datas.eq(2).find('#start').val();
+                    var end=datas.eq(2).find('#end').val();
+                    list.push({
+                        partner_id:partnerid,
+                        product_id:productid,
+                        fallinto_id:fallino_id,
+                        start_datetime:new Date(Date.parse(start)),
+                        end_datetime:new Date(Date.parse(end))
+						})
+                });
+            }
+        });
+        $.ajax({
+            url:'/partner/addPartnerToFallino/'+partnerid,
+            type:'GET',
+            data:{
+                result:JSON.stringify(list)
+            },
+            success:function(data){
+                //请求成功时
+                reset();
+                alertify.success(data.msg);
+                setTimeout(function (){
+                    window.location.href="/partner/showPartner?p="+pageNo;
+                }, 1000);
+            },
+            dataType:'json'
+        });
+
+	}*/
+
+    function editPartnerCategory(partner_id,pageNo){
+        window.location.href="/partner/editPartnerCategory/"+partner_id+"/"+pageNo;
+    }
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+	
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+		  <li class="active">合伙人信息</li>
+		  
+		  <li class="libtn">
+			<button sec:authorize="hasRole('ROLE_PARTNER_EDIT')" id="add_butn" class="btn btn-primary pull-right" th:onclick="'javascript:createPartner('+${page.pageNo}+')'"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>&nbsp;添加</button>
+		  </li>
+		</ol>
+		
+	</div>
+	
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_11">
+		
+		
+		<!--/* 以下为自定义代码块  */-->
+		<div class="table-responsive">
+		<!-- 动态 -->
+		<table id="table-cont" class="table table-striped table-hover">
+			<thead>
+				<tr bgcolor="#FFFFFF">
+					<th width="150px">合伙人名称</th>
+					<th width="150px">合伙人门店地址</th>
+					<th width="190px">合作起止时间</th>
+					<th width="150px">创建时间</th>
+					<th width="75px">联系人</th>
+					<th width="50px">联系电话</th>
+					<th width="60px">合伙人等级</th>
+					<th width="60px">派单优先级</th>
+					<th width="210px" sec:authorize="hasAnyRole('ROLE_PARTNER_EDIT,ROLE_PARTNER_DEL,ROLE_PARTNER_FALLINTO')">操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="list:${partnerList}" bgcolor="#FFFFFF">
+					<td th:text="${list.partner_id}" hidden="hidden"></td>
+					<td th:text="${list.name}" style="vertical-align:middle;word-break:break-all"></td>
+					<td th:text="${list.address}" style="vertical-align:middle;word-break:break-all"></td>
+					<td style="vertical-align:middle;">
+						<span th:text="${#dates.format(list.cooperation_start,'yyyy-MM-dd')}"></span>至
+						<span th:text="${#dates.format(list.cooperation_end,'yyyy-MM-dd')}"></span>
+					</td>
+					<td th:text="${#dates.format(list.cdate,'yyyy-MM-dd HH:mm:ss')}" style="vertical-align:middle;"></td>
+					<td th:text="${list.linkman}" style="vertical-align:middle;"></td>
+					<td th:text="${list.phone}" style="vertical-align:middle;"></td>
+					<td th:if="${list.level==1}" style="vertical-align:middle;">A级</td>
+					<td th:if="${list.level==2}" style="vertical-align:middle;">B级</td>
+					<td th:if="${list.level==3}" style="vertical-align:middle;">C级</td>
+					<td th:text="${list.dispatch_priority}" style="vertical-align:middle;"></td>
+					<td style="vertical-align:middle;">
+						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_EDIT')"  th:onclick="|editPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class="fas fa-edit"></i>基本信息</a>&nbsp;&nbsp;
+						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_DEL')" th:if="${list.state==0}" th:onclick="|upPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='fa fa-arrow-circle-down' aria-hidden='true'></i>上线</a>
+						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_DEL')" th:if="${list.state==1}" th:onclick="|delPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='fa fa-arrow-circle-down' aria-hidden='true'></i>下线</a>
+						<br/>
+						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_EDIT')" th:onclick="|editPartnerCategory('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class="fas fa-edit"></i>合作项目</a>&nbsp;&nbsp;
+						<a class="btn btn-link btn-xs"  sec:authorize="hasRole('ROLE_PARTNER_FALLINTO')"  th:onclick="|addFallinto('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;" data-toggle="modal" data-target="#selectFallintoModal"><i class='glyphicon glyphicon-align-justify'></i>分成策略</a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		</div>
+		
+		<div th:include="~{tags/pagination::p1(@{/partner/showPartner},${page.total},${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+	</div>
+
+	<!--分成策略模态框-->
+	<!--<div id="selectFallintoModal" class="modal fade bs-example-modal-lg-er" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h4 class="modal-title">分成策略设置</h4>
+				</div>
+				<div class="modal-body">
+					<div>
+						<form id="form2" action="#"  method="post">
+							<input type="hidden" id="parId"/>
+							<table id="tabList">
+								<thead>
+									<tr bgcolor="#FFFFFF">
+										<th width="100px">产品名称</th>
+										<th width="200px">分成策略</th>
+										<th width="350px">策略有效期</th>
+									</tr>
+								</thead>
+								<tbody id="fallinoBody">
+
+								</tbody>
+							</table>
+						</form>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal" onclick="javascript:closeModel()">关闭</button>
+							<button type="button" class="btn btn-primary"  th:onclick="|saveFallinto('${page.pageNo}')|">确定</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>-->
+</div>
+</body>
+</html>

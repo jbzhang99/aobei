@@ -1,0 +1,122 @@
+
+role_key:                 desc              url:
+1 ROLE_COURSE_BROWSE       课程管理浏览     /courseTeam/showCourseTeam,courseTeamDetails/*
+
+2 ROLE_COURSE_EDIT         课程管理编辑     /courseteam/createTeamShow/*,/courseteam/addCourseTeam,/courseteam/editCourseTeam/courseteam/updCourseTeam/**,/courseteam/courseFindPlan/*
+
+3 ROLE_COURSE_DEL          课程管理删除     /courseTeam/delCourseByTeamId/*
+
+4 ROLE_SCHOOL_BROWSE       学校管理浏览     /schoolmanager/goto_school_list,/schoolmanager/school_detail
+
+5 ROLE_SCHOOL_EDIT         学校管理编辑     /schoolmanager/school_add,/schoolmanager/save_school,/schoolmanager/school_edit,/schoolmanager/school_edit_save
+
+6 ROLE_SCHOOL_DEL          学校管理删除     /schoolmanager/school_delete/*
+
+7 ROLE_CLASSROOM_BROWSE    教室管理浏览     /classroommanager/goto_classroom_list
+
+8 ROLE_CLASSROOM_EDIT      教室管理编辑     /classroommanager/classroom_add,/classroommanager/save_classroom,/classroommanager/classroom_edit,/classroommanager/edit_submit_classroom
+
+9 ROLE_CLASSROOM_DEL       教室管理删除选贤     /classroommanager/classroom_delete/*
+
+10 ROLE_TEACHER_BROWSE      教师管理浏览     /teacherManager/teacherInfo/teacherInfoList
+
+11 ROLE_TEACHER_EDIT        教师管理编辑      /teacherManager/teacherInfo/gotoAdd,/teacherManager/teacherInfo/addTeacherInfo,/teacherManager/teacherInfo/gotoEdit,/teacherManager/teacherInfo/updateTeacherInfo
+
+12 ROLE_TEACHER_DEL         教师管理删除      /teacherManager/teacherInfo/deleteTeacherInfo/*
+
+13 ROLE_PLAN_BROWSE         培训计划浏览      /planmanager/goto_plan_list
+
+14 ROLE_PLAN_EDIT           培训计划编辑      /planmanager/train_plan_add,/planmanager/save_plan,/planmanager/plan_edit,/planmanager/plan_edit_save
+
+15 ROLE_PLAN_DEL            培训计划删除     /planmanager/plan_delete/*
+
+16 ROLE_QEBANK_BROWSE       题库管理浏览     /questionBankManager/question/questionBankList
+
+17 ROLE_QEBANK_EDIT         题库管理编辑     /questionBankManager/question/gotoAddQuestionBank,/questionBankManager/question/addQuestionBank,/questionBankManager/question/gotoEditQuestionBank,/questionBankManager/question/updateQuestionBank
+
+18 ROLE_QEBANK_DEL          题库管理删除     /questionBankManager/question/deleteQuestionBank
+
+19 ROLE_QEPAPER_BROWSE      试卷管理浏览      /questionPaperManager/questionPaper/questionPaperList
+
+20 ROLE_QEPAPER_EDIT        试卷管理编辑      /questionPaperManager/questionPaper/addQuestionPaper,/questionPaperManager/questionPaper/updateQuestionPaper
+
+21 ROLE_QEPAPER_DEL         试卷管理删除      /questionPaperManager/questionPaper/deleteQuestionPaper
+
+22 ROLE_QEPAPER_EXPORT      试卷管理导出      /questionPaperManager/questionPaper/printOut
+
+23 ROLE_SCORE_BROWSE        成绩管理浏览      /scoreInfoManager/scoreInfo/scoreInfoList
+
+24 ROLE_SCORE_EDIT          成绩管理编辑      /scoreInfoManager/scoreInfo/gotoEditScore,/scoreInfoManager/scoreInfo/editScoreInfo
+
+25 ROLE_SCORE_IMPORT        成绩管理导入      scoreInfoManager/scoreInfo/upload
+
+26 ROLE_SCORE_EXPORT        成绩管理导出      /scoreInfoManager/scoreInfo/exportExcel
+
+27 ROLE_SCORE_DEL           成绩管理删除      /scoreInfoManager/scoreInfo/deleteScore
+
+28 ROLE_BANNER_BROWSE       banner图浏览权      /bannarmanager/goto_bannar_list
+
+29 ROLE_BANNER_EDIT         banner图编辑权      /bannermanager/banner_add,/bannermanager/save_banner,/bannermanager/banner_edit,/bannermanager/edit_save_banner,/bannermanager/move_up,/bannermanager/move_down,/bannermanager/change_state
+
+30 ROLE_ORDER_BROWSE        订单管理浏览      /ordermanager/goto_order_list
+
+31 ROLE_ORDER_EDIT          订单管理订单变更   /ordermanager/update_sys_remark,/ordermanager/order_change
+
+32 ROLE_ORDER_EXPORT        订单管理导出      /ordermanager/exportExcel,/ordermanager/download_task
+
+33 ROLE_ORDER_P_BROWSE      订单管理商家浏览  /ordermanager/area_partner_info,/ordermanager/scheduling_detail
+
+34 ROLE_COUPON_BROWSE       优惠券管理浏览    /couponmanager/coupon_list
+
+35 ROLE_COUPON_EDIT         优惠券管理编辑    /couponmanager/coupon_goto_add,/couponmanager/coupon_add,/couponmanager/coupon_goto_edit,/couponmanager/coupon_goto_edit,/couponmanager/coupon_edit,/couponmanager/coupon_on,/couponmanager/getEnd_time,/couponmanager/distribute_coupon
+
+36 ROLE_COUPON_R_BROWSE     优惠券管理使用浏览 /couponmanager/record_detail
+
+37 ROLE_USER_BROWSE         用户管理浏览      /userManager/user/user_list
+
+38 ROLE_USER_EDIT           用户管理编辑      /userManager/user/user_goto_add,/userManager/user/user_add,/userManager/user/user_goto_edit,/userManager/user/user_edit
+
+39 ROLE_USER_DEL            用户管理删除      /userManager/user/del_user
+
+40 ROLE_ROLES_BROWSE        角色管理浏览      /roleManager/role/role_list
+
+41 ROLE_ROLES_EDIT          角色管理编辑      /roleManager/role/role_goto_add,/roleManager/role/role_add,/roleManager/role/role_goto_edit,/roleManager/role/role_edit
+
+42 ROLE_ROLES_DEL           角色管理删除      /roleManager/role/role_del
+
+43 ROLE_CATEGORY_BROWSE     类目管理浏览      /categorySun/showCategorySun
+
+44 ROLE_CATEGORY_EDIT       类目管理编辑      /categorySun/addCategorySun,/categorySun/showCategoryEdit/*,/categorySun/editCategory,/categorySun/addServiceitemShow/*,/categorySun/addServiceItem,/categorySun/editServiceItemShow/*,/categorySun/editServiceItem,/categorySun/downServiceItem/*,/categorySun/upServiceItem/*,/categorySun/upCategory/*,/categorySun/downCategory/*
+
+45 ROLE_PRODUCT_BROWSE      产品管理浏览      /product/showProductList
+
+46 ROLE_PRODUCT_EDIT        产品管理编辑      /product/showProductCategory,/product/editProductShow/**,/product/showCategoryNext/*,/product/addCommodityProduct,/product/cancleDelProduct/*,/product/editProduct/*,/product/editSku/**,/product/showProductList,/product/downProduct/*,/product/upProduct/*,/product/delProduct/*
+
+47 ROLE_PARTNER_BROWSE      合伙人管理浏览    /partner/showPartner
+
+48 ROLE_PARTNER_EDIT        合伙人管理编辑    /partner/addpartnerShow/*,/partner/next/*,/partner/editPartner/**,/partner/nextEdit/*,/partner/addPartner,/partner/updatePartner,/partner/delPartner/**
+
+49 ROLE_PARTNER_DEL         合伙人（删除）下线操作 /partner/delPartner/**
+
+50 ROLE_STUDENT_BROWSE      服务人员管理员浏览 /student/showStudent
+
+51 ROLE_STUDENT_EDIT        服务人员管理员编辑  /student/updStudent/,/student/screenServiceItem,/student/ServiceItemSelect/*,/student/partnerSelectStation/*'
+
+52 ROLE_STUDENT_IMPORT      服务人员管理员导入      /student/addStudent
+
+53 ROLE_STUDENT_EXPORT      服务人员管理导出       /student/exportStudent
+
+-------------------------------------------------
+54 ROLE_CUSTOMER_BROWSE		顾客管理浏览权限	/customermanager/goto_customer_list,/customermanager/order_view,/customermanager/cus_address
+
+55 ROLE_CUSTOMER_EDIT		顾客管理修改权限	/customermanager/change_locked
+
+56 ROLE_USER_LOG			日志浏览权限	/userManager/user/operateLog_list
+
+57 ROLE_RES_BROWSE 			权限管理列表浏览 	/roleManager/role/privileges_list
+
+58 ROLE_RES_EDIT			权限编辑权限  	/roleManager/role/goto_add_privileges,/roleManager/role/add_privileges
+
+
+
+

@@ -1,0 +1,28 @@
+#教室信息表
+type Classroom{
+
+    #教室编号
+    classroom_id : Long
+
+    #隶属学校编号
+    school_id : Long
+
+    #教学楼号
+    block_number : String
+
+    #容量(教室可容纳人数)
+    capacity : Int
+
+    #是否可用 "0"为不可用,"1"为可用
+    useable : Int
+
+    #有效的时间范围JSON 数据
+    timescope_json : String
+
+    #创建时间
+    create_time : Date
+
+    #0 未删除 1 已删除
+    deleted : Int
+}
+

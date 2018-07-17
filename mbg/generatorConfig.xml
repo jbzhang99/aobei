@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+  <context id="PTables" targetRuntime="MyBatis3">
+  	<property name="beginningDelimiter" value="`"></property> <!-- &quot; -->
+  	<property name="endingDelimiter" value="`"></property>
+    <!-- 
+    <plugin type="org.mybatis.generator.plugins.CachePlugin">
+    	<property name="cache_readOnly" value="false"/>
+    	<property name="cache_type" value="org.mybatis.caches.memcached.MemcachedCache"/>
+
+    	cache_eviction
+		cache_flushInterval
+		cache_readOnly
+		cache_size
+		cache_type
+    </plugin>
+    
+    <plugin type="com.github.liyiorg.mbg.plugin.CachePlugin"/>
+    -->
+	<!-- ExampleBase plugin -->
+	<plugin type="com.github.liyiorg.mbg.plugin.ExampleBasePlugin"></plugin>
+	
+	<!-- Pagination plugin   MySQLPaginationPlugin,OraclePaginationPlugin,PostgreSQLPaginationPlugin-->
+	<plugin type="com.github.liyiorg.mbg.plugin.pagination.MySQLPaginationPlugin"></plugin>
+	
+	<!-- Upsert plugin   MySQLUpsertPlugin,OracleUpsertPlugin,PostgreSQLUpsertPlugin-->
+	<plugin type="com.github.liyiorg.mbg.plugin.upsert.MySQLUpsertPlugin"></plugin>
+	
+	<!-- Example C plugin -->
+	<plugin type="com.github.liyiorg.mbg.plugin.ExampleCPlugin"></plugin>
+	
+	<!-- Example CriterionImprovement plugin-->
+	<plugin type="com.github.liyiorg.mbg.plugin.ci.CriterionImprovementPlugin"></plugin>
+	
+	<!-- Select column plugin -->
+	<plugin type="com.github.liyiorg.mbg.plugin.ColumnListPlugin"></plugin>
+	
+	<!-- Service generator plugin -->
+	<plugin type="com.github.liyiorg.mbg.plugin.ServiceGeneratorPlugin"></plugin>
+
+    
+    <plugin type="org.mybatis.generator.plugins.CaseInsensitiveLikePlugin"></plugin>
+	<plugin type="org.mybatis.generator.plugins.SerializablePlugin"></plugin>
+	<plugin type="org.mybatis.generator.plugins.ToStringPlugin"></plugin>
+	<plugin type="org.mybatis.generator.plugins.VirtualPrimaryKeyPlugin"></plugin>
+	
+	<commentGenerator>
+	  <property name="addRemarkComments" value="true"/>
+	</commentGenerator>
+
+    <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+        connectionURL="jdbc:mysql://localhost/test?characterEncoding=utf8&amp;useInformationSchema=True"
+        userId="test"
+        password="123456">
+    </jdbcConnection>
+
+    <javaTypeResolver >
+      <property name="forceBigDecimals" value="false" />
+    </javaTypeResolver>
+
+    <javaModelGenerator targetPackage="example.model" targetProject="src\main\java">
+      <property name="enableSubPackages" value="true" />
+      <property name="trimStrings" value="true" />
+    </javaModelGenerator>
+
+    <sqlMapGenerator targetPackage="example.mapper"  targetProject="src\main\resources">
+      <property name="enableSubPackages" value="true" />
+    </sqlMapGenerator>
+
+    <javaClientGenerator type="XMLMAPPER" targetPackage="example.mapper"  targetProject="src\main\java">
+      <property name="enableSubPackages" value="true" />
+    </javaClientGenerator>
+    
+   <!--  
+   <table schema="" tableName="tableName" domainObjectName="domainObjectName">
+		<property name="useActualColumnNames" value="true" />
+		<property name="ci" value="1" /> [1,2]
+		<property name="remarks" value="1" /> [0,1,2,3]
+		<property name="readonly" value="true" />
+		<property name="virtualKeyColumns" value="id1,id2" />
+		<property name="cacheRef" value="*nameMapper" />
+		<generatedKey column="id" sqlStatement="MySql" identity="true" />
+		<columnOverride column="" delimitedColumnName="true"></columnOverride>
+	</table> 
+	-->
+   
+    <table schema="" tableName="employee" domainObjectName="Employee">
+		<property name="useActualColumnNames" value="true" />
+		<columnOverride column="info" delimitedColumnName="true"></columnOverride>
+	</table> 
+  </context>
+</generatorConfiguration>

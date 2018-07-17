@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{base_layout}">
+<head> 
+<meta charset="UTF-8" />
+<title>添加权限页面</title>
+
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+		$("#add_btn").click(function(){
+			var  res = $("#name").val();
+			var key = $("#role_key").val();
+			var tags = $("#tag").val();
+			var url = $("#urls").val();
+				
+			if(res==""){
+				reset();
+				alertify.alert("权限名称还没有输入哦！")
+				return false;
+			}else if(key==""){
+				reset();
+				alertify.alert("role_key没有输入！")
+				return false;
+			}else if(tags==""){
+				reset();
+				alertify.alert("请输入tag哦！")
+				return false;
+			}else if(url==""){
+				reset();
+				alertify.alert("没有输入urls哦！")
+				return false;
+			}else{
+			 	var p = [[${current}]]
+			 	$.ajax({
+			 		url:'/roleManager/role/add_privileges',
+			 		type:'post',
+			 		data:$("#form1").serializeArray(),
+			 		success:function(data){
+			 			reset();
+						alertify.success(data.message);
+						setTimeout(function(){
+							window.location.href="/roleManager/role/privileges_list?p="+p
+						},1500)
+			 		}
+			 	})
+			}
+		 	
+		})
+		//取消按钮
+		$("#cancel_btn").click(function(){
+			var p = [[${current}]]
+			window.location.href="/roleManager/role/privileges_list?p="+p
+		})
+	})
+</script>
+</head>
+<body>
+
+	<div layout:fragment="content">
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li><a href="/roleManager/role/privileges_list">权限管理</a></li>
+			   <li class="active">添加</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_21">
+				<form id="form1" class="form-horizontal" action="#" onsubmit="return false">
+					<input type="hidden" name="mts"  th:value="${application.mts}"/>
+					<div class="form-group">
+						<label class="col-sm-4 control-label" for="name"><span
+							style="color: red">*</span> 权限名称</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control" id="name"
+								name="name" placeholder="请输入权限名称" required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-4 control-label" for="role_key"><span
+							style="color: red">*</span> role_key</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control" id="role_key"
+								name="role_key" placeholder="请输入角色key，字母为大写，多个用下划线连接" required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-4 control-label" for="tag"><span
+							style="color: red">*</span> tag</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control" id="tag"
+								name="tag" placeholder="请输入权限组名称" required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-4 control-label" for="urls"><span
+							style="color: red">*</span> urls</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control" id="urls"
+								name="urls" placeholder="请输入访问路径,多个路径请使用英文逗号隔开" required />
+						</div>
+					</div>
+					
+					<!-- 确定取消按钮 -->
+					<div class="form-group">
+						<div class="col-sm-4 col-sm-offset-4">
+							<input id="add_btn" type="submit" value="确定"class="btn btn-primary" />&nbsp;&nbsp;&nbsp;&nbsp; 
+							<input id="cancel_btn" type="button" value="取消" class="btn btn-default btn_cancel" />
+						</div>
+					</div>
+				</form>
+		</div>
+	</div>
+
+</body>
+</html>

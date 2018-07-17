@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}">
+<head>
+<meta charset="UTF-8">
+<title>测试页</title>
+</head>
+<body>
+
+
+	<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+			Ueditor 测试页		
+		</div>
+		<div class="page_content_main">
+
+			<!-- 加载编辑器的容器 -->
+			<script id="container" name="content" type="text/plain">
+        		这里写你的初始化内容
+    		</script>
+			<!-- 配置文件 -->
+			<script type="text/javascript" th:src="@{/ueditor/ueditor.config.js?v=20180327}"></script>
+			<!-- 编辑器源码文件 -->
+			<script type="text/javascript" th:src="@{/ueditor/ueditor.all.js}"></script>
+			<!-- 实例化编辑器 -->
+			<script type="text/javascript">
+				var ue = UE.getEditor('container',{
+					serverUrl: '/ueditorUpload',
+					toolbars: [ [
+					            'fullscreen', 'source', '|', 'undo', 'redo', '|',
+					            'bold', 'italic', 'underline', 'fontborder', 'strikethrough', 'superscript', 'subscript', 'removeformat', 'formatmatch', 'autotypeset', 'blockquote', 'pasteplain', '|', 'forecolor', 'backcolor', 'insertorderedlist', 'insertunorderedlist', 'selectall', 'cleardoc', '|',
+					            'rowspacingtop', 'rowspacingbottom', 'lineheight', '|',
+					            'customstyle', 'paragraph', 'fontfamily', 'fontsize', '|',
+					            'directionalityltr', 'directionalityrtl', 'indent', '|',
+					            'justifyleft', 'justifycenter', 'justifyright', 'justifyjustify', '|', 'touppercase', 'tolowercase', '|',
+					            'link', 'unlink', 'anchor', '|', 'imagenone', 'imageleft', 'imageright', 'imagecenter', '|',
+					            'simpleupload', 'emotion', 'pagebreak', 'template', 'background', '|',
+					            'horizontal', 'date', 'time', 'spechars', '|',
+					            'inserttable', 'deletetable', 'insertparagraphbeforetable', 'insertrow', 'deleterow', 'insertcol', 'deletecol', 'mergecells', 'mergeright', 'mergedown', 'splittocells', 'splittorows', 'splittocols', 'charts', '|',
+					            'print', 'preview', 'searchreplace', 'drafts', 'help'
+					 ] ],
+					 catchRemoteImageEnable : false
+				});
+			</script>
+		</div>
+
+	</div>
+</body>
+</html>

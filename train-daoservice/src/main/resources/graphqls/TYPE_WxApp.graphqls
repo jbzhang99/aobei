@@ -1,0 +1,20 @@
+#微信app信息
+type WxApp{
+
+    app_id : String
+
+    app_secret : String
+
+    #名称
+    name : String
+
+    #外键 wx_mch 
+    mch_id : String
+
+    #别名
+    path : String
+
+    #1 服务号 2 订单号 3 小程序  4 移动app 5 网站app
+    type : Int
+}
+

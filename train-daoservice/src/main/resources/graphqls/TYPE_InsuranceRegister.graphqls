@@ -1,0 +1,27 @@
+#保险登记
+type InsuranceRegister{
+
+    insurance_register_id : Long
+
+    #保险id
+    insurance_id : Long
+
+    #保险名称
+    insurance_name : String
+
+    #用户id
+    uid : Long
+
+    #1 学员
+    type : Int
+
+    #创建时间
+    create_datetime : Date
+
+    #保险开始时间
+    start_datetime : Date
+
+    #保险结束时间
+    end_datetime : Date
+}
+

@@ -1,0 +1,96 @@
+body{font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; overflow:hidden;}
+/*字号*/
+.ab_font14{font-size:14px;}
+.ab_font20{font-size:18px;}
+.ab_bolder{font-weight: 400}
+/*色值   color   background*/
+.ab_bg_white{background:#fff;}
+/*浮动*/
+.ab_left{float:left;}
+.ab_right{float:right;}
+.ab_clear{clear:both;}
+/*块  行内*/
+.ab_line{display: inline;}
+.ab_line_block{display: inline-block;}
+.ab_block{display: block;}
+/*间距*/
+.ab_margin{margin:0px;}
+.ab_mt5{margin-top:5px;}
+.ab_mt10{margin-top:10px;}
+.ab_ml15{margin-left:15px}
+.ab_mr5{margin-right:5px;}
+.ab_mr20{margin-right:20px;}
+.ab_mt20{margin-top:20px;}
+.ab_padding{padding:0px;}
+.ab_pt20{padding-top:20px;}
+.ab_pb20{padding-bottom:20px;}
+.ab_pl15{padding-left:15px;}
+.ab_pr15{padding-right:15px;}
+.ab_display{display: block;}
+/*行高*/
+
+.ab_line_30{line-height: 30px!important;}
+/*边框*/
+.ab_left_right_bordr{border-right:1px solid #eee;}
+
+/*其它*/
+.ab_header{background: #337ab7; height:63px;}
+.ab_line_height{line-height: 62px!important; height:62px;}
+.ab_left_bg{background:#f5f5f5;}
+.ab_list li{border:none; border-radius:0px; background: none;}
+.ab_list li a{color:rgba(0,0,0,.65)!important;}
+.ab_list li a:hover{color:#337ab7!important; text-decoration: none;}
+.ab_list li .active{color:#337ab7!important;}
+.ab_f13{font-size:13px; margin-bottom:5px;}
+.list-group-item{padding:5px 15px;color:#777; font-size:12px; }
+.ab_sideLeft{position:relative;bottom:0px;}
+
+/*结构样式*/
+.side_left{width:240px; position:absolute; top:63px; left:0px; bottom:0px;}
+.side_right{ margin-left:230px; bottom:0px; top:63px; overflow:auto; position:absolute; left:0px; right:0px;
+}
+.side_right_2{ bottom:0px; top:63px; overflow:auto; position:absolute; left:0px; right:0px;
+}
+.ab_Title{margin-bottom:10px;border-bottom:1px solid #ddd; margin:0; padding-left:28px;  position:absolute; z-index: 10; left:11px; right:0px; top:0px;
+  box-shadow: 1px 1px 1px 0px #f1f1f1;padding-right:28px;
+  background:#fff}
+/*覆盖样式*/
+.navbar-default a{color:#fff;}
+.navbar-default .navbar-nav>li>a{color:#fff;}
+.navbar-default .navbar-nav>li>a:hover{color:#fff; font-weight: 700;}
+.pagination>li>a, .pagination>li>span{color:rgba(0,0,0,.5);}
+.pagination>.active a{font-weight: bolder; color:#fff;}
+
+.ab_cursor{
+	cursor: pointer;
+}
+
+/*左侧折叠*/
+.ab_cursor span{
+  display:inline-block;
+  height:14px;
+  overflow:visible;
+  font-size:14px;
+  width:16px;
+  position:relative;
+}
+
+.ab_cursor span i{
+  position:absolute;
+  zoom:1;
+  -webkit-transition: -webkit-transform 0.2s ease-in;
+  -moz-transition:    -moz-transform 0.2s ease-in;
+  -o-transition:      -o-transform 0.2s ease-in;
+  transition:         transform 0.2s ease-in;
+}
+
+.ab_navTitle span i{
+	-moz-transform:           rotate(90deg);      
+  -webkit-transform:        rotate(90deg);       
+  -o-transform:             rotate(90deg);       
+  transform:                rotate(90deg);       
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=2);
+}
+
+/*index 排版 添加*/
+.ab_style{position:absolute; top:0px;  padding-right:30px; left:25px; padding-top:68px; right:0px; bottom:0px; overflow: auto;}

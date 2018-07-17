@@ -1,0 +1,23 @@
+#学员课程上课排期
+type TrainScheduleStudent{
+
+    train_schedule_id : Long
+
+    student_id : Long
+
+    #培训计划id
+    train_plan_id : Long
+
+    #上课日期
+    attendclass_date : Date
+
+    #上课开始时间
+    attendclass_starttime : Date
+
+    #上课结束时间
+    attendclass_endtime : Date
+
+    #0 未删除，1 已删除
+    deleted : Int
+}
+

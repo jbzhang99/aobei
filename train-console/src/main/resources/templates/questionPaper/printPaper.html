@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<head>
+<meta charset="UTF-8" />
+<title>打印预览</title>
+<script type="text/javascript" th:inline="javascript">
+
+</script>
+</head>
+<body>
+	<div layout:fragment="content">
+		<div class="ab_bg_white"
+			style="margin-bottom: 10px; border-bottom: 1px solid #ddd; margin: 0; padding-left: 28px; position: absolute; z-index: 10; left: 11px; right: 0px; top: 0px; box-shadow: 1px 1px 1px 0px #f1f1f1; background: #fff">
+			<h3
+				style="padding-bottom: 6px; margin-top: 25px; font-weight: normal;">打印预览
+			</h3>
+		</div>
+		<div class="container-fluid ab_style" id="table-cont">
+			<div class="container-fluid ab_style ab_mt20">
+				<table th:each="question:${list_question}">
+					<tr >
+						<td th:text="${question.topic}">题目</td></br>
+												
+						<td th:text="A.+${question.optionA}">选项A</td>
+						<td th:text="B.+${question.optionB}">选项B</td>
+						<td th:text="C.+${question.optionC}">选项C</td>
+						<td th:text="D.+${question.optionD}">选项D</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

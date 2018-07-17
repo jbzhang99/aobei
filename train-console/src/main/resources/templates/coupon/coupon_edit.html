@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<head> 
+<meta charset="UTF-8" />
+<title>优惠券编辑页</title>
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<script th:src="@{/js/bootstrapValidator.min.js}" type="text/javascript"></script>
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+
+	$(function(){
+		
+		ymdhm();
+		//默认页面加载是隐藏的
+		$("#contition_1").hide();
+		$("#contition_2").hide();
+		//隐藏优惠方案隐藏
+		$("#programme_1").hide();
+		$("#programme_2").hide();
+
+		//回显数据
+		var coupon = [[${coupon}]];
+		var condition_type = [[${condition_type}]];
+		var programme_type = [[${programme_type}]];
+		$("#c_name").val(coupon.name);
+		$("input:radio[name='valid'][value="+coupon.valid+"]").attr("checked","checked");
+		$("input:radio[name='exclusive'][value="+coupon.exclusive+"]").attr("checked","checked");
+		$("input:radio[name='num_limit'][value="+coupon.num_limit+"]").attr("checked","checked");
+		$("#num_total").val(coupon.num_total);
+		$("#priority").val(coupon.priority);
+		$("#plan_money").val(coupon.plan_money);
+		$("#use_start_datetime").val([[${start_time1}]]);
+		$("#use_end_datetime").val([[${end_time1}]]);
+		$("input:radio[name='condition_type'][value="+coupon.condition_type+"]").attr("checked","checked");
+		$("input:radio[name='programme_type'][value="+coupon.programme_type+"]").attr("checked","checked");
+
+		if($("#type").val()==2){
+            $("#div_status").hide();
+		}
+		//声明添加指定商品时的增加索引变量
+		var num=0;
+		//发放数量的单选按钮
+		//var limit_name = document.getElementsByName("num_limit");
+		var limit_name = $("input:radio[name='num_limit']:checked").val();
+		//页面加载
+		if(limit_name==0){
+			$("#num_total_div").hide()
+		}else{
+			$("#num_total_div").show()
+		}
+		
+		var checked_template = $("input:radio[name='condition_type']:checked").val();
+		//页面初始化回显已经选中的选项，并回显数值
+		if(checked_template==1){
+			$("#contition_1").show();
+			$("#condition_all").val((condition_type.value)/100)
+		}else{
+			$("#contition_1").hide();
+		}
+		if(checked_template==2){
+			$("#contition_2").show();
+			 $('#select_all').show();
+			 $("#select_close").show();
+			//回显已选中的数值
+			$("#condition_pro").val((condition_type.value)/100);
+			//回显已选择的商品
+			//var list_product = [[${productList}]];
+			
+			var bpList=$("#back_productList").val();
+			var list_product =JSON.parse(bpList);
+			/* $.each(list_product,function(index,ele){
+				 if(ele!=null){					
+					var html_pro = "<p><span id=product"+num+" value="+ele.product_id+">"+ele.name+"</span><button id=del_pro_"+num+" type='button' class='btn btn-link text-warning form-group' style='margin-left:40px' onclick='del_pro(this)' value='product"+num+"'><i class='fas fa-minus-circle fa-lg text-danger'></i></button></p>"
+					$("#p_opration").append(html_pro);
+					num++ 
+				} 
+			}) */
+			for(var i=0;i<list_product.length;i++){
+				var html_pro = "<p><span id=product"+num+" value="+list_product[i].product_id+">"+list_product[i].name+"</span><button id=del_pro_"+num+" type='button' class='btn btn-link text-warning form-group' style='margin-left:40px' onclick='del_pro(this)' value='product"+num+"'><i class='fas fa-minus-circle fa-lg text-danger'></i></button></p>"
+				$("#p_opration").append(html_pro);
+				num++;
+			}
+		}else{
+			$("#contition_2").hide();
+		}
+
+		if(checked_template==3){
+            $("#programme_model_2").hide();
+            $("#template_programme_Ddiscount").hide();
+		}
+
+
+		if(checked_template==4){
+			$("#condition_4").show();
+			 $('#select_all_4').show();
+			 $("#select_close_4").show();
+			//回显已选中的数值
+			
+			var bpList=$("#back_productList").val();
+			var list_product =JSON.parse(bpList);
+			
+			for(var i=0;i<list_product.length;i++){
+				var html_pro = "<p><span id=product"+num+" value="+list_product[i].product_id+">"+list_product[i].name+"</span><button id=del_pro_"+num+" type='button' class='btn btn-link text-warning form-group' style='margin-left:40px' onclick='del_pro(this)' value='product"+num+"'><i class='fas fa-minus-circle fa-lg text-danger'></i></button></p>"
+				$("#p_opration_4").append(html_pro);
+				num++;
+			}
+		}else{
+			$("#condition_4").hide();
+		}
+		var checked_programme = $("input:radio[name='programme_type']:checked").val();
+		//页面初始化回显已经选中的选项，并回显数值
+		if(checked_programme==1){
+			$("#programme_1").show();
+			$("#programme_discount").val((programme_type.value));
+		}else{
+			$("#programme_1").hide();
+		}
+		if(checked_programme==2){
+			$("#programme_2").show();
+			$("#programme_Ddiscount").val((programme_type.value)/100);
+		}else{
+			$("#programme_2").hide();
+		}
+		/* if(checked_programme==3){
+			$("#programme_3").show();
+			$("#programme_Ddiscount").val((programme_type.value)/100);
+		}else{
+			$("#programme_3").hide();
+		} */
+		var limit_name = document.getElementsByName("num_limit");
+		//点击时改变
+		$("#num_limit_2").change(function(){			
+			$.each(limit_name,function(index,ele){
+				if(ele.value==0){
+					$("#num_total_div").hide()
+					reset();
+					alertify.log("发放数量没有限制，此优惠券没有总数量！")
+				}
+			}) 
+		})
+		$("#num_limit_1").change(function(){			
+			$.each(limit_name,function(index,ele){
+				if(ele.value==1){
+					$("#num_total_div").show()
+					reset();
+					alertify.log("发放数量有限制，请设置优惠券总数量！")
+			}
+			}) 
+		})
+		//失去焦点
+		
+		//取消按钮
+		$("#cancel_btn").click(function(){
+			var current = [[${current}]]
+			window.location.href="/couponmanager/coupon_list?p="+current
+		})
+		
+			//页面默认隐藏优惠条件列表
+		$("#template_hide").show()
+		$("#template_show").hide();
+		$("#template_content_switch").show()
+			//页面默认隐藏优惠方案列表
+		$("#programme_hide").show()
+		$("#programme_show").hide();
+		$("#programme_content_switch").show()
+		//优惠条件列表选择时的显示和隐藏
+		$("input:radio[name='condition_type']").change(function(){	
+			var checked_template = $("input:radio[name='condition_type']:checked").val();
+			//页面默认模板隐藏
+			if(checked_template==1){
+				$("#contition_1").show();
+				reset();
+				alertify.log("请输入订单金额！") 
+			}else{
+				$("#contition_1").hide();
+			}
+			if(checked_template==2){
+				$("#contition_2").show();
+				reset();
+				alertify.log("请输入订单金额及指定商品信息！") 
+			}else{
+				$("#contition_2").hide();
+			}
+			if(checked_template==4){
+				$("#condition_4").show();
+				reset();
+				alertify.log("请选择指定商品信息！") 
+			}else{
+				$("#condition_4").hide();
+			}
+            if(checked_template==3){
+                $("#programme_model_2").hide();
+                $("#template_programme_Ddiscount").hide();
+                $("#programme_2").hide();
+            }else{
+                $("#programme_model_2").show();
+                $("#template_programme_Ddiscount").show();
+                $("#programme_2").show();
+            }
+		})
+		//优惠方案选择
+		$("input:radio[name='programme_type']").change(function(){			
+			var checked_template = $("input:radio[name='programme_type']:checked").val();
+			//页面默认模板隐藏
+			if(checked_template==1){
+				$("#programme_1").show();
+				reset();
+				alertify.log("请输入订单折扣！") 
+			}else{
+				$("#programme_1").hide();
+			}
+			if(checked_template==2){
+				$("#programme_2").show();
+				reset();
+				alertify.log("请输入优惠金额！") 
+			}else{
+				$("#programme_2").hide();
+			}
+			
+		})
+		//加载指定商品的两个下拉框数据方法
+		load_select();
+		load_select_4();
+		//指定商品时的添加按钮
+		 $("#select_add").click(function(){
+			 $('#select_all').show();
+			 $("#select_close").show();
+		})  
+		$("#select_close").click(function(){
+			$('#select_all').hide();
+			$("#select_close").hide();
+		})
+		//4类型 指定商品
+		 $("#select_add_4").click(function(){
+			 $('#select_all_4').show();
+			 $("#select_close_4").show();
+		})  
+		$("#select_close_4").click(function(){
+			$('#select_all_4').hide();
+			$("#select_close_4").hide();
+		})
+		//添加商品
+		//var num=0
+		$("#add_btn_one").click(function(){
+			var checked_se2 = $("#select_2 option:checked").val()
+			var checked_se2_text = $("#select_2 option:checked").text();
+			if(checked_se2 !=null){
+				if($("#p_opration").find("span").size() == 0){
+					//获取到已选中的商品
+					var html_pro = "<p><span id=product"+num+" value="+checked_se2+">"+checked_se2_text+"</span><button id=del_pro_"+num+" type='button' class='btn btn-link text-warning form-group' style='margin-left:40px' onclick='del_pro(this)' value='product"+num+"'><i class='fas fa-minus-circle fa-lg text-danger'></i></button></p>"
+					$("#p_opration").append(html_pro);
+					num++
+					//product_ids.push(checked_se2)
+				}else{ 		
+					var flag = true;
+					$.each($("#p_opration").find("span"),function(index,ele){
+						if(checked_se2 == $(this).attr("value")){
+							reset();
+							alertify.alert("不能重复添加！")
+							flag=false
+							return ;
+						}
+					})
+					if(flag==true){
+						//获取到已选中的商品
+						var html_pro = "<p><span id=product"+num+" value="+checked_se2+" class='form-inline'>"+checked_se2_text+"</span><button id=del_pro_"+num+" type='button' class='btn btn-link text-warning form-group' style='margin-left:40px' onclick='del_pro(this)' value='product"+num+"'><i class='fas fa-minus-circle fa-lg text-danger'></i></button></p>"
+						$("#p_opration").append(html_pro);
+						num++
+						//product_ids.push(checked_se2)
+					}
+					/* var strJson_productIds = JSON.stringify(product_ids);
+					$("#data_hidden_ids").val(strJson_productIds); */
+				}
+			}else{
+				reset();
+				alertify.alert("请选择分类下存在的商品，请重新选择分类！");
+				return;
+			}
+			
+		})
+		//4  添加商品
+		var num=0
+		$("#add_btn_one_4").click(function(){
+			var checked_se2 = $("#select_2_4 option:checked").val()
+			var checked_se2_text = $("#select_2_4 option:checked").text();
+			if(checked_se2 !=null){
+				if($("#p_opration_4").find("span").size() == 0){
+					//获取到已选中的商品
+					var html_pro = "<p><span id=product"+num+" value="+checked_se2+">"+checked_se2_text+"</span><button id=del_pro_"+num+" type='button' class='btn btn-link text-warning form-group' style='margin-left:40px' onclick='del_pro(this)' value='product"+num+"'><i class='fas fa-minus-circle fa-lg text-danger'></i></button></p>"
+					$("#p_opration_4").append(html_pro);
+					num++
+					//product_ids.push(checked_se2)
+				}else{ 		
+					var flag = true;
+					$.each($("#p_opration_4").find("span"),function(index,ele){
+						if(checked_se2 == $(this).attr("value")){
+							reset();
+							alertify.alert("不能重复添加！")
+							flag=false
+							return ;
+						}
+					})
+					if(flag==true){
+						/*<!--/!* 获取到已选中的商品  *!/-->*/
+						var html_pro = "<p><span id=product"+num+" value="+checked_se2+" class='form-inline'>"+checked_se2_text+"</span><button id=del_pro_"+num+" type='button' class='btn btn-link text-warning form-group' style='margin-left:40px' onclick='del_pro(this)' value='product"+num+"'><i class='fas fa-minus-circle fa-lg text-danger'></i></button></p>"
+						$("#p_opration_4").append(html_pro);
+						num++
+						//product_ids.push(checked_se2)
+					}
+					/*<!--/!*  var strJson_productIds = JSON.stringify(product_ids); *!/-->*/
+					/*<!--/!*  $("#data_hidden_ids").val(strJson_productIds); *!/-->*/
+				}
+			}else{
+				reset();
+				alertify.alert("请选择分类下存在的商品，请重新选择分类！");
+				return;
+			}
+			
+		})
+        if($("#type").val()==3){
+			$("#template_programme_order").hide();
+			$("input[name='condition_model_3']").hide();
+		}else{
+			$("#template_programme_order").show();
+			$("input[name='condition_model_3']").show();
+		}
+
+		//提交按钮
+		$("#add_btn").click(function(){
+			$("#form1").bootstrapValidator('validate');//提交验证
+	 		
+			var product_ids = [];
+			//传递商品id信息
+			$("#p_opration p").find("span").each(function(i,v){
+				product_ids.push($(v).attr('value'));
+			})
+			var strJson_productIds = JSON.stringify(product_ids);
+			$("#data_hidden_ids").val(strJson_productIds);
+			
+			var product_ids_4 = [];
+			//传递商品id信息
+			$("#p_opration_4 p").find("span").each(function(i,v){
+				product_ids_4.push($(v).attr('value'));
+			})
+			var strJson_productIds_4 = JSON.stringify(product_ids_4);
+			$("#data_hidden_ids_4").val(strJson_productIds_4);
+			
+			var limit_name = document.getElementsByName("num_limit");
+			var checked_num = $("input:radio[name='num_limit']:checked").val()
+	 		//如果选择模板列表单选框，必须要填写订单金额数量
+	 			if(checked_num == 1){
+	 				if($("#num_total").val()==''){
+	 					reset();
+	 					alertify.alert("请输入总数量！不需要总数量时可选择否。 ")
+	 					return false;
+	 				}
+	 			}
+			var lose_con1 = $("#template_condition_all").get(0).checked;
+			var lose_con2 = $("#template_condition_pro").get(0).checked;
+			
+			if(lose_con1==false){				
+				$("#template_condition_all").nextAll('div').eq(0).find('input').eq(3).val('');
+			}
+			if(lose_con2==false){
+				$("#template_condition_pro").nextAll('div').eq(0).find('input').eq(0).val('');
+			}
+			var lose_pro1 = $("#template_programme_discount").get(0).checked;
+			var lose_pro2 = $("#template_programme_Ddiscount").get(0).checked;
+			if(lose_pro1==false){
+				$("#template_programme_discount").nextAll('div').eq(0).find('input').eq(0).val('');
+			}
+			if(lose_pro2==false){
+				$("#template_programme_Ddiscount").nextAll('div').eq(0).find('input').eq(0).val('');
+			}
+			var regex = /^([1-9]\d?|100)$/;
+			var regex_price = /^[0-9]+(.[0-9]{1,2})?$/;
+			var input_con1= $("#condition_all").val();
+			var input_con2= $("#condition_pro").val();
+			var input_pro1 = $("#programme_discount").val();
+			var input_pro2 = $("#programme_Ddiscount").val();
+			
+			if($("#template_condition_all").get(0).checked){
+				if(input_con1==''){
+					reset();
+					alertify.alert("订单金额不能为空！");
+					return false;
+				}
+		 		if(!regex_price.test(input_con1)){		 			
+			 		 reset();
+			 		 alertify.alert("优惠条件订单金额只能包含整数或者是小数点后最多保留两位！");
+			 		 return false;
+		 		}
+		 	}
+			if($("#template_condition_pro").get(0).checked){
+                if(input_con2==''){
+                    reset();
+                    alertify.alert("订单金额不能为空！");
+                    return false;
+                }
+				if(!regex_price.test(input_con2)){		 			
+			 		 reset();
+			 		 alertify.alert("优惠条件订单金额只能包含整数或者是小数点后最多保留两位！");
+			 		 return false;
+		 		}
+                var p_size = $("#template_condition_pro").nextAll('div').eq(0).find('div').eq(0).find('div').find('p').find('button').length
+
+                if(p_size=='' || p_size==0){
+                    reset();
+                    alertify.alert("优惠条件未选择商品！");
+                    return false;
+                }
+		 	}
+			if($("#template_programme_discount").get(0).checked){
+				if(input_pro1==''){
+					reset();
+					alertify.alert("订单折扣不能为空！");
+					return false;
+				}
+		 		if(!regex.test(input_pro1)){		 			
+			 		 reset();
+			 		 alertify.alert("优惠方案折扣只能输入1-100的整数");
+			 		 return false;
+		 		}
+		 	}
+			if($("#template_programme_Ddiscount").get(0).checked){
+                if(input_pro2==''){
+                    reset();
+                    alertify.alert("订单金额不能为空！");
+                    return false;
+                }
+				if(!regex_price.test(input_pro2)){	
+			 		 reset();
+			 		 alertify.alert("优惠方案订单优惠只能包含整数或者是小数点后最多保留两位！");
+			 		 return false;
+		 		}	
+			}
+            if($("#template_programme_register").get(0).checked){
+                var p_size = $("#template_programme_register").nextAll('div').eq(0).find('div').eq(0).find('p').find('button').length
+
+                if(p_size=='' || p_size==0){
+                    reset();
+                    alertify.alert("优惠条件未选择商品！");
+                    return false;
+                }
+            }
+            if($("#type").val()==4){
+                var os = $("#num_total").val();
+                var rs = $("input[name='num_limit']:checked").val();
+                if(rs==0){
+                    reset();
+                    alertify.alert("当类型为兑换券时，必须添加数量!");
+                    return false;
+                }
+                if(os==''){
+                    reset();
+                    alertify.alert("当类型为兑换券时，必须添加数量!");
+                    return false;
+                }
+            }
+            if($("#type").val()==""){
+                reset();
+                alertify.alert("请选择优惠券类型！")
+                return false;
+            }
+
+		 	var start_time = $("#use_start_datetime").val();
+		 	var end_time = $("#use_end_datetime").val();
+
+		 	if(start_time=='' ){
+		 		reset();
+		 		alertify.alert("请选择优惠券生效时间！");
+		 		return ;
+		 	}else if(end_time==''){
+		 		reset();
+		 		alertify.alert("请选择优惠券失效时间！")
+		 		return ;
+		 	}else if(start_time>=end_time){
+		 		reset();
+		 		alertify.alert("优惠券生效时间不能在失效时间之后或相等！")
+		 		return ;
+		 	}else if($("input:radio[name='condition_type']:checked").size()==0){
+		 		//打开优惠条件列表
+		 		$("#template_hide").show()
+				$("#template_show").hide();
+				$("#template_content_switch").show(); 
+		 		reset();
+		 		alertify.alert("请至少选择一项优惠条件！");
+		 		return ;
+		 	}else if($("input:radio[name='programme_type']:checked").size()==0){
+		 		/* <!--/!*	打开优惠方案列表 *!/-->*/
+		 		$("#programme_hide").show()
+				$("#programme_show").hide();
+				$("#programme_content_switch").show();
+		 		reset();
+		 		alertify.alert("请至少选择一项优惠方案！")
+		 		return ;
+		 	}else{		 
+		 		$("#form1").data("bootstrapValidator").resetForm();
+		 		var current = [[${current}]]
+		 		//序列化表单数据
+
+				/*<!--/!*	执行添加请求   *!/-->*/
+				$.ajax({
+					url:'/couponmanager/coupon_edit',
+					data:$("#form1").serializeArray(),
+					method:'post',
+					cache:false,
+					async:true,
+					dataType:'json',
+					success:function(data){
+						reset();
+						alertify.success(data.message);
+						setTimeout(function(){
+							window.location.href="/couponmanager/coupon_list?p="+current
+						},2000)
+					}
+				})
+		 	}
+		})
+	
+	
+		$("#div_num").hide();
+	})
+	//截取时间为正常格式
+	function trimStr(str){
+		//var newStr = str.replace("T"," ");
+		if(str!=null){			
+			var completeStr = str.substring(0,10);
+			return completeStr;
+		}
+	} 
+	//删除已指定商品按钮
+	function del_pro(obj){
+		var pro_id = obj.value;
+		var v=$(obj).prev().attr('value');
+		$("#"+pro_id+"").remove();
+		obj.remove();
+		
+	}
+	//填充下拉框数据的方法
+	function load_select(){
+		$.ajax({
+			url:'/couponmanager/coupon_reload_pro',
+			type:'GET',
+			success:function(data){
+				//遍历所有分类
+				$.each(data.list_category,function(index,ele){
+						var html_cat = "<option value="+ele.category_id+">"+ele.name+"</option>"
+						$("#select_1").append(html_cat);
+				})
+				//装载所有商品
+				$.each(data.list_product,function(i,mod){
+						var checked_sel = $("#select_1 option:checked").val();
+						//判断页面刷新时第二个下拉框和第一个保持一致
+						if(checked_sel == mod.category_id){
+							var	html_pro = "<option id="+mod.category_id+" value="+mod.product_id+">"+mod.name+"</option>"							
+							$("#select_2").append(html_pro)
+						}
+				})
+				$("#select_1").change(function(){
+						//先清空第二个下拉框的数据
+						$("#select_2").empty();
+						//第一个下拉框已选中的值
+						var checked_sel1 = $("#select_1 option:checked").val();
+						//遍历请求返回的数据
+						$.each(data.list_product,function(j,lev){
+							if(checked_sel1 == lev.category_id){
+								var option = "<option id="+lev.category_id+" value="+lev.product_id+">"+lev.name+"</option>"
+								$("#select_2").append(option)
+							}
+						})
+						if($("#select_2 option").size()==0){
+							reset();
+							alertify.error("该分类下没有商品，请重新选择！")
+						}else{
+							reset();
+							alertify.success("选择成功！")
+						}
+					//})
+				})//onchange事件
+			}//成功回调函数位置
+		})
+	}
+	//4 填充下拉框数据的方法
+	function load_select_4(){
+		
+		$.ajax({
+			url:'/couponmanager/coupon_reload_pro',
+			type:'GET',
+			success:function(data){
+				//遍历所有分类
+				$.each(data.list_category,function(index,ele){
+						var html_cat = "<option value="+ele.category_id+">"+ele.name+"</option>"
+						$("#select_1_4").append(html_cat);
+				})
+				//装载所有商品
+				$.each(data.list_product,function(i,mod){
+						var checked_sel = $("#select_1_4 option:checked").val();
+						//判断页面刷新时第二个下拉框和第一个保持一致
+						if(checked_sel == mod.category_id){
+							var	html_pro = "<option id="+mod.category_id+" value="+mod.product_id+">"+mod.name+"</option>"							
+							$("#select_2_4").append(html_pro)
+						}
+				})
+				$("#select_1_4").change(function(){
+						//先清空第二个下拉框的数据
+						$("#select_2_4").empty();
+						//第一个下拉框已选中的值
+						var checked_sel1 = $("#select_1_4 option:checked").val();
+						//遍历请求返回的数据
+						$.each(data.list_product,function(j,lev){
+							if(checked_sel1 == lev.category_id){
+								var option = "<option id="+lev.category_id+" value="+lev.product_id+">"+lev.name+"</option>"
+								$("#select_2_4").append(option)
+							}
+						})
+						if($("#select_2_4 option").size()==0){
+							reset();
+							alertify.error("该分类下没有商品，请重新选择！")
+						}else{
+							reset();
+							alertify.success("选择成功！")
+						}
+					//})
+				})//onchange事件
+			}//成功回调函数位置
+		})
+	
+	}
+	function change_cou_type(v) {
+        var type = v.value;
+        if(3==type){
+            $("#template_programme_order").hide();
+            $("input[name='condition_model_3']").hide();
+			var che = $("input:radio[name='condition_type']:checked").val();
+            if(che==3){
+                $("input:radio[name='condition_type']:checked").attr("checked",false);
+			}
+        }else{
+            $("#template_programme_order").show();
+            $("input[name='condition_model_3']").show();
+        }
+    }
+</script>
+</head>
+<body>
+
+	<div layout:fragment="content">
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li><a th:href="@{/couponmanager/coupon_list}">优惠券管理</a></li>
+			  <li class="active">编辑</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_15">
+				<form id="form1" action="#"  class="form-horizontal" th:object="${coupon}">
+					<input name="mts" th:value="${application.mts}" type="hidden"/>
+					<input id="page_current" th:value="${current}" hidden/>
+					<div class="form-group">
+						<label for="c_name" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 优惠券名称</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control" id="c_name"
+								name="name" placeholder="请输入优惠券名称" required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="plan_money" class="col-sm-3 control-label">
+							<span style="color: red">*</span> 优惠券类型</label>
+						<div class="col-sm-2">
+							<select type="text" class="form-control" id="type" name="type" onchange="change_cou_type(this)">
+								<option value="">请选择</option>
+								<option th:selected="*{type == 1} ? 'selected'" value="1">派发券</option>
+								<option th:selected="*{type == 2} ? 'selected'" value="2">赔偿券</option>
+								<option th:selected="*{type == 3} ? 'selected'" value="3">领取券</option>
+								<option th:selected="*{type == 4} ? 'selected'" value="4">兑换券</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group" id="div_status">
+						<label for="valid" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 状态</label>
+						<div class="col-sm-4" style="padding-top: 5px">
+							<input type="radio"  id="valid_1"name="valid"   value="1" checked style="padding-bottom: 300px"/>启用
+							<input type="radio"  id="valid_2"name="valid"   value="0" class="text-center"/>禁用
+						 </div>
+					</div> 
+					<div class="form-group">
+						<label for="plan_money" class="col-sm-3 control-label">
+														 预算</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control" id="plan_money" placeholder="请输入预算价格，单位为元"
+								name="plan_money" />
+						</div>
+					</div>
+
+					<!--<div class="form-group">
+						<label for="exclusive" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 排他</label>
+						<div class="col-sm-4" style="padding-top: 5px">
+							<input type="radio"  id="exclusive_1" name="exclusive" value="1"/>是
+							<input type="radio"  id="exclusive_2" name="exclusive" value="0" checked/>否
+						</div>
+					</div>-->
+					<div class="form-group" id="div_num">
+						<label for="num_limit" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 是否有发放数量限制</label>
+						<div class="col-sm-6" style="padding-top: 5px">
+							<input type="radio"  id="num_limit_1" name="num_limit" value="1" checked/>是
+							<input type="radio"  id="num_limit_2" name="num_limit" value="0" />否
+						</div>
+					</div>
+					<div class="form-group" id="num_total_div">
+						<label for="num_total" class="col-sm-3 control-label">
+															 总数量</label>
+						<div class="col-sm-4">
+							<input id="num_total" name="num_total" type="text" placeholder="请输入优惠券总数量" class="form-control"/>
+						</div>
+					</div>
+					<!--<div class="form-group">
+						<label for="priority" class="col-sm-3 control-label">
+															优先级</label>
+						<div class="col-sm-4">
+							<input id="priority" name="priority" type="text" class="form-control" placeholder="优先级等级为1-99，99为最高级" />
+						</div>
+					</div>-->
+					<div class="form-group">
+						<label for="use_start_datetime" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 生效时间</label>
+						<div class="col-sm-4">
+							<input id="use_start_datetime" name="start_datetime" class="form-control datetimepicker2" readonly/>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="use_end_datetime" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 失效时间</label>
+						<div class="col-sm-4">
+							<input id="use_end_datetime" name="end_datetime" class="form-control datetimepicker2" readonly/>
+						</div>
+					</div>
+					<div id="condition_type">
+					<div class="form-group">
+						<label for="condition_type" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 优惠条件列表 </label>
+						<!-- <div class="col-sm-1" style="padding-top:3px">
+							<button id="template_hide" type="button"  class="form-control input-sm" style="border: none">隐藏</button>
+							<button id="template_show" type="button"  class="form-control input-sm" style="border: none;display: none ;">显示</button>
+						</div> -->
+					</div>
+					<div class="form-group" id="template_content_switch">
+						<label for="template_content" class="col-sm-3 control-label"></label>
+						<div class="col-sm-5">
+							<input id="template_condition_all" name="condition_type" type="radio" value="1" /><input name="condition_model_1" type="text" value="满x元时，对所有商品优惠" style="border:none;outline:none;width:300px" readonly><br><br>
+								<div id="contition_1">
+								<input id="data_hidden_ids" name="data_hidden_ids" type="hidden" />
+								<input id="back_productList"  hidden="hidden" th:value="${productList}"/>
+								<input id="coupon_id" name="coupon_id" th:value="${coupon_id}" type="hidden"/>
+									订单金额满&nbsp;&nbsp;<input id="condition_all" name="condition_1" style="width:70px" class="input-sm" placeholder="单位元"/><br><br>
+								</div>
+								<input id="template_condition_pro" name="condition_type" type="radio"  value="2"/><input name="condition_model_2" type="text" value="满x元时，对指定商品优惠" style="border:none;outline:none;width:300px" readonly><br><br>
+								
+								<div id="contition_2" >
+									订单金额满&nbsp;&nbsp;<input id="condition_pro" name="condition_2" style="width:70px" class="input-sm" placeholder="单位元"/><br><br>
+										指定商品&nbsp;&nbsp;<button type="button" id="select_add" class="add_btn"  style="background-color:#BBFFEE" >+</button>&nbsp;&nbsp;
+														<button type="button" id="select_close" class="colse_btn" style="background-color:#BBFFEE;width:25px" hidden="hidden">-</button><br><br>
+										<div id="select_all" class="item" hidden="hidden">
+											<select id="select_1"  style="margin-top: 6px;width:120px" class="input-sm"></select>&nbsp;
+											<select id="select_2"  style="margin-top: 6px;width:120px" class="input-sm"></select>&nbsp;
+											<button type="button" id="add_btn_one" class="add_btn btn btn-default input-sm"  style="background-color:#99FF99" >添加商品</button><br><br>
+											<div id="p_opration" style="color:red;" >已选择商品:</div><br>
+										</div>
+								</div>
+							<input id="template_programme_order" name="condition_type" type="radio" value="3" /><input name="condition_model_3" type="text" value="对所有订单给予优惠" style="border:none;outline:none" readonly><br><br>
+							<input id="template_programme_register" name="condition_type" type="radio" value="4"/><input name="condition_model_4" type="text" value="指定商品给予优惠" style="border:none;outline:none" readonly><br><br>
+							<div id="condition_4">
+									<input id="data_hidden_ids_4" name="data_hidden_ids_4" type="hidden" />
+								指定商品&nbsp;&nbsp;<button type="button" id="select_add_4" class="add_btn"  style="background-color:#BBFFEE" >+</button>&nbsp;&nbsp;
+														<button type="button" id="select_close_4" class="colse_btn" style="background-color:#BBFFEE;width:25px" hidden="hidden">-</button><br><br>
+										<div id="select_all_4" class="item" hidden="hidden">
+											<select id="select_1_4"  style="margin-top: 6px;width:120px" class="input-sm"></select>&nbsp;
+											<select id="select_2_4"  style="margin-top: 6px;width:120px" class="input-sm"></select>&nbsp;
+											<button type="button" id="add_btn_one_4" class="add_btn btn btn-default input-sm"  style="background-color:#99FF99" >添加商品</button><br><br>
+											<div id="p_opration_4" style="color:red;" >已选择商品:</div><br>
+										</div>
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="programme_type" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 优惠方案列表 </label>
+						<!-- <div class="col-sm-1" style="padding-top:3px">
+							<button id="programme_hide" type="button"  class="form-control input-sm" style="border: none">隐藏</button>
+							<button id="programme_show" type="button"  class="form-control input-sm" style="border: none;display: none ;">显示</button>
+						</div> -->
+					</div>
+					<div class="form-group" id="programme_content_switch">
+						<label for="programme_content" class="col-sm-3 control-label"></label>
+						<div class="col-sm-4">
+							<input id="template_programme_discount" name="programme_type" type="radio" value="1" />
+							<input id="programme_model_1" name="programme_model_1" type="text" value="订单以固定x折出售" style="border:none;outline:none" readonly><br><br>
+								<div id="programme_1">
+										订单以折扣&nbsp;&nbsp;<input id="programme_discount" name="programme_1" style="width:80px" class="input-sm" placeholder="单位1-100"/>&nbsp;&nbsp;折出售<br><br>
+								</div>
+							<!-- <input id="template_programme_price" name="programme_type" type="radio" value="2" /><input name="programme_model_2" type="text" value="订单以固定价格x元出售" style="border:none;outline:none" readonly><br><br>
+								<div id="programme_2">
+										订单以价格&nbsp;&nbsp;<input id="programme_price" name="programme_2" style="width:70px" class="input-sm" placeholder="单位元"/>&nbsp;&nbsp;出售<br><br>
+								</div> -->
+							<input id="template_programme_Ddiscount" name="programme_type" type="radio" value="2" />
+							<input id="programme_model_2" name="programme_model_2" type="text" value="订单减固定x元价格出售" style="border:none;outline:none" readonly><br><br>
+								<div id="programme_2">
+										订单价格优惠&nbsp;&nbsp;<input id="programme_Ddiscount" name="programme_2" style="width:70px" class="input-sm" placeholder="单位元"/>&nbsp;&nbsp;出售<br><br>
+								</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-5 col-sm-offset-3">
+							<input type="button" id="add_btn" value="确定" class="btn btn-primary" />&nbsp;&nbsp;&nbsp;&nbsp;
+							<input type="button" id="cancel_btn" class="btn btn-default "
+								value="取消" />
+						</div>
+					</div>
+				</form>
+		</div>
+	</div>
+
+</body>
+</html>

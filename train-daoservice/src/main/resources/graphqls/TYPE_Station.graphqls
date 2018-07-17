@@ -1,0 +1,49 @@
+#服务站
+type Station{
+
+    station_id : Long
+
+    #合伙人id
+    partner_id : Long
+
+    #联系人
+    username : String
+
+    #手机号
+    phone : String
+
+    #省
+    province : Int
+
+    #市
+    city : Int
+
+    #地区
+    area : Int
+
+    #完整地址 ，空格分割 省，市 ，地
+    address : String
+
+    #坐标 纬度
+    lbs_lat : String
+
+    #坐标 经度
+    lbs_lng : String
+
+    #补充的地址信息
+    sub_address : String
+
+    #创建时间
+    create_datetime : Date
+
+    online_datetime : Date
+
+    offline_datetime : Date
+
+    #上线状态，1上线，0下线
+    onlined : Int
+
+    #0 未删除  1 已删除
+    deleted : Int
+}
+

@@ -1,0 +1,39 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>AaBei API GraphiQL Workspace</title>
+
+    <link rel="stylesheet" media="screen" href="https://cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" media="screen" href="//cdnjs.cloudflare.com/ajax/libs/graphiql/0.11.6/graphiql.min.css">
+    <link rel="stylesheet" media="screen" href="//cdn.jsdelivr.net/npm/graphiql-workspace@1.1.4/graphiql-workspace.min.css">
+	<style type="text/css">
+	#main-tabs-pane-tab1 > div > div.tab-top > div.graphiql-collapsed-tab > span{
+		float: right;
+		max-width:500px;
+	}
+	.graphiql-container .topBarWrap{
+		overflow-x:visible!important;
+	}
+	</style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/graphiql-workspace@1.1.4/graphiql-workspace.min.js"></script>
+  </head>
+  <body>
+    <div id="workspace" class="graphiql-workspace"></div>
+
+    <script>
+      var config = new graphiqlWorkspace.AppConfig("graphiql", {
+    	  defaultUrl:'${graphqlEndpoint}'
+      });
+
+      ReactDOM.render(
+        React.createElement(graphiqlWorkspace.GraphiQLWorkspace, {config: config}),
+        document.getElementById('workspace'));
+    </script>
+  </body>
+</html>

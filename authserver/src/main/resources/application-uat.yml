@@ -1,0 +1,76 @@
+server:
+  port: 9013
+  tomcat: 
+    max-threads: 100
+    uri-encoding: UTF-8
+    basedir: /var/tomcat
+  
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://rm-2zef1563j41a0933m.mysql.rds.aliyuncs.com:3306/train_all?characterEncoding=utf8&useSSL=false
+    username: train
+    password: CmjMGqwLJCBPjdqL4Lnd
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      maximum-pool-size: 10
+      data-source-properties:
+          cachePrepStmts: true
+          prepStmtCacheSize: 250
+          prepStmtCacheSqlLimit: 2048
+          useServerPrepStmts: true
+          useLocalSessionState: false
+          useLocalTransactionState: true
+          rewriteBatchedStatements: true
+          cacheResultSetMetadata: true
+          cacheServerConfiguration: true
+          elideSetAutoCommits: true
+          maintainTimeStats: false
+  redis:
+    database: 0
+    host: r-2ze27d45c93efd34.redis.rds.aliyuncs.com
+    port: 6379
+    password: Vvc7Fwf6Inz4FE6Vp5JA
+    pool:
+      max-active: 8
+      max-wait: -1
+      max-idle: 8
+      min-idle: 0
+    timeout: 0              
+               
+custom: 
+  oauth2key: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIICXAIBAAKBgHVK3sDQiETeAH5xv0P0/ZoxsBSdUJM0vCDcFzNSply0KEhiby6h
+    w/df4OSj4RdUjgS5wVe4oH+e6Vsj6DFnTu3j97IiHKcIT88WszsaFtvERWeMcKD+
+    mqSBE/Q1zd6Yo9YyerVL8wtC187AeIA9C1iBn59PLmaZDNOczUv6dK6JAgMBAAEC
+    gYBU/stKiBKnbQSInF7QnQEFMsp5NcKE2esWGMdLLrJVbUvfoE0XSqwaX8U1ijf7
+    0w8TB5S+v5C2ym4p2GxTGJzNsmBS9+z2i251HMvgtswoOijtIleLGlOwn8iWLF3v
+    ozgKX1MAtzxY8vRCZi6wP8sJXMP8BDTt0yaC++MoE8HMcQJBAMsDbZa57iueyvg8
+    DgO1t3xk/pNpxgfb6UEERbDRo/bZZ8Zb2xICmpfn1gQNkxMqmbwwXPFMzRXEpys3
+    NDCuN4UCQQCT5+Zs0me+aFwtQHAzadH+PzuP0RwU7BI3yoWbGhThq3s3qH+fIRac
+    zAgCokCL6y+NXyBtWMysb8FandxehXA1AkBiBS61luJrR0li38Q4gFWuhyjvziNi
+    igiubryjaiVLu57ChHla0c0IyVRpMpCvsWL3HTbS/y0KdJ/uWsIlOwjtAkEAg9ZU
+    xbFy+f1qFIf4u0ta/Eb+333kix22S3bBSvSfolxJM96FC6Hh1xfjF/3qjQ2xUFF3
+    xSA/KIFhF1XZJYPJ9QJBAIQ5gMdMNg7hbeKdgJ96TGhchCnkbIZ5r9eIZfCi3w7b
+    kSXPFpIC8Tvj/dpkEr4dnHJk8K12aCu/t+L1ZHOirNo=
+    -----END RSA PRIVATE KEY-----
+  oauth2publicKey: |
+    -----BEGIN PUBLIC KEY-----
+    MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgHVK3sDQiETeAH5xv0P0/ZoxsBSd
+    UJM0vCDcFzNSply0KEhiby6hw/df4OSj4RdUjgS5wVe4oH+e6Vsj6DFnTu3j97Ii
+    HKcIT88WszsaFtvERWeMcKD+mqSBE/Q1zd6Yo9YyerVL8wtC187AeIA9C1iBn59P
+    LmaZDNOczUv6dK6JAgMBAAE=
+    -----END PUBLIC KEY-----
+aobei:
+  common:
+    boot:
+      event-sms: true
+      
+
+#----------------------------------------------------------------------------------
+
+# token 有效期7天
+accessTokenValiditySeconds: 60 * 60 * 24 * 7 + 1
+# refreshToken 有效期两个月 
+refreshTokenValiditySeconds: 60 * 60 * 24 * 30 * 2 + 1

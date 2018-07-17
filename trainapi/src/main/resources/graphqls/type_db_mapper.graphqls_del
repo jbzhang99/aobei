@@ -1,0 +1,920 @@
+# Date implementation
+scalar Date
+# LocalDate implementation
+scalar LocalDate
+# LocalDateTime implementation
+scalar LocalDateTime
+# LocalTime implementation
+scalar LocalTime
+
+# mutation status result
+type MutationResult{
+	status: Int!
+	extra:String
+}
+
+#1分类信息
+type Category{
+   #分类ID
+   category_id:Long
+   #分类级别号
+   category_level_code:String
+   #分类名称
+   name:String
+   #分类图片
+   logo:String
+   #分类图片ID
+   logo_id:Long
+   #分类描述
+   descr:String
+   #产品类别状态(0:下线 1:上线)
+   state:Int
+   #产品父级ID
+   pid:Long
+}
+
+#2课程章节信息
+type Chapter{
+	#课程id
+	chapter_id:String
+	#课程章节标题
+	headline:String
+	#课程章节内容
+	section_content:String
+	#课程章节名称
+	section_name:Int
+	#课节上课时长 ，单位分钟
+	time_length:Int
+	#课程id
+	course_id:String
+	#是否删除 0 未删除  1 已删除
+	deleted:Int
+}
+
+#3教室信息
+type Classroom{
+	#教室id
+	classroom_id:String
+	#学校id
+	school_id:String
+	#教学楼号
+	block_number:String
+	#教室可容纳人数
+	capacity:Int
+	#是否可用  0  为不可用,1 为可用
+	useable:Int
+	#有效的时间范围JSON 数据
+	timescope_json:String
+	#创建时间
+	create_time:Date
+	#是否删除 0 未删除  1 已删除
+	deleted:Int
+}
+#4关联表
+#type ClassroomCourse{}
+#5关联表
+#type ClassroomSubject{}
+#6推广图片
+type CmsBanner{
+	#id
+	cms_banner_id:String
+	#图片资源id
+	img_cover:String
+	#标题
+	title:String
+	#简介
+	intro:String
+	#上线时间
+	online_datetime:Date
+	#下线时间
+	offline_datetime:Date
+	#排序号
+	serial_number:Int
+	#'1'为已上线,'0'为已下线
+	sign:Int
+	#是否删除 0 未删除  1 已删除
+	deleted:Int
+	#app 使用的端 '1'为顾客端,'2'为教师端,'3'为学员端,'4'为合伙人端
+	app:String
+	#具体页面（保留字段）
+	position:String
+	#跳转页面地址
+	href:String
+	#跳转类型 .1 http url 跳转 2 应用内跳转
+	type:Int
+}
+#7优惠券
+type Coupon{
+    #优惠券ID
+    coupon_id:Long
+    #优惠券名称
+    name:String
+    #优惠券的使用描述
+    descript:String
+    #是否用效  1 有效  0 无效
+    valid:Int
+    #是否排他  1 排他  0 不排他
+    exclusive:Int
+    #是否有发放数量限制  1 有限制  0 无限制
+    num_limit:Int
+    #总数量 ，仅 num_limit=1 时有数据
+    num_total:Int
+    #可发放数量 ，仅 num_limit=1 时有数据
+    num_able:Int
+    #优先级  1-99  99 最大
+    priority:Int
+    #优惠条件模板
+    condition:String
+    #优惠条件类型  1 订单总价满X时，对所有商品优惠
+    condition_type:Int
+    #优惠方案模板
+    programme:String
+    #优惠方案类型  1 订单减固定价格
+    programme_type:Int
+    #优惠卷有效使用开始日期时间
+    use_start_datetime:Date
+    #优惠卷有效使用结束日期时间
+    use_end_datetime:Date
+    #优惠卷有效领取开始日期时间
+    receive_start_datetime:Date
+    #优惠卷有效领取结束日期时间
+    receive_end_datetime:Date
+}
+#8优惠券领取和使用情况
+type CouponReceive{
+    #领取券ID
+    coupon_receive_id:Long
+    #优惠券ID
+    coupon_id:Long
+    #顾客的ID
+    uid:Long
+    #订单ID
+    pay_order_id:String
+    #优惠券领取时间
+    receive_datetime:Date
+    #优惠券使用时间
+    use_datetime:Date
+    #1 未领取 2 待使用/待回滚 3 已使用  4 已删除 5 已过期 6 冻结
+    status:Int
+    #核销 0 未核销 1 已核销
+    verification:Int
+}
+#9课程
+type Course{
+	#课程id
+	course_id:String
+	#名称
+	name:String
+	#状态
+	state:Int
+	#包含章节数
+	chapter_count:Int
+	#包含课时数
+	hour:Int
+	#学分
+	credit:Int
+	#创建时间
+	cdate:Date
+	#图片id
+	img:String
+	#是否已删除  0 未删除  1 已删除
+	deleted:Int
+}
+#10课程评价
+type CourseEvaluate{
+	id:String
+	# 课程上课排期id
+	train_schedule_id:String
+	# 学生id
+	student_id:String
+	# 评价
+	comment:String
+	# 评分
+	score:Int
+	# 老师id
+	teacher_id:String
+	#助教id
+	assistant:String
+	#课节id
+	chapter_id:String
+	# 课程章节id
+	course_id:String
+	# 创建时间
+	create_datetime:Date
+	#是否删除   0 未删除  1 已删除
+	deleted:Int
+}
+#11关联表
+#type CourseExamSubject{}
+# 12关联表
+#type CourseServiceItem{}
+
+#13顾客信息
+type Customer{
+   #顾客Id
+   customer_id:Long
+   #顾客姓名
+   name:String
+   #顾客性别
+   gender:Int
+   #顾客电话号码
+   phone:String
+   #顾客身份证号码
+   idcard:String
+   #创建日期
+   create_datetime:Date
+   #顾客的统一用户ID
+   user_id:Long
+   #顾客头像
+   logo_img:String
+}
+# 14顾客地址
+type CustomerAddress{
+    #顾客地址ID
+    customer_address_id:Long
+    #顾客ID
+    customer_id:Long
+    #顾客填写的接受服务人员的姓名，和顾客姓名可能不一致
+    username:String
+    #顾客预留的接受服务人员的电话，和顾客电话可能不一致
+    phone:String
+    province:Int
+    city:Int
+    area:Int
+    #详细地址。
+    address:String
+    #纬度
+    lbs_lat:String
+    #经度
+    lbs_lng:String
+    #地址补充信息
+    sub_address:String
+    #创建时间
+    create_datetime:Date
+    #是否默认地址 0 否 1 是
+    default_address:Int
+}
+# 15考试申请
+type ExamApply{
+	exam_apply_id:String
+	#考试计划id
+	exam_plan_id:String
+	#学生id
+	student_id:String
+	#考试科目id
+	exam_subject_id:String
+	#申请日期
+	apply_datetime:Date
+	#身份核对状态 0 失败 1 成功
+	id_check:Int
+	#考试得分
+	score:Int
+	#考试是否通过
+	passed:Int
+	#开考日期
+	exam_date:Date
+	#开考时间
+	exam_start_time:Date
+	#结束时间
+	exam_end_time:Date
+	#是否删除 0 未删除  1 已删除
+	deleted:Int
+}
+# 16考试安排
+type ExamPlan{
+	exam_plan_id:String
+	#考试名称
+	name:String
+	#考试科目id
+	exam_subject_id:String
+	#考试类型1 线下考试  2 线上考试
+	type:String
+	#教室id
+	classroom_id:String
+	#试卷id
+	question_paper_id:String
+	#考试日期
+	exam_date:Date
+	#开考时间
+	exam_start_time:Date
+	#结束时间
+	exam_end_time:Date
+	#报考开始时间
+	apply_start_datetime:Date
+	#报考结束时间
+	apply_end_datetime:Date
+	#可申请人数  0 无限制
+	apply_number:Int
+	#创建日期
+	create_datetime:Date
+	#主考老师
+	teacher_id:String
+	#助考老师
+	assistant:String
+	#是否删除 0 未删除  1 已删除
+	deleted:Int
+}
+#17考试科目
+#type ExamSubject{}
+#18消息体
+type Message{
+	#消息id
+	id :String
+	#类型 1 系统消息   2 业务提醒
+	type:Int
+	#业务端 1 学员端  2 老师端 3 合伙人端 4 顾客端
+	bis_type:Int
+	#用户id 0 表示给所有用户
+	user_id:Long
+	#学员id 或 老师id 或 合伙人id 顾客id     0 表示给所有用户
+	uid:Long
+	#消息标题
+	msg_title:String
+	#消息内容
+	msg_content:String
+	#0 未读 1 已读
+	status:Int
+	#创建时间
+	create_datetime:Date
+	#预设的通知时间
+	notify_datetime:Date
+	#消息分组id ，用于数据再处理 -id1-id2-id3-
+	group_id:String
+	#0 未删除 1 已删除
+	deleted:Int
+
+}
+#19订单信息
+type Order{
+    #订单号，用作支付商户订单号和订单查询
+    pay_order_id:String
+    #订单名称，购买的产品的名称
+    name:String
+    #用户的ID，指下单用户
+    uid:Long
+    #渠道，是从那个渠道进行的下单
+    channel:String
+    #总价格
+    price_total:Int
+    #打折价格
+    price_discount:Int
+    #实际支付价格=总价-打折价格
+    price_pay:Int
+    #享受优惠的信息。比如使用了优惠券
+    discount_data:String
+    #支付类型 1表示微信
+    pay_type:Int
+    #支付状态，1已支付 0待支付
+    pay_status:Int
+    #订单创建时间
+    create_datetime:Date
+    #支付时间
+    pay_datetime:Date
+    #可退金额
+    r_fee:Int
+    #退款状态
+    r_status:Int
+    #退款申请日期
+    r_datetime:Date
+    #最后退款完成日期
+    r_finish_datetime:Date
+    #顾客姓名
+    cus_username:String
+    #顾客选择的服务地址ID
+    customer_address_id:Long
+    #用户电话
+    cus_phone:String
+    #用户省级ID（冗余）
+    cus_province:Int
+    #用户市级ID（冗余）
+    cus_city:Int
+    #用户县，区级ID（冗余）
+    cus_area:Int
+    #用户下单的服务地址
+    cus_address:String
+    #纬度
+    lbs_lat:String
+    #经度
+    lbs_lng:String
+    #备注
+    remark:String
+    #取消订单备注
+    remark_cancel:String
+    #状态点1 待付款  2 待确认  3 待服务 4 已取消 5 已完成
+    status_active:Int
+    #预设定的订单过期时间。达到时间后没有支付的视作已过期，将不再能够进行支付
+    expire_datetime:Date
+}
+#20订单包含的项目
+#type OrderItem{}
+#21订单日志
+#type OrderLog{}
+
+#22图片信息表
+type OssImg{
+	#图片id
+	oss_img_id:String
+	#图片名称
+	name:String
+	#图片地址
+	url:String
+	effect:String
+	#图片格式
+	format:String
+	#创建时间
+	create_time:Date
+	#图片上传到阿里云oss的bucket
+	bucket:String
+	#图片的访问权限
+	access_permissions:String
+}
+#23视频信息表
+#type OssVideo{}
+#24合伙人
+ type Partner{
+ 	#合伙人id
+ 	partner_id:String
+ 	#合伙人名称
+	name:String
+	#合伙人门店地址
+	address:String
+	#联系人
+	linkman:String
+	#联系电话
+	phone:String
+	#统一社会信用代码
+	code:String
+	#营业执照
+	business_license:String
+	#营业日期开始
+	operation_start:Date
+	#营业日期结束
+	operation_end:Date
+	#法人身份证信息正面
+	identity_card_just:String
+	#法人身份证信息反面
+	identity_card_against:String
+	#开户银行信息
+	bank_name:String
+	#开户银行账号
+	bank_code:String
+	#合作日期开始
+	cooperation_start:Date
+	#合作日期结束
+	cooperation_end:Date
+	#创建时间
+	cdate:Date
+	#合伙人状态(0:下线 1:上线)
+	state:Int
+	#是否删除 0 未删除  1 已删除
+	deleted:Int
+	#学员使用
+	user_id:Long
+	#合伙人头像
+	logo_img:String
+ }
+#25关联表
+#type PartnerServiceItem{}
+#26微信毁掉接口返回数据
+#type PayWxNotify{}
+# 27培训计划
+type Plan{
+	#培训计划编号
+	train_plan_id:String
+	#培训开始日期
+	train_begin:Date
+	#培训结束日期
+	train_end:Date
+	#培训课程id
+	course_id:String
+	#培训学校id
+	school_id:String
+	#培训教室id
+	classroom_id:String
+	#培训教师id
+	teacher_id:String
+	#培训助教老师id
+	assistant:String
+	#培训方式 '0'为面授 '1'为在线
+	train_way:Int
+	#培训/考核
+	training:String
+	#培训人数
+	trainers_number:Int
+	#是否删除 0 未删除  1 已删除
+	deleted:Int
+}
+#28培训计划关联合伙人
+#type PlanPartner{}
+#29培训计划关联学员
+type PlanStudent{
+	#课程id
+	course_id:String
+	#培训开始时间
+	train_begin:Date
+	#培训结束时间
+	train_end:Date
+	#是否通过 1 通过 0 未通过
+	passed:Int
+	#是否删除 0 未删除  1 已删除
+	deleted:Int
+}
+#30产品信息
+type Product{
+    #产品ID
+    product_id:Long!
+    #分类ID
+    category_id:Long
+    #分类级别号
+    category_level_code:String
+    #产品所属服务项目ID
+    serviceitem_id:Long!
+    #产品名称
+    name:String
+    #产品描述
+    descript:String
+    #产品关键词，用于检索
+    seo:String
+    #图片集合，格式是json数据
+    images:String
+    #首张图片，可用于在首页进行展示
+    image_first:String
+    #默认skuID
+    psku_id_first:Long
+    #首个SKU（鳌背）价格单位分
+    price_first:Int
+    #首个SKU市场价格单位分
+    pricev_first:Int
+    #购买数量（基础）
+    base_buyed:Int
+    #上架状态 1上线，0下线
+    online:Int
+    #排序序号
+    sort_num:Int
+    #最近更新时间
+    update_datetime:Date
+    #创建时间
+    create_datetime:Date
+    #富文本内容
+    content:String
+    #城市id
+    city_id:Int
+    #是否云允许添加，并且具有显示在服务人员端的产品sku  0 不可以添加在服务人员端显示的sku，1 可以
+    has_student_sku:Int
+    #是否在APP类型的应用张展示该产品 0 否， 1 是
+    show_in_app:Int
+    #是否在小程序类型的应用张展示该产品 0 否， 1 是
+    show_in_smallapp:Int
+    #是否在PC版网站类型的应用张展示该产品 0 否， 1 是
+    show_in_pc:Int
+    #是否在手机网站类型的应用张展示该产品 0 否， 1 是
+    show_in_mobile:Int
+    #标签图片JSON 数据
+    tag_images:String
+    #小图片JSON 数据
+    lite_image:String
+    #取消策略id
+    cancle_strategy_id:Int
+}
+#31产品SKU
+type ProSku{
+    #产品呢SKUID
+    psku_id:Long
+    #产品ID
+    product_id:Long
+    #产品SKU名称
+    name:String
+    #产品SKU描述
+    descript:String
+    #产品SKU（鳌背）价格单位分
+    price:Int
+    #产品SKU市场价格单位分
+    pricev:Int
+    #SKU服务时长，单位分钟
+    service_time_length:Int
+    #SKU服务时间段 JSON 数据 [{s:5,e:6}]   s=start e=end 的值为 1-48 ,1=30 分钟
+    service_times:String
+    #排序序号
+    sort_num:Int
+    #SKU一天最多购买次数
+    buy_limit:Int
+    #删除状态  1 已删除  0 未删除
+    deleted:Int
+    #一次购买多件  是否允许    1 是 0 否
+    buy_multiple:Int
+    #一次购买多件  最小购买件数
+    buy_multiple_min:Int
+    #一次购买多件  最大购买件数  无最大限制时 0
+    buy_multiple_max:Int
+    #一次购买多件  派遣服务人员一对一   1 是 0 否
+    buy_multiple_o2o:Int
+    #预约策略id
+    bespeak_strategy_id:Int
+    #sku的单位。如米，件，个等 直接存文字
+    unit:String
+    #展示位置 0 顾客端，1服务人员端 
+    dispaly:Int
+}
+#32产品购买评价
+type ProEvaluate{
+    product_evaluate_id:Long
+    product_id:Long
+    psku_id:Long
+    pay_order_id:String
+    customer_id:Long
+    score:Int
+    comment:String
+    create_datetime:Date
+}
+#33题库
+type Question{
+ 	#题库id
+ 	question_id:String
+	#课程类型 0为全部，1为单选，2为多选，3为判断
+	type:Int
+	#考试科目id
+	exam_subject_id:String
+	#题目
+	topic:String
+	#选择题 选项JSON 数据
+	option_json:String
+	#答案
+	answer:String
+	#创建时间
+	create_datetime:Date
+	#是否删除 0 未删除  1 已删除
+	deleted:Int
+ }
+#34试卷
+#type QuestionPaper{}
+
+#35学校信息
+type School{
+	#学校id
+	school_id:String
+	#学校名称
+	name:String
+	#学校地址
+	address:String
+	#学校简介
+	intro:String
+	#合作开始日期
+	cooperation_start:Date
+	#合作结束日期
+	cooperation_end:Date
+	#创建时间
+	create_time:Date
+	#联系人
+	linkman:String
+	#联系电话
+	contact_number:String
+	#是否删除 0 未删除  1 已删除
+	deleted:Int
+}
+
+#36服务单
+type ServiceUnit{
+	serviceunit_id:String
+	customer_id:String
+	pay_order_id:String
+	product_id:String
+	psku_id:String
+	student_id:String
+	student_name:String
+	partner_id:String
+	station_id:String
+	active:Int
+	remark:String
+	c_begin_datetime:Date
+	c_end_datetime:Date
+	p_assign_datetime:Date
+	p_confirm_datetime:Date
+	p_reject_datetime:Date
+	p2s_assign_datetime:Date
+	finish_datetime:Date
+	pid:Long
+	group_tag:Long
+	status_active:Int
+	work_status:Int
+	work_1_datetime:Date
+	work_2_datetime:Date
+	work_3_datetime:Date
+	work_4_datetime:Date
+	p_reject_remark:String
+	work_remark:String
+}
+#37服务项目
+type Serviceitem{
+	serviceitem_id:String
+	name:String
+	descr:String
+	online_date:Date
+	offline_date:Date
+	state:Int
+	category_id:Long
+	deleted:Int
+}
+#38服务站
+type Station{
+	#服务站id
+	station_id:String
+	#合伙人id
+	partner_id:String
+	#联系人
+	username:String
+	#手机号
+	phone:String
+	#省
+	province:Int
+	#市
+	city:Int
+	#区
+	area:Int
+	#完整地址 ，空格分割 省，市 ，地
+	address:String
+	#坐标 纬度
+	lbs_lat:String
+	#坐标 经度
+	lbs_lng:String
+	#补充的地址信息
+	sub_address:String
+	#创建时间
+	create_datetime:Date
+	#删除
+	deleted:Int
+ }
+# 39学员信息
+type Student{
+	#学员id
+	student_id:String!
+	#姓名
+	name:String!
+	#学员隶属合伙人编号
+	partner_id:Int!
+	#身份证号
+	identity_card:String!
+	#联系电话
+	phone:String
+	#性别
+	sex:Int
+	#年龄
+	age:Int
+	#创建日期
+	cdate:Date
+	#状态
+	state:Int
+	#等级
+	grade:Int
+	# 籍贯
+	native_place:String
+	#学员身份证正面
+	card_just:String
+	#学员身份证反面
+	card_against:String
+	#学员健康证信息
+	health:String
+	#学员使用
+	user_id:Long
+	#学员id
+	logo_img:String
+	#0 未删除，1 已删除
+	deleted:Int
+	#工号
+	job_number:String
+	#工作证书
+	job_cert:String
+	#无犯罪记录
+	innocence_proof:String
+}
+#40关联表
+#type studentServiceitem{}
+# 41老师信息
+type Teacher{
+	# 教师信息表id
+	teacher_id:String
+	#教师姓名
+	name:String
+	#教师联系电话
+	phone:String
+	#培训地址
+	train_address:String
+	#教师性别;1为男，0为女
+	sex:Int
+	#教师年龄
+	age:Int
+	#创建时间
+	create_time:Date
+	#状态；1为在职，0为离职
+	state:Int
+	#教师头像
+	icon:String
+	#身份证
+	identity_card:String
+	#教师资格证书
+	certification:String
+	#教师类型；1为教师，0为助教
+	type:Int
+	#教师简介
+	intro:String
+	#用户id
+	user_id:String
+	#是否删除 0 未删除  1 已删除
+	deleted:Int
+}
+# 42关联表
+#type TeacherCourse{}
+#43 关联表
+#type TeacherExamSubject{}
+#44城市行政区划
+type TrainCity{
+	id:String
+	#城市名称
+	name:String
+	p_id:String
+	#是否开放
+	open:Int
+}
+# 45上课排期
+type TrainSchedule{
+	#课程id
+	train_schedule_id:String
+	#培训计划id
+	train_plan_id:String
+	#课程章节id
+	chapter_id:String
+	#课程id
+	course_id:String
+	#教室id
+	classroom_id:String
+	#学校id
+	school_id:String
+	#老师id
+	teacher_id:String
+	#助教老师id
+	assistant:String
+	#培训方式 '0'为面授 '1'为在线
+	train_way:Int
+	#上课开始日期
+	attendclass_date:Date
+	#上课开始时间
+	attendclass_starttime:Date
+	#上课结束时间
+	attendclass_endtime:Date
+	#是否删除 0 未删除  1 已删除
+	deleted:Int
+}
+#46 关联表
+#type TrainScheduleStudent{}
+#47统一用户
+#type Users{}
+
+#48 服务单 关联的服务人员
+type ServiceunitPerson {
+    # 关联表id
+    serviceunit_person_id:Long
+    # 服务单id
+    serviceunit_id:Long
+    # 服务人员id
+    student_id:Long
+    # 服务人员姓名
+    student_name:String
+    # 人员工作状态1 到达 2 开始 3 结束 4 离开
+    work_status:Int
+    # 工作人员到达时间
+    work_1_datetime:Date
+    # 工作开始时间
+    work_2_datetime:Date
+    # 工作结束时间
+    work_3_datetime:Date
+    # 工作人员离开时间
+    work_4_datetime:Date
+    # 工作人员备注
+    work_remark:String
+    # 表示订单状态点    1 待付款  2 待确认  3 待服务 4 已取消 5 已完成
+    status_active:Int
+}
+
+#49 服务人员请假信息
+type OutOfService{
+   #id
+   out_of_service_id:Long
+   #请假月份 2018-04
+   month:String
+   #请假日期
+   day:Date
+   #请假起始点数
+   start_time:String
+   #请假结束点数
+   end_time:String
+   #请假创建时间（请假时间）
+   create_datetime:Date
+   #关联服务人员ID
+   student_id:Long
+   #关联合伙人ID
+   partner_id:Long
+   #请假时长。以整点计算，四舍五入
+   duration:Int
+}
+
+
+

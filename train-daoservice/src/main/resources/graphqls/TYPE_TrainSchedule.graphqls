@@ -1,0 +1,42 @@
+#课程排期
+type TrainSchedule{
+
+    train_schedule_id : Long
+
+    #培训计划id
+    train_plan_id : Long
+
+    #课节id
+    chapter_id : Long
+
+    #课程id
+    course_id : Long
+
+    #教室id
+    classroom_id : Long
+
+    #学校id
+    school_id : Long
+
+    #老师id
+    teacher_id : Long
+
+    #助教老师id
+    assistant : Long
+
+    #培训方式 '0'为面授 '1'为在线
+    train_way : Int
+
+    #上课日期
+    attendclass_date : Date
+
+    #上课开始时间
+    attendclass_starttime : Date
+
+    #上课结束时间
+    attendclass_endtime : Date
+
+    #0 未删除，1 已删除
+    deleted : Int
+}
+

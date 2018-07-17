@@ -1,0 +1,12 @@
+#课程与考试科目关联
+type CourseExamSubject{
+
+    #考试科目id
+    exam_subject_id : Long
+
+    #课程id
+    course_id : Long
+
+    none : Int
+}
+

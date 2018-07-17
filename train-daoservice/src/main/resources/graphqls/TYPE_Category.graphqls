@@ -1,0 +1,37 @@
+#类别分类表
+type Category{
+
+    #产品类别编号
+    category_id : Long
+
+    #产品类别名称
+    name : String
+
+    #分类等级码
+    category_level_code : String
+
+    #logo 图片url
+    logo : String
+
+    #logo 图片 oss id
+    logo_id : Long
+
+    #产品类别描述
+    descr : String
+
+    #产品类别创建时间
+    cdate : Date
+
+    #产品类别状态(0:下线 1:上线)
+    state : Int
+
+    #父id
+    pid : Long
+
+    #0 未删除 1 已删除
+    deleted : Int
+
+    #是否上过架  1 是 0 否
+    actived : Int
+}
+

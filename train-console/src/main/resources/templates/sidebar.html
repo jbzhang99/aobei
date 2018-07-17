@@ -1,0 +1,403 @@
+<th:block th:fragment="list" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
+
+    <th:block sec:authorize="hasRole('ROLE_COURSE_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+                <span>
+                    <i class="icon iconfont icon-arrRight-fill"></i>
+                </span>
+                课程管理
+            </h5>
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item">
+                    <a id="side_0" th:href="@{/courseTeam/showCourseTeam}">课程列表</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+
+    <th:block sec:authorize="hasAnyRole('ROLE_SCHOOL_BROWSE,ROLE_CLASSROOM_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+                <span>
+                     <i class="icon iconfont icon-arrRight-fill"></i>
+                </span>
+                培训学校信息管理
+            </h5>
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_SCHOOL_BROWSE')">
+                    <a id="side_1" th:href="@{/schoolmanager/goto_school_list}">学校信息管理</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_CLASSROOM_BROWSE')">
+                    <a id="side_2" th:href="@{/classroommanager/goto_classroom_list}">教室信息管理</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasRole('ROLE_TEACHER_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+                <span>
+                    <i class="icon iconfont icon-arrRight-fill"></i>
+                </span>
+                教师信息
+            </h5>
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item">
+                    <a id="side_3" th:href="@{/teacherManager/teacherInfo/teacherInfoList}">教师信息管理</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasRole('ROLE_PLAN_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+                <span>
+                    <i class="icon iconfont icon-arrRight-fill"></i>
+                </span>
+                培训管理
+            </h5>
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item">
+                    <a id="side_4" th:href="@{/planmanager/goto_plan_list}">培训计划</a>
+                </li>
+                <!-- <li class="list-group-item">
+                  <a th:href="@{/videomanager/goto_video_list}">培训视屏</a>
+                </li> -->
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasAnyRole('ROLE_SCORE_BROWSE,ROLE_QEBANK_BROWSE,ROLE_QEPAPER_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+                <span>
+                    <i class="icon iconfont icon-arrRight-fill"></i>
+                </span>
+                考试管理
+            </h5>
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_QEBANK_BROWSE')">
+                    <a id="side_5" th:href="@{/questionBankManager/question/questionBankList}">题库管理 </a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_QEPAPER_BROWSE')">
+                    <a id="side_6" th:href="@{/questionPaperManager/questionPaper/questionPaperList}">试卷管理 </a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_SCORE_BROWSE')">
+                    <a id="side_7" th:href="@{/scoreInfoManager/scoreInfo/scoreInfoList}">成绩管理 </a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasAnyRole('ROLE_BANNER_BROWSE,ROLE_BURL_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+                <span>
+                    <i class="icon iconfont icon-arrRight-fill"></i>
+                </span>
+                内容管理
+            </h5>
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BANNER_BROWSE')">
+                    <a id="side_8" th:href="@{/bannermanager/goto_banner_list}">内容推荐 </a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BURL_BROWSE')">
+                    <a id="side_33" th:href="@{/bannermanager/cmsurl_list}">banner图路径</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasAnyRole('ROLE_CATEGORY_BROWSE,ROLE_BESPEAK_BROWSE,ROLE_PRODUCT_BROWSE,ROLE_PROEVALUATE_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+                <span>
+                    <i class="icon iconfont icon-arrRight-fill"></i>
+                </span>
+                产品管理
+            </h5>
+            <!--  -->
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_CATEGORY_BROWSE')">
+                    <a id="side_9" th:href="@{/categorySun/showCategorySun}">类目管理</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_PRODUCT_BROWSE')">
+                    <a id="side_10" th:href="@{/product/showProductList}">产品管理</a>
+                </li>
+                 <li class="list-group-item" sec:authorize="hasRole('ROLE_BESPEAK_BROWSE')">
+                    <a id="side_24" th:href="@{/bespeak/bespeak_list}">预约策略管理</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_PROEVALUATE_BROWSE')">
+                    <a id="side_28" th:href="@{/proEvaluate/proEvaluate_list}">产品评价审核</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+
+    <th:block sec:authorize="hasAnyRole('ROLE_PARTNER_BROWSE,ROLE_STUDENT_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+                <span>
+                   <i class="icon iconfont icon-arrRight-fill"></i>
+                </span>合伙人信息管理
+            </h5>
+            <!--  -->
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_PARTNER_BROWSE')">
+                    <a id="side_11" th:href="@{/partner/showPartner}">合伙人信息</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_STUDENT_BROWSE')">
+                    <a id="side_12" th:href="@{/student/showStudent}">学员信息</a>
+                </li>
+               <!-- <li class="list-group-item" sec:authorize="hasRole('ROLE_FALLINTO_BROWSE')"  >
+                    <a id="side_25" th:href="@{/fallinto/fallintoList}">分成策略</a>
+                </li>-->
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_INSURANCE_BROWSE')">
+                    <a id="side_26" th:href="@{/insurance/insuranceList}">保险信息</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasAnyRole('ROLE_ORDER_BROWSE,ROLE_ORDER_P_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+                <span>
+                    <i class="icon iconfont icon-arrRight-fill"></i>
+                </span>
+                订单管理
+            </h5>
+            <!--  -->
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_ORDER_BROWSE')">
+                    <a id="side_13" th:href="@{/ordermanager/goto_order_list}">订单信息管理</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_ORDER_P_BROWSE')">
+                    <a id="side_14" th:href="@{/ordermanager/area_partner_info}">地区商家信息</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_REFUND_BROWSE')">
+                    <a id="side_22" th:href="@{/ordermanager/goto_order_refunds}">退款单管理</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_COMPENSATION_BROWSE')">
+                    <a id="side_27" th:href="@{/ordermanager/compensations}">赔偿单管理</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_COMPLETE_APPLY_BROWSE')">
+                    <a id="side_37" th:href="@{/ordermanager/complete_apply_list}">申请完成单管理</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_DEDUCT_MONEY_BROWSE')">
+                    <a id="side_38" th:href="@{/ordermanager/deduct_money_list}">扣款申请单管理</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_REJECT_UNIT_BROWSE')">
+                    <a id="side_42" th:href="@{/ordermanager/reject_unit_list}">罚款查询</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_FINE_MONEY_BROWSE')">
+                    <a id="side_43" th:href="@{/ordermanager/fine_money_list}">罚款申请管理</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_CANCLE_STRATEGY_BOSWER')">
+                    <a id="side_47" th:href="@{/cancleStrategy/CancleStrategyList}">订单取消策略</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasAnyRole('ROLE_COUPON_BROWSE,ROLE_COUPON_R_BROWSE,COUPON_VERIFY_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+                <span>
+                  <i class="icon iconfont icon-arrRight-fill"></i>
+                </span>
+                优惠券管理
+            </h5>
+            <!--  -->
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_COUPON_BROWSE')">
+                    <a id="side_15" th:href="@{/couponmanager/coupon_list}">优惠券列表</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_COUPON_R_BROWSE')">
+                    <a id="side_16" th:href="@{/couponmanager/record_detail}">使用记录</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_COUPON_BROWSE')">
+                    <a id="side_23" th:href="@{/couponEnv/couponEnv_list}">优惠策略</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('COUPON_VERIFY_BROWSE')">
+                    <a id="side_59" th:href="@{/couponInfo/couponInfoList}">优惠券审核列表</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasAnyRole('ROLE_USER_BROWSE,ROLE_ROLES_BROWSE,ROLE_LOG_BROWSE,ROLE_RES_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+                <span>
+                    <i class="icon iconfont icon-arrRight-fill"></i>
+                </span>
+                账号角色权限管理
+            </h5>
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_USER_BROWSE')">
+                    <a id="side_17" th:href="@{/userManager/user/user_list}">用户管理</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_ROLES_BROWSE')">
+                    <a id="side_18" th:href="@{/roleManager/role/role_list}">角色管理</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_LOG_BROWSE')">
+                    <a id="side_20" th:href="@{/userManager/user/operateLog_list}" >日志管理</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_RES_BROWSE')">
+                    <a id="side_21" th:href="@{/roleManager/role/privileges_list}" >权限管理</a>
+                </li>
+
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasRole('ROLE_CUSTOMER_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+       <span>
+         <i class="icon iconfont icon-arrRight-fill"></i>
+       </span>顾客管理
+            </h5>
+            <!--  -->
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item">
+                    <a id="side_19" th:href="@{/customermanager/goto_customer_list}">顾客列表</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasAnyRole('ROLE_BALANCE_TACTICS_BROWSE,ROLE_BALANCE_ORDER_BROWSE,ROLE_BALANCE_REFUND_BROWSE,ROLE_BALANCE_COMPENSATION_BROWSE,
+    ROLE_BALANCE_DEDUCT_BROWSE,ROLE_BALANCE_FINE_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+       <span>
+         <i class="icon iconfont icon-arrRight-fill"></i>
+       </span>结算管理
+            </h5>
+            <!--  -->
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_TACTICS_BROWSE')">
+                    <a id="side_34" th:href="@{/balance/balance_tactics_list}">结算策略</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_ORDER_BROWSE')">
+                    <a id="side_35" th:href="@{/balance/balance_waiting_list}">服务完成订单待结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_ORDER_BROWSE')">
+                    <a id="side_45" th:href="@{/balance/balance_hangup_list}">挂起待结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_ORDER_BROWSE')">
+                    <a id="side_40" th:href="@{/balance/complete_list}">已结算订单</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_REFUND_BROWSE')">
+                    <a id="side_46" th:href="@{/balance/refund_waiting_list}">退款待结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_REFUND_BROWSE')">
+                    <a id="side_48" th:href="@{/balance/refund_hangup_list}">退款挂起结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_REFUND_BROWSE')">
+                    <a id="side_49" th:href="@{/balance/refund_list}">退款已结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_COMPENSATION_BROWSE')">
+                    <a id="side_50" th:href="@{/balance/compensation_waiting_list}">赔偿待结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_COMPENSATION_BROWSE')">
+                    <a id="side_51" th:href="@{/balance/compensation_hangup_list}">赔偿挂起结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_COMPENSATION_BROWSE')">
+                    <a id="side_52" th:href="@{/balance/compensation_list}">赔偿已结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_DEDUCT_BROWSE')">
+                    <a id="side_53" th:href="@{/balance/deduct_money_waiting_list}">扣款待结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_DEDUCT_BROWSE')">
+                    <a id="side_54" th:href="@{/balance/deduct_money_hangup_list}">扣款挂起结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_DEDUCT_BROWSE')">
+                    <a id="side_55" th:href="@{/balance/deduct_money_list}">扣款已结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_FINE_BROWSE')">
+                    <a id="side_56" th:href="@{/balance/fine_money_waiting_list}">罚款待结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_FINE_BROWSE')">
+                    <a id="side_57" th:href="@{/balance/fine_money_hangup_list}">罚款挂起结算</a>
+                </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_FINE_BROWSE')">
+                    <a id="side_58" th:href="@{/balance/fine_money_list}">罚款已结算</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasRole('ROLE_BILL_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+               <span>
+                 <i class="icon iconfont icon-arrRight-fill"></i>
+               </span>
+                交易对账
+            </h5>
+            <!--  -->
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item">
+                    <a id="side_29" th:href="@{/billmanager/goto_bill_batch_list}">对账批次列表</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_30" th:href="@{/billmanager/goto_normal_list}">对账汇总数据</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_31" th:href="@{/billmanager/goto_cache_list}">对账缓冲池</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_32" th:href="@{/billmanager/goto_error_list}">差错列表</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasRole('ROLE_META_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+               <span>
+                 <i class="icon iconfont icon-arrRight-fill"></i>
+               </span>
+                系统设置
+            </h5>
+            <!--  -->
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item">
+                    <a id="side_36" th:href="@{/systemmanager/metas}">元数据信息</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_44" th:href="@{/systemmanager/jd_access_token}">JD授权</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
+    <th:block sec:authorize="hasRole('ROLE_CHANNEL_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+               <span>
+                 <i class="icon iconfont icon-arrRight-fill"></i>
+               </span>
+                渠道管理
+            </h5>
+            <!--  -->
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item">
+                    <a id="side_41" th:href="@{/channel/channel_list}">渠道信息</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_39" th:href="@{/channelType/channelType_list}">渠道类别信息</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+</th:block>

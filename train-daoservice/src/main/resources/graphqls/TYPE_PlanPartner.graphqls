@@ -1,0 +1,12 @@
+#合伙人培训计划关联
+type PlanPartner{
+
+    #培训计划id
+    train_plan_id : Long
+
+    #合伙人id
+    partner_id : Long
+
+    none : Int
+}
+

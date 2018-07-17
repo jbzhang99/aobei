@@ -1,0 +1,51 @@
+#顾客服务地址
+type CustomerAddress{
+
+    customer_address_id : Long
+
+    #顾客id
+    customer_id : Long
+
+    #联系人
+    username : String
+
+    #手机号
+    phone : String
+
+    #省
+    province : Int
+
+    #市
+    city : Int
+
+    #地区
+    area : Int
+
+    #完整地址 ，空格分割 省，市 ，地
+    address : String
+
+    #坐标 纬度
+    lbs_lat : String
+
+    #坐标 经度
+    lbs_lng : String
+
+    #补充的地址信息
+    sub_address : String
+
+    #创建时间
+    create_datetime : Date
+
+    #更新时间
+    update_datetime : Date
+
+    #用户默认地址 1 默认地址 0 常规地址 
+    default_address : Int
+
+    #是否是最后一次选择的地址。1是。2不是
+    last_used : Int
+
+    #删除状态0未删除，1已删除
+    deleted : Int
+}
+

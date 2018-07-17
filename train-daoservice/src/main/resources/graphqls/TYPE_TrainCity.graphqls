@@ -1,0 +1,13 @@
+#城市信息表
+type TrainCity{
+
+    id : String
+
+    name : String
+
+    p_id : String
+
+    #0代表未开放服务，1代表以开放服务
+    open : Int
+}
+

@@ -1,0 +1,28 @@
+#服务项
+type Serviceitem{
+
+    #服务项目id
+    serviceitem_id : Long
+
+    #名称
+    name : String
+
+    #描述
+    descr : String
+
+    #上线时间
+    online_date : Date
+
+    #下线时间
+    offline_date : Date
+
+    #状态(0:下线 1:上线)
+    state : Int
+
+    #分类id
+    category_id : Long
+
+    #0 未删除，1 已删除
+    deleted : Int
+}
+

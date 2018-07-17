@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{base_layout}">
+<head> 
+<meta charset="UTF-8" />
+<title>预约策略</title>
+
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+		
+		
+		$("#goto_add_butn").click(function(){
+			var current =[[${current}]];
+			window.location.href="/bespeak/goto_add_bespeak?p="+current
+		})
+	})
+	function bespeak_edit(bespeak_id){
+		var current =[[${current}]];  
+		window.location.href="/bespeak/goto_edit_bespeak?p="+current+"&bespeak_id="+bespeak_id
+	}
+	function despeak_del(bespeak_id){
+		reset();
+		alertify.confirm("确定要删除该信息吗？",function(e){
+			if(e){
+                var mts = [[${application.mts}]]
+				$.post('/bespeak/del_bespeak',{bespeak_id:bespeak_id,mts:mts},function(data){
+					if(data.message.indexOf("成功")==-1){
+						reset();
+						alertify.alert(data.message);
+						return false;
+					}else{						
+						reset();
+						alertify.success(data.message);
+						setTimeout(function(){							
+							var current =[[${current}]];  
+							window.location.href="/bespeak/bespeak_list?p="+current
+						},2000);
+					}
+				})
+			}else{
+				reset();
+				alertify.log("已取消操作")
+			}
+		})
+	}
+</script>
+</head>
+<body>
+
+	<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li class="active">预约策略列表</li>
+			  
+			  <li class="libtn">
+			  	<a sec:authorize="hasRole('ROLE_BESPEAK_EDIT')" class="btn btn-primary pull-right" id="goto_add_butn" href="#"><i class="fas fa-plus"></i>&nbsp;添加</a>
+			  </li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_24">
+			
+			<div class="table-responsive">
+				<table id="table-cont" class="table table-striped table-hover">
+					<thead>
+						<tr>
+							<th>策略名称</th>
+							<th>创建时间</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="bespeak:${list}">
+							<td style="vertical-align: middle;" th:text="${bespeak.name}"></td>
+							<td style="vertical-align: middle;" th:text="${#dates.format(bespeak.create_datetime,'yyyy-MM-dd HH:mm:ss')}"></td>
+							<td style="vertical-align: middle;" sec:authorize="hasAnyRole('ROLE_BESPEAK_EDIT,ROLE_BESPEAK_DEL')">
+								<button sec:authorize="hasRole('ROLE_BESPEAK_EDIT')" style="outline:none" class="btn btn-link btn-xs" th:onclick="|bespeak_edit('${bespeak.bespeak_strategy_id}')|"><span class="fas fa-edit" aria-hidden="true"></span>编辑</button>
+								<button sec:authorize="hasRole('ROLE_BESPEAK_DEL')" style="outline:none" class="btn btn-link btn-xs" th:onclick="|despeak_del('${bespeak.bespeak_strategy_id}')|"><span class="far fa-trash-alt" aria-hidden="true"></span>删除</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<div th:include="~{tags/pagination::p1(@{/bespeak/bespeak_list(size=${page.pageSize})},${page.total},
+								${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

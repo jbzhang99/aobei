@@ -1,0 +1,148 @@
+<!DOCTYPE HTML>
+<html layout:decorate="~{base_layout}">
+<head>
+<title>保险信息添加页面</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+//初始化alertify
+reset = function () {
+	$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+	alertify.set({
+	  labels : {
+	    ok   : "确认",
+	    cancel : "取消"
+	  },
+	  delay : 1000,
+	  buttonReverse : false,
+	  buttonFocus  : "ok"
+    });
+};
+
+
+$(function(){
+	$('#form1').bootstrapValidator({
+        message: '这个值是无效的！',
+        live: 'enabled',
+        feedbackIcons: {
+//	            valid: 'glyphicon glyphicon-ok',
+//	            invalid: 'glyphicon glyphicon-remove',
+//	            validating: 'glyphicon glyphicon-refresh'
+        },
+        fields: {
+            insurance_name: {
+	           // message: '此学校名称是无效的！',
+	            validators: {
+	                notEmpty: {
+	                    message: '请填写名称！'
+	                },
+	                stringLength: {
+	                    max: 80,
+	                    message: '名称最长不得多于80个字符'
+	                }
+	            }
+	        },
+            startDatetime:{
+                validators: {
+                    notEmpty: {
+                        message: '请选择购买日期！'
+                    }
+                }
+			},
+            endDatetime:{
+                validators: {
+                    notEmpty: {
+                        message: '请选择失效日期！'
+                    }
+                }
+			}
+
+	      }
+	});
+
+    $("#save_btn").click(function() {
+        $("#form1").bootstrapValidator('validate');//提交验证
+        if ($("#form1").data('bootstrapValidator').isValid()) {
+            //上线日期判断
+            var startDate = $("#startDatetime").val();
+            var endDate = $("#endDatetime").val();
+            if (startDate >= endDate) {
+                reset();
+                alertify.alert("购买日期应在失效日期之前，请重新选择！");
+                return false;
+            }
+            document.getElementById("form1").submit();
+        }
+    });
+
+	$("#back_butn").click(function(){
+		reset();
+		alertify.confirm("确定要取消操作吗？", function (e) {
+			if(e){
+				var p = [[${pageNo}]];
+				window.location.href = "/insurance/insuranceList?p="+p;
+			}
+		});
+	});
+	
+  });
+
+
+</script>
+</head>
+<body>
+
+<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <!-- <li><a href="#">一级目录</a></li> -->
+			  <li><a href="/insurance/insuranceList" class="back_butn" style="cursor: pointer;">保险信息</a></li>
+			  <li class="active">添加</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main"  data-sidea="side_26">
+			<form id="form1" class="form-horizontal"
+			action="#" th:action="@{/insurance/addInsurance}"  method="post" >
+			<div class="form-group">
+				<label class="col-sm-4 control-label"><span style="color: red">*</span>险种名称:</label>
+				<div class="col-sm-4">
+					<input type="text" class="form-control" id="insurance_name" name="insurance_name"  placeholder="请输入险种名称"/>
+				</div>
+			</div>
+			
+
+			
+			 <div class="form-group form-inline">
+				<label class="col-sm-4 control-label"><span style="color: red">*</span>购买时间:</label>
+				<div class="col-sm-5">
+					<input id="startDatetime" class="form-control" type="date" name="startDatetime"/>
+				</div>
+			</div>
+			<div class="form-group form-inline">
+				<label class="col-sm-4 control-label"><span style="color: red">*</span>失效时间:</label>
+				<div class="col-sm-5">
+					<input id="endDatetime" class="form-control" type="date" name="endDatetime">
+				</div>
+			</div>
+			
+			<div class="form-group">
+				<div class="col-sm-8 col-sm-offset-4">
+					<button id="save_btn" class="btn btn-primary" >确定</button>&nbsp;&nbsp;&nbsp;&nbsp;
+					<input id="back_butn" class="btn btn-primary" type="button" value="取消" />
+				</div>
+			</div>
+		</form>
+		</div>
+	</div>		
+</body>
+</html>

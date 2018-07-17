@@ -1,0 +1,28 @@
+#对象存储图片信息表
+type OssImg{
+
+    #图片id
+    oss_img_id : Long
+
+    #图片名称
+    name : String
+
+    #图片地址
+    url : String
+
+    #图片作用
+    effect : String
+
+    #图片格式
+    format : String
+
+    #创建时间
+    create_time : Date
+
+    #图片上传到阿里云oss的bucket
+    bucket : String
+
+    #图片的访问权限
+    access_permissions : String
+}
+

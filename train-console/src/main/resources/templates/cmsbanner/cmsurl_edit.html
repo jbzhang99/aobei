@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>修改banner图</title>
+    <script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+    <script TYPE="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            var t = [[${type}]];
+            $("#type").val(t)
+            $('#form1').bootstrapValidator({
+                message: '这个值是无效的！',
+                live: 'enabled',
+                fields: {
+                    title: {
+                        validators: {
+                            notEmpty: {
+                                message: '请输入标题！'
+                            }
+                        }
+                    },
+                    url: {
+                        validators: {
+                            notEmpty: {
+                                message: '请输入跳转链接'
+                            }
+                        }
+                    }
+                }
+            })
+            $("#save_btn").click(function(){
+                var p = [[${current}]]
+                var ts =$("#type").val();
+                var url_v = $("#url").val();
+                if(ts==''){
+                    reset();
+                    alertify.alert("请选择跳转类型！")
+                    return false;
+                }
+                if(ts==1){
+                    if(url_v!=null){
+                        var s = url_v.substr(0,4);
+                        var str = "http";
+                        if(s!=str){
+                            reset();
+                            alertify.alert("您已选择http方式跳转，请输入对应格式路径！");
+                            return false;
+                        }
+                    }
+                }
+                if(ts==2){
+                    if(url_v!=null){
+                        var s = url_v.substr(0,6);
+                        var str = "native";
+                        if(s!=str){
+                            reset();
+                            alertify.alert("您已选择native方式跳转，请输入对应格式路径！");
+                            return false;
+                        }
+                    }
+                }
+                $("#form1").bootstrapValidator('validate');//提交验证
+                if ($("#form1").data('bootstrapValidator').isValid()) {
+                    //var formData = new FormData($("#form1")[0]);
+                    $.ajax({
+                        type:'post',
+                        url:'/bannermanager/edit_cmsurl',
+                        data:$("#form1").serializeArray(),
+                        cache:false,//false是不缓存，true为缓存
+                        //contentType:false,// 告诉jQuery不要去处理发送的数据
+                        //processData:false,// 告诉jQuery不要去设置Content-Type请求头
+                        dataType:'json',
+                        success:function(data){
+                            //请求成功时
+                            reset();
+                            alertify.success(data.message);
+                            setTimeout(function (){
+                                window.location.href = "/bannermanager/cmsurl_list?current="+p;
+                            }, 1500);
+                        }
+                    });
+                }
+                return false;
+            });
+            //取消按钮
+            $(".back_butn").click(function () {
+                var p = [[${current}]];
+                window.location.href="/bannermanager/cmsurl_list?current="+p
+            })
+        })
+    </script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+    <!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+    <div class="page_content_bar">
+        <!--/* 面包屑  */-->
+        <ol class="breadcrumb clearfix">
+            <li><a th:href="@{/bannermanager/cmsurl_list}">内容图片管理</a></li>
+            <li class="active">编辑</li>
+        </ol>
+    </div>
+    <!--/* 页面部分二              页面主内容  */-->
+    <div class="page_content_main" data-sidea="side_33">
+        <!--/* 动态    */-->
+        <form id="form1" class="form-horizontal" action="#" method="post" >
+            <input name="mts" th:value="${application.mts}" type="hidden"/>
+            <input id="data_cmsurl_id" name="data_cmsurl_id" th:value="${cms_url_id}"  hidden/>
+            <div class="form-group">
+                <label class="col-sm-3 control-label" for="title"><span style="color: red;">* </span>标题</label>
+                <div class="col-sm-4">
+                    <input type="text" class="form-control" id="title"  name="title" placeholder="请输入标题" th:value="${title}"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label" for="title"><span style="color: red;">* </span>跳转链接</label>
+                <div class="col-sm-4">
+                    <textarea class="form-control" id="url"  name="url" placeholder="请输入跳转链接" th:text="${url}"></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label" for="title"><span style="color: red;">* </span>跳转类型</label>
+                <div class="col-sm-2">
+                    <select type="text" class="form-control" id="type" name="type" >
+                        <option value="">请选择</option>
+                        <option value="1">http跳转</option>
+                        <option value="2">native跳转</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-4 col-sm-offset-3">
+                    <button id="save_btn" type="submit" class="btn btn-primary" >确定</button>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <input class="btn btn-primary back_butn" type="button" value="取消" />
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+#权限管理  角色
+type AuthRole{
+
+    # 主键
+    role_id : Long
+
+    #角色的名称
+    role_name : String
+
+    #创建时间
+    create_datetime : Date
+
+    #删除状态 0 未删除 ，1已删除
+    deleted : Int
+}
+

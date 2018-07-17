@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html layout:decorate="~{base_layout}">
+<head>
+<title>重复请求</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main">
+		操作速度过快，系统将在 <span id="back_s">5</span> 秒后返回到<a th:href="@{/index}">首页</a>
+		<script type="text/javascript" th:inline="javascript">
+		(function(){
+			var i = 5;
+			setInterval(function(){
+				if(i == 0){
+					location.href = '/index';
+				}
+				$('#back_s').html(i--);
+			},1000);
+		})();
+		</script>
+	</div>
+</div>
+</body>
+</html>

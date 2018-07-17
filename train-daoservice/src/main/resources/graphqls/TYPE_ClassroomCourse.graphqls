@@ -1,0 +1,11 @@
+#教室支持的课程
+type ClassroomCourse{
+
+    course_id : Long
+
+    classroom_id : Long
+
+    #无用字段
+    none : Int
+}
+

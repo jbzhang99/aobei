@@ -1,0 +1,12 @@
+#老师所支持的课程
+type TeacherCourse{
+
+    #老师id
+    teacher_id : Long
+
+    #课程id
+    course_id : Long
+
+    none : Int
+}
+

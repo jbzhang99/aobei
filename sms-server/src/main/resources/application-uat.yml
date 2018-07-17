@@ -1,0 +1,37 @@
+spring:
+  redis:
+    database: 0
+    host: r-2ze27d45c93efd34.redis.rds.aliyuncs.com
+    port: 6379
+    password: Vvc7Fwf6Inz4FE6Vp5JA
+    pool:
+      max-active: 8
+      max-wait: -1
+      max-idle: 8
+      min-idle: 0
+    timeout: 0
+
+aobei:
+  common:
+    boot:
+      event-sms: false
+      aliyun:
+        access-key-id : LTAIYlFXdaXPDOej
+        access-key-secret : yKVGJOwWrmmx3wAJG0nupzU46PVZou
+        oss:
+          endpoint: http://oss-cn-beijing.aliyuncs.com       
+        sms:
+          region-id : cn-hangzhou  #固定值不需要更改
+          endpoint : cn-hangzhou  #固定值不需要更改
+          product: Dysmsapi #固定值不需要更改
+          domain : dysmsapi.aliyuncs.com #固定值不需要更改
+      igtpush:
+          host: http://sdk.open.api.igexin.com/apiex.htm
+          customer:
+            app-id: CxDAGi6vCX6ykD0WgwnOjA
+            app-key: sYT3AmVzzc5d24Vd6XTiK4
+            master-secret: 5yMPqtGFdl6IOIno3CeJb6
+          partner:
+            app-id: 1K41HlMTi7APCf5OrxCRM7
+            app-key: FMiWatBRpe9YgWspuSHxNA
+            master-secret: 5hZmQgsfKb8pvBO9xskNl6

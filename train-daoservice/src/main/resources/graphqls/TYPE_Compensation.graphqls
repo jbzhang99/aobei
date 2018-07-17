@@ -1,0 +1,54 @@
+#赔偿申请 
+type Compensation{
+
+    compensation_id : Long
+
+    #订单id
+    pay_order_id : String
+
+    #合伙人id
+    partner_id : Long
+
+    #赔偿原因
+    compensation_info : String
+
+    #赔偿金额 单位 分
+    amount : Int
+
+    #合伙人承当金额
+    partner_bear_amount : Int
+
+    #合伙人承当卷金额
+    partner_bear_coupon_amount : Int
+
+    #收款人姓名
+    payee : String
+
+    #收款人卡号
+    payee_card : String
+
+    #收款银行
+    receiving_bank : String
+
+    #创建操作人
+    operator_create : Long
+
+    #创建时间
+    create_datetime : Date
+
+    #确认操作人
+    operator_confirm : Long
+
+    #确认时间
+    confirm_datetime : Date
+
+    #状态   1 待处理 2 完成 3 驳回
+    compensation_status : Int
+
+    #优惠卷id
+    coupon_id : Long
+
+    #优惠卷领用id
+    coupon_receive_id : Long
+}
+

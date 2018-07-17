@@ -1,0 +1,48 @@
+#消息通知
+type Message{
+
+    id : Long
+
+    #类型 1 系统消息   2 业务提醒
+    type : Int
+
+    #业务端 1 学员端  2 老师端 3 合伙人端 4 顾客端
+    bis_type : Int
+
+    #用户id      0 表示给所有用户
+    user_id : Long
+
+    #学员id 或 老师id 或 合伙人id 顾客id     0 表示给所有用户
+    uid : Long
+
+    #消息标题
+    msg_title : String
+
+    #消息内容    纯文本或 JSON  {"type":"sms","v":"１",  "content":"消息内容","sign_name":"浦尔家","template":"SMS_125018908","params":"a=1&b=2&c=3","phone":"13722352345"}
+    msg_content : String
+
+    #0 未读 1 已读
+    status : Int
+
+    #创建时间
+    create_datetime : Date
+
+    #预设的通知时间
+    notify_datetime : Date
+
+    #消息分组id ，用于数据再处理 -id1-id2-id3-
+    group_id : String
+
+    #0 未删除 1 已删除
+    deleted : Int
+
+    #发送类型   1 站内  2 短信  3 个推
+    send_type : Int
+
+    #所属app  1 服务人员端   2 老师端  3 合伙人端   4 顾客端
+    app_type : Int
+
+    #app 平台 0 所有 1 小程序  2 安卓 3 苹果 4 app 
+    app_platform : Int
+}
+

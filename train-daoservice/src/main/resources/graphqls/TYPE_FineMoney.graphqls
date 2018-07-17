@@ -1,0 +1,36 @@
+#罚款单表
+type FineMoney{
+
+    fine_money_id : Long
+
+    #订单id
+    pay_order_id : String
+
+    #服务单id
+    serviceunit_id : Long
+
+    #合伙人id
+    partner_id : Long
+
+    #罚款金额
+    fine_amount : Int
+
+    #罚款原因
+    fine_info : String
+
+    #罚款申请日期
+    create_datetime : Date
+
+    #罚款申请人
+    fine_operator : Long
+
+    #状态   1 待处理 2 完成 3 驳回
+    fine_status : Int
+
+    #确认时间
+    confirm_datetime : Date
+
+    #确认人
+    confirm_operator : Long
+}
+

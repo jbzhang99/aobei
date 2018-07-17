@@ -1,0 +1,72 @@
+#赔偿结算
+type FallintoCompensation{
+
+    fallinto_compensation_id : Long
+
+    #结算期
+    balance_cycle : String
+
+    #赔偿id
+    compensation_id : Long
+
+    #订单号
+    pay_order_id : String
+
+    #服务单号
+    serviceunit_id : Long
+
+    #订单名称
+    order_name : String
+
+    #赔偿创建时间
+    compensation_create_datetime : Date
+
+    #赔偿完成时间
+    compensation_confirm_datetime : Date
+
+    #合伙人赔偿金额
+    partner_bear_amount : Int
+
+    #合伙人承担卷额
+    partner_bear_coupon_amount : Int
+
+    #优惠卷id
+    coupon_id : Long
+
+    #优惠卷领用id
+    coupon_receive_id : Long
+
+    #订单总价  单位分
+    price_total : Int
+
+    #优惠金额，单位分
+    price_discount : Int
+
+    #实际支付金额 单位分
+    price_pay : Int
+
+    #赔偿金额 单位分
+    amount : Int
+
+    #合伙人id
+    partner_id : Long
+
+    #合伙人名称
+    partner_name : String
+
+    #合伙人级别
+    partner_level : Int
+
+    #合作开始日期
+    cooperation_start : Date
+
+    #合作结束日期
+    cooperation_end : Date
+
+    #1 待结算  2 已结算  3 挂起
+    status : Int
+
+    #订单创建时间
+    order_create_datetime : Date
+}
+

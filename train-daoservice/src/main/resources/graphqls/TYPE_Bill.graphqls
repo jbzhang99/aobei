@@ -1,0 +1,117 @@
+#对账单
+type Bill{
+
+    bill_id : Long
+
+    #订单id
+    pay_order_id : String
+
+    #对账批次id
+    bill_batch_id : String
+
+    #第三方交易流水号
+    transaction_id : String
+
+    #0 未支付 1 已支付
+    transaction_status : Int
+
+    #第三方交易时间
+    transaction_datetime : Date
+
+    #第三方交易金额
+    transaction_fee : Int
+
+    #第三方交易类型（JSAPI、APP、NATIVE）
+    trade_type : String
+
+    #第三方用户支付总金额
+    user_price_pay : Int
+
+    #货币种类
+    currency_type : String
+
+    #企业红包金额
+    corporate_red_envelope_amount : Int
+
+    #订单创建时间
+    order_create_datetime : Date
+
+    #订单支付时间
+    pay_datetime : Date
+
+    #总价，单位分
+    price_total : Int
+
+    #优惠金额，单位分
+    price_discount : Int
+
+    #实际支付金额 单位分
+    price_pay : Int
+
+    #支付方式 1 微信
+    pay_type : Int
+
+    #支付状态 0 待支付  1 已支付
+    pay_status : Int
+
+    #退款id
+    refund_id : Long
+
+    #第三方平台退款单号
+    refund_id_three : String
+
+    #第三方平台退款金额 单位分
+    refund_fee : Int
+
+    #企业红包退款金额
+    corporate_red_envelope_refund_amount : Int
+
+    #退款状态  0待退款 ,1退款中,2 已退全款 3 已部分退款
+    r_status : Int
+
+    #退款金额 单位分
+    r_fee : Int
+
+    #退款申请日期
+    r_datetime : Date
+
+    #退款完成日期
+    r_finish_datetime : Date
+
+    #用户付款银行名称
+    bank_name : String
+
+    #用户付款银行卡号
+    bank_no : String
+
+    #第三方平台手续费   单位分
+    service_charge : Int
+
+    #扣费费率  千分之几
+    rate : Int
+
+    #平账金额  单位分
+    bill_fee : Int
+
+    #平账类型 1 自动  2 手动
+    bill_type : Int
+
+    #平账状态 1 正常 2 长账（我们有wx没有）  3 短账（wx有我们没有） 4 支付金额不一致  5 退款金额不一致
+    bill_status : Int
+
+    #手动平账原因
+    manual_info : String
+
+    #手动平账备注
+    manual_remark : String
+
+    #创建时间
+    create_datetime : Date
+
+    #对账缓冲次数  0-2 最大为2（一般对过一次没对上的才进缓冲，最多三次，所以最大为2）
+    buffer_size : Int
+
+    #再次对账日志JSON   格式 [{"bill_datetime":"2018-05-10 10:00:00", "bill_status":2}]
+    rebill_log : String
+}
+

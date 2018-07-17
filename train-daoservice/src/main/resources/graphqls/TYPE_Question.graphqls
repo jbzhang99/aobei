@@ -1,0 +1,27 @@
+#题库
+type Question{
+
+    #课程id
+    question_id : Long
+
+    #课程类型；0为全部，1为单选，2为多选，3为判断
+    type : Int
+
+    #考试科目id
+    exam_subject_id : Long
+
+    #题目
+    topic : String
+
+    #选择题 选项JSON 数据
+    option_json : String
+
+    #答案
+    answer : String
+
+    create_datetime : Date
+
+    #0 未删除，1 已删除
+    deleted : Int
+}
+

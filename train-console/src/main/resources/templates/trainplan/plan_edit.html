@@ -1,0 +1,309 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}">
+<head>
+<title>培训计划编辑</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-select.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/custom/plan-func.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+		ymd();
+		var p = [[${page_current_page}]];
+		ref(p);
+		
+		$("#save_btn").click(function(){
+	    	$("#form1").bootstrapValidator('validate');//提交验证
+	 		if ($("#form1").data('bootstrapValidator').isValid()) {
+// 	 			var train_begin = $("#begin").val();
+// 				var train_end = $("#end").val();
+// 				if(train_begin >= train_end){
+// 					reset();
+// 					alertify.error("培训开始日期应在培训结束日期之前，请重新选择！");
+// 					return false;
+// 				}		
+				var s = $("input[name='students']").length;
+				if(s == 0){
+					reset();
+					alertify.log("请选择培训人员名单！");
+					return false;
+				}
+	 			//序列化获得表单数据，结果为：user_id=12&user_name=John&user_age=20
+		    	var data=$("#form1").serializeArray();
+		    	//submitData是解码后的表单数据，结果同上
+		    	//var submitData=decodeURIComponent(data,true);
+		    	$.ajax({
+		    	    url:'/planmanager/plan_edit_save',
+		    	    type:'post',
+		    	    data:data,
+		    	    cache:false,//false是不缓存，true为缓存
+		    	    async:true,//true为异步，false为同步
+		    	    dataType:'json',
+		    	    success:function(data){
+		    	        //请求成功时
+		    	        var page_current_page = [[${page_current_page}]];
+						reset();
+						alertify.success(data.msg);
+						setTimeout(function (){
+							window.location.href = "/planmanager/goto_plan_list?p="+page_current_page;
+						}, 3000);
+		    	    }
+		    	});
+		    	return false;
+	 		}
+		});
+		
+		//页面加载时就加载教室信息并回显教室信息
+		var school_id = $("#school_sel").val();
+		var classroom_id = [[${plan.classroom_id}]];
+		select_school(school_id,classroom_id);
+		//回显合伙人信息
+		var planPartner_list = [[${planPartner_list}]];
+		$.each(planPartner_list,function(i,ele){
+	    	$("#peopleSelect option").each(function(i){
+	    		if(ele.partner_id == $(this).val()){
+	    			$(this).prop("selected",true);
+	    		}
+	    	});
+	    });
+		
+		//回显学员名单信息
+		var students = [[${student_list}]];
+		var student_list =  $.parseJSON(students);
+		$.each(student_list,function(i,stu){
+			var a = "<tr>";
+			var b = "<td><input type='hidden' name='students' value="+stu.student_id+"><span>"+stu.name+"</span></td>";
+			var c = "<td><input name='rm' type='checkbox'></td>";
+			var d = "</tr>";
+			$("#stu_list").append(a+b+c+d);
+		});
+	});
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+	
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+		  <!-- <li><a href="#">一级目录</a></li> -->
+		  <li><a class="back_butn" style="cursor: pointer;">培训计划</a></li>
+		  <li class="active">编辑</li>
+		</ol>
+		
+	</div>
+	
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_4">
+		<input type="hidden" id="original_student_list" th:value="${student_list}"/>
+		<input type="hidden" id="original_planPartner_list" th:value="${planPartners}">
+		<input id="original_begin" type="hidden"  th:value="*{#dates.format(plan.train_begin,'yyyy-MM-dd')}"/> 
+		<input id="original_end" type="hidden"  th:value="*{#dates.format(plan.train_end,'yyyy-MM-dd')}" />
+   		<!-- 动态 --> 
+		<form id="form1" class="form-horizontal"
+			action="#" th:action="@{/planmanager/plan_edit_save}" th:object="${plan}"  method="post" >
+			<input type="hidden" id="data_plan_id" name="train_plan_id" th:value="*{train_plan_id}"/>
+			<input type="hidden" name="mts" th:value="${application.mts}"/>
+			<div class="form-group">
+				<label class="col-sm-4 control-label"><span style="color: red;">* </span>培训开始日期</label>
+				<div class="col-sm-4 input-group date datetimepicker1" style="padding:0 15px">
+					<!-- <input id="begin" class="form-control" type="date" name="train_begin" th:value="*{#dates.format(train_begin,'yyyy-MM-dd')}" required  onchange="change_time_or_partner(1)"/> -->
+					<div>
+						<input id="begin" class="form-control" type="text" name="train_begin" th:value="*{#dates.format(train_begin,'yyyy-MM-dd')}" required  onchange="change_time_or_partner(1)" style="width: 150px;"/>  
+						<span class="input-group-addon" style="width: 50px; height: 34px;">
+		                    <span class="glyphicon glyphicon-calendar"></span>
+		                </span>
+	                </div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" style="color: red"><span style="color: red;">* </span>培训结束日期</label>
+				<div class="col-sm-4 input-group date" style="padding:0 15px">
+					<!-- <input id="end" class="form-control" type="text" placeholder="不需输入,计算得出" name="train_end" th:value="*{#dates.format(train_end,'yyyy-MM-dd')}" readonly="readonly"/> --> 
+					<div>
+						<input id="end" class="form-control" type="text" placeholder="不需输入,计算得出" readonly name="train_end" th:value="*{#dates.format(train_end,'yyyy-MM-dd')}" style="width: 150px;"/>  
+						<span class="input-group-addon" style="width: 50px; height: 34px;">
+		                    <span class="glyphicon glyphicon-calendar"></span>
+		                </span>
+	                </div>	
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="course_id"><span style="color: red;">* </span>课程</label>
+				<div class="col-sm-3">
+					<select id="select_course" class="form-control" name="course_id" onchange="change_team(this.value)">
+						<option value=''>培训课程</option>
+						<option th:each="course:${course_list}" th:selected="${plan.course_id eq course.course_id}"
+							  	th:value="${course.course_id}" th:text="${course.name}"  >
+						</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="school_id"><span style="color: red;">* </span>学校</label>
+				<div class="col-sm-3">
+					<select id="school_sel" class="form-control" name="school_id" onchange="select_school(this.value,'')">
+						<option value=''>培训学校</option>
+						<option th:each="school:${school_list}" th:selected="${plan.school_id eq school.school_id}"
+							th:value="${school.school_id}" th:text="${school.name}">
+						</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="classroom_id"><span style="color: red;">* </span>教室</label>
+				<div class="col-sm-2">
+					<select class="form-control" name="classroom_id" id="classroom_select" onchange="edit_select_classroom(this.value)">
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="teacher_id"><span style="color: red;">* </span>培训教师</label>
+				<div class="col-sm-3">
+					<select class="form-control" name="teacher_id" id="teacher_sel">
+						<option value=''>培训教师</option>
+						<option th:each="teacher:${teacher_list}" th:selected="${plan.teacher_id eq teacher.teacher_id}"
+							th:value="${teacher.teacher_id}" th:text="${teacher.name}">
+						</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="assistant">培训助教</label>
+				<div class="col-sm-3">
+					<select class="form-control" name="assistant" id="assistant_sel">
+						<option value=''>培训助教</option>
+						<option th:each="assistant:${assistant_list}" th:selected="${plan.assistant eq assistant.teacher_id}"
+							th:value="${assistant.teacher_id}" th:text="${assistant.name}">
+						</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="partnerids"><span style="color: red;">* </span>合伙人</label>
+				<div class="col-sm-4">
+					<select class="form-control selectpicker" id="peopleSelect" title="请选择合伙人" name="partnerids" multiple onchange="change_time_or_partner(2)">
+						<option th:each="partner:${partner_list}" th:value="${partner.partner_id}" th:text="${partner.name}"></option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="train_way"><span style="color: red;">* </span>培训方式</label>
+				<div class="col-sm-2">
+					<select class="form-control" name="train_way">
+						<option value=''>培训方式</option>
+						<option th:selected="${plan.train_way eq 0}" value="0">面授</option>
+						<option th:selected="${plan.train_way eq 1}" value="1">在线</option>
+					</select>
+				</div>
+			</div>
+			<!-- 培训人数从模态框的学员列表中选中的人数来确定 -->
+			<input type="hidden" name="trainers_number">
+			
+			<div class="form-group">
+				<div class="col-sm-5 col-sm-offset-4">
+					<input class="btn btn-default" value="修改学员名单" type="button" onclick="m_select();"/>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<button id="save_btn" type="submit" class="btn btn-primary" >确定</button>
+					&nbsp;&nbsp;&nbsp;
+					<input class="btn btn-primary back_butn" type="button" value="取消" />
+				</div>
+			</div>
+			
+			<!-- 模态框（Modal） -->
+			<div class="modal fade" id="selectList" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+				<div class="modal-dialog" style="width: 900px;height: 600px">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" 
+									aria-hidden="true">×
+							</button>
+							<h4 class="modal-title" id="myModalLabel">
+								培训人员添加
+							</h4>
+						</div>
+						<div class="modal-body" style="display:block;overflow-y:auto;height:300px;">
+							<table  class="table table-bordered">
+								<tbody>
+									<tr>
+										<td width="300px">
+											<div>
+												<table class="table table-hover">
+													<thead>
+														<tr>
+															<th colspan="2"><span>培训学员列表</span></th>
+														</tr>
+													</thead>
+													<tbody id="stu_list">
+														
+													</tbody>
+													<tfoot>
+														<tr style="margin: center">
+															<td colspan="2" align="center" style="margin-top: 20px">
+																<input id="rm_check_btn" type="button" class="btn btn-default input-sm" value="移除选中学员"/>
+															</td>
+														</tr>
+													</tfoot>
+												</table>
+											</div>
+										</td>
+										<td width="600px">
+											<div class="row form-inline">
+												<input id="search" type="text" class="form-control input-sm" placeholder="请输入查询条件" style="margin-left: 40px;width: 150px"/>
+												<input id="search_btn" class="btn btn-default input-sm" value="查询" type="button"
+														style="margin-right: 100px;margin-left: 20px"/>
+												<select id="sel_partner" class="form-control input-sm" style="margin-right: 50px;width: 150px">
+													
+												</select>
+											</div>
+											<div>
+												<table id="table-cont" class="table table-hover">
+													<thead>
+														<th>姓名</th>
+														<th>性别</th>
+														<th>身份证号</th>
+														<th>手机号</th>
+														<th>状态</th>
+														<th>操作</th>
+													</thead>
+													<tbody id="tbody_students">
+														
+													</tbody>
+													<tfoot>
+														<tr style="margin: center">
+															<td colspan="6" align="center" style="margin-top: 20px">
+																<input id="to_left_btn" type="button" class="btn btn-default input-sm" value="添加到培训学员列表"/>
+															</td>
+														</tr>
+													</tfoot>
+												</table>
+											</div>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="modal-footer">
+							<button id="add_stu" type="button" class="btn btn-primary">
+								确认培训学员
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+#系统用户
+type SysUsers{
+
+    #id
+    sys_user_id : Long
+
+    #用户姓名
+    name : String
+
+    #性别(0:女 1:男)
+    sex : Int
+
+    phone : String
+
+    #用户的邮箱
+    email : String
+
+    #部门ID，对应cms_dept表（表暂时没有）
+    dept_id : Long
+
+    #部门名称
+    dept_name : String
+
+    #职位名称ID（职位表目前不存在）
+    job_title_id : Long
+
+    #职位名称
+    job_title : String
+
+    #0 未启用账户，1已启用账户
+    status : Int
+
+    create_datetime : Date
+
+    #0 未删除，1 已删除
+    deleted : Int
+
+    #对应users表中的user_id
+    user_id : Long
+}
+

@@ -1,0 +1,34 @@
+#学校信息表
+type School{
+
+    #学校编号
+    school_id : Long
+
+    #学校名称
+    name : String
+
+    #学校地址
+    address : String
+
+    #学校简介
+    intro : String
+
+    #合作开始日期
+    cooperation_start : Date
+
+    #合作结束日期
+    cooperation_end : Date
+
+    #创建时间
+    create_time : Date
+
+    #联系人
+    linkman : String
+
+    #联系电话
+    contact_number : String
+
+    #0 未删除，1 已删除
+    deleted : Int
+}
+

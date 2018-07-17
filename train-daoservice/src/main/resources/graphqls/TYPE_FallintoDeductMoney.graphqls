@@ -1,0 +1,60 @@
+#扣款结算
+type FallintoDeductMoney{
+
+    fallinto_deduct_money_id : Long
+
+    #结算期
+    balance_cycle : String
+
+    #扣款id
+    deduct_money_id : Long
+
+    #订单号
+    pay_order_id : String
+
+    #服务单号
+    serviceunit_id : Long
+
+    #订单名称
+    order_name : String
+
+    #订单创建时间
+    order_create_datetime : Date
+
+    #扣款创建时间
+    deduct_money_create_datetime : Date
+
+    #扣款确认时间
+    deduct_confirm_datetime : Date
+
+    #订单总价  单位分
+    price_total : Int
+
+    #优惠金额，单位分
+    price_discount : Int
+
+    #实际支付金额 单位分
+    price_pay : Int
+
+    #扣款金额 单位分
+    deduct_money : Int
+
+    #合伙人id
+    partner_id : Long
+
+    #合伙人名称
+    partner_name : String
+
+    #合伙人级别
+    partner_level : Int
+
+    #合作开始日期
+    cooperation_start : Date
+
+    #合作结束日期
+    cooperation_end : Date
+
+    #1 待结算  2 已结算  3 挂起
+    status : Int
+}
+

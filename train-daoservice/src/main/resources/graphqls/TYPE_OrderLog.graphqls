@@ -1,0 +1,18 @@
+#订单变更日志
+type OrderLog{
+
+    pay_order_log_id : Long
+
+    pay_order_id : String
+
+    log_text : String
+
+    #系统操作人员  0
+    user_id : Long
+
+    #操作人名称
+    operator_name : String
+
+    create_time : Date
+}
+

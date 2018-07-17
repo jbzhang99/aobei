@@ -1,0 +1,9 @@
+type AliPay{
+
+    app_id : String
+
+    public_key : String
+
+    private_key : String
+}
+

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{base_layout}">
+<head> 
+<meta charset="UTF-8" />
+<title>添加优惠策略</title>
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script th:src="@{/js/custom/couponenv-list.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+		ymdhm();
+        /*$('.datetimepicker1').datetimepicker({//初始化使劲按控件
+            language: 'zh-CN',//显示中文
+            format: 'yyyy-mm-dd',//显示格式
+            minView: "1",//设置只显示到月份
+            initialDate: new Date(),
+            autoclose: true,//选中自动关闭
+            todayBtn: true,//显示今日按钮
+            locale: moment.locale('zh-cn')
+        });
+		$('.datetimepicker2').datetimepicker({//初始化使劲按控件
+	        language: 'zh-CN',//显示中文
+	        format: 'yyyy-mm-dd',//显示格式
+	        minView: "month",//设置只显示到月份
+	        initialDate: new Date(),
+	        autoclose: true,//选中自动关闭
+	        todayBtn: true,//显示今日按钮
+	        locale: moment.locale('zh-cn')
+	    });*/
+		
+		$("#s_date").change(function(){
+			$("#e_date").focus();
+		})
+		$("#start_datetime").change(function(){
+			$("#end_datetime").focus();
+		})
+		
+		
+		$("#e_date").change(function(){
+			var e = $("#e_date").val();
+			var s = $("#s_date").val();
+			if(e !="" & s!=""){
+				if(e<=s){
+					$("#e_date").val('')
+					reset();
+					alertify.alert("顾客结束结束时间不能小于等于顾客开始开始时间，请重新选择！");
+				}
+			}
+		})
+		$("#end_datetime").change(function(){
+			var e = $("#end_datetime").val();
+			var s = $("#start_datetime").val();
+			if(e !="" & s!=""){
+				if(e<=s){
+					$("#end_datetime").val('')
+					reset();
+					alertify.alert("结束时间不能小于等于开始时间，请重新选择！");
+				}
+			}
+		})
+		$("#coupon_id").change(function(){			
+			var sv = $("#coupon_id option:selected").val();
+				$.post('/couponEnv/queryNumber',{coupon_id:sv},function(data){
+					if(data.message.num_limit==0){
+						var phtml = "<p style='color:red;'>该优惠券数量没有限制</p>"
+						$("#div_number").show();
+						$("#p_hidden").html(phtml);
+						$("#p_hidden").show();
+					}else{						
+						var phtml = "<p style='color:red;'>该优惠券剩余"+data.message.num_able+"张</p>"
+						$("#div_number").show();
+						$("#p_hidden").html(phtml);
+						$("#p_hidden").show();
+					}
+				})
+		}) 
+		
+		$("#add_btn").click(function(){
+				
+			var cname = $("#c_name").val();
+			var edate = $("#e_date").val();
+			var sdate = $("#s_date").val()
+			var edatetime = $("#end_datetime").val();
+			var sdatetime = $("#start_datetime").val();
+			var coupon_number = $("#coupon_number").val()
+			var select_coupon = $("#coupon_id option:selected").val()
+			var select_type = $("#type option:selected").val()
+
+
+			if(coupon_number!=""){
+				var regex = /^[0-9]*$/;
+				var data = $("#coupon_number").val();
+				if(!regex.test(data)){
+					reset();
+					alertify.alert("优惠券数量只能输入数字！")
+					return false;
+				}
+			}
+			if($("#type option:selected").val()==1){
+				if(sdate==""){
+					reset();
+					alertify.alert("请选择顾客注册开始时间后再提交！")
+					return false;
+				}
+				if(edate==""){
+					reset();
+					alertify.alert("请选择顾客注册结束时间后再提交！")
+					return false;
+				}
+			}
+			if(cname==""){
+				reset();
+				alertify.alert("请输入策略名称后再提交！")
+				return false;
+			}else if(sdatetime==""){
+				reset();
+				alertify.alert("请选择开始时间后再提交！")
+				return false;
+			}else if(edatetime==""){
+				reset();
+				alertify.alert("请选择结束时间后再提交！")
+				return false;
+			}else if(select_type==0){
+				$("#type").focus();
+				reset();
+				alertify.alert("请选择适用类型！")
+				return false;
+			}else if(coupon_number==""){
+				reset();
+				alertify.alert("请输入优惠数量！")
+				return false;
+			}else if(select_coupon==0){
+				$("#coupon_id").focus();
+				reset();
+				alertify.alert("请选择优惠券！")
+				return false;
+			}else if(edate<=sdate){
+				reset();
+				alertify.alert("顾客结束结束时间不能小于等于顾客开始时间，请重新选择！")
+				return false;
+			}else if(edatetime<=sdatetime){
+				reset();
+				alertify.alert("结束时间不能小于等于开始时间，请重新选择！")
+				return false;
+			}else {	
+				var ed = formatDate($("#start_datetime").val());
+				$("#start_time").val(ed);
+				var rd = formatDate($("#end_datetime").val());
+				$("#end_time").val(rd);
+
+				$.ajax({
+					url:'/couponEnv/add_couponEnv',
+					type:'post',
+					data:$("#form1").serializeArray(),
+					success:function(data){
+						var current = [[${current}]]
+						reset();
+						alertify.success(data.message);
+						setTimeout(function(){							
+							window.location.href="/couponEnv/couponEnv_list?p="+current
+						},1500)
+					}
+				})
+			}
+		})
+		
+		//取消按钮
+		$("#cancel_btn").click(function(){
+			var current = [[${current}]]
+			window.location.href="/couponEnv/couponEnv_list?p="+current
+		});
+	})
+	
+
+</script>
+</head>
+<body>
+
+	<div layout:fragment="content">
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li><a th:href="@{/couponEnv/couponEnv_list}">优惠策略</a></li>
+			  <li class="active">添加</li>
+			</ol>
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_23">
+			<form action="#" id="form1" class="form-horizontal">
+				<input name="mts" th:value="${application.mts}" type="hidden"/>
+				<input id="start_time" name="start_time" hidden="hidden"/>
+				<input id="end_time" name="end_time" hidden="hidden"/>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>策略名称</label>		
+					<div class="col-sm-3">	
+						<input id="c_name" name="name" class="form-control" placeholder="请输入策略优惠名称"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>适用类型</label>		
+					<div class="col-sm-2">	
+						<select id="type" name="type" class="form-control">
+						
+						<option value="1">对新注册用户优惠</option>
+					</select>
+					</div>
+				</div>
+				<div class="form-group div_s_date">
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>顾客注册时间</label>		
+						<div class="col-sm-3">						
+							<input id="s_date" name="s_date" class="form-control datetimepicker2" data-date-fomat="yyyy-MM-dd HH:mm" placeholder="请选择顾客注册开始时间" readonly/>
+						</div>
+				</div>
+				<div class="form-group div_e_date">
+					<label class="col-sm-4 control-label"></label>
+					<div class="date col-sm-3">						
+						<input id="e_date" name="e_date" class="form-control datetimepicker2" data-date-fomat="yyyy-MM-dd HH:mm" placeholder="请选择顾客注册结束时间" readonly/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>优惠券</label>		
+					<div class="col-sm-2">	
+						<select id="coupon_id" name="coupon_id" class="form-control">
+							
+							<option th:each="coupon:${list_coupon}" th:value="${coupon.coupon_id}" th:text="${coupon.name}"></option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group" id="div_number">
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>优惠券数量</label>
+					<div class="col-sm-2">
+						<input id="coupon_number" name="coupon_number" class="form-control" placeholder="请输入优惠数量" />
+						<p id="p_hidden" type="hidden"></p>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>开始时间</label>		
+					<div class="date col-sm-3 ">	
+						<input id="start_datetime" name="start_datetime" class="form-control datetimepicker2"  placeholder="请选择优惠策略开始时间" readonly />
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>结束时间</label>		
+					<div class="col-sm-3 ">	
+						<input id="end_datetime" name="end_datetime" class="form-control datetimepicker2" placeholder="请选择优惠策略结束时间" readonly />
+					</div>
+				</div>
+				
+				<div class="form-group">
+						<div class="col-sm-5 col-sm-offset-4">
+							<input type="button" id="add_btn" value="确定" class="btn btn-primary" />&nbsp;&nbsp;&nbsp;&nbsp;
+							<input type="button" id="cancel_btn" value="取消"  class="btn btn-default" />
+						</div>
+					</div>
+			</form>
+		</div>
+	</div>
+
+</body>
+</html>

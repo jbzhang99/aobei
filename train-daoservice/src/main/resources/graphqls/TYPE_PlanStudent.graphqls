@@ -1,0 +1,25 @@
+#学员培训计划关联
+type PlanStudent{
+
+    #培训计划id
+    train_plan_id : Long
+
+    #学员id
+    student_id : Long
+
+    #课程id
+    course_id : Long
+
+    #培训开始时间
+    train_begin : Date
+
+    #培训结束时间
+    train_end : Date
+
+    #是否通过 1 通过， 0 未通过
+    passed : Int
+
+    #0 未删除，1 已删除
+    deleted : Int
+}
+

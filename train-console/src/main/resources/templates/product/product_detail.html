@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"> -->
+<head>
+<meta charset="UTF-8"></meta>
+<title>产品详情页面</title>
+<script th:src="@{/js/bootstrapValidator.min.js}"></script>
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script TYPE="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<meta name="context-path" th:content="@{/}" />
+<style type="text/css">
+	.file-drag-handle{
+		display: none;
+	}
+	.kv-file-remove{
+		display: none;
+	}
+	.file-upload-indicator{
+		display: none;
+	}
+</style>
+<script></script>
+</head>
+<body>
+
+<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <!-- <li><a href="#">一级目录</a></li> -->
+			  <li><a href="/product/showProductList" class="back_butn" style="cursor: pointer;">产品管理</a></li>
+			  <li class="active">详情</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_10">
+			<form id="defaultForm" method="post" class="form-horizontal" action="#" enctype="multipart/form-data">
+			    <!-- 下面这个div必须要有，插件根据这个进行添加提示 -->
+			    <div class="form-group" style="margin-top: 15px">
+			        <label class="col-lg-3 control-label"><span style="font-size:16px">服务分类:</span></label>
+	        		<span th:text="${category.name}"></span> >>
+        			<span th:text="${serviceitem.name}"></span>
+			        <label class="control-label" style="margin-left:150px"><span style="font-size:16px">服务名称:</span></label>
+			        <span th:text="${product.name}" ></span>
+			    </div>
+			    <div class="form-group" >
+			        <label class="col-lg-3 control-label" ><span style="font-size:16px">服务描述:</span></label>
+			       	<span th:text="${product.descript}"></span>
+			    </div>
+			
+				<div class="form-group">
+			        <label class="col-lg-3 control-label"><span style="font-size:16px">seo:</span></label>
+			        <span th:text="${product.seo}"></span>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-3 control-label"><span style="font-size:16px">服务灌水数:</span></label>
+			        <span th:text="${product.base_buyed}"></span>
+			        <label class="control-label" style="margin-left:150px"><span style="font-size:16px">服务在首页排序:</span></label>
+			        <span th:text="${product.sort_num}"></span>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-3 control-label"><span style="font-size:16px">服务图片:</span></label>
+					<div class="col-sm-5 form-style">
+						<img th:src="${product.image_first}" width="100px" height="100px"/>
+					</div>
+				</div>
+				
+				<div class="form-group">
+					<label class="col-sm-3 control-label"><span style="font-size:16px">富文本:</span></label>
+					<div class="col-sm-9 form-style" id="uediter" th:utext="${product.content}" style="width:800px">
+					</div>
+				</div>
+				 <div class="form-group">
+			        <div class="col-lg-12">
+			           	<table class="table table-bordered" id="skuTab" style="table-layout:fixed" width="1000px">
+			           		<thead>
+			           			<tr>
+			           				<th width="80px"  style="vertical-align:middle;">sku名称</th>
+				           			<th width="70px"  style="vertical-align:middle;">市场价格</th>
+				           			<th width="70px"  style="vertical-align:middle;">浦尔家价格</th>
+				           			<th width="30px"  style="vertical-align:middle;">显示顺序</th>
+				           			<th width="160px" style="vertical-align:middle;">描述</th>
+				           			<th width="40px"  style="vertical-align:middle;">服务时长</th>
+				           			<th width="100px" style="vertical-align:middle;">服务时间段</th>
+				           			<!-- <th>一天最多购买件数</th> -->
+				           			<th width="60px" style="vertical-align:middle;">是否允许一次购买多件</th>
+				           			<th width="50px" style="vertical-align:middle;">最小购买数</th>
+				           			<th width="50px" style="vertical-align:middle;">最大购买数</th>
+				           			<th width="50px" style="vertical-align:middle;">是否派遣</th>
+				           			<th width="80px" style="vertical-align:middle;">预约策略</th>
+				           			<th width="30px" style="vertical-align:middle;">单位</th>
+				           			<th width="80px" style="vertical-align:middle;">展示位置</th>
+			           			</tr>
+			           		</thead>
+			           		<tbody>
+			           			<th:block th:each="prosku:${proSkuList}">
+			           			<th:block th:if="${prosku.service_time_length>0}">
+			           				<tr select-option="1"  th:data-id="${prosku.psku_id}" th:data-times="${prosku.service_times}">
+			           			</th:block>
+			           			<th:block th:if="${prosku.service_time_length==0}">
+			           				<tr select-option="0" th:data-id="${prosku.psku_id}" th:data-times="${prosku.service_times}">
+			           			</th:block>
+			           					<td th:text="${prosku.name}" style="vertical-align:middle;"></td>
+			           					<td th:text="${#numbers.formatDecimal(prosku.pricev*0.01,1,2)}" style="vertical-align:middle;"></td>
+			           					<td th:text="${#numbers.formatDecimal(prosku.price*0.01,1,2)}" style="vertical-align:middle;"></td>
+			           					<td th:text="${prosku.sort_num}" style="vertical-align:middle;" ></td>
+			           					<td th:text="${prosku.descript}" style="vertical-align:middle;"></td>
+			           					<td th:text="${prosku.service_time_length}" style="vertical-align:middle;"></td>
+			           					<td style="vertical-align:middle;">
+			           						<th:block th:each="map:${returnList}">
+			           							<th:block th:each="m:${map}">
+				           							<p th:if="${prosku.psku_id == m.key}" th:each="v:${#strings.listSplit(m.value,',')}" th:text="${v}"></span></p>
+			           							</th:block>
+			           						</th:block>
+			           					</td>
+			           					
+		           						<td th:if="${prosku.buy_multiple==1}" style="vertical-align:middle;">是</td>
+		           						<td th:if="${prosku.buy_multiple==0}" style="vertical-align:middle;">否</td>
+			           					<td th:text="${prosku.buy_multiple_min}" style="vertical-align:middle;"></td>
+			           					<td th:text="${prosku.buy_multiple_max}" style="vertical-align:middle;"></td>
+			           					<td th:if="${prosku.buy_multiple_o2o==1}" style="vertical-align:middle;">是</td>
+			           					<td th:if="${prosku.buy_multiple_o2o==0}" style="vertical-align:middle;">否</td>
+			           					<!-- <td th:text="${prosku.buy_limit}"></td> -->
+			           					<td th:id="${prosku.bespeak_strategy_id}" style="vertical-align:middle;">
+				           					<th:block th:each="bs:${bespeakList}" th:if="${bs.bespeak_strategy_id==prosku.bespeak_strategy_id}">
+					           					 <th:block th:text="${bs.name}" style="vertical-align:middle;"></th:block>
+				           					</th:block>
+			           					</td>
+			           					<td th:text="${prosku.unit}" style="vertical-align:middle;"></td>
+			           					<td th:id="${prosku.dispaly}" style="vertical-align:middle;">
+			           						<th:block th:if="${prosku.dispaly==0}">顾客端</th:block>
+			           						<th:block th:if="${prosku.dispaly==1}">服务人员端</th:block>
+			           					</td>
+			           				</tr>
+			           			</th:block>
+			           		</tbody>
+			           	</table>
+			        </div>
+			    </div>
+			</form>
+		</div>
+	</div>
+	
+</body>
+</html>

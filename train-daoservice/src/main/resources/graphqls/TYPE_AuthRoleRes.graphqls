@@ -1,0 +1,13 @@
+#权限管理  角色资源中间表
+type AuthRoleRes{
+
+    #角色ID
+    role_id : Long
+
+    #资源ID
+    res_id : Int
+
+    #无用字段
+    none : String
+}
+

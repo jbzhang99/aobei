@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{base_layout}">
+<head> 
+<meta charset="UTF-8" />
+<title>优惠券管理</title>
+
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}" ></script>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+			$('#form1').bootstrapValidator({
+				 fields: { 
+		             uids: {
+		                 validators: {
+		                	 notEmpty: {
+		                         message: '输入不能为空'
+		                     },
+		                     regexp: {
+		                         regexp: /^[0-9,]+$/,
+		                         message: '请输入正确手机号码，中间以英文逗号隔开'
+		                         
+		                     }
+		                 }
+		             },
+				 }
+		 	});
+        ymd();
+		//关闭模态框
+		$("#close_btn").click(function(){
+			$("#close_btn").modal('hide');
+			//href=="/couponmanager/coupon_list?p="+current
+			var current = [[${current}]]
+			window.location.href=="/couponmanager/coupon_list?p="+current
+			
+		})
+		//跳转到添加优惠券页面
+		$("#add_butn").click(function(){
+			//传递分页参数
+			var current = [[${current}]]
+			window.location.href="/couponmanager/coupon_goto_add?p="+current			
+		})
+		
+		$("#close_product_btn").click(function(){
+			$("#close_product_btn").modal('hide');
+			var current = [[${current}]]
+			window.location.href=="/couponmanager/coupon_list?p="+current
+		})
+		
+		$("#close_code_btn").click(function () {
+			$("#modal_code").modal('hide');
+        })
+		/*-------------------------------0.5 version----------------------------------------*/
+
+		$("#cou_type").val([[${cou_type}]]);
+		$("#begin").change(function(){
+            $("#end").focus();
+		})
+        $("#valid_begin").change(function(){
+            $("#valid_end").focus();
+        })
+
+		$("#cou_type").change(function(){
+            var cou_type = $("#cou_type").val();
+            var valid_begin = $("#valid_begin").val();
+            var valid_end = $("#valid_end").val();
+            var begin = $("#begin").val();
+            var end = $("#end").val();
+		    if(cou_type!=0){
+                window.location.href='/couponmanager/coupon_list?valid_begin='+valid_begin+"&valid_end="+valid_end+"&begin="+begin+"&end="+end+"&cou_type="+cou_type
+			}else{
+                window.location.href='/couponmanager/coupon_list?valid_begin='+valid_begin+"&valid_end="+valid_end+"&begin="+begin+"&end="+end;
+			}
+		})
+        $("#valid_end").change(function () {
+            var begin = $("#begin").val();
+            var end = $("#end").val();
+            var valid_begin = $("#valid_begin").val();
+            var valid_end = $("#valid_end").val();
+            var cou_type = $("#cou_type").val();
+            if(valid_begin>=valid_end){
+				reset();
+				alertify.alert("有效期开始时间不能大于等于有效期结束时间！");
+				return false;
+			}else{
+                window.location.href='/couponmanager/coupon_list?valid_begin='+valid_begin+"&valid_end="+valid_end+"&begin="+begin+"&end="+end+"&cou_type="+cou_type
+            }
+        })
+        $("#end").change(function () {
+            var begin = $("#begin").val();
+            var end = $("#end").val();
+            var valid_begin = $("#valid_begin").val();
+            var valid_end = $("#valid_end").val();
+            var cou_type = $("#cou_type").val();
+            if(begin>=end){
+                reset();
+                alertify.alert("开始时间不能大于等于结束时间！");
+                return false;
+            }else{
+                window.location.href='/couponmanager/coupon_list?valid_begin='+valid_begin+"&valid_end="+valid_end+"&begin="+begin+"&end="+end+"&cou_type="+cou_type
+            }
+        })
+		$("#btn_clean").click(function(){
+            window.location.href='/couponmanager/coupon_list';
+		})
+	})//结束标签
+		//跳转到优惠券编辑页面
+		function coupon_edit(coupon_id){
+			var current = [[${current}]]
+			window.location.href="/couponmanager/coupon_goto_edit?coupon_id="+coupon_id+"&p="+current;
+		}
+		//启用        
+		function coupon_ON(coupon_id){
+		    var mts = [[${application.mts}]]
+			$.post("/couponmanager/coupon_on",{coupon_id:coupon_id,mts:mts},function(data){
+				reset();
+				alertify.success(data.message);
+				setTimeout(function (){
+					window.location.reload();
+				}, 1000);
+			})
+		}
+		//禁用
+		function coupon_OFF(coupon_id){
+            var mts = [[${application.mts}]]
+			$.get("/couponmanager/getEnd_time",{coupon_id:coupon_id,mts:mts},function(data){
+				end_time=data.end_time
+				reset();
+				alertify.confirm("确定要禁用该条记录吗？此优惠券设置禁用后用户将无法使用！<br/>失效时间"+end_time,function(e){
+					if(e){
+						$.post("/couponmanager/coupon_off",{coupon_id:coupon_id},function(data){
+							reset();
+							alertify.success(data.message);
+							setTimeout(function (){
+								window.location.reload();
+							}, 1000);
+						})
+					}else{
+						reset();
+						alertify.log("已取消操作");
+					}
+				})
+			});
+		}
+		
+		//显示模态框
+		function coupon_Distribute(coupon_id){
+			$("#motal_distribute").modal('show');
+			var current = [[${current}]];
+			
+			//派发,发送请求
+			$("#affirmAdd_btn").click(function(){
+				var uids = $("#uids").val();
+				
+				if(uids=="" || uids==null){
+					reset();
+					alertify.alert("请至少填写一个用户手机号在提交！")
+					return;
+				}else{
+				    //var mts =
+					var current = [[${current}]]
+					var ids = $("#uids").val();
+						$.ajax({
+							url:'/couponmanager/distribute_coupon?coupon_id='+coupon_id,
+							type:'POST',
+							data:{
+								ids:ids,
+								mts:[[${application.mts.code}]]
+							},
+							cache:false,
+							async:true,
+							dataType:'JSON',
+							success:function(data){
+								//回调函数
+								reset();
+								alertify.success(data.message);
+								setTimeout(function(){								
+									window.location.href="/couponmanager/coupon_list?p="+current
+								},2000);  
+							}
+						}) 
+				}
+			}) 
+			//$("#close_btn").modal('hide');
+		} 
+		//页面点击指定商品方法
+		function toProducts(coupon_id){
+			$("#motal_product").modal('show');
+			//alert(coupon_id)
+			//window.location.href='/couponmanager/to_products?coupon_id='coupon_id
+			$.post("/couponmanager/to_products",{coupon_id:coupon_id},function(data){
+				$("#ul_product").empty();
+				
+				$.each(data.productList_data,function(index,ele){
+					
+					var html = "<li >"+ele.name+"</li>"
+					$("#ul_product").append(html);
+				})
+				
+			})
+		} 
+		function exchange(coupon_id){
+		    $.post('/couponmanager/getCode',{coupon_id:coupon_id},function (data) {
+		        if(data.code!=null){
+                    $("#p_code").html("【"+data.name+"】的优惠码： "+data.code);
+				}else{
+                    $("#p_code").html("该优惠券没有优惠码");
+				}
+
+                $("#modal_code").modal('show');
+            })
+
+		}
+		function export_code(coupon_id,verify) {
+            if(verify!=2){
+                reset();
+                alertify.alert("此兑换券未审核通过，暂没有生成兑换码,请审核通过后在导出！");
+                return false;
+			}else{
+                window.location.href="/couponmanager/export_exchange_code?coupon_id="+coupon_id
+			}
+
+        }
+        function coupon_put(coupon_id) {
+			$.post('/couponmanager/coupon_put',{coupon_id:coupon_id},function (data) {
+				reset();
+				alertify.success(data.result);
+				setTimeout(function () {
+					window.location.reload();
+                },1200)
+            })
+        }
+		//鼠标移入事件
+		function show_info(coupon_id) {
+			$.post('/couponmanager/getVerifyCom',{coupon_id:coupon_id},function (data) {
+				$("#show_info").html(data.result);
+				$("#modal_show_info").modal('show');
+			})
+		}
+		function export_coupon() {
+            var begin = $("#begin").val();
+            var end = $("#end").val();
+            var valid_begin = $("#valid_begin").val();
+            var valid_end = $("#valid_end").val();
+            var cou_type = $("#cou_type").val();
+            alertify.confirm("确定以当前条件导出吗？",function (e) {
+                if(e){
+                    window.location.href='/couponmanager/coupon_export?valid_begin='+valid_begin+"&valid_end="+valid_end+"&begin="+begin+"&end="+end+"&cou_type="+cou_type
+                }else{
+                    reset();
+                    alertify.log("已取消操作");
+                }
+            })
+		}
+</script>
+</head> 
+<body>
+
+	<div layout:fragment="content">		
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li class="active">优惠券管理</li>
+			  
+			  <li class="libtn">
+			  	<a sec:authorize="hasRole('ROLE_COUPON_EDIT')" id="add_butn" class="btn btn-primary pull-right"><i class="fas fa-plus"></i>&nbsp;添加</a>
+			  </li>
+				<li class="libtn">
+				<button sec:authorize="hasRole('ROLE_COUPON_EXPORT')" class="btn btn-primary pull-right" th:onclick="|export_coupon()|"><span class="fas fa-sign-out-alt"></span>&nbsp;导出</button>
+				</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_15">
+			<div class="form-inline">
+				<div class="form-group">
+					<label>优惠券类型</label>
+					<select id="cou_type" name="cou_type" class="form-control input-sm" >
+						<option value="0">全部</option>
+						<option value="1">派发券</option>
+						<option value="2">赔偿券</option>
+						<option value="3">领取券</option>
+						<option value="4">兑换券</option>
+					</select>
+				</div>
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<div class="form-group">
+				<label>创建时间：</label>
+					<input id="begin" name="begin" class="form-control input-sm datetimepicker1" style="width: 160px;" type="text" th:value="${begin}" placeholder="请选择开始时间" readonly/>
+				</div>
+				<label>~</label>
+				<div class="form-group">
+					<input id="end" name="end" class="form-control input-sm datetimepicker1" style="width: 160px;" type="text" th:value="${end}"  placeholder="请选择结束时间" readonly/>
+				</div>
+				<br><br>
+				<div class="form-group">
+				<label>有效期：</label>
+					<input id="valid_begin" name="valid_begin" class="form-control input-sm datetimepicker1" style="width: 160px;" type="text" th:value="${valid_begin}"  placeholder="请选择有效期开始时间" readonly/>
+				</div>
+				<label>~</label>
+				<div class="form-group">
+					<input id="valid_end" name="valid_end" class="form-control input-sm datetimepicker1" style="width: 160px;" type="text" th:value="${valid_end}"  placeholder="请选择有效期结束时间" readonly/>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<button id="btn_clean" class="form-control btn-primary input-sm">清空搜索</button>
+				</div>
+			</div>
+			<hr/>
+
+			<div class="table-responsive">
+			<!-- 动态 -->
+				<table id="table-cont" class="table table-striped table-hover" >
+					<thead >
+						<tr>
+							<th>序号</th>
+							<th>优惠券名称</th>
+							<th>优惠券类型</th>
+							<th>总数量</th>
+							<th>已领用</th>
+							<th>已下单</th>
+							<th>模板规则</th>
+							<th>生效时间</th>
+							<th>失效时间</th>
+							<th>状态</th>
+							<th>审核状态</th>
+							<th>创建人</th>
+							<th>审核人</th>
+							<th sec:authorize="hasRole('ROLE_COUPON_EDIT')">操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="coupon,index:${list}">
+							<td style="vertical-align: middle" th:text="${(index.index+1)+number}"></td>
+							<td style="vertical-align: middle" th:text="${coupon.name}"></td>
+							<td style="vertical-align: middle" th:switch="${coupon.type}">
+								<span th:case="1">派发券</span>
+								<span th:case="2">赔偿券</span>
+								<span th:case="3">领取券</span>
+								<span th:case="4"><a href="#" th:onclick="|export_code('${coupon.coupon_id}',${coupon.verify})|">兑换券</a></span>
+							</td>
+							<span th:if="${coupon.num_limit}==1">
+								<td style="vertical-align: middle" th:text="${coupon.num_total}"></td>
+							</span>
+
+							<span th:unless="${coupon.num_limit}==1">
+								<td style="vertical-align: middle" >无限制</td>
+							</span>
+							<td style="vertical-align: middle" th:text="${coupon.coupon_receive}"></td>
+							<td style="vertical-align: middle" th:text="${coupon.coupon_order}"></td>
+							 <span th:if="${coupon.condition_type}">
+								<td sec:authorize="hasRole('ROLE_COUPON_BROWSE')" id="conditions" style="vertical-align: middle" th:utext="${coupon.condition}" ></td>
+							</span>
+							<td style="vertical-align: middle" th:text="${#dates.format(coupon.use_start_datetime,'yyyy-MM-dd')}"></td>
+							<td style="vertical-align: middle" th:text="${#dates.format(coupon.use_end_datetime,'yyyy-MM-dd')}"></td>
+							<td style="vertical-align: middle;width:70px" th:switch="${coupon.valid}">
+								<span th:case="0">已禁用</span>
+								<span th:case="1">已启用</span>
+								<span th:case="2">已过期</span>
+							</td>
+							<span th:if="${coupon.type!=2}">
+								<td style="vertical-align: middle;width:70px" th:switch="${coupon.verify}">
+									<span th:case="0">未提审</span>
+									<span th:case="1">待审核</span>
+									<span th:case="2" style="color: green;" th:onmouseover="|show_info('${coupon.coupon_id}')|">审核通过</span>
+									<span th:case="3" style="color: red;" th:onmouseover="|show_info('${coupon.coupon_id}')|" >审核未通过</span>
+								</td>
+							</span>
+							<span th:if="${coupon.type==2}" >
+								<td style="vertical-align: middle;width:70px" th:switch="${coupon.verify}">
+									<span th:case="0"></span>
+									<span th:case="1">待审核</span>
+									<span th:case="2" style="color: green;" th:onmouseover="|show_info('${coupon.coupon_id}')|">审核通过</span>
+									<span th:case="3" style="color: red;" th:onmouseover="|show_info('${coupon.coupon_id}')|" >审核未通过</span>
+								</td>
+							</span>
+							<td style="vertical-align: middle;width:70px" th:text="${coupon.creater_name}"></td>
+							<td style="vertical-align: middle;width:70px" th:text="${coupon.verifier_name}"></td>
+							<span th:if="${coupon.type!=2}" style="vertical-align: middle">
+								<td th:if="${coupon.verify==1}" style="vertical-align: middle">
+									<!--<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" style="outline:none;vertical-align: middle" class="btn btn-link btn-xs" th:onclick="|coupon_put('${coupon.coupon_id}')|">提审</button>-->
+								</td>
+								<td th:if="${coupon.verify==2}" style="vertical-align: middle">
+									<span th:if="${coupon.valid==0}" style="vertical-align: middle">
+										<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" id="coupon_on" style="outline:none;vertical-align: middle" class="btn btn-link btn-xs" th:onclick="|coupon_ON('${coupon.coupon_id}')|"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>启用</button>
+									</span>
+									<span th:if="${coupon.valid==1}" style="vertical-align: middle">
+										<!--<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" style="outline:none" class="btn btn-link btn-xs" th:onclick="|coupon_edit('${coupon.coupon_id}')|"><span class="fas fa-edit" aria-hidden="true"></span>编辑</button>-->
+										<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" id="coupon_off" style="outline:none" class="btn btn-link btn-xs" th:onclick="|coupon_OFF('${coupon.coupon_id}')|"><span class="glyphicon glyphicon-lock" aria-hidden="true"></span>禁用</button>
+										<span th:if="${coupon.type==1 || coupon.type==2}">
+											<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" id="coupon_distribute" style="outline:none" class="btn btn-link btn-xs" th:onclick="|coupon_Distribute('${coupon.coupon_id}')|"><span class="glyphicon glyphicon-gift" aria-hidden="true"></span>派发</button>
+										</span>
+									</span>
+								</td>
+								<td th:if="${coupon.verify==0}" style="vertical-align: middle">
+									<span th:if="${coupon.is_valid==0}" style="vertical-align: middle">
+										<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" style="outline:none" class="btn btn-link btn-xs" th:onclick="|coupon_edit('${coupon.coupon_id}')|"><span class="fas fa-edit" aria-hidden="true"></span>编辑</button>
+									</span>
+									<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" style="outline:none;vertical-align: middle" class="btn btn-link btn-xs" th:onclick="|coupon_put('${coupon.coupon_id}')|"><span class="glyphicon glyphicon-open"></span>提审</button>
+								</td>
+								<td th:if="${coupon.verify==3}" style="vertical-align: middle">
+									<span th:if="${coupon.is_valid==0}" style="vertical-align: middle">
+										<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" style="outline:none" class="btn btn-link btn-xs" th:onclick="|coupon_edit('${coupon.coupon_id}')|"><span class="fas fa-edit" aria-hidden="true"></span>编辑</button>
+									</span>
+									<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" style="outline:none;vertical-align: middle" class="btn btn-link btn-xs" th:onclick="|coupon_put('${coupon.coupon_id}')|"><span class="glyphicon glyphicon-open"></span>提审</button>
+								</td>
+							</span>
+							<span th:if="${coupon.type==2}" style="vertical-align: middle">
+								<td th:if="${coupon.valid}==0" style="vertical-align: middle">
+									<button sec:authorize="hasRole('ROLE_COUPON_EDIT')"style="outline:none;vertical-align: middle" class="btn btn-link btn-xs" th:onclick="|coupon_ON('${coupon.coupon_id}')|"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>启用</button>&nbsp;&nbsp;
+									<span th:if="${coupon.is_valid==0}">
+										<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" style="outline:none" class="btn btn-link btn-xs" th:onclick="|coupon_edit('${coupon.coupon_id}')|"><span class="fas fa-edit" aria-hidden="true"></span>编辑</button>
+									</span>
+								</td>
+								<td th:if="${coupon.valid}==1" style="vertical-align: middle">
+									<!--<span th:if="${coupon.is_valid==0}">
+										<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" style="outline:none" class="btn btn-link btn-xs" th:onclick="|coupon_edit('${coupon.coupon_id}')|"><span class="fas fa-edit" aria-hidden="true"></span>编辑</button>&nbsp;&nbsp;
+									</span>-->
+									<button sec:authorize="hasRole('ROLE_COUPON_EDIT')"style="outline:none" class="btn btn-link btn-xs" th:onclick="|coupon_OFF('${coupon.coupon_id}')|"><span class="glyphicon glyphicon-lock" aria-hidden="true"></span>禁用</button>&nbsp;&nbsp;
+									<span th:if="${coupon.type==1 || coupon.type==2}">
+										<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" style="outline:none" class="btn btn-link btn-xs" th:onclick="|coupon_Distribute('${coupon.coupon_id}')|"><span class="glyphicon glyphicon-gift" aria-hidden="true"></span>派发</button>&nbsp;&nbsp;
+									</span>
+								</td>
+								<td th:if="${coupon.valid}==2" style="vertical-align: middle">
+									<span th:if="${coupon.is_valid==0}" style="vertical-align: middle">
+										<button sec:authorize="hasRole('ROLE_COUPON_EDIT')" style="outline:none" class="btn btn-link btn-xs" th:onclick="|coupon_edit('${coupon.coupon_id}')|"><span class="fas fa-edit" aria-hidden="true"></span>编辑</button>
+									</span>
+								</td>
+							</span>
+						</tr>
+					</tbody>
+				</table>
+					<!-- 模态框 -->				
+					<div class="modal fade" id="motal_product" data-keyboard="false" data-backdrop="static" aria-hidden="true">
+					  <div class="modal-dialog" role="document">
+					    <div class="modal-content">
+					      <div class="modal-header">
+					        <h4 class="modal-title">已选择的商品</h4>
+					      </div>
+								<div class="modal-body">
+											<div class="form-group">
+													<ul id="ul_product" style="color:#E63F00 ">
+														
+													</ul>
+											</div>
+										<div class="modal-footer form-group">
+											<button id="close_product_btn" type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+										</div>
+								</div>
+							</div>
+					  </div>
+					</div><!-- 模态框结束 -->	
+				<!-- 模态框 -->		
+				<div class="modal fade" id="motal_distribute" data-keyboard="false" data-backdrop="static" aria-hidden="true">
+				  <div class="modal-dialog" role="document">
+				    <div class="modal-content">
+				      <div class="modal-header">
+				        <h4 class="modal-title">请输入用户手机号：</h4>
+				      </div>
+							<div class="modal-body">
+								<form id="form1">
+									<div class="form-group">
+										<input id="uids" name="uids" class="form-control" placeholder="请输入用户手机号,中间以英文逗号隔开" required>
+									</div>
+									<div class="modal-footer form-group">
+										<button id="close_btn" type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+										<button id="affirmAdd_btn" type="button" class="btn btn-primary">确定派发</button>
+									</div>
+								</form>
+							</div>
+						</div>
+				  </div>
+				</div><!-- 模态框结束 -->
+				<!-- 兑换码模态框 -->
+				<div class="modal fade" id="modal_code" data-keyboard="false" data-backdrop="static" aria-hidden="true">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h4 class="modal-title">优惠券兑换码：</h4>
+							</div>
+							<div class="modal-body">
+
+									<div class="form-group">
+										<p id="p_code"></p>
+									</div>
+									<div class="modal-footer form-group">
+										<button id="close_code_btn" type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+									</div>
+
+							</div>
+						</div>
+					</div>
+				</div><!-- 模态框结束 -->
+				<!-- 审核信息展示模态框 -->
+				<div class="modal fade" id="modal_show_info" data-keyboard="false" data-backdrop="static" aria-hidden="true">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h4 class="modal-title">审核意见：</h4>
+							</div>
+							<div class="modal-body">
+								<div class="form-group">
+									<span id="show_info"></span>
+								</div>
+								<div class="modal-footer form-group">
+									<button id="info_close_btn" type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div><!-- 模态框结束 -->
+			</div>
+				<div th:include="~{tags/pagination::p1(@{/couponmanager/coupon_list(size=${page.pageSize},begin=${begin},end=${end},valid_begin=${valid_begin},valid_end=${valid_end},cou_type=${cou_type})},${page.total},
+								${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+		</div>
+	</div>
+
+</body>
+</html>

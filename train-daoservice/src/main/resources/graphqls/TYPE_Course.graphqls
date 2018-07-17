@@ -1,0 +1,31 @@
+#课程
+type Course{
+
+    #id
+    course_id : Long
+
+    #名称
+    name : String
+
+    #状态 1 可用  2禁用
+    state : Int
+
+    #包含课节数
+    chapter_count : Int
+
+    #包含课时  单位 分钟
+    hour : Int
+
+    #学分
+    credit : Int
+
+    #创建时间
+    cdate : Date
+
+    #封面图
+    img : String
+
+    #是否已删除  0 未删除  1 已删除
+    deleted : Int
+}
+

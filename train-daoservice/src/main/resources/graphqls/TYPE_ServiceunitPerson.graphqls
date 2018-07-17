@@ -1,0 +1,36 @@
+#服务单 关联的服务人员
+type ServiceunitPerson{
+
+    serviceunit_person_id : Long
+
+    #服务单id
+    serviceunit_id : Long
+
+    #服务人员id
+    student_id : Long
+
+    #服务人员姓名
+    student_name : String
+
+    #人员工作状态1 到达 2 开始 3 结束 4 离开
+    work_status : Int
+
+    #工作人员到达时间
+    work_1_datetime : Date
+
+    #工作开始时间
+    work_2_datetime : Date
+
+    #工作结束时间
+    work_3_datetime : Date
+
+    #工作人员离开时间
+    work_4_datetime : Date
+
+    #工作人员备注
+    work_remark : String
+
+    #订单表示状态点    1 待付款  2 待确认  3 待服务 4 已取消 5 已完成
+    status_active : Int
+}
+

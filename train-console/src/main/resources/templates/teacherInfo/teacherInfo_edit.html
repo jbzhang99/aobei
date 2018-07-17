@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<head>
+<title>修改教师信息</title>
+
+<link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/citydata.js}"></script>
+<script type="text/javascript" th:src="@{/js/cityPicker-1.0.0.js?v=1}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-select.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+$(function(){
+	//省市縣三級js
+	var citySelect = $('.city-picker-select').cityPicker({
+		dataJson: cityData,
+		renderMode: false,
+		linkage: false
+	});
+	//回显省市区
+	 var pid = [[${pid}]];
+	 var pname = [[${pname}]];
+	 var cid = [[${cid}]];
+	 var cname = [[${cname}]];
+	 var aid = [[${aid}]];
+	 var aname = [[${aname}]];
+	 citySelect.setCityVal([{
+	      'id':pid,
+	      'name':pname
+	      },{
+    	  'id':cid,
+		  'name':cname  
+	      },{
+	      'id':aid,
+		  'name':aname  	    	  
+	      }
+	 ])
+	 $('form').bootstrapValidator({
+         message: 'This value is not valid',
+         feedbackIcons: {
+            /*  valid: 'glyphicon glyphicon-ok',
+             invalid: 'glyphicon glyphicon-remove',
+             validating: 'glyphicon glyphicon-refresh' */
+         },
+         fields: { 
+        	 
+             name: {
+                 validators: {
+                     notEmpty: {
+                         message: '姓名不能为空'
+                     },
+                     regexp: {
+                         regexp: /^[\u4e00-\u9fa5]+(·[\u4e00-\u9fa5]+)*$/,
+                         message: '姓名只能包含中文，请输入正确的信息'
+                         
+                     }
+                 }
+             },
+             train_course:{
+            	 validators: {
+                     notEmpty: {
+                         message: '请选择培训课程'
+                     },
+                 }
+             },
+             age: {
+                 validators: {
+                     notEmpty: {
+                         message: '年龄不能为空'
+                     },
+                     regexp: {
+                         regexp: /^(1[89]|[2-8]\d|90)$/,
+                         message: '年龄范围在18到90'
+                     }
+                 }
+             },
+             phone:{
+            	 validators: {
+                     notEmpty: {
+                         message: '手机号不能为空'
+                     },
+                     regexp: {
+                         regexp: /^1(3|4|5|7|8|9)\d{9}$/,
+                         message: '手机号格式输入不正确'
+                     }
+                 }
+             },
+             intro:{
+            	 validators: {            		 
+	            	 notEmpty: {
+	                     message: '请输入教师简介'
+	                 },
+	                 stringLength:{
+	                	min:'0',
+	                	max:'500',
+	                	message:'教师简介不能低于5不能超过500字'
+	                 }
+            	 }
+             },
+             teacher_type:{
+            	 notEmpty: {
+                     message: '请选择教师类别'
+                 }
+             },
+             userProvinceId:{
+            	 validators: {
+                     notEmpty: {
+                         message: '请选择省份'
+                     },
+                 }
+             },
+             userCityId:{
+            	 validators: {
+                     notEmpty: {
+                         message: '请选择城市'
+                     },
+                 }
+             },
+             userDistrictId:{
+            	 validators: {
+                     notEmpty: {
+                         message: '请选择区县'
+                     },
+                 }
+             },
+             
+             identity_card:{
+            	 validators: {
+                     notEmpty: {
+                         message: '请输入身份证号码'
+                     },
+                 }
+             },
+         },
+         submitHandler: function (validator, form, submitButton) {      	
+             alert("submit");        		 
+         }
+     });
+	 //回显性别，状态，教师类别，教师简介数据
+	 var sex = [[${edit_teacher.sex}]];
+	 $("#sex").val(sex); 
+	 var state = [[${edit_teacher.state}]];
+	 $("#state").val(state);
+	 var type = [[${edit_teacher.type}]];
+	 $("#type").val(type);
+	 var intro = [[${edit_teacher.intro}]];
+	 $("#intro").val(intro);
+	 var id_card = [[${edit_teacher.identity_card}]];
+	 $("#identity_card").val(id_card);
+	 
+	 //回显课程
+	var courseListTeam =[[${list_Tcourse}]];
+	 $.each(courseListTeam,function(i,item){ 
+			$(".selectpicker option").each(function(m){
+				var op=$(this).val();
+	    		if(item.course_id ==op){
+	    			$(this).prop("selected",true);
+	    		} 
+			})
+	});
+	
+	 
+	$("#btnback").click(function(){	
+		var current = [[${current}]];
+	 window.location.href="/teacherManager/teacherInfo/teacherInfoList?p="+current
+	 }); 
+	var img_url1 = [[${img_url_icon}]];
+    var img_name1 = [[${img_name_icon}]];
+    var img_use1 = [[${img_use_icon}]];
+$("#img_eicon").fileinput({
+    language: 'zh', //设置语言
+    //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+    allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+    //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+    //uploadAsync: true, //默认异步上传
+    showUpload:false, //是否显示上传按钮
+    showRemove :false, //显示移除按钮
+    showPreview :true, //是否显示预览
+    showCaption:false,//是否显示标题
+    //browseClass:"btn btn-primary", //按钮样式    
+    dropZoneEnabled: false,//是否显示拖拽区域
+    minImageWidth: 50, //图片的最小宽度
+    minImageHeight: 50,//图片的最小高度
+    maxImageWidth: 1000,//图片的最大宽度
+    maxImageHeight: 1000,//图片的最大高度
+    maxFileSize:1000,//单位为kb，如果为0表示不限制文件大小
+    //minFileCount: 0,
+    //maxFileCount:10, //表示允许同时上传的最大文件个数
+    enctype:'multipart/form-data',
+    validateInitialCount:true,
+  //初始化fileinput 
+    initialPreview: [
+        /* "< img src='"+img_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+img_use+"' title='"+img_use+"'>" */
+        "<img src='"+img_url1+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+img_use1+"' title='"+img_use1+"'>"
+    ],
+    initialPreviewConfig: [
+        {
+            caption: img_name1
+        }
+    ] 
+});
+
+	 var img_url2 = [[${img_url_certification}]];
+	    var img_name2 = [[${img_name_certification}]];
+	    var img_use2 = [[${img_use_certification}]];
+		if(img_url2!=null && img_url2!=""){
+			 $("#img_ecertification").fileinput({
+			        language: 'zh', //设置语言
+			        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+			        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+			        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+			        //uploadAsync: true, //默认异步上传
+			        showUpload:false, //是否显示上传按钮
+			        showRemove :false, //显示移除按钮
+			        showPreview :true, //是否显示预览
+			        showCaption:false,//是否显示标题
+			        //browseClass:"btn btn-primary", //按钮样式    
+			        dropZoneEnabled: false,//是否显示拖拽区域
+			        minImageWidth: 50, //图片的最小宽度
+			        minImageHeight: 50,//图片的最小高度
+			        maxImageWidth: 1000,//图片的最大宽度
+			        maxImageHeight: 1000,//图片的最大高度
+			        maxFileSize:1000,//单位为kb，如果为0表示不限制文件大小
+			        //minFileCount: 0,
+			        //maxFileCount:10, //表示允许同时上传的最大文件个数
+			        enctype:'multipart/form-data',
+			        validateInitialCount:true,
+			        initialPreview: [
+				        /* "< img src='"+img_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+img_use+"' title='"+img_use+"'>" */
+				        "<img src='"+img_url2+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+img_use2+"' title='"+img_use2+"'>"
+				    ],
+				    initialPreviewConfig: [
+				        {
+				            caption: img_name2
+				        }
+				    ]
+			    });
+			}
+
+	 if(img_url2==null || img_url2==""){
+		 $("#img_ecertification").fileinput({
+		        language: 'zh', //设置语言
+		        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+		        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+		        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+		        //uploadAsync: true, //默认异步上传
+		        showUpload:false, //是否显示上传按钮
+		        showRemove :false, //显示移除按钮
+		        showPreview :true, //是否显示预览
+		        showCaption:false,//是否显示标题
+		        //browseClass:"btn btn-primary", //按钮样式    
+		        dropZoneEnabled: false,//是否显示拖拽区域
+		        minImageWidth: 50, //图片的最小宽度
+		        minImageHeight: 50,//图片的最小高度
+		        maxImageWidth: 1000,//图片的最大宽度
+		        maxImageHeight: 1000,//图片的最大高度
+		        maxFileSize:1000,//单位为kb，如果为0表示不限制文件大小
+		        //minFileCount: 0,
+		        //maxFileCount:10, //表示允许同时上传的最大文件个数
+		        enctype:'multipart/form-data',
+		        validateInitialCount:true
+		       
+		    });
+		}
+
+});
+
+function check(){
+	
+	var p = $("select[name=userProvinceId] option:selected").val();
+	var c = $("select[name=userCityId] option:selected").val();
+	var a = $("select[name=userDistrictId] option:selected").val();
+	if(p=="请选择省"){
+		reset();
+		alertify.alert("请选择省！")
+		return false;
+	}
+	if(c=="请选择市"){
+		reset();
+		alertify.alert("请选择市！")
+		return false;
+	}
+	if(a=="请选择区"){
+		reset();
+		alertify.alert("请选择区！")
+		return false;
+	}
+}
+</script>
+</head>
+<body>
+	<div layout:fragment="content">
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li><a th:href="@{/teacherManager/teacherInfo/teacherInfoList}">教师信息管理</a></li>
+			  <li class="active">编辑</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_3">
+					<form id="form1"
+						th:action="@{/teacherManager/teacherInfo/updateTeacherInfo}"
+						class="form-horizontal" action="#" method="post"
+						enctype="multipart/form-data" onsubmit="return check();">
+
+						<input type="hidden" name="mts"  th:value="${mts}"/>
+						<!-- th:action="@{/updateTeacherInfo}"  -->
+						<input type="hidden" id="teacher_id" name="teacher_id"
+							th:value="${edit_teacher.teacher_id}" />
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="name"><span
+								style="color: red">*</span> 姓名</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control" id="teacher_name"
+									name="name" th:value="${edit_teacher.name}" required />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="sex" class="col-sm-3 control-label"><span
+								style="color: red">*</span> 性别</label>
+							<div class="col-sm-4">
+								<select class="form-control" id="sex" name="sex" required>
+									<option value="1">男</option>
+									<option value="0">女</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="age" class="col-sm-3 control-label"><span
+								style="color: red">*</span> 年龄</label>
+							<div class="col-sm-4">
+								<input type="text" class="form-control" id="age" name="age"
+									th:value="${edit_teacher.age}" required />
+							</div>
+							<!-- th:value="${edit_teacher.age}" 
+			 th:value="${edit_teacher.phone}"-->
+						</div>
+						<div class="form-group">
+							<label for="type" class="col-sm-3 control-label"><span
+								style="color: red">*</span> 类别</label>
+							<div class="col-sm-4">
+								<select class="form-control" id="type" name="type" required>
+									<option value="1">老师</option>
+									<option value="0">助教</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="img_eicon"><span
+								style="color: red">*</span>头像</label>
+							<div class="col-sm-4">
+								<input type="file" class="form-control" id="img_eicon"
+									name="img_eicon" th:value="${backTeacher_icon}"
+									placeholder="点击上传头像" /><br />
+								<!-- <img  th:src="${backTeacher_icon}" width="100px" height="100px"> -->
+								<span>建议图片分辨率为600*450，最大不能超过1M</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="img_ecertification">资格证</label>
+							<div class="col-sm-4">
+								<input type="file" class="form-control" id="img_ecertification"
+									name="img_ecertification"
+									th:value="${backTeacher_certification}" placeholder="点击上传电子版" /><br />
+								<!-- <img  th:src="${backTeacher_certification}" width="100px" height="100px"> -->
+								<span>建议图片分辨率为600*450，最大不能超过1M</span>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="intro" class="col-sm-3 control-label"><span
+								style="color: red">*</span> 简介</label>
+							<div class="col-sm-5">
+								<textarea class="form-control" id="intro" name="intro"
+									placeholder="请输入教师简介信息" required></textarea>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="phone"><span
+								style="color: red">*</span> 联系电话</label>
+							<div class="col-sm-5">
+								<input type="text" class="form-control" id="phone" name="phone"
+									th:value="${edit_teacher.phone}" required />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="train_address" class="col-sm-3 control-label"><span
+								style="color: red">*</span> 所在地</label>
+							<div class="col-sm-6">
+								<!-- 省市县三级-->
+								<!--省市县三级 -->
+								<div class="city-picker-select form-inline"></div>
+								<!--  -->
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="identity_card"><span
+								style="color: red">*</span> 身份证号码</label>
+							<div class="col-sm-5">
+								<input type="text" class="form-control" id="identity_card"
+									name="identity_card" placeholder="请输入身份证号码" required />
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label for="state" class="col-sm-3 control-label"><span
+								style="color: red">*</span> 培训状态</label>
+							<div class="col-sm-5">
+								<select class="form-control" id="state" name="state" required>
+									<option value="1">在职</option>
+									<option value="0">兼职</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="train_course" class="col-sm-3 control-label"><span
+								style="color: red">*</span> 培训课程</label>
+							<div class="col-sm-5">
+								<select class="form-control selectpicker" id="train_course"
+									title="请选择培训课程" name="train_course" multiple required>
+									<th:block th:each="course:${list_course}">
+										<option th:value="${course.course_id}"
+											th:text="${course.name}"></option>
+									</th:block>
+								</select>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<div class="col-sm-5 col-sm-offset-3 ">
+								<input type="submit" class="btn btn-primary" value="确定" />&nbsp;&nbsp;&nbsp;&nbsp;
+								<input type="button" id="btnback" class="btn btn-default"
+									value="取消" />
+							</div>
+						</div>
+
+					</form>
+		</div>
+	</div>
+</body>
+</html>

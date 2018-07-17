@@ -1,0 +1,81 @@
+#优惠卷 模板
+type Coupon{
+
+    #优惠卷id
+    coupon_id : Long
+
+    #名称
+    name : String
+
+    #描述
+    descript : String
+
+    #财务预算金额，单位 分
+    plan_money : Int
+
+    #是否用效  1 有效  0 无效 2 已过期
+    valid : Int
+
+    #是否排他  1 排他  0 不排他
+    exclusive : Int
+
+    #是否有发放数量限制  1 有限制  0 无限制
+    num_limit : Int
+
+    #总数量 ，仅 num_limit=1 时有数据
+    num_total : Int
+
+    #可发放数量 ，仅 num_limit=1 时有数据
+    num_able : Int
+
+    #优先级  1-99  99 最大
+    priority : Int
+
+    #优惠条件模板{"title":"消费满300元减时，对指定商品优惠","value":"30000","product":"{[productId,productid,...]}"}
+    condition : String
+
+    #优惠条件类型  1 订单总价满X时，对所有商品优惠  2 订单满X时对指定商品，3，多所有商品优惠，4对指定商品优惠
+    condition_type : Int
+
+    #优惠方案模板{"title":"减30元","value":"3000"}
+    programme : String
+
+    #优惠方案类型  1，打折  2满减
+    programme_type : Int
+
+    #1,派发券2,赔偿券3,领取券4,兑换券
+    type : Int
+
+    #优惠卷有效使用开始日期时间
+    use_start_datetime : Date
+
+    #优惠卷有效使用结束日期时间
+    use_end_datetime : Date
+
+    #优惠卷有效领取开始日期时间
+    receive_start_datetime : Date
+
+    create_time : Date
+
+    #优惠卷有效领取结束日期时间
+    receive_end_datetime : Date
+
+    # 0 未提审，1待审核，2审核通过 ，3 审核未通过 
+    verify : Int
+
+    #审核意见 限制在50个汉字
+    verify_comments : String
+
+    #优惠券创建者id
+    create_user : Long
+
+    #优惠券审核者id
+    verify_user : Long
+
+    #表示是否已经标记过有效。0未标记 1已标记过 ，标记过的不能进行修改
+    is_valid : Int
+
+    #优惠券提审时间
+    deliver_datetime : Date
+}
+

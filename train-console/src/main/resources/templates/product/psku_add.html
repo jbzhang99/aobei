@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"> -->
+<head>
+<meta charset="UTF-8"></meta>
+<title>Sku添加页面</title>
+<script th:src="@{/js/bootstrapValidator.min.js}"></script>
+<link th:href="@{/css/bootstrapValidator.min.css}" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script TYPE="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<meta name="context-path" th:content="@{/}" />
+<style>
+.has-error .form-control .control-label .has-success{
+	border-color: #555
+}
+</style>
+<script type="text/javascript" th:inline="javascript">
+$(function() {
+	//formValidator();
+	$("#test").click(function(){
+		$('#timeRow').hide();
+		$('#okBuyShow').hide();
+		 document.getElementById("form1").reset();
+		 $("#form1").bootstrapValidator('addField','name',{
+			 validators: {  
+                notEmpty: {  
+                    message: 'Sku名称不能为空'
+                },
+                stringLength: {/*长度提示*/
+                    max: 12,
+                    message: 'Sku名称不能超过12个字'
+                }
+			 }
+		 }); 
+		 $("#form1").bootstrapValidator('addField','pricev',{
+			 validators: {  
+                regexp: {
+                    regexp: /^[0-9]+(.[0-9]{1,2})?$/,
+                    message: '请输入正确格式'
+                }/*,
+                stringLength: {/!*长度提示*!/
+                    max: 10,
+                    message: '市场价格不能超过10字符'
+                }*/
+			 }
+		 });
+		 $("#form1").bootstrapValidator('addField','price',{
+			 validators: {  
+                notEmpty: {  
+                    message: '浦尔家价格不能为空'  
+                },
+                regexp: {
+                    regexp: /^[0-9]+(.[0-9]{1,2})?$/,
+                    message: '请输入正确格式'
+                }/*,
+                stringLength: {/!*长度提示*!/
+                    max: 10,
+                    message: '浦尔家价格不能超过10字符'
+                }*/
+			 }
+		 });
+		 $("#form1").bootstrapValidator('addField','sort_num',{
+			 validators: {  
+                notEmpty: {  
+                    message: '显示顺序不能为空'  
+                },
+                regexp: {
+                    regexp: /^[0-9]*$/,
+                    message: '请输入整数'
+                },
+                stringLength: {/*长度提示*/
+                    max: 2,
+                    message: '显示顺序不能超过2字符'
+                }
+			 }
+		 });
+		 $("#form1").bootstrapValidator('addField','descript',{
+			 validators: {  
+                notEmpty: {  
+                    message: '描述不能为空'  
+                },
+                stringLength: {/*长度提示*/
+                    max: 200,
+                    message: '描述不能超过200字符'
+                }
+			 }
+		 });
+		 $("#form1").bootstrapValidator('addField','service_time_length',{
+			 validators: {  
+                notEmpty: {  
+                    message: '服务时长不能为空'  
+                },
+                regexp: {
+                    regexp: /^[1-9]*$/,
+                    message: '请输入整数（大于0）'
+                },
+                stringLength: {
+                    max: 1,
+                    message: '服务时长不能超过2位数'
+                }
+			 }
+		 });
+		 $("#form1").bootstrapValidator('addField','service_times',{
+			 validators: {  
+                notEmpty: {  
+                    message: '服务时间段不能为空'  
+                }
+			 }
+		 });
+		 $("#form1").bootstrapValidator('addField','buy_limit',{
+			 validators: {  
+                notEmpty: {  
+                    message: '最多购买件数不能为空'  
+                },
+                regexp: {
+                    regexp: /^[0-9]*$/,
+                    message: '请输入整数'
+                },
+                stringLength: {/*长度提示*/
+                    max: 4,
+                    message: '最多购买件数不能超过4字符'
+                }
+			 }
+		 });
+	});
+	
+	//根据服务时长输入框，显示对应服务时间段
+	$("#service_time_length").keyup(function(){
+		var time=$('#service_time_length').val();
+		if($('#service_time_length').val()=="" || time.length>=2){
+			$('#timeRow').hide();
+		}else{
+			if((/(^[1-9]*$)/.test($('#service_time_length').val())) & time.length<2){
+				var html=$('#timeModal').html();
+				$('#serviceTimes').nextAll().remove();
+				$('#serviceTimes').empty();
+				$('#serviceTimes').append(html);
+				$('#serviceTimes #delRedut').css("display","none");
+				$('#timeRow').show();
+			}
+		}
+	});
+
+	
+	//点击服务时间段加号
+	$('#btnGoAddServiceTimes').click(function(){
+		var html=$('#start').html();
+		$('#notHaveServiceTimes').html(html);
+		$(this).next().toggleClass('show hide');
+	})
+	
+	//编辑模态框根据服务时长输入框，显示对应服务时间段
+	$("#p_service_time_length").keyup(function(){
+		$('#alreadyServiceTimes').empty();
+		//$('#alreadyServiceTimes').parent().hide();
+		var time=$('#p_service_time_length').val();
+		if($('#p_service_time_length').val()=="" || time.length>=2){
+			$('#isShowTimes').css("display","none");
+		}else{
+			if((/(^[1-9]*$)/.test($('#p_service_time_length').val())) & time.length<2){
+				$('#isShowTimes').css("display","block");				
+			}
+		}
+	});
+	
+	$(document).on('click','#editClosePage',function(){
+    	//重置表单
+    	$('#editModal').modal('hide');
+   		$('#form2').data('bootstrapValidator').resetForm(); 
+    	//$('#form2').data('bootstrapValidator').resetForm();
+    	$('#alreadyServiceTimes').empty();
+	});
+	
+	$(document).on('click','#closePage',function(){
+    	//重置表单
+    	$('#addModal').modal('hide');
+   		$('#form1').data('bootstrapValidator').resetForm(); 
+   		$('#FixationShow').attr("style","display:none");
+    	//$('#form2').data('bootstrapValidator').resetForm();
+	});
+})
+
+//sku添加(模态框)
+ var num=0;
+ function addSkuBut(){
+	 if($('#bespeak_strategy option').length==0){
+			reset();
+			alertify.alert("预约策略为空，请先去添加预约策略！");
+			return false;
+		}
+	 if(!($("input[name='option']").is(':checked'))){
+	 	reset();
+		alertify.alert("必须勾选服务时长是否固定");
+		return false;
+	  }
+	 var firstDiv=$('#timeAll').find("div").eq(0);
+	 var val=firstDiv.find('#start').val();
+	 if(val==-1){
+		reset();
+		alertify.alert("请至少添加一个服务时间段");
+		return false;
+	 }
+	 var myReg = /^[\u4e00-\u9fa5]+$/;
+	 if($("#p_unit").val()!=''){
+		 if (!(myReg.test($("#unit").val()))) {
+			reset();
+			alertify.alert("单位：只能输入汉字");
+			return false;
+		 }
+	 }
+	 $('#form1').data('bootstrapValidator').validate(); 
+	 if($('#form1').data('bootstrapValidator').isValid()){
+		  var name=$('#name').val();
+		  var pricev=$('#pricev').val();
+		  var price=$('#price').val();
+		  var sortNum=$('#sort_num').val();
+		  var descript=$('#descript').val();
+		  var selectOption=$('input[name="option"]:checked').val();
+		  var bespeakOkValue=$('#bespeak_strategy option:selected').val();//预约策略
+		  var bespeakOkText=$('#bespeak_strategy option:selected').text();//预约策略
+		  var unit=$('#unit option:selected').val();
+		  var dispalyValue=$('#dispaly option:selected').val();
+		  var dispalyText=$('#dispaly option:selected').text();
+		  var buy_multiple;//是否允许一次购买多件
+		  var buy_multiple_min;//最小限制
+		  var buy_multiple_max;//最大限制
+         if(pricev>50000){
+             reset();
+             alertify.alert("市场价格不能大于50000");
+             return false;
+         }
+         if(price>50000){
+             reset();
+             alertify.alert("浦尔家价格不能大于50000");
+             return false;
+         }
+		  if($('input[name="buy_multiple"]:checked').val()==1){
+			  buy_multiple="是";
+			  if($('#buy_multiple_min').val()==''){
+					reset();
+					alertify.alert("最小购买数不能为空");
+					return false;
+				  }
+				  if(!(/(^[1-9]\d*$)/.test($('#buy_multiple_min').val()))){
+					reset();
+					alertify.alert("最小购买数必须是整数(大于0)");
+					return false;
+				  }
+				  if($('#buy_multiple_min').val().length>5){
+					reset();
+					alertify.alert("最小购买数不能超过5位数");
+					return false;
+				  }
+				  /* if($('#buy_multiple_max').val()==''){
+					reset();
+					alertify.alert("最大购买数不能为空");
+					return false;
+				  } */
+              buy_multiple_min=$('#buy_multiple_min').val();//最小限制
+				  if(!(/(^[0-9]\d*$)/.test($('#buy_multiple_max').val())) & $('#buy_multiple_max').val().length>0){
+					reset();
+					alertify.alert("最大购买数必须是整数");
+					return false;
+				  }
+				  if($('#buy_multiple_max').val()>1000 ||  Number($('#buy_multiple_max').val())<Number(buy_multiple_min)){
+					reset();
+                      alertify.alert("最大购买数只能大于最小购买数并且小于1000");
+					return false;
+				  }
+
+			  if($('#buy_multiple_max').val()==''){
+				  buy_multiple_max=1000;//最大限制
+			  }else{
+				  buy_multiple_max=$('#buy_multiple_max').val();//最大限制
+			  }
+		  }else{
+			  buy_multiple="否";
+			  buy_multiple_min=0;//最小限制
+			  buy_multiple_max=1000;//最大限制
+		  }
+		  var buy_multiple_o2o;//是否允许派遣服务人员一对一
+		  if($('input[name="buy_multiple_o2o"]:checked').val()==1){
+			  buy_multiple_o2o="是";
+		  }else{
+			  buy_multiple_o2o="否";
+		  }
+		  var serTimeLen=$('#service_time_length').val();
+		  var serTimes="";
+		  var zz=[];
+		  var text="";
+		  var zzReturn=[];
+		  var optionValue=$('input[name="option"]:checked').val();
+		  if(optionValue!=0){//固定时长
+			  $('#timeAll').find("div").each(function(index,data){
+				  var timeSelect="";
+				  var map = {};
+				  var num=0;
+				  $(data).find("option:selected").each(function(){
+						  var val= $(this).val();
+						  if(val!="-1" && val!=""){
+							  var text= $(this).text();
+							  if(num==0){
+								  map["s"]=val;
+								  num++; 
+							  }
+							  if(num==1){
+								  map["e"]=val;
+							  }
+							  timeSelect+=text+"-";
+						  }
+				  });
+				  
+				  var flag=$.isEmptyObject(map);
+				  if(flag==false){
+					  zz.push(map);
+					 // serTimes+=timeSelect.substring(0, timeSelect.length-1)+",";
+					  serTimes+="<p>"+timeSelect.substring(0, timeSelect.length-1)+"</p>";
+				  }
+				  //serTimes=serTimes.substring(0, serTimes.length-1)
+				  zzReturn=JSON.stringify(zz);
+			  });
+		  }else{//不固定
+			  serTimes="<p>"+$('#serviceTimes #start option:selected').text()+"</p>";
+		  }
+		  var buyLimit=$('#buy_limit').val();
+         var html="";
+		  if(dispalyValue==0){
+              html+='<tr select-Option='+selectOption+' data-id='+num+' data-times='+zzReturn+'><td style="vertical-align:middle;">'+name+'</td><td style="vertical-align:middle;">'+pricev+'</td><td style="vertical-align:middle;">'+price+'</td><td style="vertical-align:middle;">'+sortNum+'</td><td style="vertical-align:middle;">'+descript+'</td><td style="vertical-align:middle;">'+serTimeLen+'</td><td style="vertical-align:middle;">'+serTimes+'</td><td style="vertical-align:middle;">'+buy_multiple+'</td><td style="vertical-align:middle;">'+buy_multiple_min+'</td><td style="vertical-align:middle;">'+buy_multiple_max+'</td><td style="vertical-align:middle;">'+buy_multiple_o2o+'</td><td id='+bespeakOkValue+' style="vertical-align:middle;">'+bespeakOkText+'</td><td style="vertical-align:middle;">'+unit+'</td><td id='+dispalyValue+' style="vertical-align:middle;">'+dispalyText+'</td>'+
+                  '</br><td><input  type="radio" name="oneCheck" checked/></td><td style="vertical-align:middle;"><a onclick="javascript:updateSku(this)" data-toggle="modal" data-target=".bs-example-modal-lg-er" style="cursor: pointer;"><i class="fas fa-edit"></i>编辑</a>&nbsp;&nbsp;&nbsp;</br><a onclick="javascript:deleteSku(this)" style="cursor: pointer;"><i class="far fa-trash-alt"></i>删除</a></td></tr>';
+          }else{
+              html+='<tr select-Option='+selectOption+' data-id='+num+' data-times='+zzReturn+'><td style="vertical-align:middle;">'+name+'</td><td style="vertical-align:middle;">'+pricev+'</td><td style="vertical-align:middle;">'+price+'</td><td style="vertical-align:middle;">'+sortNum+'</td><td style="vertical-align:middle;">'+descript+'</td><td style="vertical-align:middle;">'+serTimeLen+'</td><td style="vertical-align:middle;">'+serTimes+'</td><td style="vertical-align:middle;">'+buy_multiple+'</td><td style="vertical-align:middle;">'+buy_multiple_min+'</td><td style="vertical-align:middle;">'+buy_multiple_max+'</td><td style="vertical-align:middle;">'+buy_multiple_o2o+'</td><td id='+bespeakOkValue+' style="vertical-align:middle;">'+bespeakOkText+'</td><td style="vertical-align:middle;">'+unit+'</td><td id='+dispalyValue+' style="vertical-align:middle;">'+dispalyText+'</td>'+
+                  '</br><td></td><td style="vertical-align:middle;"><a onclick="javascript:updateSku(this)" data-toggle="modal" data-target=".bs-example-modal-lg-er" style="cursor: pointer;"><i class="fas fa-edit"></i>编辑</a>&nbsp;&nbsp;&nbsp;</br><a onclick="javascript:deleteSku(this)" style="cursor: pointer;"><i class="far fa-trash-alt"></i>删除</a></td></tr>';
+          }
+		  //<td>'+buyLimit+'</td>一天最多购买数
+		 num++;
+		  $('#skuTab tbody').append(html);
+		  $('#addModal').modal('hide');
+		  $('#form1').data('bootstrapValidator').resetForm();
+		  $('#FixationShow').attr("style","display:none");
+	 }
+  };
+  
+	//Modal验证销毁重构
+	$('#addModal').on('hidden.bs.modal', function() {
+		 $('#addModal').modal('toggle');
+	});
+	//Modal验证销毁重构
+	 $('#editModal').on('hidden.bs.modal', function() {
+		 $('#form2').data('bootstrapValidator').resetForm(); 
+		 $('#editModal').modal('toggle');
+ 	});
+	//编辑sku模态框验证 
+	function formValidator(){
+		//表单验证
+		$('#form2').bootstrapValidator({
+	         message: 'This value is not valid',
+	         feedbackIcons: {
+	             /* valid: 'glyphicon glyphicon-ok',
+	             invalid: 'glyphicon glyphicon-remove',
+	             validating: 'glyphicon glyphicon-refresh' */
+	         },
+	         fields: {
+	             p_name: {
+	                 validators: {
+	                     notEmpty: {
+	                         message: '服务名称不能为空'
+	                     },
+	                     stringLength: {
+	                         max: 12,
+	                         message: '服务名称不能超过12个字'
+	                     }
+	                 }
+	             },
+	             p_pricev: {
+	                 validators: {
+	                     regexp: {
+	                         regexp: /^[0-9]+(.[0-9]{1,2})?$/,
+	                         message: '请输入正确格式'
+	                     }/*,
+	                     stringLength: {
+	                         max: 10,
+	                         message: '市场价格不能超过10字符'
+	                     }*/
+	                 }
+	             },
+	             p_price: {
+	                 validators: {
+	                     notEmpty: {
+	                         message: '浦尔家价格不能为空'
+	                     },
+	                     regexp: {
+	                         regexp: /^[0-9]+(.[0-9]{1,2})?$/,
+	                         message: '请输入正确格式'
+	                     }/*,
+	                     stringLength: {
+	                         max: 10,
+	                         message: '浦尔家价格不能超过10字符'
+	                     }*/
+	                 }
+	             },
+	             p_sort_num: {
+	                 validators: {
+	                     notEmpty: {
+	                         message: '显示顺序不能为空'
+	                     },
+	                     regexp: {
+	                         regexp: /^[0-9]*$/,
+	                         message: '请输入整数'
+	                     },
+	                     stringLength: {
+	                         max: 2,
+	                         message: '显示顺序不能超过2字符'
+	                     }
+	                 }
+	             },
+	             p_descript:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '描述不能为空'
+	                     },
+	                     stringLength: {
+	                         max: 200,
+	                         message: '描述不能超过200字符'
+	                     }
+	                 } 
+	             },
+	             p_service_time_length:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '服务时长不能为空'
+	                     },
+	                     regexp: {
+	                         regexp: /^[1-9]*$/,
+	                         message: '请输入整数（大于0）'
+	                     },
+	                     stringLength: {
+	                         max: 1,
+	                         message: '服务时长不能超过2位数'
+	                     }
+	                 } 
+	             },
+	             p_service_times:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '服务时间段不能为空'
+	                     }
+	            	 }
+	             },
+	             p_buy_limit:{
+	            	 validators: {
+	                     notEmpty: {
+	                         message: '最多购买数不能为空'
+	                     },
+	                     regexp: {
+	                         regexp: /^[0-9]*$/,
+	                         message: '请输入整数'
+	                     },
+	                     stringLength: {
+	                         max: 4,
+	                         message: '最多购买数不能超过4字符'
+	                     }
+	            	 }
+	             },
+	             p_unit:{
+	            	 validators: {
+	                     stringLength: {
+	                         max: 15,
+	                         message: '单位不能超过15个字'
+	                     }
+	            	 }
+	             }
+	         }
+	     });
+	}  
+	
+	//sku编辑(模态框)回显
+	var timeArray=['00:00','00:30','01:00','01:30','02:00','02:30','03:00','03:30',
+	               '04:00','04:30','05:00','05:30','06:00','06:30','07:00','07:30',
+	               '08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
+	               '12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
+	               '16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30',
+	               '20:00','20:30','21:00','21:30','22:00','22:30','23:00','23:30'
+	               ];
+	//sku添加页面上tr行上的编辑按钮(模态框)
+	function updateSku(obj){
+		formValidator();
+		$("input[name='p_buy_multiple']").removeAttr("checked");
+		$("input[name='p_buy_multiple_o2o']").removeAttr("checked");
+		var selectOption=$(obj).closest('tr').attr('select-option');
+		$('#editModal').attr('select-option',selectOption);
+		var html=$('#start').html();
+		$('#notHaveServiceTimes').html(html);
+		$("#btnGoAddServiceTimes").next().hide();
+		$('#alreadyServiceTimes').empty();
+		$("#p_id").val($(obj).closest('tr').attr("data-id"));
+		$("#p_name").val($(obj).closest('tr').find('td:eq(0)').text());
+		$("#p_pricev").val($(obj).closest('tr').find('td:eq(1)').text());
+		$("#p_price").val($(obj).closest('tr').find('td:eq(2)').text());
+		$("#p_sort_num").val($(obj).closest('tr').find('td:eq(3)').text());
+		$("#p_descript").val($(obj).closest('tr').find('td:eq(4)').text());
+		if($(obj).closest('tr').find('td:eq(5)').text()!=0){//服务时长不等于0：-->固定
+			$('#isShowTimeLength').attr("style","display:block");
+			$('#isShowTimes').attr("style","display:block");
+			$('#ishaveTimes').attr("style","display:block");
+			$('#optionSelectStart').attr("style","display:none");
+			$("#p_service_time_length").val($(obj).closest('tr').find('td:eq(5)').text());
+			var dataTimes=$(obj).closest('tr').attr('data-times');
+			var timeList=$.parseJSON(dataTimes);
+	   		var str="";
+		    $.each(timeList, function (n, value) {
+		    	//if(value.s !='undefined' && value.e !='undefined'){
+			    	var html='<p style="padding:0px;margin:0px" id='+value.s+' end='+value.e+'><span>'+timeArray[value.s]+'-'+timeArray[value.e]+'</span><button id="redut" class="btn btn-link redutBtn text-warning" onclick="deleteRow(this)"><i class="fas fa-minus-circle fa-lg text-warning"></i></button></p>';
+			    	str+=html;
+		    	//}
+	        });
+		    $('#alreadyServiceTimes').append(str);
+		}else{//服务时长等于0：-->不固定
+			$('#isShowTimeLength').attr("style","display:none;");
+			$('#isShowTimes').attr("style","display:none;");
+			$('#ishaveTimes').attr("style","display:none;");
+			$('#optionSelectStart').attr("style","display:block");
+			var text=$(obj).closest('tr').find('td:eq(6) p').text();
+			var valueOption;
+			$('#startOptionTime').find('option').each(function(index,o){
+				var oText=$(o).text();
+				if(oText==text){
+					valueOption=$(o).val();
+				}
+			});
+			$('#startOptionTime').val(valueOption);
+		}
+		//$("#p_service_times").val($(obj).closest('tr').find('td:eq(6)').text());
+		
+	    
+		//$("#p_buy_limit").val($(obj).closest('tr').find('td:eq(7)').text());
+	    if($(obj).closest('tr').find('td:eq(7)').text()=="是"){
+			$("input:radio[name='p_buy_multiple'][value=1]").prop("checked",true);  
+			$('#editOkBuyShow').show();
+			$('#p_buy_multiple_min').val($(obj).closest('tr').find('td:eq(8)').text());
+			$('#p_buy_multiple_max').val($(obj).closest('tr').find('td:eq(9)').text());
+			if($(obj).closest('tr').find('td:eq(10)').text()=="是"){
+				$("input:radio[name='p_buy_multiple_o2o'][value=1]").prop("checked",true);
+			}else{
+				$("input:radio[name='p_buy_multiple_o2o'][value=0]").prop("checked",true);
+			}
+		}else{
+			$("input:radio[name='p_buy_multiple'][value=0]").prop("checked",true);
+			$('#editOkBuyShow').hide();
+		}
+	    var id=$(obj).closest('tr').find('td:eq(11)').attr("id");
+		$('#p_bespeak_strategy').val(id);
+		$('#p_unit').val($(obj).closest('tr').find('td:eq(12)').text());
+		var id=$(obj).closest('tr').find('td:eq(13)').attr("id");
+		$('#p_dispaly').val(id);
+		//是否固定
+		if(selectOption==0){
+			$("input:radio[name='p_option'][value=0]").prop("checked",true);
+		}else{
+			$("input:radio[name='p_option'][value=1]").prop("checked",true);
+		}
+	}
+	//sku删除
+	function deleteSku(obj){
+		reset();
+		alertify.confirm("确定要删除该条Sku信息吗！", function (e) {
+			if(e){
+				$(obj).parent().parent().remove();
+			}
+		});
+	}
+	$('#addModal').on('hidden.bs.modal', function() {
+		 $('#addModal').modal('toggle');
+	});
+	
+	
+	//编辑sku模态框确定按钮
+	function editSkuBut(obj){
+		if($('#p_bespeak_strategy option').length==0){
+			reset();
+			alertify.alert("预约策略为空，请先去添加预约策略！");
+			return false;
+		}
+
+        if($('#p_dispaly').val()==null){
+            reset();
+            alertify.alert("展示位置必须选择一个！");
+            return false;
+        }
+
+		$('#form2').data('bootstrapValidator').validate(); 
+	  	if($('#form2').data('bootstrapValidator').isValid()){
+	  		var pid=$('#p_id').val();
+	  		var tr = $('#skuTab tr[data-id="'+pid+'"]');
+	  		var startOptionTime="";
+			var selectOption=$('#editModal').attr('select-option');
+			var serTimeLen=$('#p_service_time_length').val();
+			var timeSelect="";
+			var serTimes="";
+			if(selectOption!=0){
+				var length=$('#alreadyServiceTimes').find("p").length;
+				if(length==0){
+					reset();
+					alertify.alert("请至少添加一个服务时间段");
+					 $('#editModal').modal('show');
+					return false;
+				}
+				var editTime=[];
+				$('#alreadyServiceTimes').find("p").each(function(index,data){
+					  var map={};
+					  var startTime=$(this).attr("id");
+					  var endTime=$(this).attr("end");
+					  map["s"]=startTime;
+					  map["e"]=endTime;
+					  editTime.push(map);
+					  $(data).find("span").each(function(){
+						  var text= $(this).text();
+						  //timeSelect+=text+",";
+						  timeSelect+="<p>"+text+"</p>";
+					  });
+				  });
+				//serTimes=timeSelect.substring(0, timeSelect.length-1);
+				tr.attr("data-times",JSON.stringify(editTime));
+			}else{
+				  startOptionTime=$('#startOptionTime option:checked').text();
+				 // serTimes=startOptionTime;
+				  timeSelect="<p>"+startOptionTime+"</p>";
+				  tr.removeAttr("data-times");
+			}
+				 var name=$('#p_name').val();
+				  var pricev=$('#p_pricev').val();
+				  var price=$('#p_price').val();
+				  var sortNum=$('#p_sort_num').val();
+				  var descript=$('#p_descript').val();
+				  var buy_multiple;//是否允许一次购买多件
+				  var buy_multiple_min;//最小限制
+				  var buy_multiple_max;//最大限制
+				  var buy_multiple_o2o;//是否允许派遣服务人员一对一
+					if(pricev>50000){
+						reset();
+						alertify.alert("市场价格不能大于50000");
+						return false;
+					}
+					if(price>50000){
+						reset();
+						alertify.alert("浦尔家价格不能大于50000");
+						return false;
+					}
+				  if($('input[name="p_buy_multiple"]:checked').val()==1){
+					  buy_multiple="是";
+					  if($('#p_buy_multiple_min').val()==''){
+							reset();
+							alertify.alert("最小购买数不能为空");
+							return false;
+						  }
+						  if(!(/(^[1-9]\d*$)/.test($('#p_buy_multiple_min').val()))){
+							reset();
+							alertify.alert("最小购买数必须是整数(大于0)");
+							return false;
+						  }
+						  if($('#p_buy_multiple_min').val().length>5){
+							reset();
+							alertify.alert("最小购买数不能超过5位数");
+							return false;
+						  }
+						  /* if($('#p_buy_multiple_max').val()==''){
+							reset();
+							alertify.alert("最大购买数不能为空");
+							return false;
+						  } */
+                      buy_multiple_min=$('#p_buy_multiple_min').val();//最小限制
+						  if(!(/(^[0-9]\d*$)/.test($('#p_buy_multiple_max').val())) & $('#p_buy_multiple_max').val().length>0){
+							reset();
+							alertify.alert("最大购买数必须是整数");
+							return false;
+						  }
+						  if($('#p_buy_multiple_max').val()>1000 || Number($('#p_buy_multiple_max').val())< Number(buy_multiple_min)){
+							reset();
+							alertify.alert("最大购买数只能大于最小购买数并且小于1000");
+							return false;
+						  }
+
+					  if($('#p_buy_multiple_max').val()==''){
+						  buy_multiple_max=1000;//最大限制
+					  }else{
+						  buy_multiple_max=$('#p_buy_multiple_max').val();//最大限制
+					  }
+					  if($('input[name="p_buy_multiple_o2o"]:checked').val()==1){
+						  buy_multiple_o2o="是";
+					  }else{
+						  buy_multiple_o2o="否";
+					  }
+				  }else{
+					  buy_multiple="否";
+					  buy_multiple_min=0;//最小限制
+					  buy_multiple_max=1000;//最大限制
+					  buy_multiple_o2o="否";
+				  }
+				  var bespeakOkValue=$('#p_bespeak_strategy option:selected').val();//预约策略
+				  var bespeakOkText=$('#p_bespeak_strategy option:selected').text();//预约策略
+				  var dispalyOkValue=$('#p_dispaly option:selected').val();//展示位置
+				  var dispalyOkText=$('#p_dispaly option:selected').text();//展示位置
+				  var unit=$('#p_unit option:selected').val();//预约策略
+				  var buyLimit=$('#p_buy_limit').val();
+				  tr.attr("select-option",selectOption);
+				  tr.find('td:eq(6)').empty();
+				  tr.find('td:eq(0)').text(name);
+				  tr.find('td:eq(1)').text(pricev);
+				  tr.find('td:eq(2)').text(price);
+				  tr.find('td:eq(3)').text(sortNum);
+				  tr.find('td:eq(4)').text(descript);
+				  tr.find('td:eq(5)').text(serTimeLen);
+				  //tr.find('td:eq(6)').text(serTimes);
+				  tr.find('td:eq(6)').append(timeSelect);
+				  tr.find('td:eq(7)').text(buy_multiple);
+				  tr.find('td:eq(8)').text(buy_multiple_min);
+				  tr.find('td:eq(9)').text(buy_multiple_max);
+				  tr.find('td:eq(10)').text(buy_multiple_o2o);
+				  tr.find('td:eq(11)').text(bespeakOkText);
+				  tr.find('td:eq(11)').attr("id",bespeakOkValue);
+				  tr.find('td:eq(12)').text(unit);
+				  tr.find('td:eq(13)').text(dispalyOkText);
+				  tr.find('td:eq(13)').attr("id",dispalyOkValue);
+				 // tr.find('td:eq(7)').text(buyLimit);
+				  $('#p_service_time_length').val('');
+				  $('#editModal').modal('hide');
+	  	}
+		 
+	}
+	//页面上添加sku确认按钮
+	function addsku(){
+		var pageNo=$('#pageNo').val();
+		//至少添加一条sku信息
+		var tableTr=$('#skuTab tbody').find("tr");
+		if(tableTr.length==0){
+			reset();
+			alertify.alert("请至少添加一条Sku信息");
+			return false;
+		}
+        var checkNum=$('#skuTab tbody').find("input[name='oneCheck']:checked").size();
+        if(checkNum==0){
+            reset();
+            alertify.alert("请选择一个默认的Sku");
+            return false;
+        }
+		var skuList=[];
+		var unsetSkuList=[];
+		var product_id=$('#product_id').val();
+		$('#skuTab tbody').find("tr").each(function(index,data){
+			$(data).each(function(i,d){
+				var datas = $(d).find('td');
+				var buy_multiple;
+				var buy_multiple_o2o;
+				if(datas.eq(7).text()=='是'){
+					buy_multiple=1;
+				}else{
+					buy_multiple=0;
+				}
+				if(datas.eq(10).text()=='是'){
+					buy_multiple_o2o=1;
+				}else{
+					buy_multiple_o2o=0;
+				}
+				var option=$(d).attr("select-option");
+                //判断服务时间段
+				var timeValues="";
+				var pLength=datas.eq(6).find("p").length;
+				if(pLength==0){	//0:不固定
+					timeValues=datas.eq(6).text();
+				}else{//1：固定-->将服务时间段进行拼接
+					datas.eq(6).find('p').each(function(){
+						timeValues+=$(this).text()+",";
+					});
+					timeValues=timeValues.substring(0, timeValues.length-1);
+				}
+                //获取是否默认
+                var checkVal=datas.eq(14).find("input[name='oneCheck']:checked").val();
+                if(checkVal==null){
+                    checkVal=0;
+                }else{
+                    checkVal=1;
+                }
+                //等于1：就是固定时间
+				if(option==1){
+					skuList.push({
+						product_id:product_id,
+		        		 name:datas.eq(0).text(),
+		        		 pricev:datas.eq(1).text()*100,
+		        		 price:datas.eq(2).text()*100,
+		        		 sort_num:datas.eq(3).text(),
+		        		 descript:datas.eq(4).text(),
+		        		 service_time_length:datas.eq(5).text(),
+		        		 service_times:timeValues,
+		        		// buy_limit:datas.eq(7).text()
+		        		 buy_multiple:buy_multiple,
+		        		 buy_multiple_min:datas.eq(8).text(),
+		        		 buy_multiple_max:datas.eq(9).text(),
+		        		 buy_multiple_o2o:buy_multiple_o2o,
+		        		 bespeak_strategy_id:datas.eq(11).attr('id'),
+		        		 unit:datas.eq(12).text(),
+		        		 dispaly:datas.eq(13).attr('id'),
+                        default_sku:checkVal
+			        });
+				}else{//不等于1：就是不固定时间
+					unsetSkuList.push({
+						product_id:product_id,
+		        		 name:datas.eq(0).text(),
+		        		 pricev:datas.eq(1).text()*100,
+		        		 price:datas.eq(2).text()*100,
+		        		 sort_num:datas.eq(3).text(),
+		        		 descript:datas.eq(4).text(),
+		        		 service_time_length:datas.eq(5).text(),
+		        		 service_times:datas.eq(6).text(),
+		        		// buy_limit:datas.eq(7).text()
+		        		 buy_multiple:buy_multiple,
+		        		 buy_multiple_min:datas.eq(8).text(),
+		        		 buy_multiple_max:datas.eq(9).text(),
+		        		 buy_multiple_o2o:buy_multiple_o2o,
+		        		 bespeak_strategy_id:datas.eq(11).attr('id'),
+		        		 unit:datas.eq(12).text(),
+		        		 dispaly:datas.eq(13).attr('id'),
+                        default_sku:checkVal
+			        });
+				}
+		    });
+	    });
+        var mts = [[${application.mts}]];
+		$.ajax({
+		        url:'/product/addSku/'+product_id,//提交的位置
+		        data:{
+		        	result:JSON.stringify(skuList),
+		        	unsetSkuList:JSON.stringify(unsetSkuList),
+					mts:mts
+		        },//提交的数据
+		        type:'POST',
+		        success:function(data){
+		        	//请求成功时
+					reset();
+					alertify.success(data.msg);
+		        	window.location.href="[(@{/product/showProductList?p="+pageNo+"})]"; 
+		        },//提交成功回调函数
+		        dataType:'json'
+		    });
+	}
+	
+	
+	
+	//添加下拉框选择事件
+	function show_sub(obj,time){
+		if($('input[name="option"]:checked').val()==1){//固定-->服务时长必须有值
+			var timeLength=$('#service_time_length').val();
+			if(timeLength=="" || timeLength==null){
+				reset();
+				alertify.alert("请填写服务时长！");
+				return false;
+			}
+		}else{//不固定-->服务时长为0
+			var timeLength=0;
+		}
+		var num=0;
+		//获取已选择的时间段
+		$(obj).parent().siblings().find("option:selected:eq(0)").each(function(index,data){
+			if(time==$(this).val()){
+				num++;
+				reset();
+				alertify.alert("已存在"+timeArray[time]+"服务时间，请重新选择！");
+				$(obj).val("-1");
+				$(obj).next().css("display","none");
+				$(obj).next().next().css("display","none");
+				return false;
+			}
+		});
+		if(num==0){
+			$.ajax({
+		        url:'/product/selectTime/'+time+'/'+timeLength,//提交的位置
+		        type:'POST',
+		        success:function(data){
+		        	if($.isEmptyObject(data)==false){//false:可以根据时长+开始时间  获取到结束时间
+                        if(data.timeValue>47){
+                            reset();
+                            alertify.alert("结束时间已经超过晚上23:30，请重新选择！");
+                            return false;
+                        }
+			        	$(obj).next().children().val(data.timeValue);
+			        	$(obj).next().children().text(data.time);
+			        	$(obj).next().css("display","inline-block");
+			        	$(obj).next().next().css("display","inline-block");
+			        	if($('.redutBtn').length!=2){
+			        		$(obj).next().next().next().css("display","inline-block");
+			    		}else{
+			    			$(obj).next().next().next().css("display","none");
+			    		}
+		        	}else{//true :获取不到结束时间，已经超出范围
+                        if($('input[name="option"]:checked').val()==1) {
+                            $(obj).val(-1);
+                            $(obj).next().css("display", "none");
+                            $(obj).next().next().css("display", "none");
+                            $(obj).next().empty();
+                            $(obj).next().append("<option></option>");
+                            reset();
+                            alertify.alert("结束时间已经超过晚上23:30，请重新选择！");
+                            return false;
+                        }
+					}
+		        },//提交成功回调函数
+		        dataType:'json'
+		    });
+		}
+	}
+	
+	//点击加号按钮
+	var num=0;
+	function insertRow(obj){
+		//获取所有已经选择时间
+		var html=$('#timeModal').html();
+		html.replace(/delRedut/,'delRedut'+num++).replace(/none/,'inline-block');
+		var divHtml='<div style="margin-left:15px;" id="serviceTimes">'+html+'</div>';
+		$('#timeAll').append(divHtml);
+		$('.redutBtn').css("display","inline-block");
+	}
+	
+	//点击减号按钮
+	function deleteRow(obj){
+		$(obj).parent().remove();
+		if($('.redutBtn').length==2){
+			$('.redutBtn').css("display","none");
+		}
+	}
+	//编辑下拉框选择事件
+	function show_editsub(obj,time){
+		$('#endtimes').css("display","inline-block");
+		var timeLength=$('#p_service_time_length').val();
+		if(timeLength=="" || timeLength==null){
+			reset();
+			alertify.alert("请填写服务时长！");
+			return false;
+		}
+		$.ajax({
+	        url:'/product/selectTime/'+time+'/'+timeLength,//提交的位置
+	        type:'POST',
+	        success:function(data){
+                if($.isEmptyObject(data)==false) {//false:可以根据时长+开始时间  获取到结束时间
+                    if (data.timeValue > 47) {
+                        reset();
+                        alertify.alert("结束时间已经超过晚上23:30，请重新选择！");
+                        return false;
+                    }
+
+                    $(obj).next().children().val(data.timeValue);
+                    $(obj).next().children().text(data.time);
+                    $(obj).next().css("display", "inline-block");
+                    $(obj).next().next().css("display", "inline-block");
+                    if ($('.redutBtn').length > 2) {
+                        $(obj).next().next().next().css("display", "inline-block");
+                    } else if ($('.redutBtn').length <= 2) {
+                        $(obj).next().next().next().css("display", "none");
+                    }
+                }else{//true :获取不到结束时间，已经超出范围
+                    $(obj).val(-1);
+                    $(obj).next().css("display","none");
+                    reset();
+                    alertify.alert("结束时间已经超过晚上23:30，请重新选择！");
+                    return false;
+				}
+	        },//提交成功回调函数
+	        dataType:'json'
+	    });
+	}
+	
+	//服务时间段的添加按钮
+	function addNotHaveServiceTimes(obj){
+		var start=$('#notHaveServiceTimes').val();
+		var end=$('#endtimes').val();
+		if(start=="-1"){
+			reset();
+			alertify.alert("请选择服务开始时间！");
+			return false;
+		}
+		var num=0;
+		$('#endtimes').css("display","none");
+		//获取已经添加过的时间段
+		$('#alreadyServiceTimes').find("p").each(function(index,data){
+			var aleryTime=$(this).attr("id");
+			if(start==aleryTime){
+				num++;
+				reset();
+				alertify.alert("已存在"+timeArray[start]+"的服务时间，请重新选择！");
+				return false;
+			}
+		});
+		if(num==0){
+			var html='<p style="margin:0px;padding:0px" id='+start+' end='+end+'><span>'+timeArray[start]+'-'+timeArray[end]+'</span><button id="redut" class="btn btn-link redutBtn text-warning" onclick="deleteRow(this)"><i class="fas fa-minus-circle fa-lg text-warning"></i></button></p>';
+			$('#alreadyServiceTimes').append(html);
+			$('#ishaveTimes').css("display","block");
+			$(obj).parent('div').toggleClass('show hide');
+			$('#alreadyServiceTimes').parent().show();
+		}
+	}
+	
+	//sku页面取消添加按钮
+	function cancleAddSku(product_id){
+		reset();
+		alertify.confirm("确定要取消添加产品操作吗!", function (e) {
+			if(e){
+				var pageNo=$('#pageNo').val();
+				window.location.href="[(@{/product/showProductList?p="+pageNo+"})]";
+				/* var pageNo=$('#pageNo').val();
+				$.ajax({
+			        url:'/product/cancleDelProduct/'+product_id,//提交的位置
+			        type:'POST',
+			        success:function(data){
+			        	reset();
+						alertify.success(data.msg);
+			        	window.location.href="[(@{/product/showProductList?p="+pageNo+"})]";
+			        },//提交成功回调函数
+			        dataType:'json'
+			    }); */
+			}
+		});
+	}
+	//新增模态框 是否一次购买
+	function okBuy(obj){
+		$('#okBuyShow').show();
+	}
+	function noBuy(obj){
+		$('#okBuyShow').hide();
+	}
+
+	//编辑模态框 是否一次购买
+	function editOkBuy(obj){
+		$('#p_buy_multiple_min').val('');
+		$('#p_buy_multiple_max').val('');
+		$("input:radio[name='p_buy_multiple_o2o'][value=1]").prop("checked",false);
+		$("input:radio[name='p_buy_multiple_o2o'][value=0]").prop("checked",true);
+		$('#editOkBuyShow').show();
+	}
+	function editNoBuy(obj){
+		$('#editOkBuyShow').hide();
+	}
+
+	//新增模态框 服务时长是否固定
+	function addFixation(obj){
+		$('#FixationShow').show();
+		$('#timeRow').hide();
+	}
+	function addUnset(obj){
+		$('#FixationShow').hide();
+		$('#service_time_length').val('');
+		var html=$('#timeModal').html();
+		$('#serviceTimes').nextAll().remove();
+		$('#serviceTimes').empty();
+		$('#serviceTimes').append(html);
+		$('#serviceTimes #delRedut').css("display","none");
+		$('#timeRow').show();
+	}
+
+	//编辑模态框 服务时长是否固定
+	function editFixation(obj){
+		$('#p_service_time_length').val('');
+		$('#alreadyServiceTimes').empty();
+		$('#ishaveTimes').css("display","none");
+		$('#isShowTimeLength').css("display","block");
+		$('#optionSelectStart').css("display","none");
+		$('#editModal').attr('select-option',$(obj).val());
+	}
+	function editUnset(obj){
+		$('#p_service_time_length').val('');
+		$('#ishaveTimes').css("display","none");
+		$('#isShowTimes').css("display","none");
+		$('#alreadyServiceTimes').empty();
+		$('#isShowTimeLength').css("display","none");
+		$('#optionSelectStart').css("display","block");
+		$('#editModal').attr('select-option',$(obj).val());
+		$('#startOptionTime').val(16);
+	}
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <!-- <li><a href="#">一级目录</a></li> -->
+			  <li><a href="/product/showProductList" class="back_butn" style="cursor: pointer;">产品管理</a></li>
+			  <li class="active">添加</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_10">
+			<form id="defaultForm" method="post" class="form-horizontal" action="#" enctype="multipart/form-data">
+	     		 <input id="pageNo" type="hidden" th:value="${pageNo}"/>
+			    <!-- 下面这个div必须要有，插件根据这个进行添加提示 -->
+			    <div class="form-group" style="margin-top: 15px">
+			        <label class="col-lg-1 control-label">服务名称</label>
+			        <div class="col-lg-5">
+			            <input type="hidden" class="form-control" id="product_id" name="product_id" th:value="${product.product_id}" />
+			            <input  type="text" class="form-control" th:value="${product.name}" disabled="disabled"/>
+ 			        </div>
+			    </div>
+			
+			    <div class="form-group">
+			        <label class="col-lg-1 control-label">价格列表</label>&nbsp;&nbsp;&nbsp;
+			        <button id="test" type="button" class="btn btn-primary pull-right" style="margin-right: 45px"  data-toggle="modal" data-target="#addModal">添加价格</button>
+			    </div>
+			
+			    <div class="form-group">
+			        <div class="col-lg-12">
+			           	<table class="table table-bordered" id="skuTab" style="table-layout:fixed" width="800px">
+			           		<thead>
+			           			<tr>
+				           			<th width="50px" style="vertical-align:middle;">sku名称</th>
+				           			<th width="70px" style="vertical-align:middle;">市场价格</th>
+				           			<th width="70px" style="vertical-align:middle;">浦尔家价格</th>
+				           			<th width="30px" style="vertical-align:middle;">显示顺序</th>
+				           			<th width="160px" style="vertical-align:middle;">描述</th>
+				           			<th width="50px" style="vertical-align:middle;">服务时长</th>
+				           			<th width="100px" style="vertical-align:middle;">服务时间段</th>
+				           			<!-- <th>一天最多购买件数</th> -->
+				           			<th width="60px" style="vertical-align:middle;">是否允许一次购买多件</th>
+				           			<th width="50px" style="vertical-align:middle;">最小购买数</th>
+				           			<th width="50px" style="vertical-align:middle;">最大购买数</th>
+				           			<th width="50px" style="vertical-align:middle;">是否派遣</th>
+				           			<th width="50px" style="vertical-align:middle;">预约策略</th>
+				           			<th width="30px" style="vertical-align:middle;">单位</th>
+				           			<th width="50px" style="vertical-align:middle;">展示位置</th>
+									<th width="55px" style="vertical-align:middle;">默认</th>
+				           			<th width="85px" style="vertical-align:middle;">操作</th>
+			           			</tr>
+			           		</thead>
+			           		<tbody>
+			           			
+			           		</tbody>
+			           	</table>
+			        </div>
+			    </div>
+			</form>
+			<div class="form-group">
+		        <div class="col-lg-9 col-lg-offset-3">
+		            <button type="button" class="btn btn-primary" onclick="javascript:addsku()">确定</button>
+		            <button  class="btn btn-primary" th:onclick="|cancleAddSku('${product.product_id}')|">取消</button>
+		        </div>
+		    </div>
+		</div>
+		<!--添加价格模态框 -->
+        <div id="addModal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+		   <div class="modal-dialog modal-lg" role="document">
+		    <div class="modal-content">
+		    	<div class="modal-header">
+		    	 	<h4 class="modal-title" id="gridSystemModalLabel">添加Sku</h4>
+		    	 </div>
+		      		<div class="modal-body">
+		      			<div>
+		   		 			<form id="form1" action="#"  method="post">
+			   		 			<div class="row">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>名称:</label>
+										<div class="col-sm-4">
+											<input type="text" class="form-control" id="name"
+												name="name" placeholder="请输入sku名称" required />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">市场价格:</label>
+										<div class="col-sm-4">
+											<input type="text" class="form-control" id="pricev"
+												name="pricev" placeholder="请输入市场价格" />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>浦尔家价格:</label>
+										<div class="col-sm-4">
+											<input type="text" class="form-control" id="price"
+												name="price" placeholder="请输入浦尔家价格" required />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>显示顺序:</label>
+										<div class="col-sm-4">
+											<input type="text" class="form-control" id="sort_num"
+												name="sort_num" placeholder="请输入显示顺序" required />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>描述:</label>
+										<div class="col-sm-4">
+											<textarea class="form-control" id="descript"
+												name="descript" placeholder="请输入sku描述" required></textarea>
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>服务时长:</label>
+										<div>
+											&nbsp;&nbsp;&nbsp;<input type="radio" id="optionOk" name="option" onclick="javascript:addFixation(this)" value="1"/>固定&nbsp;&nbsp;&nbsp;&nbsp;
+											<input type="radio" id="optionNo" name="option" onclick="javascript:addUnset(this)" value="0"/>不固定
+										</div>
+										<div class="col-sm-4" id="FixationShow" hidden="hidden">
+											<input type="text" class="form-control" id="service_time_length"
+												name="service_time_length" placeholder="请输入服务时长" required />
+											<p style="margin:0px;padding:0px"><span style="color: red">服务时长按照小时填写</span></p>
+										</div>
+									</div>
+								</div>
+								<div class="row" id="timeRow" hidden="hidden">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">服务时间段:</label>
+										<div class="col-sm-8 form-inline row" id="timeAll">
+											<div style="margin-left:15px;" id="serviceTimes">
+												<select class="form-control" id="time_length"  onchange="show_sub(this,this.options[this.options.selectedIndex].value)">
+												<option value="16">08:00</option>
+												<option value="17">08:30</option>
+												<option value="18">09:00</option>
+												<option value="19">09:30</option>
+												<option value="20">10:00</option>
+												<option value="21">10:30</option>
+												<option value="22">11:00</option>
+												<option value="23">11:30</option>
+												<option value="24">12:00</option>
+												<option value="25">12:30</option>
+												<option value="26">13:00</option>
+												<option value="27">13:30</option>
+												<option value="28">14:00</option>
+												<option value="29">14:30</option>
+												<option value="30">15:00</option>
+												<option value="31">15:30</option>
+												<option value="32">16:00</option>
+												<option value="33">16:30</option>
+												<option value="34">17:00</option>
+												<option value="35">17:30</option>
+												<option value="36">18:00</option>
+												<option value="37">18:30</option>
+												<option value="38">19:00</option>
+												<option value="39">19:30</option>
+												<option value="40">20:00</option>
+												</select>
+												<select class="form-control" id="time_length_end"  style="display: none">
+													<option></option>
+												</select>
+												<button id="addRedut" class="btn btn-primary" onclick="insertRow(this)"  style="display: none">
+													<span aria-hidden="true"
+														class="glyphicon glyphicon glyphicon-plus ab_font12">
+													</span>
+												</button>
+												<button id="delRedut" class="btn btn-default redutBtn" onclick="deleteRow(this)" style="display: none">
+													<span aria-hidden="true"
+														class="glyphicon glyphicon glyphicon-minus ab_font12">
+													</span>
+												</button>
+											</div>
+										</div>
+									</div>
+								</div>
+								</br>
+								<!-- <div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">最多购买件数:</label>
+										<div class="col-sm-5">
+											<input type="text" id="buy_limit"  name="buy_limit" class="form-control" placeholder="请输入一天最多购买件数" required />
+										</div>
+									</div>
+								</div> -->
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">一次购买多件:</label>
+										<div class="col-sm-8">
+											<input type="radio" id="buy_multiple"  name="buy_multiple" onclick="javascript:okBuy(this)" value="1"/>是&nbsp;&nbsp;&nbsp;&nbsp;
+											<input type="radio" id="buy_multiple"  name="buy_multiple" checked="checked" onclick="javascript:noBuy(this)" value="0"/>否
+										</div>
+										<div class="col-sm-4" hidden="hidden" id="okBuyShow">
+											一次购买多件最小限制:<input type="text" id="buy_multiple_min"  name="buy_multiple_min" class="form-control"  />
+											一次购买多件最大限制:
+											</br>
+											<!--(无最大限制：1000,不填默认为最大限制：1000)-->
+											<input type="text" id="buy_multiple_max"  name="buy_multiple_max" class="form-control" />
+											一次购买多件是否一件商品配置一个服务人员:
+											<input type="radio" id="buy_multiple_o2o"  name="buy_multiple_o2o" value="1"/>是&nbsp;&nbsp;&nbsp;&nbsp;
+											<input type="radio" id="buy_multiple_o2o"  name="buy_multiple_o2o" value="0" checked="checked"/>否
+										</div>
+									</div>
+								</div>
+								</br>
+		                		<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">预约策略:</label>
+										<div class="col-sm-4">
+											<select id="bespeak_strategy" class="form-control">
+												<th:block th:each="bs:${bespeakList}">
+														<option th:value="${bs.bespeak_strategy_id}" th:text="${bs.name}"></option>
+													</th:block>
+											</select>
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">单位:</label>
+										<div class="col-sm-4">
+											<select id="unit" class="form-control">
+												<option value="">无</option>
+												<option value="米">米</option>
+												<option value="延米">延米</option>
+												<option value="平米">平米</option>
+												<option value="件">件</option>
+											</select>
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">展示位置:</label>
+										<div class="col-sm-4">
+											<select id="dispaly" class="form-control">
+												<option value="0">顾客端</option>
+												<option th:if="${product.has_student_sku==1}" value="1">服务人员端</option>
+											</select>
+										</div>
+									</div>
+								</div>
+								</br>
+	                		</form>
+	                		<div class="modal-footer">
+						        <button type="button" class="btn btn-default" data-dismiss="modal" id="closePage">关闭</button>
+						        <button   type="button" class="btn btn-primary"  onclick="addSkuBut()">确定</button>
+						    </div>
+		      			</div>
+		      			<div id="kartik-file-errors"></div>
+                 	</div>
+		    </div>
+		  </div>
+		</div>
+		
+		<!--编辑价格模态框 -->
+        <div id="editModal" class="modal fade bs-example-modal-lg-er" tabindex="-1" role="dialog">
+		   <div class="modal-dialog modal-lg" role="document">
+		    <div class="modal-content">
+		    	<div class="modal-header">
+		    	 	<h4 class="modal-title" id="gridSystemModalLabel">编辑Sku</h4>
+		    	 </div>
+		      		<div class="modal-body">
+		      			<div>
+		   		 			<form id="form2" action="#"  method="post">
+			   		 			<div class="row">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>名称:</label>
+										<div class="col-sm-4">
+											<input type="hidden" id="p_id" name="p_id"/>
+											<input type="text" class="form-control" id="p_name"
+												name="p_name" placeholder="请输入sku名称" required />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">市场价格:</label>
+										<div class="col-sm-4">
+											<input type="text" class="form-control" id="p_pricev"
+												name="p_pricev" placeholder="请输入市场价格"/>
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>浦尔家价格:</label>
+										<div class="col-sm-4">
+											<input type="text" class="form-control" id="p_price"
+												name="p_price" placeholder="请输入浦尔家价格" required />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>显示顺序:</label>
+										<div class="col-sm-4">
+											<input type="text" class="form-control" id="p_sort_num"
+												name="p_sort_num" placeholder="请输入显示顺序" required />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>描述:</label>
+										<div class="col-sm-4">
+											<textarea class="form-control" id="p_descript"
+												name="p_descript" placeholder="请输入sku描述" required></textarea>
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>服务时长:</label>
+											&nbsp;&nbsp;&nbsp;<input type="radio" id="p_optionOk" name="p_option" onclick="javascript:editFixation(this)" value="1"/>固定&nbsp;&nbsp;&nbsp;&nbsp;
+											<input type="radio" id="p_optionNo" name="p_option" onclick="javascript:editUnset(this)" value="0"/>不固定
+									</div>
+								</div>
+								<div class="row" id="isShowTimeLength">
+		                			<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>服务时长:</label>
+										<div class="col-sm-4">
+											<input type="text" class="form-control" id="p_service_time_length"
+												name="p_service_time_length" placeholder="请输入服务时长" required />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row" id="ishaveTimes">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">已存在服务时间段:</label>
+										<div class="col-sm-8 form-inline row"  id="alreadyServiceTimes" style="margin-left: 15px">
+										</div>
+									</div>
+								</div>
+								<div class="row" id="isShowTimes">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">服务时间段:</label>
+										<div class="col-sm-8 form-inline row"  id="editServiceTimes">
+											<div class="clearfix" style="margin-left: 15px">
+												<button type="button" id="btnGoAddServiceTimes" class="btn btn-primary pull-left">
+													<span  aria-hidden="true"
+														class="glyphicon glyphicon glyphicon-plus ab_font12">
+													</span>
+												</button>
+												<div class="pull-left hide" style="margin-left: 50px">
+													<select class="form-control" id="notHaveServiceTimes"  onchange="show_editsub(this,this.options[this.options.selectedIndex].value)">
+													</select>
+													<select class="form-control" id="endtimes" style="display:none">
+														<option></option>
+													</select>
+													<button  type="button" class="btn btn-success" style="margin-left: 5px" onclick="javascript:addNotHaveServiceTimes(this)">
+														添加
+													</button>
+												</div>
+											 </div>
+										</div>
+									</div>
+								</div>
+								<!-- <div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">最多购买件数:</label>
+										<div class="col-sm-4">
+											<input type="text" id="p_buy_limit"  name="p_buy_limit" class="form-control" placeholder="请输入一天最多购买件数" required />
+										</div>
+									</div>
+								</div>
+								</br> -->
+								<div class="row" id="optionSelectStart">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">服务开始时间:</label>
+										<div class="col-sm-4">
+											<select class="form-control" id="startOptionTime">
+												<option value="16">08:00</option>
+												<option value="17">08:30</option>
+												<option value="18">09:00</option>
+												<option value="19">09:30</option>
+												<option value="20">10:00</option>
+												<option value="21">10:30</option>
+												<option value="22">11:00</option>
+												<option value="23">11:30</option>
+												<option value="24">12:00</option>
+												<option value="25">12:30</option>
+												<option value="26">13:00</option>
+												<option value="27">13:30</option>
+												<option value="28">14:00</option>
+												<option value="29">14:30</option>
+												<option value="30">15:00</option>
+												<option value="31">15:30</option>
+												<option value="32">16:00</option>
+												<option value="33">16:30</option>
+												<option value="34">17:00</option>
+												<option value="35">17:30</option>
+												<option value="36">18:00</option>
+												<option value="37">18:30</option>
+												<option value="38">19:00</option>
+												<option value="39">19:30</option>
+												<option value="40">20:00</option>
+											</select>
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">一次购买多件:</label>
+										<div class="col-sm-8">
+											<input type="radio" id="p_buy_multiple_ok"  name="p_buy_multiple" onclick="javascript:editOkBuy(this)" value="1"/>是&nbsp;&nbsp;&nbsp;&nbsp;
+											<input type="radio" id="p_buy_multiple_no"  name="p_buy_multiple" onclick="javascript:editNoBuy(this)" value="0"/>否
+										</div>
+										<div class="col-sm-4" hidden="hidden" id="editOkBuyShow">
+											一次购买多件最小限制:<input type="text" id="p_buy_multiple_min"  name="p_buy_multiple_min" class="form-control"  />
+											一次购买多件最大限制:
+											</br>
+											<!--(无最大限制：1000,不填默认为最大限制：1000)-->
+											<input type="text" id="p_buy_multiple_max"  name="p_buy_multiple_max" class="form-control" />
+											一次购买多件是否一件商品配置一个服务人员:
+											<input type="radio" id="p_buy_multiple_o2o_ok"  name="p_buy_multiple_o2o" value="1"/>是&nbsp;&nbsp;&nbsp;&nbsp;
+											<input type="radio" id="p_buy_multiple_o2o_no"  name="p_buy_multiple_o2o" value="0" checked="checked"/>否
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">预约策略:</label>
+										<div class="col-sm-4">
+											<select id="p_bespeak_strategy" class="form-control">
+												<th:block th:each="bs:${bespeakList}">
+													<option th:value="${bs.bespeak_strategy_id}" th:text="${bs.name}"></option>
+												</th:block>
+											</select>
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">单位:</label>
+										<div class="col-sm-4">
+											<select id="p_unit" class="form-control">
+												<option value="">无</option>
+												<option value="米">米</option>
+												<option value="延米">延米</option>
+												<option value="平米">平米</option>
+												<option value="件">件</option>
+											</select>
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">展示位置:</label>
+										<div class="col-sm-4">
+											<select id="p_dispaly" class="form-control">
+												<option value="0">顾客端</option>
+												<option th:if="${product.has_student_sku==1}" value="1">服务人员端</option>
+											</select>
+										</div>
+									</div>
+								</div>
+							</br>
+	                		</form>
+	                		<div class="modal-footer">
+						        <button type="button" class="btn btn-default" data-dismiss="modal" id="editClosePage">关闭</button>
+						        <button type="button" class="btn btn-primary" onclick="javascript:editSkuBut(this)">确定</button>
+						    </div>
+		      			</div>
+		      			<div id="kartik-file-errors"></div>
+                 	</div>
+		    </div>
+		  </div>
+		</div>
+		
+		<div style="margin-left:15px;" hidden="hidden" id="timeModal">
+			<select class="form-control" id="start"  onchange="show_sub(this,this.options[this.options.selectedIndex].value)">
+			<option value="-1">选择服务开始时间</option>
+			<option value="16">08:00</option>
+			<option value="17">08:30</option>
+			<option value="18">09:00</option>
+			<option value="19">09:30</option>
+			<option value="20">10:00</option>
+			<option value="21">10:30</option>
+			<option value="22">11:00</option>
+			<option value="23">11:30</option>
+			<option value="24">12:00</option>
+			<option value="25">12:30</option>
+			<option value="26">13:00</option>
+			<option value="27">13:30</option>
+			<option value="28">14:00</option>
+			<option value="29">14:30</option>
+			<option value="30">15:00</option>
+			<option value="31">15:30</option>
+			<option value="32">16:00</option>
+			<option value="33">16:30</option>
+			<option value="34">17:00</option>
+			<option value="35">17:30</option>
+			<option value="36">18:00</option>
+			<option value="37">18:30</option>
+			<option value="38">19:00</option>
+			<option value="39">19:30</option>
+			<option value="40">20:00</option>
+			</select>
+			<select class="form-control" id="end"  style="display: none">
+				<option></option>
+			</select>
+			<button id="addRedut" class="btn btn-primary" onclick="insertRow(this)"  style="display: none">
+				<span aria-hidden="true"
+					class="glyphicon glyphicon glyphicon-plus ab_font12">
+				</span>
+			</button>
+			<button id="delRedut" class="btn btn-default redutBtn" onclick="deleteRow(this)" style="display: none">
+				<span aria-hidden="true"
+					class="glyphicon glyphicon glyphicon-minus ab_font12">
+				</span>
+			</button>
+		</div>
+	</div>
+	
+</body>
+</html>

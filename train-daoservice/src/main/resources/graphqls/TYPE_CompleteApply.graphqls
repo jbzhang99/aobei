@@ -1,0 +1,30 @@
+#订单服务完成申请表
+type CompleteApply{
+
+    complete_apply_id : Long
+
+    #订单id
+    pay_order_id : String
+
+    #服务单id
+    serviceunit_id : Long
+
+    #申请原因
+    complete_info : String
+
+    #服务完成申请人
+    operator_apply : Long
+
+    #申请时间
+    create_datetime : Date
+
+    #申请状态  1 待处理 2 完成 3 驳回
+    apply_status : Int
+
+    #确认时间
+    confirm_datetime : Date
+
+    #确认人
+    confirm_operator : Long
+}
+

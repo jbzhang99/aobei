@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>产品评价列表</title>
+
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            $("#btn_Allpass").hide()
+            $("#btn_Allreject").hide()
+
+            var verify = $("#sel_status").val();
+
+            $("#btn_select").click(function () {
+               var order_input = $("#search_order").val();
+               var com_input = $("#condition").val();
+
+
+                /*var regex = /^[0-9]*$/;
+                if(!regex.test(order_input)){
+                    reset();
+                    alertify.alert("只能输入数字")
+                }*/
+                if(com_input!=''){
+                    window.location.href="/proEvaluate/proEvaluate_list?order_input="+order_input+"&com_input="+com_input
+                }else if(verify!=''&&com_input!=''&&order_input!=''){
+                    window.location.href="/proEvaluate/proEvaluate_list?order_input="+order_input+"&com_input="+com_input+"&verify="+verify
+                }else if(order_input!=''){
+                    window.location.href="/proEvaluate/proEvaluate_list?order_input="+order_input
+                }else{
+                    window.location.href="/proEvaluate/proEvaluate_list?"
+                }
+
+            })
+            var code = [[${verify}]]
+            $("#sel_status").val(code);
+        })
+    function verify_change(verify) {
+        var code = verify.value;
+
+        if(code!=""){
+            window.location.href="/proEvaluate/proEvaluate_list?verify="+code
+        }
+    }
+    function passVer(id) {
+        var mts = [[${application.mts.code}]];
+        $.post('/proEvaluate/passVer',{product_evaluate_id:id,mts:mts},function (data) {
+            reset();
+            alertify.success(data.result);
+            setTimeout(function () {
+                window.location.reload();
+            },1500)
+
+        })
+    }
+    function noPassVer(id) {
+        var mts = [[${application.mts.code}]];
+        $.post('/proEvaluate/noPassVer',{product_evaluate_id:id,mts:mts},function (data) {
+            reset();
+            alertify.success(data.result);
+            setTimeout(function () {
+                window.location.reload();
+            },1500)
+        })
+    }
+    function gotoOrder(id) {
+        //$.post('/proEvaluate/goto_Order',{pay_order_id:id})
+        window.location.href="/proEvaluate/goto_Order?pay_order_id="+id
+    }
+
+    function CheckAll() {
+
+        var ws = $("input:checkbox:checked").length;
+        if(ws>0){
+            $("#btn_Allpass").show()
+            $("#btn_Allreject").show()
+        }else{
+            $("#btn_Allpass").hide()
+            $("#btn_Allreject").hide()
+        }
+
+        $("[name=chkAll]").each(function (i,k) {
+
+            if(k.checked==false){
+                $("#allCheckbox").attr("checked",false);
+            }
+        })
+
+        var is = $("input:checkbox[name='chkAll']").length;
+        var es = $("input:checkbox[name='chkAll']:checked").length;
+        if(is==es){
+            $("#allCheckbox").prop("checked",true);
+        }
+    }
+
+    function allPass() {
+        var list = [];
+        $("input:checkbox[name='chkAll']:checked").each(function (i,k) {
+            var e = $(k).attr("id")
+            list.push(e)
+        })
+        var list_proEva_ids = JSON.stringify(list);
+        var mts = [[${application.mts.code}]];
+        $.post('/proEvaluate/allPass',{list_proEva_ids:list_proEva_ids,mts:mts},function (data) {
+            reset();
+            alertify.success(data.result);
+            setTimeout(function () {
+                window.location.reload();
+            },1500)
+        })
+    }
+    function allReject() {
+        var list = [];
+        $("input:checkbox[name='chkAll']:checked").each(function (i,k) {
+            var e = $(k).attr("id")
+            list.push(e)
+        })
+        var list_proEva_ids = JSON.stringify(list);
+        var mts = [[${application.mts.code}]];
+        $.post('/proEvaluate/allReject',{list_proEva_ids:list_proEva_ids,mts:mts},function (data) {
+            reset();
+            alertify.success(data.result)
+            setTimeout(function () {
+                window.location.reload();
+            },1500)
+        })
+    }
+    function allCheckbox(o) {
+        if(o.checked){
+            $("input[name='chkAll']").prop("checked",true);
+        }else{
+            $("input[name='chkAll']").removeAttr("checked");
+        }
+
+        var ws = $("input:checkbox:checked").length;
+        if(ws>0){
+            $("#btn_Allpass").show()
+            $("#btn_Allreject").show()
+        }else{
+            $("#btn_Allpass").hide()
+            $("#btn_Allreject").hide()
+        }
+    }
+    </script>
+</head>
+<body>
+<div layout:fragment="content">
+    <!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+    <div class="page_content_bar">
+
+        <!--/* 面包屑  */-->
+        <ol class="breadcrumb clearfix">
+            <li class="active"><a th:href="@{/proEvaluate/proEvaluate_list}">产品评价</a></li>
+        </ol>
+
+    </div>
+
+    <!--/* 页面部分二              页面主内容  */-->
+    <div class="page_content_main" data-sidea="side_28">
+        <div class="form-inline">
+            <div class="form-group">
+                <select id="sel_status" class="form-control" th:onchange="|verify_change(this)|">
+                    <option value="5">全部</option>
+                    <option value="0">未审核</option>
+                    <option value="1">审核已通过</option>
+                    <option value="2">审核未通过</option>
+                </select>
+            订单id：<input id="search_order" class="form-control" placeholder="请输入订单号" th:value="${pay_order_id}"/>
+            评价：  <input id="condition" class="form-control " type="text" placeholder="评价模糊检索" th:value="${comment}" style="margin-right: 10px;">
+                <button id="btn_select" class="btn-primary form-control input-sm">查询</button>
+                <button sec:authorize="hasRole('ROLE_PROEVALUATE_EDIT')" id="btn_Allpass" class="btn-primary form-control input-sm" style="margin-left:20px" th:onclick="|allPass()|">批量通过</button>
+                <button sec:authorize="hasRole('ROLE_PROEVALUATE_EDIT')" id="btn_Allreject" class="btn-primary form-control input-sm" th:onclick="|allReject()|">批量拒绝</button>
+            </div>
+        </div>
+        <hr>
+                <div class="table-responsive">
+            <!-- 动态 -->
+            <table id="table-cont" class="table table-striped table-hover" >
+                <thead >
+                <tr>
+                    <th style="width: 60px;">
+                        <input type="checkbox"  id="allCheckbox" th:onclick="|allCheckbox(this)|"/>全选
+                    </th>
+                    <th width="150px">订单id</th>
+                    <th>评价</th>
+                    <th>审核状态</th>
+                    <th>评分</th>
+                    <th sec:authorize="hasRole('ROLE_PROEVALUATE_EDIT')">操作</th>
+
+                </tr>
+                </thead>
+                <tbody  th:each="proEvaluate:${list}">
+                    <tr>
+                        <td style="vertical-align: middle;width:50px">
+                            <input name="chkAll" type="checkbox" value="checkbox" th:onchange="|CheckAll()|" th:id="${proEvaluate.product_evaluate_id}"/>
+                        </td>
+                        <td style="vertical-align: middle" ><a href="#" th:text="${proEvaluate.pay_order_id}" th:onclick="|gotoOrder('${proEvaluate.pay_order_id}')|"></a></td>
+                        <td style="vertical-align: middle ;word-break: break-word;width:400px" th:text="${proEvaluate.comment}"></td>
+                        <td style="vertical-align: middle;width:100px" th:switch="${proEvaluate.verify}">
+                            <p th:case="0">未审核</p>
+                            <p th:case="1">审核已通过</p>
+                            <p th:case="2">审核未通过</p>
+                        </td>
+                        <td style="vertical-align: middle;width:100px" th:text="${proEvaluate.score}"></td>
+                        <td style="vertical-align: middle;width:250px" >
+                            <span th:if="${proEvaluate.verify==2 || proEvaluate.verify==0}">
+                                <a href="#" th:onclick="|passVer('${proEvaluate.product_evaluate_id}')|"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>通过</a>
+                            </span>
+                            <span th:if="${proEvaluate.verify==1 || proEvaluate.verify==0}">
+                                <a href="#" th:onclick="|noPassVer('${proEvaluate.product_evaluate_id}')|"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>不通过</a>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div th:include="~{tags/pagination::p1(@{/proEvaluate/proEvaluate_list(size=${page.pageSize})},${page.total},
+								${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

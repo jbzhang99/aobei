@@ -1,0 +1,531 @@
+# 时间点是否可以选择用来下单
+type Model{
+    dateTime:String
+    start:String
+    end:String
+    active:Boolean
+    dateStart:String
+    dateEnd:String
+}
+# 带有日期和时间的集合
+type TimeModel{
+    dateTime:String
+    date:Date
+    models:[Model]
+    active:Boolean
+}
+type ProductInfo{
+    product:Product
+    proSkus:[ProSku]
+    productTags:[ProductTag]
+    couponResponse:[CouponResponse]
+}
+#员工信息
+type EmployeeManagement{
+	#学员
+	student:StudentInfo
+	#服务站
+	station:Station
+	#服务项
+	serviceitem:[Serviceitem]
+	#合伙人
+	partner:Partner
+	#头像
+	ossImg:OssImg
+	#状态(0 可以修改 1 不可以修改)
+	stationStatus:Int
+}
+
+
+#返回本月订单数量
+type AccumulatedOrdersMonth{
+	#累计订单数量
+	count:Long
+	#当前日期
+	date:Date
+	#本月天数
+	daysNum:Int
+}
+
+
+type OrderInfo{
+    #订单号（ID）
+    pay_order_id:String
+    #服务单备注
+    remarkList:[Remark]
+    #订单名称
+    name:String
+    #订单总价
+    price_total:Int
+    #折扣价格
+    price_discount:Int
+    #实际支付价格
+    price_pay:Int
+    #折扣信息详情
+    discount_data:String
+    #支付方式 1微信，
+    pay_type:Int
+    #订单状态 waitPay("等待支付"), payed("等待确认"),waitService("待服务"),cancel("已取消"), done("已完成"), refused("已拒绝"),waitRefund("待退款"),partRefund("部分退款"),refunded("退款完成");
+    orderStatus:String
+    #顾客支付时间
+    pay_datetime:Date
+    #下单时间
+    create_datetime:Date
+    #顾客姓名（被服务者）
+    cus_username:String
+    #顾客电话（被服务者）
+    cus_phone:String
+    #服务地址
+    customer_address:String
+    #顾客地址ID
+    customer_address_id:Long
+    #买家备注
+    remark:String
+    #产品相关的字段
+    #产品ID
+    product_id:Long
+    #产品skuID
+    proSku_id:Long
+    #产品详情介绍图 4：3大图
+    image_first:String
+    #产品列表方图，产品小图
+    lite_image:String
+    #产品图片集合
+    images:String
+    #产品描述
+    descript:String
+    #服务单中的必要字段
+    #预约的服务开始时间
+    c_begin_datetime:Date
+    #预约的结束时间
+    c_end_datetime:Date
+    #用来进行展示的字段
+    dateTime:String
+    startTime:String
+    endTime:String
+    #展示格式2018-06-25（周一） 08:00-12:00
+    dServiceStartTime:String
+    #系统指派合伙人时间
+    p_assign_datetime:Date
+    #合伙人确认接单时间
+    p_confirm_datetime:Date
+    #合伙人拒单时间
+    p_reject_datetime:Date
+    #合伙人指派服务人员时间
+    p2s_assign_datetime:Date
+    #服务完成时间
+    finish_datetime:Date
+    #服务人员服务状态waiteService("待服务"),arrive("到达"),start("开始"),done("结束"),leave("离开");
+    serviceStatus:String
+    #服务人员和合伙人的信息
+    #服务人员ID
+    student_id:Long
+    #服务人员姓名
+    student_name:String
+    #服务人员电话
+    student_phone:String
+    #合伙人ID
+    partner_id:Long
+    #合伙人姓名
+    partner_name:String
+    #合伙人电话
+    partner_phone:String
+    #是否已经进行过评价
+    isEvaluate:Boolean
+    #服务人员备注
+	work_remark:String
+	#合伙人拒单原因
+	p_reject_remark:String
+	#退款状态
+	refundStatus:String
+	#购买数量
+	num:Int
+	#抢单记录id
+	robbing_id:Long
+	#服务人员列表
+	students:[ServiceunitPerson]
+	#顾客id
+	customer_id:Long
+	#计量单位
+	unit:String
+	# 1对1
+	buy_multiple_o2o:Int
+	#是否支持取消(true:支持取消 false:不支持取消)
+	allowedToCancel:Boolean
+}
+
+type CouponResponse{
+      #属于用户自己的优惠券id
+      coupon_receive_id:Long
+      #优惠券名称
+      name:String
+      #优惠券描述信息 200元，，公仔玩具。洗洁精。。。。。
+      value:Int
+      #计量单位
+      unit:String
+      #优惠券使用条件
+      condition:String
+      #有效期开始时间
+      useStartTime:Date
+      #有效期结束时间
+      useEndTime:Date
+      #是否已过期
+      expire:Boolean
+      #1折扣券，2代金券
+      programme_type:Int
+      #优惠券id
+      coupon_id:Long
+      #领取状态 1.待领取 2.已领取
+      status:Int
+      #优惠方案模板
+      programme:String
+}
+
+type UnifiedorderResult{
+     #微信应用的appid
+     appid:String
+     #prepay_id
+     prepay_id:String
+}
+
+type StudentStopDate{
+	leaveDate:String
+	statu:Int #0可以停单  1.已停单
+}
+
+type WxPaymentBody{
+   appId:String
+   timeStamp:String
+   nonceStr:String
+   _package:String
+   signType:String
+   sign:String
+}
+
+type WorkStatusResult{
+  serviceStatus:String
+  outPostion:String
+}
+
+type Remark{
+	d:Date
+	remark:String
+	operator_name:String
+	user_id:Long
+	}
+	
+type StudentServiceunit{
+	student:Student
+	orderList:[OrderInfo]
+   }
+type CustomerDetail{
+	customer:Customer
+	customerAddress:[CustomerAddress]
+}
+type Img{
+	#图片id
+	id:Long
+	#图片路径
+	url:String
+}
+type StudentInfo{
+	#学员id
+	student_id:String!
+	#姓名
+	name:String!
+	#学员隶属合伙人编号
+	partner_id:Int!
+	#身份证号
+	identity_card:String!
+	#联系电话
+	phone:String
+	#性别
+	sex:Int
+	#年龄
+	age:Int
+	#创建日期
+	cdate:Date
+	#状态
+	state:Int
+	#等级(1:高级2:中级3:初级)
+	grade:Int
+	# 籍贯
+	native_place:String
+	#学员身份证正面
+	card_just:String
+	#学员身份证反面
+	card_against:String
+	#学员健康证信息
+	health:String
+	#用户id
+	user_id:Long
+	#学员头像
+	logo_img:String
+	#0 未删除，1 已删除
+	deleted:Int
+	#工号
+	job_number:String
+	#工作证书
+	job_cert:String
+	#工作证书
+	imgs:[Img]
+	#学员服务项
+	serviceItems:[Serviceitem]
+	#无犯罪记录
+	img:Img
+}
+type StudentType{
+	#学生
+	student:Student
+	#状态(0:之前的服务人员  1:现在可提供的服务人员)
+	type:Int
+}
+
+type Evaluate{
+    #评价ID
+    product_evaluate_id:Long
+    #产品ID
+    product_id:Long
+    #产品skuID
+    psku_id:Long
+    #订单ID
+    pay_order_id:String
+    #评分
+    score:Int
+    #评价内容
+    comment:String
+    #评价创建时间
+    create_datetime:Date
+    #顾客ID
+    customer_id:Long
+    #顾客姓名
+    name:String
+    #顾客电话号码
+    phone:String
+    #用户头像url
+    avatar:String
+}
+type EvaluateBase{
+    #综合评分，平均分
+    avgScore:Float
+    #总评价数量
+    total:Long
+    #好评率
+    percent:Int
+    #好评绿展示格式
+    percentStr:String
+    #示例评价
+    evaluates:[Evaluate]
+
+}
+type MchPayApp{
+    appid:String
+    partnerid:String
+    prepayid:String
+    package_:String
+    noncestr:String
+    timestamp:String
+    sign:String
+}
+
+type PresentTime{
+	millisecond:Long
+	second:Int
+}
+type AliOssCredentials{
+  securityToken:String
+  accessKeySecret:String
+  accessKeyId:String
+  expiration:String
+}
+type MessageContent{
+	contentMsg:ContentMsg
+	#消息id
+	id:Long
+	#类型 1 系统消息   2 业务提醒
+	type:Int
+	#业务端 1 学员端  2 老师端 3 合伙人端 4 顾客端
+	bis_type:Int
+	#用户id 0 表示给所有用户
+	user_id:Long
+	#学员id 或 老师id 或 合伙人id 顾客id     0 表示给所有用户
+	uid:Long
+	#消息标题
+	msg_title:String
+	#消息内容
+	msg_content:String
+	#0 未读 1 已读
+	status:Int
+	#创建时间
+	create_datetime:Date
+	#预设的通知时间
+	notify_datetime:Date
+	#消息分组id ，用于数据再处理 -id1-id2-id3-
+	group_id:String
+	#0 未删除 1 已删除
+	deleted:Int
+	#消息id
+	message_id:Long
+	#通知时间字符串
+	notifyDateTimeString:String
+}
+
+type ContentMsg{
+ msgtype:String
+ v:String
+ content:String
+ sign_name:String
+ template:String
+ params:String
+ phone:String
+ href:String
+ url:String
+ title:String
+ #(纯文字：1，图片:2,图片加文字:3,多张图片:4(可扩展))
+ types:Int
+ urlList:[String]
+ #(1.新订单通知 2变更订单通知  3取消订单通知)
+ noticeTypes:Int
+}
+
+type OrderPrice{
+    payPrice:Int
+    totalPrice:Int
+    discountPrice:Int
+}
+
+type ProductWithCoupon{
+    #产品ID
+    product_id:Long!
+    #分类ID
+    category_id:Long
+    #分类级别号
+    category_level_code:String
+    #产品所属服务项目ID
+    serviceitem_id:Long!
+    #产品名称
+    name:String
+    #产品描述
+    descript:String
+    #产品关键词，用于检索
+    seo:String
+    #图片集合，格式是json数据
+    images:String
+    #首张图片，可用于在首页进行展示
+    image_first:String
+    #默认skuID
+    psku_id_first:Long
+    #首个SKU（鳌背）价格单位分
+    price_first:Int
+    #首个SKU市场价格单位分
+    pricev_first:Int
+    #购买数量（基础）
+    base_buyed:Int
+    #上架状态 1上线，0下线
+    online:Int
+    #排序序号
+    sort_num:Int
+    #最近更新时间
+    update_datetime:Date
+    #创建时间
+    create_datetime:Date
+    #富文本内容
+    content:String
+    #城市id
+    city_id:Int
+    #是否云允许添加，并且具有显示在服务人员端的产品sku  0 不可以添加在服务人员端显示的sku，1 可以
+    has_student_sku:Int
+    #是否在APP类型的应用张展示该产品 0 否， 1 是
+    show_in_app:Int
+    #是否在小程序类型的应用张展示该产品 0 否， 1 是
+    show_in_smallapp:Int
+    #是否在PC版网站类型的应用张展示该产品 0 否， 1 是
+    show_in_pc:Int
+    #是否在手机网站类型的应用张展示该产品 0 否， 1 是
+    show_in_mobile:Int
+    #优惠券相关,可以返回该产品关联的领取类型优惠券信心
+    #优惠券id
+    coupon_id:Long
+    #用户对此优惠券的领取对应数据
+    coupon_receive_id:Long
+    #优惠券的名称描述信息
+    coupon_name:String
+    #优惠券的优惠类型 1 折扣，2满减
+    programme_type:Int
+    #用户对优惠券的领取状态  true 表示已经领取，fasle 还未领取
+    recevied:Boolean
+    #是否包含有要领取的优惠券，true 有，false 没有
+    have:Boolean
+    #产品小图
+    lite_image:String
+    #proSku单位
+    unit:String
+
+}
+
+type ProductTag{
+ #图片id
+ id:String
+ #标签名称
+ tag:String
+ #图片url
+ url:String
+ #图片宽度
+ width:String
+ #图片高度
+ height:String
+}
+
+type AppVersion{
+ #App应用
+ id:Int
+ #用户client_id
+ app_pack_id:String
+ #当前版本
+ current_version:String
+ #最小版本
+ growth_version:String
+ #创建日期
+ create_datetime:Date
+ #当前版本描述
+ descr_version:String
+ #可升级(true升级,false不升级)
+ canUpgrade:Boolean
+ #必须升级(true升级,false不升级)
+ forcedUpgrade:Boolean
+ #App下载地址
+ appUrl:String
+}
+
+type MonthOrderStatistics{
+ #完成统计
+ doneNum:Int
+ #待服务统计
+ waitServiceNum:Int
+ #已取消统计
+ cancelNum:Int
+ #已拒单统计
+ refusedNum:Int
+}
+
+type CancleStrategyMethod{
+  #扣款金额
+  deductionPrice:Int
+  #退款金额
+  feePrice:Int
+  #扣款原因
+  feeRemark:String
+}
+
+type OutOfServiceStatistics{
+   #统计月份格式：2018-06
+   yearAndMonth:String
+   #当月出勤天数
+   workingDays:Int
+   #当月请假（缺勤）天数
+   outDays:Int
+   #当月最大工作天数
+   totalDays:Int
+   #具体的请假列表
+   outOfServices:[OutOfService]
+}

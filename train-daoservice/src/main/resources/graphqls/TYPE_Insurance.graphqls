@@ -1,0 +1,21 @@
+#保险
+type Insurance{
+
+    insurance_id : Long
+
+    #保险名称
+    insurance_name : String
+
+    #类型  1 服务人员
+    type : Int
+
+    #创建时间
+    create_datetime : Date
+
+    #生效时间
+    start_datetime : Date
+
+    #失效时间
+    end_datetime : Date
+}
+

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{base_layout}">
+<head> 
+<meta charset="UTF-8" />
+<title>日志管理</title>
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+
+		//回显检索框数据
+		var begin = [[${begin}]]
+		var end = [[${end}]]
+		if(begin != null & end != null){
+			  var up = new Date(begin);
+	    	  var b_time=up.getFullYear() + "-" + ("0" + (up.getMonth() + 1)).slice(-2) + "-" + ("0" + up.getDate()).slice(-2)+" "+("0"+up.getHours()).slice(-2)+":"+("0"+up.getMinutes()).slice(-2);
+	    	  var down=new Date(end);
+	    	  var e_time=down.getFullYear() + "-" + ("0" + (up.getMonth() + 1)).slice(-2) + "-" + ("0" + down.getDate()).slice(-2)+" "+("0"+up.getHours()).slice(-2)+":"+("0"+up.getMinutes()).slice(-2);
+				$("#begin").val(b_time);
+				$("#end").val(e_time);
+		}
+		var su = $("#back_u").val();
+		$("#select_username").val(su);
+		
+		$("#begin").datetimepicker({ autoclose: true});
+		$("#end").datetimepicker({ autoclose: true});
+		
+		$("#search").click(function(){
+			var begin_v = $("#begin").val();
+			var end_v = $("#end").val();
+			if(begin_v==""){
+				reset();
+				alertify.alert("请选择操作开始时间！")
+				return false;
+			}else if(end_v==""){
+				reset();
+				alertify.alert("请选择操作结束时间！")
+				return false;
+			}else if(begin_v>=end_v){
+				$("#end").val("");
+				reset();
+				alertify.alert("开始时间不能大于或等于结束时间,请重新选择！")
+				return false;
+			}else{
+				var select_userId = $("#select_username option:checked").val()
+				var begin = $("#begin").val();
+				var end = $("#end").val();
+				var url = '/userManager/user/operateLog_list'+'?select_userId='+select_userId+'&begin='+begin+'&end='+end+"&b_time="+begin+"&e_time="+end
+				
+				window.location.href=url;
+			}
+		})
+		//下拉框检索
+		$("#select_username").change(function(){
+			var select_userId = $("#select_username option:checked").val()
+			window.location.href='/userManager/user/operateLog_list?select_userId='+select_userId
+		})
+	})
+	function begin_selected(){
+		if($("#end").val()==""){			
+			reset();
+			alertify.error("请选择操作结束时间！")
+		}
+	}
+</script>
+</head>
+<body>
+
+	<div layout:fragment="content">
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li class="active">日志管理</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_20">
+			<div class="form-inline">
+				<div class="form-group">
+					<label>姓名：</label> 
+					<select id="select_username" name="select_username" class="form-control ">
+						<option value="0">全部</option>
+						<option th:each="sysUsers:${list_sysUsers}" th:value="${sysUsers.user_id}" th:text="${sysUsers.name}"></option>
+					</select>
+				</div>
+				&nbsp;&nbsp;&nbsp;&nbsp;
+				<div class="form-group">
+					<label>操作时间：</label>
+					<div class="input-group date datetimepicker1">
+						<input id="begin" class="form-control " data-date-fomat="yyyy-MM-dd HH:mm" style="width: 160px;" type="text" placeholder="请选择操作开始时间" onchange="begin_selected()" />
+						<span class="input-group-addon" style="width: 20px; height: 30px"><span class="glyphicon glyphicon-calendar"></span></span>
+					</div>
+				</div>
+				<label>~</label>
+				<div class="form-group">
+					<div class="input-group date datetimepicker1">
+						<input id="end" class="form-control " data-date-fomat="yyyy-MM-dd HH:mm" style="width: 160px;" type="text" placeholder="请选择操作结束时间" /> 
+						<span class="input-group-addon" style="width: 40px; height: 30px"> <span class="glyphicon glyphicon-calendar"></span> </span>
+					</div>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<button id="search" class="btn-primary form-control input-sm">查询</button>
+				</div>
+			</div>
+			<hr>
+
+			<div class="table-responsive">
+			<input id="back_u" th:value="${select_userId}" hidden="hidden"/>
+				<table id="table-cont" class="table table-striped table-hover">
+					<thead>
+						<tr>
+							<th>账号名称</th>
+							<th>姓名</th>
+							<th>角色</th>
+							<th>操作记录</th>
+							<th>操作时间</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="log:${log_list}">
+							<td style="vertical-align: middle; width: 150px"
+								th:text="${log.username}"></td>
+							<td style="vertical-align: middle; width: 100px"
+								th:text="${log.name}"></td>
+							<td style="vertical-align: middle; width: 180px"><th:block th:each="str:${log.rolename}">
+									<p th:text="${str.role_name}"></p>
+								</th:block></td>
+							<td style="vertical-align: middle; width: 300px"
+								th:text="${log.operated}"></td>
+							<td style="vertical-align: middle"
+								th:text="${#dates.format(log.operated_time,'yyyy-MM-dd HH:mm')}"></td>
+						</tr>
+					</tbody>
+				</table>
+				  <div th:include="~{tags/pagination::p1(@{/userManager/user/operateLog_list(size=${page.pageSize},b_time=${b_time},e_time=${e_time},begin=${b_time},end=${e_time})},${page.total},
+								${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>

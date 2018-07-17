@@ -1,0 +1,110 @@
+server:
+  port: 9020
+  
+management:
+  context-path: /monitor
+endpoints:
+  enabled: false
+  health:
+    enabled: true
+  trace:
+    enabled: true
+    
+    
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://39.106.165.167:3306/train_all?characterEncoding=utf8&useSSL=false
+    username: root
+    password: m$%$:Tmd4ei0V5/A?p+v
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      maximum-pool-size: 10
+      data-source-properties:
+          cachePrepStmts: true
+          prepStmtCacheSize: 250
+          prepStmtCacheSqlLimit: 2048
+          useServerPrepStmts: true
+          useLocalSessionState: false
+          useLocalTransactionState: true
+          rewriteBatchedStatements: true
+          cacheResultSetMetadata: true
+          cacheServerConfiguration: true
+          elideSetAutoCommits: true
+          maintainTimeStats: false
+  redis:    # REDIS (RedisProperties)
+    database: 1 # Redis数据库索引（默认为0）
+    host: 47.94.160.44 # Redis服务器地址
+    port: 6379 # Redis服务器连接端口
+    password: qoGEgJ83BX6vKUmS # Redis服务器连接密码（默认为空）
+    pool:
+      max-active: 10 # 连接池最大连接数（使用负值表示没有限制）
+      max-wait: -1 #连接池最大阻塞等待时间（使用负值表示没有限制）
+      max-idle: 10 # 连接池中的最大空闲连接
+      min-idle: 0 # 连接池中的最小空闲连接
+    timeout: 0 # 连接超时时间
+
+
+graphql:
+  servlet:
+    mapping: /graphql
+    enabled: true
+    corsEnabled: true
+
+graphiql:
+    mapping: /graphiql
+    endpoint: /graphql
+    enabled: true
+
+custom:
+  oauth2key: |
+    -----BEGIN PUBLIC KEY-----
+    MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDiIOYohBCSgKHkH8TWyGpNaZ7n
+    5LipKopcKgu4XOAGlXpnCijgK6DCLDt+yUpZgm4nUFE9MvGAj8GI6d1Mg3rXelTd
+    do3cIX4J6I5zvj44IGcprZXfXCU4snCNnoqORYeAtpkPIh/Smj/7ZGOsrLALFO0k
+    ZqgeTrQnt0bUFKv1DwIDAQAB
+    -----END PUBLIC KEY-----
+  aliyun:
+    ons:
+      topic: aobei_topic
+    oss:
+      public-bucket: aobei-test-public
+      private-bucket: aobei-test
+      access-key-id : LTAIoOJQwVKeXwj4
+      access-key-secret : YWZcECZUgOpy8c6qUP7IhFYqwVOEkP
+      rol-arn: acs:ram::1330410280540509:role/aliyunossfullaccessrole
+      endpoint: sts.aliyuncs.com
+  wx:
+    pay_notify_url: https://dev-api.aobei.com/callback/{path}/wxpay
+    refund_notify_url: https://dev-api.aobei.com/callback/{path}/wxrefund
+  alipay:
+    pay_notify_url: https://dev-api.aobei.com/callback/{path}/alipay
+    refund_notify_url: https://dev-api.aobei.com/callback/{path}/alirefund
+
+aobei:
+  common:
+    boot:
+      event-sms: true
+      event-push: true
+      aliyun:
+        access-key-id : LTAIYlFXdaXPDOej
+        access-key-secret : yKVGJOwWrmmx3wAJG0nupzU46PVZou
+        oss:
+          endpoint: http://oss-cn-beijing.aliyuncs.com
+        sms:
+          region-id : cn-hangzhou  #固定值不需要更改
+          endpoint : cn-hangzhou  #固定值不需要更改
+          product: Dysmsapi #固定值不需要更改
+          domain : dysmsapi.aliyuncs.com #固定值不需要更改
+        ons:
+          producer-id: PID_aobei_Producer
+          consumer-id: auto
+
+#------------------------------------------------------------------------------------
+
+api_code_timeout: 60 * 30     # api code 有效期 半小时
+forceMutation: false # grapshql 强制  mutation 方式幂等校验   
+forceSign: false     # sign 强制校验
+apiExpires: 60 * 8   # api 请求过期时间
+                     # 允许包含表情的api 多个使用 , 号分割
+#emojiApis: customer_address_add

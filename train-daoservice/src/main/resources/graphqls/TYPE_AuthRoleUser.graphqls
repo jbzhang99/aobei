@@ -1,0 +1,11 @@
+#权限管理 用户与角色关联表
+type AuthRoleUser{
+
+    sys_user_id : Long
+
+    role_id : Long
+
+    #无用字段
+    none : String
+}
+

@@ -1,0 +1,13 @@
+
+
+
+union PageSearchResult = OrderInfo
+
+type PageResult{
+    total:Long
+    count:Int
+    data:[PageSearchResult]
+    next_id:String
+    pre_id:String
+
+}

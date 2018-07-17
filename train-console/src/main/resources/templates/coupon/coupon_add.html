@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{base_layout}">
+<head> 
+<meta charset="UTF-8" />
+<title>优惠券添加页面</title>
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+<script th:src="@{/js/bootstrapValidator.min.js}" type="text/javascript"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script th:src="@{/js/custom/coupon-add.js(v=20180614)}" type="text/javascript"></script>
+<script type="text/javascript" th:inline="javascript">
+	
+
+	//删除已指定商品按钮
+	function del_pro(obj){
+		var pro_id = obj.value;
+		var v=$(obj).prev().attr('value');
+		
+		
+		$("#"+pro_id+"").remove();
+		obj.remove();
+		
+	}
+
+	//填充下拉框数据的方法
+	function load_select(){
+		$.ajax({
+			url:'/couponmanager/coupon_reload_pro',
+			type:'GET',
+			success:function(data){
+				//遍历所有分类
+				$.each(data.list_category,function(index,ele){
+						var html_cat = "<option value="+ele.category_id+">"+ele.name+"</option>"
+						$("#select_1").append(html_cat);
+				})
+				//装载所有商品
+				$.each(data.list_product,function(i,mod){
+						var checked_sel = $("#select_1 option:checked").val();
+						//判断页面刷新时第二个下拉框和第一个保持一致
+						if(checked_sel == mod.category_id){
+							var	html_pro = "<option id="+mod.category_id+" value="+mod.product_id+">"+mod.name+"</option>"							
+							$("#select_2").append(html_pro)
+						}
+				})
+				$("#select_1").change(function(){
+						//先清空第二个下拉框的数据
+						$("#select_2").empty();
+						//第一个下拉框已选中的值
+						var checked_sel1 = $("#select_1 option:checked").val();
+						//遍历请求返回的数据
+						$.each(data.list_product,function(j,lev){
+							if(checked_sel1 == lev.category_id){
+								var option = "<option id="+lev.category_id+" value="+lev.product_id+">"+lev.name+"</option>"
+								$("#select_2").append(option)
+							}
+						})
+						if($("#select_2 option").size()==0){
+							reset();
+							alertify.error("该分类下没有商品，请重新选择！")
+						}else{
+							reset();
+							alertify.success("选择成功！")
+						}
+					//})
+				})//onchange事件
+			}//成功回调函数位置
+		})
+	}
+	
+			
+		//4 填充下拉框数据的方法
+		function load_select_4(){
+			
+			$.ajax({
+				url:'/couponmanager/coupon_reload_pro',
+				type:'GET',
+				success:function(data){
+					//遍历所有分类
+					$.each(data.list_category,function(index,ele){
+							var html_cat = "<option value="+ele.category_id+">"+ele.name+"</option>"
+							$("#select_1_4").append(html_cat);
+					})
+					//装载所有商品
+					$.each(data.list_product,function(i,mod){
+							var checked_sel = $("#select_1_4 option:checked").val();
+							//判断页面刷新时第二个下拉框和第一个保持一致
+							if(checked_sel == mod.category_id){
+								var	html_pro = "<option id="+mod.category_id+" value="+mod.product_id+">"+mod.name+"</option>"							
+								$("#select_2_4").append(html_pro)
+							}
+					})
+					$("#select_1_4").change(function(){
+							//先清空第二个下拉框的数据
+							$("#select_2_4").empty();
+							//第一个下拉框已选中的值
+							var checked_sel1 = $("#select_1_4 option:checked").val();
+							//遍历请求返回的数据
+							$.each(data.list_product,function(j,lev){
+								if(checked_sel1 == lev.category_id){
+									var option = "<option id="+lev.category_id+" value="+lev.product_id+">"+lev.name+"</option>"
+									$("#select_2_4").append(option)
+								}
+							})
+							if($("#select_2_4 option").size()==0){
+								reset();
+								alertify.error("该分类下没有商品，请重新选择！")
+							}else{
+								reset();
+								alertify.success("选择成功！")
+							}
+						//})
+					})//onchange事件
+				}//成功回调函数位置
+			})
+		
+		}
+
+</script>
+</head>
+<body>
+
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+				<li><a th:href="@{/couponmanager/coupon_list}">优惠券管理</a></li>
+				<li class="active">添加</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_15">
+				<form id="form1" action="#"  class="form-horizontal" >
+					<input name="mts" th:value="${application.mts}" type="hidden"/>
+					<input id="page_current" th:value="${current}" hidden/>
+					<div class="form-group">
+						<label for="c_name" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 优惠券名称</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control" id="c_name"
+								name="name" placeholder="请输入优惠券名称" required />
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="type" class="col-sm-3 control-label">
+							<span style="color: red">*</span> 优惠券类型</label>
+						<div class="col-sm-2">
+							<select type="text" class="form-control" id="type"  name="type" onchange="change_cou_type(this)" required>
+								<option value="">请选择</option>
+								<option value="1">派发券</option>
+								<option value="2">赔偿券</option>
+								<option value="3">领取券</option>
+								<option value="4">兑换券</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group" id="div_status">
+						<label for="valid" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 状态</label>
+						<div class="col-sm-4" style="padding-top: 5px">
+							<input type="radio"  id="valid_1"name="valid"   value="1" checked style="padding-bottom: 300px"/>启用
+							<input type="radio"  id="valid_2"name="valid"   value="0" class="text-center"/>禁用
+						 </div>
+					</div> 
+					<div class="form-group">
+						<label for="plan_money" class="col-sm-3 control-label">
+														 预算</label>
+						<div class="col-sm-4">
+							<input type="text" class="form-control" id="plan_money" placeholder="请输入预算价格，单位为元"
+								name="plan_money" />
+						</div>
+					</div>
+
+					<!--<div class="form-group">
+						<label for="exclusive" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 排他</label>
+						<div class="col-sm-4" style="padding-top: 5px">
+							<input type="radio"  id="exclusive_1" name="exclusive" value="1"/>是
+							<input type="radio"  id="exclusive_2" name="exclusive" value="0" checked/>否
+						</div>
+					</div>-->
+
+					<div class="form-group">
+						<label for="num_limit" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 是否有发放数量限制</label>
+						<div class="col-sm-6" style="padding-top: 5px">
+							<input type="radio"  id="num_limit_1" name="num_limit" value="1" checked/>是
+							<input type="radio"  id="num_limit_2" name="num_limit" value="0"/>否
+						</div>
+					</div>
+					<div class="form-group" id="num_total_div">
+						<label for="num_total" class="col-sm-3 control-label">
+															 总数量</label>
+						<div class="col-sm-4">
+							<input id="num_total" name="num_total" type="text" placeholder="请输入优惠券总数量" class="form-control" />
+						</div>
+					</div>
+
+					<!--<div class="form-group">
+						<label for="priority" class="col-sm-3 control-label">
+															优先级</label>
+						<div class="col-sm-4">
+							<input id="priority" name="priority" type="text" class="form-control" placeholder="优先级等级为1-99，99为最高级" />
+						</div>
+					</div>-->
+					<div class="form-group">
+						<label for="use_start_datetime" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 生效时间</label>
+						<div class="col-sm-4">
+							<input id="use_start_datetime" name="start_datetime" class="form-control datetimepicker2" required placeholder="请选择生效时间" readonly/>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="use_end_datetime" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 失效时间</label>
+						<div class="col-sm-4">
+							<input id="use_end_datetime" name="end_datetime" class="form-control datetimepicker2" required placeholder="请选择失效时间" readonly/>
+						</div>
+					</div>
+					<div id="condition_type">
+					<div class="form-group">
+						<label for="condition_type" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 优惠条件列表 </label>
+						<!-- <div class="col-sm-1" style="padding-top:3px">
+							<button id="template_hide" type="button"  class="form-control input-sm" style="border: none">隐藏</button>
+							<button id="template_show" type="button"  class="form-control input-sm" style="border: none;display: none ;">显示</button>
+						</div> -->
+					</div>
+					<div class="form-group" id="template_content_switch">
+						<label for="template_content" class="col-sm-3 control-label"></label>
+						<div class="col-sm-5">
+							<input id="template_condition_all" name="condition_type" type="radio" value="1" /><input name="condition_model_1" type="text" value="满x元时，对所有商品优惠" style="border:none;outline:none;width:300px" readonly><br><br>
+								<div id="contition_1">
+								<input id="data_hidden_ids" name="data_hidden_ids" type="hidden" />
+									订单金额满&nbsp;&nbsp;<input id="condition_all" name="condition_1" style="width:70px" class="input-sm" placeholder="单位元"/><br><br>
+								</div>
+								<input id="template_condition_pro" name="condition_type" type="radio"  value="2"/>
+								<input name="condition_model_2" type="text" value="满x元时，对指定商品优惠" style="border:none;outline:none;width:300px" readonly><br><br>
+								
+								<div id="contition_2" >
+									订单金额满&nbsp;&nbsp;<input id="condition_pro" name="condition_2" style="width:70px" class="input-sm" placeholder="单位元"/><br><br>
+										指定商品&nbsp;&nbsp;<button type="button" id="select_add" class="add_btn"  style="background-color:#BBFFEE" >+</button>&nbsp;&nbsp;
+														<button type="button" id="select_close" class="colse_btn" style="background-color:#BBFFEE;width:25px" hidden="hidden">-</button><br><br>
+										<div id="select_all" class="item" hidden="hidden">
+											<select id="select_1"  style="margin-top: 6px;width:120px" class="input-sm"></select>&nbsp;
+											<select id="select_2"  style="margin-top: 6px;width:120px" class="input-sm"></select>&nbsp;
+											<button type="button" id="add_btn_one" class="add_btn btn btn-default input-sm"  style="background-color:#99FF99" >添加商品</button><br><br>
+											<div id="p_opration" style="color:red;" >已选择商品:</div><br>
+										</div>
+								</div>
+							<input id="template_programme_order" name="condition_type" type="radio" value="3" /><input name="condition_model_3" type="text" value="对所有订单给予优惠" style="border:none;outline:none" readonly><br><br>
+							
+							<input id="template_programme_register" name="condition_type" type="radio" value="4"/><input name="condition_model_4" type="text" value="指定商品给予优惠" style="border:none;outline:none" readonly><br><br>
+							<div id="condition_4">
+										<input id="data_hidden_ids_4" name="data_hidden_ids_4" type="hidden" />
+										指定商品&nbsp;&nbsp;<button type="button" id="select_add_4"   style="background-color:#BBFFEE" >+</button>&nbsp;&nbsp;
+														<button type="button" id="select_close_4" class="colse_btn" style="background-color:#BBFFEE;width:25px" hidden="hidden">-</button><br><br>
+										<div id="select_all_4" class="item" hidden="hidden">
+											<select id="select_1_4"  style="margin-top: 6px;width:120px" class="input-sm"></select>&nbsp;
+											<select id="select_2_4"  style="margin-top: 6px;width:120px" class="input-sm"></select>&nbsp;
+											<button type="button" id="add_btn_one_4" class="add_btn btn btn-default input-sm"  style="background-color:#99FF99" >添加商品</button><br><br>
+											<div id="p_opration_4" style="color:red;" >已选择商品:</div><br>
+										</div>
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="programme_type" class="col-sm-3 control-label"><span
+							style="color: red">*</span> 优惠方案列表 </label>
+						<!-- <div class="col-sm-1" style="padding-top:3px">
+							<button id="programme_hide" type="button"  class="form-control input-sm" style="border: none">隐藏</button>
+							<button id="programme_show" type="button"  class="form-control input-sm" style="border: none;display: none ;">显示</button>
+						</div> -->
+					</div>
+					<div class="form-group" id="programme_content_switch">
+						<label for="programme_content" class="col-sm-3 control-label"></label>
+						<div class="col-sm-4">
+							<input id="template_programme_discount" name="programme_type" type="radio" value="1" />
+							<input id="programme_model_1" name="programme_model_1" type="text" value="订单以固定x折出售" style="border:none;outline:none" readonly><br><br>
+								<div id="programme_1">
+										订单以折扣&nbsp;&nbsp;<input id="programme_discount" name="programme_1" style="width:80px" class="input-sm" placeholder="单位1-100"/>&nbsp;&nbsp;折出售<br><br>
+								</div>
+							<!-- <input id="template_programme_price" name="programme_type" type="radio" value="2" /><input name="programme_model_2" type="text" value="订单以固定价格x元出售" style="border:none;outline:none" readonly><br><br>
+								<div id="programme_2">
+										订单以价格&nbsp;&nbsp;<input id="programme_price" name="programme_2" style="width:70px" class="input-sm" placeholder="单位元"/>&nbsp;&nbsp;出售<br><br>
+								</div> -->
+							<input id="template_programme_Ddiscount" name="programme_type" type="radio" value="2" />
+							<input id="programme_model_2" name="programme_model_2" type="text" value="订单减固定x元价格出售" style="border:none;outline:none" readonly><br><br>
+								<div id="programme_2">
+										订单价格优惠&nbsp;&nbsp;<input id="programme_Ddiscount" name="programme_2" style="width:70px" class="input-sm" placeholder="单位元"/>&nbsp;&nbsp;出售<br><br>
+								</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-5 col-sm-offset-3">
+							<input type="button" id="add_btn" value="确定" class="btn btn-primary" />&nbsp;&nbsp;&nbsp;&nbsp;
+							<input type="button" id="cancel_btn" class="btn btn-default "
+								value="取消" />
+						</div>
+					</div>
+				<!-- 表单完结 -->
+				</form>
+		</div>
+	</div>
+
+</body>
+</html>

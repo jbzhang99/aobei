@@ -1,0 +1,17 @@
+#考试科目
+type ExamSubject{
+
+    exam_subject_id : Long
+
+    name : String
+
+    #类型  1 培训前面试, 2 培训考试，3 实习
+    type : Int
+
+    #占用时长 单位分钟
+    time_length : Int
+
+    #0 未删除 1 已删除
+    deleted : Int
+}
+

@@ -1,0 +1,88 @@
+# api code 码
+type ApiCode{
+	# api 请求code 码
+	code:String
+	# code 有效期
+	expires_in:Int
+}
+
+
+# 正在学习中的培训课程信息
+type StudingTrainCourseInfo{
+	 #课程信息
+	 course:Course
+	 #培训计划信息
+	 plan:Plan
+	 #老师信息
+	 teacher:Teacher
+	 #已学习课时
+	 studed:Int
+}
+
+#课程表信息
+type TrainScheduleInfo{
+	#上课排期
+	trainSchedule:TrainSchedule
+	#课程信息
+	course:Course
+	#老师信息
+	teacher:Teacher
+	#学校信息
+	school:School
+	#教室信息
+	classroom:Classroom
+	#培训计划
+	plan:Plan
+	#章节信息
+	chapter:Chapter
+}
+
+#获取学员整体考试记录
+type ExamApplyResult{
+	#考试计划
+	examPlan:ExamPlan
+	#报告信息
+	examApply:ExamApply
+	#课程信息
+	course:Course
+}
+
+# 学员考试成绩数量
+type ExamScoreCounts{
+	#总数
+	total:Int
+	#通过
+	passed:Int
+	#未通过
+	failed:Int
+}
+
+# 课程记录评价
+type CourseInfoEvaluate{
+	#课程章节排期信息
+	trainScheduleInfo:TrainScheduleInfo
+	#评价信息
+	courseEvaluate:CourseEvaluate
+}
+
+#图片信息
+type Image{
+	#图片id
+	img_id:String
+	#访问路径
+	path:String
+}
+
+
+#已培训课程信息
+type TrainedInfo{
+	#课程信息
+	course:Course
+	#培训计划
+	plan:Plan
+	#培训计划对应学员
+	planStudent:PlanStudent
+	#报考信息
+	examApplys:[ExamApply]
+}
+

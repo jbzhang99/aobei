@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>渠道管理添加页</title>
+    <link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
+    <link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+    <script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}" ></script>
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            $('#form1').bootstrapValidator({
+                message: 'This value is not valid',
+                fields: {
+
+                    channel_name: {
+                        validators: {
+                            notEmpty: {
+                                message: '渠道名称不能为空'
+                            },stringLength:{
+                                min:0,
+                                max:20,
+                                message:'渠道名称不能超过50位'
+                            }
+                        }
+                    },
+                    code: {
+                        validators: {
+                            notEmpty: {
+                                message: 'code码不能为空'
+                            },regexp: {
+                                regexp: /^[a-zA-Z]+(\-)\d+$/,
+                                message: 'code码为字母和数字组合，中间以"-"隔开,'
+
+                            },stringLength:{
+                                min:0,
+                                max:20,
+                                message:'渠道code不能超过20位'
+                            }
+                        }
+                    }
+                }
+            })
+            $("#save_btn").click(function () {
+                var flag = true;
+                var code = $("#code").val();
+                if($("#select_channel_type").val()==0){
+                    reset();
+                    alertify.alert("请选择渠道类型");
+                    return false;
+                }
+                $.post('/channel/check_code',{code:code},function (data) {
+                    if(data.result !=  0){
+                        flag = false;
+                    }
+                    if(!flag){
+                        $("#code").val('');
+                        reset();
+                        alertify.alert(data.result);
+                        return false;
+                    }
+                    $("#form1").bootstrapValidator('validate');//提交验证
+                    if ($("#form1").data('bootstrapValidator').isValid()) {
+                        $.ajax({
+                            url:"/channel/channel_add",
+                            type:"POST",
+                            data:$("#form1").serializeArray(),
+                            success:function (data) {
+                                reset();
+                                alertify.success(data.result);
+                                setTimeout(function () {
+                                    window.location.href='/channel/channel_list';
+                                },1500)
+                            }
+                        })
+                    }
+                })
+            })
+            $("#back_btn").click(function () {
+                window.location.href='/channel/channel_list';
+            })
+        })
+    </script>
+</head>
+
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+    <!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+    <div class="page_content_bar">
+        <!--/* 面包屑  */-->
+        <ol class="breadcrumb clearfix">
+            <li><a href="/channel/channel_list">渠道管理</a></li>
+            <li class="active">添加</li>
+        </ol>
+    </div>
+    <!--/* 页面部分二              页面主内容  */-->
+    <div class="page_content_main" data-sidea="side_41">
+        <!--/* 动态   */-->
+        <form id="form1" class="form-horizontal" action="#" method="post" >
+            <input type="hidden" name="mts" th:value="${application.mts}"/>
+            <div class="form-group">
+                <label class="col-sm-4 control-label"><span style="color: red;">* </span>渠道类型</label>
+                <div class="col-sm-3">
+                    <select id="select_channel_type" name="channel_type_id" class="form-control">
+                        <option value="0">请选择</option>
+                        <th:block th:each="channelType:${channelTypes}">
+                            <option th:value="${channelType.channel_type_id}" th:text="${channelType.channel_type_name}"></option>
+                        </th:block>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-4 control-label"><span style="color: red;">* </span>渠道名称</label>
+                <div class="col-sm-3">
+                    <input id="channel_name" name="channel_name" class="form-control" placeholder="请输入渠道名称"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-4 control-label"><span style="color: red;">* </span>code码</label>
+                <div class="col-sm-3">
+                    <input id="code" name="code" class="form-control" placeholder="例：haidian-001"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-5 col-sm-offset-4">
+                    <button id="save_btn" type="button" class="btn btn-primary" >确定</button>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <button id="back_btn" type="button" class="btn btn-primary">取消</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

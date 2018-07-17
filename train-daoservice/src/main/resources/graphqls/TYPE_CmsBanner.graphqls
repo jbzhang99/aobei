@@ -1,0 +1,43 @@
+#banner 图
+type CmsBanner{
+
+    #内容推荐id
+    cms_banner_id : Long
+
+    #封面图片id
+    img_cover : String
+
+    #标题
+    title : String
+
+    #简介
+    intro : String
+
+    #使用的端 'wx_m_custom'为顾客端,'wx_m_teacher'为教师端,'wx_m_student'为学员端,'wx_m_partner'为合伙人端
+    app : String
+
+    #上线时间
+    online_datetime : Date
+
+    #下线时间
+    offline_datetime : Date
+
+    #序号，表示banner图的顺序
+    serial_number : Int
+
+    #'1'为已上线,'0'为已下线
+    sign : Int
+
+    #0 未删除，1 已删除
+    deleted : Int
+
+    #具体页面（保留字段）
+    position : String
+
+    #跳转页面地址（保留字段）
+    href : String
+
+    #跳转类型。1 http url 跳转 2 应用内跳转
+    type : Int
+}
+

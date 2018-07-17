@@ -1,0 +1,54 @@
+#退款结算
+type FallintoRefund{
+
+    fallinto_refund_id : Long
+
+    #结算期
+    balance_cycle : String
+
+    #退款单号
+    refund_id : Long
+
+    #订单号
+    pay_order_id : String
+
+    #服务单号
+    serviceunit_id : Long
+
+    #订单名称
+    order_name : String
+
+    #订单创建时间
+    order_create_datetime : Date
+
+    #订单总价  单位分
+    price_total : Int
+
+    #优惠金额，单位分
+    price_discount : Int
+
+    #实际支付金额 单位分
+    price_pay : Int
+
+    #实收金额 单位分
+    price_compute : Int
+
+    #合伙人id
+    partner_id : Long
+
+    #合伙人名称
+    partner_name : String
+
+    #合伙人级别
+    partner_level : Int
+
+    #合作开始日期
+    cooperation_start : Date
+
+    #合作结束日期
+    cooperation_end : Date
+
+    #1 待结算  2 已结算  3 挂起
+    status : Int
+}
+

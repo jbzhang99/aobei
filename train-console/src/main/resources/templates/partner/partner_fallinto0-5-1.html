@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+ <html layout:decorate="~{base_layout}">
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"> -->
+<head>
+<meta charset="UTF-8"></meta>
+<title>合伙人分成策略信息</title>
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<meta name="context-path" th:content="@{/}" />
+
+<script type="text/javascript" th:inline="javascript">
+	//初始化alertify
+	reset = function () {
+		$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+		alertify.set({
+		  labels : {
+		    ok   : "确认",
+		    cancel : "取消"
+		  },
+		  delay : 1000,
+		  buttonReverse : false,
+		  buttonFocus  : "ok"
+	    });
+	};
+
+
+    //分成策略模态框上面的确定按钮
+    function saveFallinto(){
+
+        var list=[];
+        var partnerid=$("#parId").val();
+
+        var tab=$('#tabList').get(0);
+        var oTr=tab.getElementsByTagName('tr');
+        var flag=true;
+        for(var i=1,n=oTr.length; i<n; i++){
+            var start=$(oTr[i]).find('.start').val(),
+            	end=$(oTr[i]).find('.end').val(),
+                productName=$(oTr[i]).children("td:eq(0)").text(),
+				productid=$(oTr[i]).children("td:last").attr('productid'),
+                fallino_id=$(oTr[i]).find('.fallino_id').val();
+
+            if((start == null ||start =='') || (end == '' || end==null)){
+                reset();
+                alertify.alert("产品【"+productName+"】的日期不能为空！");
+                flag=false;
+                break;
+            }
+            if(start>=end){
+                reset();
+                alertify.alert("产品【"+productName+"】的开始日期应在结束日期之前，请重新选择！");
+                flag=false;
+                break;
+            }
+            list.push({
+                partner_id:partnerid,
+                product_id:productid,
+                fallinto_id:fallino_id,
+                start_datetime:new Date(Date.parse(start)),
+                end_datetime:new Date(Date.parse(end))
+            })
+
+		}
+
+		if(flag==true){
+            $.ajax({
+                url:'/partner/addPartnerToFallino/'+partnerid,
+                type:'POST',
+                data:{
+                    result:JSON.stringify(list)
+                },
+                success:function(data){
+                    var p=[[${pageNo}]];
+                    //请求成功时
+                    reset();
+                    alertify.success(data.msg);
+                    setTimeout(function (){
+                        window.location.href="/partner/showPartner?p="+p;
+                    }, 1000);
+                },
+                dataType:'json'
+            });
+		}
+
+
+    }
+
+    //分成策略模态框上面的关闭按钮
+    function closeModel(){
+        window.location.href="/partner/showPartner";
+    }
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+	
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+			<li><a href="/partner/showPartner" class="back_butn" style="cursor: pointer;">合伙人信息</a></li>
+		  <li class="active">分成策略</li>
+		</ol>
+		
+	</div>
+	
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_11">
+		
+		<!--/* 以下为自定义代码块  */-->
+		<br class="table-responsive">
+		<!-- 动态 -->
+			<input type="hidden" id="parId" th:value="${partner_id}"/>
+			<table id="tabList">
+				<thead>
+				<tr bgcolor="#FFFFFF">
+					<th width="200px">产品名称</th>
+					<th width="200px">分成策略</th>
+					<th width="350px">策略有效期</th>
+				</tr>
+				</thead>
+				<tbody id="fallinoBody">
+					<th:block th:each="list:${proAndFallintoList}">
+						<tr>
+							<td th:text="${list['product'].name}"></td>
+							<td>
+								<select class='form-control fallino_id' style="width:150px">
+									<th:block th:if="${list['partnerFallinto'] !=null}">
+										<th:block th:each="fallinto:${list['fallintos']}">
+											<option th:selected="${fallinto.fallinto_id==list['partnerFallinto'].fallinto_id}" th:value="${fallinto.fallinto_id}" th:text="${fallinto.fallinto_name}"></option>
+										</th:block>
+									</th:block>
+									<th:block th:if="${list['partnerFallinto'] ==null}">
+										<th:block th:each="fallinto:${list['fallintos']}">
+											<option  th:value="${fallinto.fallinto_id}" th:text="${fallinto.fallinto_name}"></option>
+										</th:block>
+									</th:block>
+								</select>
+							</td>
+							<td th:productid="${list['product'].product_id}">
+								<th:block th:if="${list['partnerFallinto'] !=null}">
+									<div class='form-inline'>
+										<input  class='form-control start' type='date' name='start' th:value="${#dates.format(list['partnerFallinto'].start_datetime,'yyyy-MM-dd')}"/>-
+										<input  class='form-control end' type='date' name='end' th:value="${#dates.format(list['partnerFallinto'].end_datetime,'yyyy-MM-dd')}"/>
+									</div>
+								</th:block>
+								<th:block th:if="${list['partnerFallinto'] ==null}">
+									<div class='form-inline'>
+										<input class='form-control start' type='date' name='start' />-
+										<input class='form-control end' type='date' name='end'/>
+									</div>
+								</th:block>
+
+							</td>
+						</tr>
+					</th:block>
+				</tbody>
+			</table>
+		</br>
+		</br>
+			<div style="margin-left:300px;">
+				<button type="button" class="btn btn-primary"  onclick="javascript:saveFallinto()">确定</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<button type="button" class="btn btn-default" onclick="javascript:closeModel()">关闭</button>
+			</div>
+		</div>
+	</div>
+
+</div>
+</body>
+</html>

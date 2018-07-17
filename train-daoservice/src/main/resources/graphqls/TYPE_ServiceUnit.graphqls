@@ -1,0 +1,93 @@
+#服务单
+type ServiceUnit{
+
+    serviceunit_id : Long
+
+    #顾客id
+    customer_id : Long
+
+    #订单id
+    pay_order_id : String
+
+    #商品id
+    product_id : Long
+
+    #商品sku id
+    psku_id : Long
+
+    #学员id
+    student_id : Long
+
+    #学员姓名
+    student_name : String
+
+    #合伙人id
+    partner_id : Long
+
+    #服务站 id
+    station_id : Long
+
+    #是否有效，0 无效，1 有效。 用户支付后生效
+    active : Int
+
+    #备注JSON  [{"d":"2018-02-10 10:23:45","remark":"备注内容","operator_name":"操作人名称","user_id":"操作人id"}]
+    remark : String
+
+    #用户预约的开始服务时间
+    c_begin_datetime : Date
+
+    #用户预约的结束服务时间
+    c_end_datetime : Date
+
+    #系统指派给合伙人的时间
+    p_assign_datetime : Date
+
+    #合伙人确认接单时间
+    p_confirm_datetime : Date
+
+    #合伙人拒绝单时间
+    p_reject_datetime : Date
+
+    #合伙人拒绝单原因
+    p_reject_remark : String
+
+    #合伙人分配给学员的时间
+    p2s_assign_datetime : Date
+
+    #服务单完成时间
+    finish_datetime : Date
+
+    #父id,一级的pid 为0
+    pid : Long
+
+    #指派分组标记
+    group_tag : Long
+
+    #服务单状态   1 待指派合伙人  2 待合伙人接单  3 待合伙指派  4 已指派学员  5  完成  6 拒单
+    status_active : Int
+
+    #人员工作状态1 到达 2 开始 3 结束 4 离开
+    work_status : Int
+
+    #工作人员到达时间
+    work_1_datetime : Date
+
+    #工作开始时间
+    work_2_datetime : Date
+
+    #工作结束时间
+    work_3_datetime : Date
+
+    #工作人员离开时间
+    work_4_datetime : Date
+
+    #工作人员备注
+    work_remark : String
+
+    #【主单 】 0 常规单  1 表示抢单中  2 已抢单 3 无人抢单    【子单】  0 常规单  2 已抢单 
+    robbing : Int
+
+    #拒单类型 0被动拒单、1主动拒单
+    reject_type : Int
+}
+

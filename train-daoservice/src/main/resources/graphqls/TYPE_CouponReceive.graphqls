@@ -1,0 +1,39 @@
+#优惠卷 领取消费
+type CouponReceive{
+
+    coupon_receive_id : Long
+
+    #优惠卷id
+    coupon_id : Long
+
+    #用户id
+    uid : Long
+
+    #订单id
+    pay_order_id : String
+
+    #领取时间
+    receive_datetime : Date
+
+    #使用时间
+    use_datetime : Date
+
+    #1 待领取 2待使用3 已使用/待回滚   4 已使用 5 已过期 6 冻结
+    status : Int
+
+    #核销 0 未核销 1 已核销
+    verification : Int
+
+    #0 未删除，1已删除
+    deleted : Int
+
+    #优惠环境配置
+    coupon_env_id : Long
+
+    #兑换码
+    exchange_code : String
+
+    #创建时间
+    create_datetime : Date
+}
+

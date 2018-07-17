@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{base_layout}">
+<head> 
+<meta charset="UTF-8" />
+<title>账号管理</title>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+		
+		$("#add_butn").click(function(){
+			var p = [[${current}]]
+			window.location.href="/userManager/user/user_goto_add?p="+p
+		})
+		//关闭模态框
+		$("#close_btn").click(function(){
+			$("#update_p").modal('hide');
+			$("#new_password").val('');//清空输入框
+			//var p = [[${current}]]
+			window.location.reload();
+		})
+		
+		
+	})
+	
+	//编辑角色
+	function user_edit(user_id){
+		var p = [[${current}]];
+			window.location.href="/userManager/user/user_goto_edit?user_id="+user_id+"&p="+p
+	}
+	
+	//删除角色
+	function user_del(user_id){
+		var p = [[${current}]];
+        var mts = [[${application.mts}]]
+			reset();
+			alertify.confirm("确定删除该信息吗？",function(e){
+				if(e){					
+					$.post("/userManager/user/del_user",{user_id:user_id,mts:mts},function(data){
+							reset();
+							alertify.success(data.message);
+							setTimeout(function(){								
+								window.location.href="/userManager/user/user_list?p="+p
+							},2000)
+						}); 
+				}else {
+			    	reset();
+					alertify.log("已取消操作");
+			    }
+			})
+	}
+	//启用 禁用 用户
+	function user_switch(user_id,status){
+		var p = [[${current}]];
+		reset();
+		alertify.confirm(status==0 ? "确定要启用该用户吗？":"确定要禁用该用户吗？",function(e){
+			if(e){				
+				$.post('/userManager/user/user_switch',{user_id:user_id},function(data){
+					reset();
+					alertify.success(data.message);
+					setTimeout(function(){
+						window.location.href="/userManager/user/user_list?p="+p
+					},1500)
+				})
+			}else{
+				reset();
+				alertify.log("取消操作！")
+			}
+		})
+	}
+	
+	
+	//显示修改密码模态框
+	function update_password(user_id){
+		$("#update_p").modal('show');
+		//修改密码
+		
+		var value_p = $("#new_password").val();
+		var regex = /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,20}$/;
+					
+			$("#update_btn").click(function(){
+				//var np = $("#new_password").val();
+				var value_p = $("#new_password").val();
+				var p = [[${current}]];
+				if(value_p==""){
+					reset();
+					alertify.alert("请输入密码后再提交！")
+				}else if(regex.test(value_p)){				
+					$.post('/userManager/user/update_password',{value_p:value_p,user_id:user_id},function(data){
+						reset();
+						alertify.success(data.message);
+						setTimeout(function(){
+							window.location.href="/userManager/user/user_list?p="+p
+						},1500)
+					})
+				}else{
+					reset();
+					alertify.alert("密码格式必须包含数字和字母，长度小于20位大于6位")
+				}
+			})
+	}
+</script>
+</head>
+<body>
+
+	<div layout:fragment="content">
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li class="active">用户管理</li>
+			  
+			  <li class="libtn">
+			  	<a  sec:authorize="hasRole('ROLE_USER_EDIT')" id="add_butn" class="btn btn-primary pull-right" href="#"><i class="fas fa-plus"></i>&nbsp;添加</a>
+			  </li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_17">
+			
+			<div class="table-responsive">
+				<table id="table-cont" class="table table-striped table-hover">
+					<thead>
+						<tr>
+							<th>编号</th>
+							<th>姓名</th>
+							<th>部门</th>
+							<th>职位</th>
+							<th>账号</th>
+							<th>联系电话</th>
+							<th>角色</th>
+							<th>创建时间</th>
+							<th>状态</th>
+							<th sec:authorize="hasAnyRole('ROLE_USER_EDIT,ROLE_USER_DEL')">操作</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="sysUser,index:${list_user}">
+							<td style="vertical-align: middle"
+								th:text="${(index.index+1)+number}"></td>
+							<td style="vertical-align: middle" th:text="${sysUser.name}"></td>
+							<td style="vertical-align: middle" th:text="${sysUser.dept_name}"></td>
+							<!-- 部门名称，应该换为id -->
+							<td style="vertical-align: middle" th:text="${sysUser.job_title}"></td>
+							<!-- <span style="vertical-align: middle"> 
+							<th:block th:each="user:${list_user}">
+									<td style="vertical-align: middle" th:if="${sysUser.user_id==user.user_id}">
+										<a href="#" th:text="${user.username}" th:onclick="|update_password('${sysUser.user_id}')|"></a>
+									</td>
+							</th:block>
+							</span> -->
+							<td style="vertical-align: middle" >
+								<a href="#" th:text="${sysUser.username}" th:onclick="|update_password('${sysUser.user_id}')|"></a>
+							</td>
+							<td style="vertical-align: middle" th:text="${sysUser.phone}"></td>
+							<td style="vertical-align: middle">
+							<!-- <th:block th:each="map:${resultMap}">
+									<th:block th:if="${map.key==sysUser.sys_user_id}">
+										<th:block th:each="id:${map.value}">
+											<th:block th:each="role:${list_allRole}"
+												th:if="${id ==role.role_id}">
+												<p style="vertical-align: middle"
+													th:text="${role.role_name}"></p>
+											</th:block>
+										</th:block>
+									</th:block>
+								</th:block>  -->
+								<th:block th:each="role:${sysUser.roleList}" >
+									<p style="vertical-align: middle" th:text="${role}"></p>
+								</th:block>
+							</td>
+							<td style="vertical-align: middle"
+								th:text="${#dates.format(sysUser.create_datetime,'yyyy-MM-dd HH:mm:ss')}"></td>
+							<span th:if="${sysUser.status}==0">
+								<td style="vertical-align: middle">
+									<a href="#" th:onclick="|user_switch('${sysUser.user_id}',${sysUser.status})|">已禁用</a></td>
+									<td style="vertical-align: middle">
+											<button sec:authorize="hasRole('ROLE_USER_EDIT')" style="outline: none" class="btn btn-link btn-xs" th:onclick="|user_edit('${sysUser.user_id}')|">
+												<span class="fas fa-edit" aria-hidden="true"></span>编辑
+											</button>
+											<button sec:authorize="hasRole('ROLE_USER_DEL')" style="outline: none" class="btn btn-link btn-xs" th:onclick="|user_del('${sysUser.user_id}');|">
+												<span class="far fa-trash-alt" aria-hidden="true"></span>删除
+											</button>
+									</td>
+								
+							</span>
+							<span th:if="${sysUser.status}==1">
+								<td style="vertical-align: middle">
+									<a href="#" th:onclick="|user_switch('${sysUser.user_id}',${sysUser.status})|">已启用</a></td>
+								<td style="vertical-align: middle">
+									<button sec:authorize="hasRole('ROLE_USER_EDIT')" style="outline: none" class="btn btn-link btn-xs" th:onclick="|user_edit('${sysUser.user_id}')|">
+										<span class="fas fa-edit" aria-hidden="true"></span>编辑
+									</button>
+									<button sec:authorize="hasRole('ROLE_USER_DEL')" style="outline: none" class="btn btn-link btn-xs" th:onclick="|user_del('${sysUser.user_id}');|">
+										<span class="far fa-trash-alt" aria-hidden="true"></span>删除
+									</button>
+							</td>
+							</span>
+
+						</tr>
+					</tbody>
+				</table>
+
+				<div th:include="~{tags/pagination::p1(@{/userManager/user/user_list(size=${page.pageSize})},${page.total},
+								${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+
+				<!-- 修改密码模态框 -->
+					<div class="modal fade" id="update_p" data-keyboard="false"
+						data-backdrop="static" aria-hidden="true">
+						<div class="modal-dialog" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h4 class="modal-title">修改密码</h4>
+								</div>
+								<div class="modal-body ">
+									<label>新密码：</label> <input id="new_password" type="password"
+										name="new_password" class="form-control" placeholder="请输入新密码"
+										required />
+								</div>
+								<div class="modal-footer form-group">
+									<button id="close_btn" type="button" class="btn btn-default"
+										data-dismiss="modal">关闭</button>
+									<button id="update_btn" type="button" class="btn btn-primary">修改密码</button>
+								</div>
+							</div>
+						</div>
+					</div>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>

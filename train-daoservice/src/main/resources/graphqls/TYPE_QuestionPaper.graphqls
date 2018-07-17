@@ -1,0 +1,31 @@
+#试卷
+type QuestionPaper{
+
+    #试卷主键id
+    question_paper_id : Long
+
+    #考试科目id
+    exam_subject_id : Long
+
+    #选择题
+    t1_count : Int
+
+    #多选题
+    t2_count : Int
+
+    #判断题
+    t3_count : Int
+
+    #试卷名称
+    name : String
+
+    #创建时间
+    create_datetime : Date
+
+    #0 未删除，1 已删除
+    deleted : Int
+
+    #试题JSON 数据
+    question_json : String
+}
+

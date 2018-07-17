@@ -1,0 +1,88 @@
+server:
+  port: 9032
+    
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://39.106.165.167:3306/aobei_test?characterEncoding=utf8&useSSL=false
+    username: root
+    password: m$%$:Tmd4ei0V5/A?p+v
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      maximum-pool-size: 10
+      data-source-properties:
+          cachePrepStmts: true
+          prepStmtCacheSize: 250
+          prepStmtCacheSqlLimit: 2048
+          useServerPrepStmts: true
+          useLocalSessionState: false
+          useLocalTransactionState: true
+          rewriteBatchedStatements: true
+          cacheResultSetMetadata: true
+          cacheServerConfiguration: true
+          elideSetAutoCommits: true
+          maintainTimeStats: false
+  redis:
+    database: 0
+    host: 47.94.160.44
+    port: 6379
+    password: qoGEgJ83BX6vKUmS
+    pool:
+      max-active: 8
+      max-wait: -1
+      max-idle: 8
+      min-idle: 0
+    timeout: 0
+  thymeleaf:
+    enabled: true
+    cache: true
+
+  http:
+    multipart:  
+      max-file-size: -1 
+      max-request-size: -1 
+      enabled: true        
+    
+security:
+  basic:
+    enabled: true
+  cas:
+    server:
+      #base-url: http://localhost:8080
+      base-url: https://test-user.aobei.com/cas
+    service:
+      resolution-mode: dynamic
+      #base-url: https://test-trainconsole.aobei.com
+    user:
+      roles-attributes:
+      - roles
+
+custom:
+ aliyun:
+   ons:
+     topic: aobei_topic
+   #oss:
+     #public-bucket: aobei-test-public
+     #private-bucket: aobei-test
+aobei:
+  common:
+    boot:
+      event-sms: true
+      event-push: true
+      aliyun:
+        access-key-id : LTAIYlFXdaXPDOej
+        access-key-secret : yKVGJOwWrmmx3wAJG0nupzU46PVZou
+        oss:
+          endpoint: http://oss-cn-beijing.aliyuncs.com
+        sms:
+          region-id : cn-hangzhou  #固定值不需要更改
+          endpoint : cn-hangzhou  #固定值不需要更改
+          product: Dysmsapi #固定值不需要更改
+          domain : dysmsapi.aliyuncs.com #固定值不需要更改
+        ons:
+          producer-id: PID_aobei_Producer
+          #consumer-id: auto
+
+file:
+  zip: /opt/apps/console/down/zip/
+  unzip: /opt/apps/console/down/unzip/

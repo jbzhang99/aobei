@@ -1,0 +1,23 @@
+#统一用户
+type Users{
+
+    #用户id
+    user_id : Long
+
+    #用户登录名
+    username : String
+
+    #状态，0 禁用 ， 1 可用
+    status : Int
+
+    roles : String
+
+    nickname : String
+
+    #微信用户id
+    wx_id : String
+
+    #创建时间
+    create_datetime : Date
+}
+

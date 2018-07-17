@@ -1,0 +1,14 @@
+#消息文本
+type Msgtext{
+
+    msgtext_id : String
+
+    name : String
+
+    #消息内容
+    content : String
+
+    #1 客户端提示  2 接口提示
+    type : Int
+}
+

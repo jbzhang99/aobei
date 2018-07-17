@@ -1,0 +1,170 @@
+<!DOCTYPE HTML>
+<html layout:decorate="~{base_layout}">
+<head>
+<title>类目管理添加页面</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+//初始化alertify
+reset = function () {
+	$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+	alertify.set({
+	  labels : {
+	    ok   : "确认",
+	    cancel : "取消"
+	  },
+	  delay : 1000,
+	  buttonReverse : false,
+	  buttonFocus  : "ok"
+    });
+};
+
+
+$(function(){
+	$('#form1').bootstrapValidator({
+        message: '这个值是无效的！',
+        live: 'enabled',
+        feedbackIcons: {
+//	            valid: 'glyphicon glyphicon-ok',
+//	            invalid: 'glyphicon glyphicon-remove',
+//	            validating: 'glyphicon glyphicon-refresh'
+        },
+        fields: {
+	    	name: {
+	           // message: '此学校名称是无效的！',
+	            validators: {
+	                notEmpty: {
+	                    message: '请填写名称！'
+	                },
+	                stringLength: {
+	                    max: 20,
+	                    message: '名称最长不得多于20个字符'
+	                }
+	            }
+	        },
+	       descr: {
+	            validators: {
+	                notEmpty: {
+	                    message: '请填写描述内容！'
+	                },
+	                stringLength: {
+	                    max: 200,
+	                    message: '描述内容不得多于200个字符'
+	                }
+	            }
+	        }
+	      }
+	}); 
+	
+	 $("#save_btn").click(function(){
+		$("#form1").bootstrapValidator('validate');//提交验证
+ 		if ($("#form1").data('bootstrapValidator').isValid()) {
+ 			//上线日期判断
+ 			var update = $("#onlineDate").val();
+			var downdate = $("#offlineDate").val();
+			if(update >= downdate){
+				reset();
+				alertify.alert("上线开始日期应在上线结束日期之前，请重新选择！");
+				return false;
+			}
+	    	//序列化获得表单数据，结果为：user_id=12&user_name=John&user_age=20
+	    	//var data=$("#form1").serialize();
+	    	//submitData是解码后的表单数据，结果同上
+	    	//var submitData=decodeURIComponent(data,true);
+            var submitData=$("#form1").serializeArray();
+	    	$.ajax({
+	    	    url:'/categorySun/addServiceItem',
+	    	    data:submitData,
+	    	    cache:false,//false是不缓存，true为缓存
+	    	    async:true,//true为异步，false为同步
+	    	    dataType:'json',
+	    	    success:function(data){
+	    	    	//请求成功时
+					reset();
+					alertify.success(data.msg);
+					setTimeout(function (){
+						window.location.href = "/categorySun/showCategorySun";
+	    	    	},1000);
+	    	    }
+	    	});
+	    	return false;
+ 		}
+	});
+	
+	$("#back_butn").click(function(){
+		reset();
+		alertify.confirm("确定要取消操作吗？", function (e) {
+			if(e){
+				var page_current_page = [[${pageNo}]];
+				window.location.href = "/categorySun/showCategorySun";
+			}
+		});
+	});
+	
+  });
+
+
+</script>
+</head>
+<body>
+
+<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <!-- <li><a href="#">一级目录</a></li> -->
+			  <li><a href="/categorySun/showCategorySun" class="back_butn" style="cursor: pointer;">类目管理</a></li>
+			  <li class="active">添加</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main"  data-sidea="side_9">
+			<form id="form1" class="form-horizontal" action="#"  method="post" >
+				<input type="hidden" name="mts"  th:value="${application.mts}"/>
+			<div class="form-group">
+				<label class="col-sm-4 control-label"><span style="color: red">*</span>名称:</label>
+				<div class="col-sm-4">
+					<input type="hidden" id="category_id" name="category_id" th:value="${category_id}"/>
+					<input type="text" class="form-control" id="name" name="name"  placeholder="请输入名称" required />
+				</div>
+			</div>
+			
+			<div class="form-group">
+				<label class="col-sm-4 control-label"><span style="color: red">*</span>内容描述:</label>
+				<div class="col-sm-4">
+					<textarea class="form-control" id="descr" name="descr" placeholder="请输入描述内容" required ></textarea>
+				</div>
+			</div>
+			
+			<!-- <div class="form-group form-inline">
+				<label class="col-sm-4 control-label">上线时间:</label>
+				<div class="col-sm-5">
+					<input id="onlineDate" class="form-control" type="date" name="onlineDate"  required/> 
+				</div>
+			</div>
+			<div class="form-group form-inline">
+				<label class="col-sm-4 control-label">下线时间:</label>
+				<div class="col-sm-5">
+					<input id="offlineDate" class="form-control" type="date" name="offlineDate" required/> 
+				</div>
+			</div> -->
+			
+			<div class="form-group">
+				<div class="col-sm-8 col-sm-offset-4">
+					<button id="save_btn" class="btn btn-primary" >确定</button>&nbsp;&nbsp;&nbsp;&nbsp;
+					<input id="back_butn" class="btn btn-primary" type="button" value="取消" />
+				</div>
+			</div>
+		</form>
+		</div>
+	</div>		
+</body>
+</html>

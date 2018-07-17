@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="UTF-8">
+<title>渠道类型添加页</title>
+<link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}" ></script>
+<script type="text/javascript" th:inline="javascript">
+    $(function(){
+        $('#form1').bootstrapValidator({
+            message: 'This value is not valid',
+            fields: {
+
+                channel_type_name: {
+                    validators: {
+                        notEmpty: {
+                            message: '渠道类型名称不能为空'
+                        },
+                        stringLength: {
+                            min: '0',
+                            max: '50',
+                            message: '最多输入50字'
+                        }
+                    }
+                }
+            }
+        })
+        /*添加ajax*/
+        $("#save_btn").click(function () {
+            $("#form1").bootstrapValidator('validate');//提交验证
+            $.ajax({
+                url:"/channelType/channelType_add",
+                type:"POST",
+                data:$("#form1").serializeArray(),
+                success:function (data) {
+                    reset();
+                    alertify.success(data.result);
+                    setTimeout(function () {
+                        window.location.href='/channelType/channelType_list';
+                    })
+                }
+            })
+        })
+        $("#save_btn").click(function () {
+            $("#form1").submit();
+        })
+        $("#back_btn").click(function () {
+            window.location.href='/channelType/channelType_list';
+        })
+    })
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+    <!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+    <div class="page_content_bar">
+        <!--/* 面包屑  */-->
+        <ol class="breadcrumb clearfix">
+            <li><a href="/channelType/channelType_list">渠道类型管理</a></li>
+            <li class="active">添加</li>
+        </ol>
+    </div>
+    <!--/* 页面部分二              页面主内容  */-->
+    <div class="page_content_main" data-sidea="side_39">
+        <!--/* 动态   */-->
+        <form id="form1" class="form-horizontal" action="#" method="post" >
+            <input type="hidden" name="mts" th:value="${application.mts}"/>
+            <div class="form-group">
+                <label class="col-sm-4 control-label"><span style="color: red;">* </span>渠道类型</label>
+                <div class="col-sm-3">
+                    <input id="channel" name="channel_type_name" class="form-control" placeholder="请输入渠道类型名称"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-5 col-sm-offset-4">
+                    <button id="save_btn" type="submit" class="btn btn-primary" >确定</button>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <button id="back_btn" type="button" class="btn btn-primary">取消</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

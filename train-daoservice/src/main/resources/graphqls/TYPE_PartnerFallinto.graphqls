@@ -1,0 +1,30 @@
+#合伙人 结算配置
+type PartnerFallinto{
+
+    partner_fallinto_id : Long
+
+    #合伙人id
+    partner_id : Long
+
+    #分成策略id
+    fallinto_id : Long
+
+    #产品id
+    product_id : Long
+
+    #创建时间
+    create_datetime : Date
+
+    #结算类型  1 底价  2 订单分成 3 单数阶梯 4 金额阶梯 5 客单价阶梯
+    fallinto_type : Int
+
+    #1 半月结   2 整月结
+    balance_type : Int
+
+    #开始时间
+    start_datetime : Date
+
+    #结束时间
+    end_datetime : Date
+}
+

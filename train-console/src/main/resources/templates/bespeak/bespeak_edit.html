@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{base_layout}">
+<head> 
+<meta charset="UTF-8" />
+<title>预约策略列表</title>
+
+<script type="text/javascript" th:inline="javascript">
+$(function(){
+	
+	var list = [[${bespeakList}]]
+	var list_data = [[${list_data}]]
+	var rowIndex = 0;
+	
+	$.each(list_data,function(i,ele){
+		var day_b = "";
+		var time_b = "";
+		var day = "";
+		var day_a = "";
+		var time_a = "";
+		$.each(ele.time_format.split("-"),function(index,ele){
+			if(index==0){
+				day_b = ele;
+			}
+			if(index==1){
+				time_b = ele;
+			}
+			if(index==2){
+				day = ele;
+			}
+			if(index==3){
+				day_a = ele;
+			}
+			if(index==4){
+				time_a = ele;
+			}
+		})
+		var html = "";
+		var margin = 50;
+			rowIndex++;
+			var times = $("#select_time").children().eq(0).html();
+			html = html + '<div id=\"div_first_'+rowIndex+'\" class=\"form-inline\" style=\"margin-top: '+margin+'px\">';
+			html = html + '<label class=\"col-sm-3 control-label\"></label>';
+			html = html + '<div class=\"col-sm-8\">';
+			if(i==0){
+				html = html + '<span>第二天0点前可预约第二天：</span>';
+				html = html + '<input  id=\"strategy_data_s\" name=\"strategy_data_s\" class=\"form-control dateregex\" value=\"00\" text=\"00\" style=\"width:62px;\" type=\"text\"  />';
+				html = html + '<input  id=\"strategy_begin\" name=\"strategy_b_s\" class=\"form-control dateregex\" value=\"00\" text=\"00\" style=\"width:65px;\" type=\"text\" />';
+			}else{
+				html = html + '<select id=\"select_data_b_'+rowIndex+'\" class=\"form-control\" >';				
+				html = html + '<option value=\"00\">00</option>';
+				html = html + '<option value=\"01\">01</option>';
+				html = html + '<option value=\"02\">02</option>';
+				html = html + '<option value=\"03\">03</option>';
+				html = html + '<option value=\"04\">04</option>';
+				html = html + '<option value=\"05\">05</option>';
+				html = html + '<option value=\"06\">06</option>';
+				html = html + '<option value=\"07\">07</option>';
+				html = html + '<option value=\"08\">08</option>';
+				html = html + '<option value=\"09\">09</option>';
+				html = html + '<option value=\"10\">10</option>';
+				html = html + '<option value=\"11\">11</option>';
+				html = html + '<option value=\"12\">12</option>';
+				html = html + '<option value=\"13\">13</option>';
+				html = html + '<option value=\"14\">14</option>';
+				html = html + '<option value=\"15\">15</option>';
+				html = html + '<option value=\"16\">16</option>';
+				html = html + '<option value=\"17\">17</option>';
+				html = html + '<option value=\"18\">18</option>';
+				html = html + '<option value=\"19\">19</option>';
+				html = html + '<option value=\"20\">20</option>';
+				html = html + '<option value=\"21\">21</option>';
+				html = html + '<option value=\"22\">22</option>';
+				html = html + '<option value=\"23\">23</option>';
+				/* html = html + '<option value=\"24\">24</option>'; */
+				html = html + '</select>:';
+			}
+			if(i==0){				
+				html = html + '';
+				html = html + '&nbsp;<select id=\"select_day_'+rowIndex+'\" name=\"select_day\" class=\"form-control\" style=\"width:80px\;margin-left:19px\">+';
+			}else{
+				html = html + '&nbsp;<input  id=\"strategy_b_s_'+rowIndex+'\" name=\"strategy_b_s\"  class=\"form-control dateregex\" style=\"width:68px;\" type=\"text\" placeholder=\"分钟\" />前可预约';				
+				html = html + '&nbsp;<select id=\"select_day_'+rowIndex+'\" name=\"select_day\" class=\"form-control\" style=\"width:80px\">+';
+			}
+			html = html + '<option value=\"0\">当天</option>';
+			html = html + '<option value=\"1\">+1</option>';
+			html = html + '<option value=\"2\">+2</option>';
+			html = html + '<option value=\"3\">+3</option>';
+			html = html + '<option value=\"4\">+4</option>';
+			html = html + '<option value=\"5\">+5</option>';
+			html = html + '</select>&nbsp';
+			html = html + '<select id=\"select_data_a_'+rowIndex+'\" class=\"form-control\">';
+			html = html + '<option value=\"00\">00</option>';
+			html = html + '<option value=\"01\">01</option>';
+			html = html + '<option value=\"02\">02</option>';
+			html = html + '<option value=\"03\">03</option>';
+			html = html + '<option value=\"04\">04</option>';
+			html = html + '<option value=\"05\">05</option>';
+			html = html + '<option value=\"06\">06</option>';
+			html = html + '<option value=\"07\">07</option>';
+			html = html + '<option value=\"08\">08</option>';
+			html = html + '<option value=\"09\">09</option>';
+			html = html + '<option value=\"10\">10</option>';
+			html = html + '<option value=\"11\">11</option>';
+			html = html + '<option value=\"12\">12</option>';
+			html = html + '<option value=\"13\">13</option>';
+			html = html + '<option value=\"14\">14</option>';
+			html = html + '<option value=\"15\">15</option>';
+			html = html + '<option value=\"16\">16</option>';
+			html = html + '<option value=\"17\">17</option>';
+			html = html + '<option value=\"18\">18</option>';
+			html = html + '<option value=\"19\">19</option>';
+			html = html + '<option value=\"20\">20</option>';
+			html = html + '<option value=\"21\">21</option>';
+			html = html + '<option value=\"22\">22</option>';
+			html = html + '<option value=\"23\">23</option>';
+			/* html = html + '<option value=\"24\">24</option>'; */
+			html = html + '</select>:';
+			html = html + '&nbsp<input id=\"strategy_a_s_'+rowIndex+'\" name=\"strategy_a_s\" class=\"form-control dateregex\" style=\"width:70px;\" type=\"text\" placeholder=\"分钟\"/>(含)之后的服务';
+			if(i==0){
+				html = html + '&nbsp;<button type=\"button\" id=\"add_btn\" onclick=\"add_after(this,'+rowIndex+')\" class=\"btn primary add_class\" style=\"background-color:#99FF33;margin-right:10px\">+</button><br><br>';
+			}else{
+				html = html + '&nbsp;<button type=\"button\" id=\"add_btn\" onclick=\"add_after(this,'+rowIndex+')\" class=\"btn primary add_class\" style=\"background-color:#99FF33;margin-right:10px\">+</button>';
+				html = html + '<button type=\"button\" id=\"minus_btn\" onclick=\"minusF(this)\" class=\"btn primary\" style=\"background-color:#99FF33;\">-</button><br><br>';				
+			}
+			html = html + '</div>';
+			html = html + '</div>';
+			margin = margin+20;
+		$("#div_bespeak").append(html);
+		
+		$("#select_data_b_"+rowIndex).val(day_b);
+		$("#strategy_b_s_"+rowIndex).val(time_b);
+		$("#select_day_"+rowIndex).val(day);
+		$("#select_data_a_"+rowIndex).val(day_a);
+		$("#strategy_a_s_"+rowIndex).val(time_a);
+		
+	})
+	$("#strategy_data_s").hide();
+	$("#strategy_begin").hide();
+	
+	var name = [[${name}]]
+	$("#b_name").val(name);
+	
+	$("#edit_bespeak_btn").click(function(){
+		var bespeak_id = $("#data_id").val();
+		var sname = $("#b_name").val();
+		var list = [];
+		var list_data = $("#div_bespeak").children();
+		var regexp = /^([0-5]?\d)$/;
+		var flag = true;
+		$.each(list_data,function(index,ele){
+			if(index==0){
+				day_a = $(this).children().eq(1).children().eq(1).val();
+				beforeTime = $(this).children().eq(1).children().eq(2).val();
+				day = $(this).children().eq(1).children().eq(3).val();
+				afterTime = $(this).children().eq(1).children().eq(4).val();
+				atimes = $(this).children().eq(1).children().eq(5).val();
+
+				if(beforeTime==""||beforeTime==null){
+					flag = false;
+					reset();
+					alertify.alert("第"+(index+1)+"条预约策略的【开始时间分钟数】为空值！");
+					return false;
+				}else if(!regexp.test(beforeTime)){
+					flag = false;
+					reset();
+					alertify.alert("第【"+(index+1)+"】条输入的【开始分钟数】不能大于60且最多为两位数字！请重新 输入");
+					return false;
+				}
+				if(atimes==""||atimes==null){
+					flag = false;
+					reset();
+					alertify.alert("第"+(index+1)+"条预约策略的【结束时间分钟数】为空值！");
+					return false;
+				}else if(atimes.length==1){
+					atimes =0+atimes
+				}else if(!regexp.test(atimes)){
+					flag = false;
+					reset();
+					alertify.alert("第【"+(index+1)+"】条输入的【结束分钟数】不能大于60且最多为两位数字！请重新 输入");
+					return false;
+				}
+				if(day==0){				
+					if((day_a+beforeTime)>(afterTime+atimes)){
+						flag = false;
+						reset();
+						alertify.alert("第【"+(index+1)+"】条预约策略结束时间不能小于开始时间,请重新选择！");
+						return false;
+					}
+				}
+				var data = day_a+"-"+beforeTime+"-"+day+"-"+afterTime+"-"+atimes
+				list.push(data)
+			}else{
+				day_a = $(this).children().eq(1).children().eq(0).val();
+				beforeTime = $(this).children().eq(1).children().eq(1).val();
+				day = $(this).children().eq(1).children().eq(2).val();
+				afterTime = $(this).children().eq(1).children().eq(3).val();
+				atimes = $(this).children().eq(1).children().eq(4).val();
+				
+
+
+				if(beforeTime==""||beforeTime==null){
+					flag = false;
+					reset();
+					alertify.alert("第"+(index+1)+"条预约策略的【开始时间分钟数】为空值！");
+					return false;
+				}else  if(beforeTime.length==1){
+					beforeTime =0+beforeTime
+				}else if(!regexp.test(beforeTime)){
+					flag = false;
+					reset();
+					alertify.alert("第【"+(index+1)+"】条输入的【开始分钟数】不能大于60且最多为两位数字！请重新 输入");
+					return false;
+				}
+				if(atimes==""||atimes==null){
+					flag = false;
+					reset();
+					alertify.alert("第"+(index+1)+"条预约策略的【结束时间分钟数】为空值！");
+					return false;
+				}else if(atimes.length==1){
+					atimes =0+atimes
+				}else if(!regexp.test(atimes)){
+					flag = false;
+					reset();
+					alertify.alert("第【"+(index+1)+"】条输入的【结束分钟数】不能大于60且最多为两位数字！请重新 输入");
+					return false;
+				}
+				if(day==0){				
+					if((day_a+beforeTime)>(afterTime+atimes)){
+						flag = false;
+						reset();
+						alertify.alert("第【"+(index+1)+"】条预约策略结束时间不能小于开始时间,请重新选择！");
+						return false;
+					}
+				}
+				var data = day_a+"-"+beforeTime+"-"+day+"-"+afterTime+"-"+atimes
+				list.push(data)
+			}
+		})
+		if(flag){
+			if(sname==''){
+				reset();
+				alertify.alert("请输入预约策略名称！")
+				return false;
+			}else {
+			    var mts = [[${application.mts}]]
+					$.ajax({
+						url:'/bespeak/edit_bespeak',
+						type:'post',
+						data:{
+							list:JSON.stringify(list),
+							sname:sname,
+							bespeak_id:bespeak_id,
+							mts:mts
+						},
+						success:function(data){
+							reset();
+							alertify.success(data.message);
+							setTimeout(function(){
+								var current = [[${current}]]
+								window.location.href="/bespeak/bespeak_list?p="+current
+							},2000)
+						}
+					})
+			}
+		}
+	})
+	
+	$("#cancel_btn").click(function(){
+		var current = [[${current}]]
+		window.location.href="/bespeak/bespeak_list?p="+current
+	})
+})
+
+	function add_after(obj,rowIndex){
+	var size = $("#div_bespeak").children().length;
+	if(size>4){
+		reset();
+		alertify.alert("最多添加5条预约策略！")
+		return false;
+	}
+	var html = "";
+	var margin = 50;
+		rowIndex++;
+		var times = $("#select_time").children().eq(0).html();
+		
+		html = html + '<div id=\"div_first_'+rowIndex+'\" class=\"form-inline\" style=\"margin-top: '+margin+'px\">';
+		html = html + '<label class=\"col-sm-3 control-label\"></label>';
+		html = html + '<div class=\"col-sm-8\">';
+		html = html + '<select id=\"select_data_b_'+rowIndex+'\" class=\"form-control daysData\">';
+		html = html + '<option value=\"00\">00</option>';
+		html = html + '<option value=\"01\">01</option>';
+		html = html + '<option value=\"02\">02</option>';
+		html = html + '<option value=\"03\">03</option>';
+		html = html + '<option value=\"04\">04</option>';
+		html = html + '<option value=\"05\">05</option>';
+		html = html + '<option value=\"06\">06</option>';
+		html = html + '<option value=\"07\">07</option>';
+		html = html + '<option value=\"08\">08</option>';
+		html = html + '<option value=\"09\">09</option>';
+		html = html + '<option value=\"10\">10</option>';
+		html = html + '<option value=\"11\">11</option>';
+		html = html + '<option value=\"12\">12</option>';
+		html = html + '<option value=\"13\">13</option>';
+		html = html + '<option value=\"14\">14</option>';
+		html = html + '<option value=\"15\">15</option>';
+		html = html + '<option value=\"16\">16</option>';
+		html = html + '<option value=\"17\">17</option>';
+		html = html + '<option value=\"18\">18</option>';
+		html = html + '<option value=\"19\">19</option>';
+		html = html + '<option value=\"20\">20</option>';
+		html = html + '<option value=\"21\">21</option>';
+		html = html + '<option value=\"22\">22</option>';
+		html = html + '<option value=\"23\">23</option>';
+		/* html = html + '<option value=\"24\">24</option>'; */
+		html = html + '</select>:';
+		html = html + '&nbsp;<input  id=\"strategy_b_s_'+rowIndex+'\" name=\"strategy_b_s\"  class=\"form-control dateregex\" style=\"width:70px;\" type=\"text\" placeholder=\"分钟\"/>前可预约';
+		html = html + '&nbsp;<select id=\"select_day_'+rowIndex+'\" name=\"select_day\" class=\"form-control \" style=\"width:80px\">+';
+		html = html + '<option value=\"0\">当天</option>';
+		html = html + '<option value=\"1\">+1</option>';
+		html = html + '<option value=\"2\">+2</option>';
+		html = html + '<option value=\"3\">+3</option>';
+		html = html + '<option value=\"4\">+4</option>';
+		html = html + '<option value=\"5\">+5</option>';
+		html = html + '</select>&nbsp';
+		html = html + '<select id=\"select_data_a_'+rowIndex+'\" class=\"form-control daysData\">';
+		html = html + '<option value=\"00\">00</option>';
+		html = html + '<option value=\"01\">01</option>';
+		html = html + '<option value=\"02\">02</option>';
+		html = html + '<option value=\"03\">03</option>';
+		html = html + '<option value=\"04\">04</option>';
+		html = html + '<option value=\"05\">05</option>';
+		html = html + '<option value=\"06\">06</option>';
+		html = html + '<option value=\"07\">07</option>';
+		html = html + '<option value=\"08\">08</option>';
+		html = html + '<option value=\"09\">09</option>';
+		html = html + '<option value=\"10\">10</option>';
+		html = html + '<option value=\"11\">11</option>';
+		html = html + '<option value=\"12\">12</option>';
+		html = html + '<option value=\"13\">13</option>';
+		html = html + '<option value=\"14\">14</option>';
+		html = html + '<option value=\"15\">15</option>';
+		html = html + '<option value=\"16\">16</option>';
+		html = html + '<option value=\"17\">17</option>';
+		html = html + '<option value=\"18\">18</option>';
+		html = html + '<option value=\"19\">19</option>';
+		html = html + '<option value=\"20\">20</option>';
+		html = html + '<option value=\"21\">21</option>';
+		html = html + '<option value=\"22\">22</option>';
+		html = html + '<option value=\"23\">23</option>';
+		/* html = html + '<option value=\"24\">24</option>'; */
+		html = html + '</select>:';
+		html = html + '&nbsp<input id=\"strategy_a_s_'+rowIndex+'\" name=\"strategy_a_s\" class=\"form-control dateregex\" style=\"width:70px;\" type=\"text\" placeholder=\"分钟\"/>(含)之后的服务';
+		html = html + '&nbsp;<button type=\"button\" id=\"add_btn\" onclick=\"add_after(this)\" class=\"btn primary add_class\" style=\"background-color:#99FF33;margin-right:10px\">+</button>';
+		html = html + '<button type=\"button\" id=\"minus_btn\" onclick=\"minusF(this)\" class=\"btn primary\" style=\"background-color:#99FF33;\">-</button><br><br>';
+		html = html + '</div>';
+		html = html + '</div>';
+		margin = margin+20;
+		$("#div_bespeak").append(html);
+}
+//删除功能
+function minusF(obj){
+	var data = $("#div_bespeak").children().length;
+	if(data!=1){		
+		$(obj).parent().parent().remove();
+	}else{
+		reset();
+		alertify.alert("不能清空页面数据，请至少保留一条！");
+		return false;
+	}
+}
+
+</script>
+</head>
+<body>
+
+	<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li><a th:href="@{/bespeak/bespeak_list}">预约策略</a></li>
+			  <li class="active">编辑</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_24">
+		
+			<form action="" id="form1" class="form-horizontal"  >
+
+				<input id="data_id" th:value="${bespeak_id}" type="hidden"/>
+				<div class="form-group">
+					<label class="col-sm-3 control-label">
+						<span style="color: red">*&nbsp;&nbsp;&nbsp;</span>预约策略名称
+					</label>		
+					<div class="col-sm-3">	
+						<input id="b_name" name="b_name" class="form-control" placeholder="请输入预约策略名称"/>
+					</div>
+				</div>
+				<label class="col-sm-3 control-label">
+						<span style="color: red">*&nbsp;&nbsp;&nbsp;</span>预约时间策略
+					</label>
+				<div id="div_bespeak">
+						
+				</div>
+				<div class="form-group">
+					<div class="col-sm-5 col-sm-offset-3">
+						<input type="button" id="edit_bespeak_btn" value="确定" class="btn btn-primary" />&nbsp;&nbsp;&nbsp;&nbsp;
+						<input type="button" id="cancel_btn" class="btn btn-default "
+							value="取消" />
+					</div>
+				</div>
+			</form>	
+				
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+#培训计划
+type Plan{
+
+    #培训计划编号
+    train_plan_id : Long
+
+    #培训开始日期
+    train_begin : Date
+
+    #培训结束日期
+    train_end : Date
+
+    #培训课程id
+    course_id : Long
+
+    #培训学校id
+    school_id : Long
+
+    #培训教室id
+    classroom_id : Long
+
+    #培训教师id
+    teacher_id : Long
+
+    #培训助教老师id
+    assistant : Long
+
+    #培训方式 '0'为面授 '1'为在线
+    train_way : Int
+
+    #培训/考核
+    training : String
+
+    #培训人数
+    trainers_number : Int
+
+    #是否删除 0 未删除  1 已删除
+    deleted : Int
+}
+

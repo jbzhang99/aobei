@@ -1,0 +1,96 @@
+type PayAliNotify{
+
+    #通知校验ID
+    notify_id : String
+
+    #通知的发送时间。格式为yyyy-MM-dd HH:mm:ss
+    notify_time : String
+
+    #通知的类型
+    notify_type : String
+
+    #支付宝分配给开发者的应用Id
+    app_id : String
+
+    #编码格式，如utf-8、gbk、gb2312等
+    charset : String
+
+    #调用的接口版本，固定为：1.0
+    version : String
+
+    #商户生成签名字符串所使用的签名算法类型，目前支持RSA2和RSA，推荐使用RSA2
+    sign_type : String
+
+    #签名
+    sign : String
+
+    #支付宝交易凭证号
+    trade_no : String
+
+    #原支付请求的商户订单号
+    out_trade_no : String
+
+    #商户业务ID，主要是退款通知中返回退款申请的流水号
+    out_biz_no : String
+
+    #买家支付宝用户号
+    buyer_id : String
+
+    #买家支付宝账号
+    buyer_logon_id : String
+
+    #卖家支付宝用户号
+    seller_id : String
+
+    #卖家支付宝账号
+    seller_email : String
+
+    #交易状态
+    trade_status : String
+
+    #本次交易支付的订单金额，单位为人民币（元）
+    total_amount : Int
+
+    #商家在交易中实际收到的款项，单位为元
+    receipt_amount : Int
+
+    #用户在交易中支付的可开发票的金额
+    invoice_amount : Int
+
+    #用户在交易中支付的金额
+    buyer_pay_amount : Int
+
+    #使用集分宝支付的金额
+    point_amount : Int
+
+    #退款通知中，返回总退款金额，单位为元，支持两位小数
+    refund_fee : Int
+
+    #订单标题
+    subject : String
+
+    #商品描述
+    body : String
+
+    #交易创建时间
+    gmt_create : String
+
+    #交易付款时间
+    gmt_payment : String
+
+    #交易退款时间
+    gmt_refund : String
+
+    #交易结束时间
+    gmt_close : String
+
+    #支付金额信息 [{“amount”:“15.00”,“fundChannel”:“ALIPAYACCOUNT”}]
+    fund_bill_list : String
+
+    #回传参数
+    passback_params : String
+
+    #优惠券信息 [{“amount”:“0.20”,“merchantContribute”:“0.00”,“name”:“一键创建券模板的券名称”,“otherContribute”:“0.20”,“type”:“ALIPAY_DISCOUNT_VOUCHER”,“memo”:“学生卡8折优惠”]
+    voucher_detail_list : String
+}
+

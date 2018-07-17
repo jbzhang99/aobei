@@ -1,0 +1,22 @@
+#学员 服务项
+type StudentServiceitem{
+
+    #学员id
+    student_id : Long
+
+    #服务项id
+    serviceitem_id : Long
+
+    #培训计划id  已学课程关联
+    train_plan_id : Long
+
+    #0 无效，1 有效
+    status : Int
+
+    #创建日期
+    create_datetime : Date
+
+    #服务项生效时间
+    active_datetime : Date
+}
+

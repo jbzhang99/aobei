@@ -1,0 +1,10 @@
+#渠道类型管理
+type ChannelType{
+
+    channel_type_id : Int
+
+    channel_type_name : String
+
+    create_datetime : Date
+}
+

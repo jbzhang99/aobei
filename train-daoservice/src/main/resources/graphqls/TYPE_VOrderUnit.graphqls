@@ -1,0 +1,138 @@
+#VIEW
+type VOrderUnit{
+
+    serviceunit_id : Long
+
+    #订单id
+    pay_order_id : String
+
+    #商品id
+    product_id : Long
+
+    #商品sku id
+    psku_id : Long
+
+    #学员姓名
+    student_name : String
+
+    #合伙人id
+    partner_id : Long
+
+    #服务站 id
+    station_id : Long
+
+    #是否有效，0 无效，1 有效。 用户支付后生效
+    active : Int
+
+    #用户预约的开始服务时间
+    c_begin_datetime : Date
+
+    #用户预约的结束服务时间
+    c_end_datetime : Date
+
+    #系统指派给合伙人的时间
+    p_assign_datetime : Date
+
+    #合伙人确认接单时间
+    p_confirm_datetime : Date
+
+    #合伙人拒绝单时间
+    p_reject_datetime : Date
+
+    #合伙人分配给学员的时间
+    p2s_assign_datetime : Date
+
+    #服务单完成时间
+    finish_datetime : Date
+
+    #父id,一级的pid 为0
+    pid : Long
+
+    #指派分组标记
+    group_tag : Long
+
+    #服务单状态   1 待指派合伙人  2 待合伙人接单  3 待合伙指派  4 已指派学员  5  完成  6 拒单
+    status_active : Int
+
+    #人员工作状态1 到达 2 开始 3 结束 4 离开
+    work_status : Int
+
+    #工作人员到达时间
+    work_1_datetime : Date
+
+    #工作开始时间
+    work_2_datetime : Date
+
+    #工作结束时间
+    work_3_datetime : Date
+
+    #工作人员离开时间
+    work_4_datetime : Date
+
+    #支付状态 0 待支付  1 已支付
+    pay_status : Int
+
+    #状态点    1 待付款  2 待确认  3 待服务 4 已取消 5 已完成
+    o_status_active : Int
+
+    #客户联系人
+    cus_username : String
+
+    #客户手机号
+    cus_phone : String
+
+    #完整地址，格式  北京  北京 朝阳区 建国路89号
+    cus_address : String
+
+    #总价，单位分
+    price_total : Int
+
+    #实际支付金额 单位分
+    price_pay : Int
+
+    #订单名称
+    uname : String
+
+    #退款状态  0待退款 ,1退款中,2 已退全款 3 已部分退款
+    r_status : Int
+
+    #下单时间
+    create_datetime : Date
+
+    #订单来源渠道
+    channel : String
+
+    #优惠金额，单位分
+    price_discount : Int
+
+    #支付方式  1 微信 2 支付宝
+    pay_type : Int
+
+    #可退金额  单位分
+    r_fee : Int
+
+    #退款申请日期
+    r_datetime : Date
+
+    #退款完成日期
+    r_finish_datetime : Date
+
+    #用户下订单备注
+    remark : String
+
+    #用户取消订单备注
+    remark_cancel : String
+
+    #支付时间
+    pay_datetime : Date
+
+    #系统备注
+    sys_remark : String
+
+    #手机号
+    uphone : String
+
+    #名称
+    cuname : String
+}
+

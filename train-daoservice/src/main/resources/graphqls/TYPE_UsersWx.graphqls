@@ -1,0 +1,15 @@
+type UsersWx{
+
+    #用户的openid
+    openid : String
+
+    #应用微信appid
+    appid : String
+
+    #对应user表中的wx_id  有 unionid 时存unionid ，无unionid 存 appid#openid
+    wx_id : String
+
+    #创建时间
+    create_datetime : Date
+}
+

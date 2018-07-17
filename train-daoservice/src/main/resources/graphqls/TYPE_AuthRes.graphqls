@@ -1,0 +1,23 @@
+#权限管理  资源
+type AuthRes{
+
+    #资源ID
+    res_id : Int
+
+    #资源名称
+    name : String
+
+    #资源路径
+    role_key : String
+
+    create_datetime : Date
+
+    #0 未删除，1 已删除
+    deleted : Int
+
+    #分组标签
+    tag : String
+
+    urls : String
+}
+

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>banner图路径管理</title>
+    <script>
+        $(function () {
+            /* 跳转到添加页 */
+            $("#add_butn").click(function () {
+                var p = [[${current}]]
+                window.location.href="/bannermanager/goto_add_cmsurl?current="+p
+            })
+        })
+        function cmsurl_del(id) {
+            var p = [[${current}]]
+            alertify.confirm("确定要删除该条记录吗？",function(e) {
+                if(e){
+                    $.post('/bannermanager/del_cmsurl',{cms_url_id:id},function (data) {
+                        reset();
+                        alertify.success(data.message);
+                        setTimeout(function () {
+                            window.location.href="/bannermanager/cmsurl_list?current="+p
+                        },1500)
+                    });
+                }else{
+                    reset();
+                    alertify.log("已取消操作！")
+                }
+            })
+        }
+        function cmsurl_edit(id) {
+            var p = [[${current}]]
+            window.location.href="/bannermanager/goto_edit_cmsurl?current="+p+"&cms_url_id="+id
+
+        }
+    </script>
+</head>
+<body>
+<div layout:fragment="content">
+    <!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+    <div class="page_content_bar">
+        <!--/* 面包屑  */-->
+        <ol class="breadcrumb clearfix">
+            <li class="active">banner图路径管理</li>
+            <li class="libtn" >
+                <button sec:authorize="hasRole('ROLE_BURL_EDIT')" id="add_butn" class="btn btn-primary pull-right">
+                    <i class="fas fa-plus"></i>&nbsp;添加
+                </button>
+            </li>
+        </ol>
+    </div>
+    <!--/* 页面部分二              页面主内容  */-->
+    <div class="page_content_main" data-sidea="side_33">
+        <!--/* 以下为自定义代码块  */-->
+        <div class="table-responsive">
+            <!-- 动态 -->
+            <table id="table-cont" class="table table-striped table-hover" >
+                <thead>
+                    <tr>
+                        <th>标题</th>
+                        <th style="width: 400px">跳转路径</th>
+                        <th>跳转类型</th>
+                        <th>创建时间</th>
+                        <th sec:authorize="hasAnyRole('ROLE_BURL_EDIT,ROLE_BURL_DEL')">操作</th>
+                    </tr>
+                </thead>
+                <tbody >
+                    <tr th:each="cmsurl:${list}">
+                        <td style="vertical-align: middle" th:text="${cmsurl.title}"></td>
+                        <td style="vertical-align: middle" th:text="${cmsurl.url}"></td>
+                        <td style="vertical-align: middle" th:switch="${cmsurl.type}">
+                            <p th:case="1">http跳转</p>
+                            <p th:case="2">native跳转</p>
+                        </td>
+                        <td style="vertical-align: middle" th:text="${#dates.format(cmsurl.create_datetime,'yyyy-MM-dd')}"></td>
+                        <td style="vertical-align: middle" sec:authorize="hasAnyRole('ROLE_BURL_EDIT,ROLE_BURL_DEL')">
+                            <button sec:authorize="hasRole('ROLE_BURL_EDIT')" style="outline: none" class="btn btn-link btn-xs" th:onclick="|cmsurl_edit('${cmsurl.cms_url_id}')|">
+                                <span class="fas fa-edit" aria-hidden="true"></span>编辑
+                            </button>
+                            <button sec:authorize="hasRole('ROLE_BURL_DEL')" style="outline: none" class="btn btn-link btn-xs" th:onclick="|cmsurl_del('${cmsurl.cms_url_id}');|">
+                                <span class="far fa-trash-alt" aria-hidden="true"></span>删除
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

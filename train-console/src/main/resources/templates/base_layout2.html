@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <!-- ie 让ie以最新版本渲染 -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">  
+    <!-- 禁止缩放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>aobei ke ji</title>
+    <link th:href="@{/web/css/bootstrap.min.css}" href="css/bootstrap.min.css" rel="stylesheet">
+    <link th:href="@{/web/icon/iconfont.css}" rel="stylesheet" href="./icon/iconfont.css">
+    <link th:href="@{/web/css/base.css}" href="css/base.css" rel="stylesheet">
+    <link th:href="@{/css/alertify.core.css}" href="css/alertify.core.css" rel="stylesheet">
+    <link th:href="@{/css/alertify.bootstrap.css}" href="css/alertify.bootstrap.css" rel="stylesheet">
+    <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <style>
+    	.bdpfmenu{left: 0px; top: 60px; display: none; padding:15px 20px; background:#fff; z-index:100; position:absolute; border:1px solid #f1f1f1;}
+    	.bdpfmenu a{display:block; line-height:25px; color:#000; text-align:center; }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-default ab_header ab_margin">
+        <div class="container-fluid" >
+          <div class="navbar-header">
+            <a class="ab_padding ab_line_height ab_display ab_pl15" th:href="@{/}" href="/" style="font-size:14px;text-decoration: none;">Beijing AllBay Technology Co.Ltd</a>
+          </div>
+          <ul class="nav navbar-nav navbar-right ">
+            <li class="xxx"  style="position:relative">
+				<a href="#" class="ab_line_30 ab_mr20">
+				  <i class="icon iconfont ab_font20 ab_left ab_mr5 icon-yonghu1"></i>
+				  <span th:text="${#authentication.principal.username}"></span>
+				  <div class="bdpfmenu">
+				  	<div class="bdnuarrow"><em></em><i></i></div>
+				  	<a th:href="|/ordermanager/download_task|" target="_blank">任务</a>
+				  	<a th:href="@{/logout}">退出</a>
+				  </div>
+				</a>
+            </li>
+          </ul>
+        </div><!-- /.navbar-collapse -->
+    </nav> 
+    
+	<div class="container-fluid">
+		<div class="row">
+    		<!-- 左侧导航栏 -->
+			<!-- <div class="side_left ab_left_bg">
+				<div class="col-lg-12 col-md-12 ab_pt20 ab_pb20 ab_left_right_bordr">
+					<div class="container-fluid" th:include="~{sidebar :: list}">
+					</div>
+				</div>
+			</div> -->
+			<!-- 主窗口  -->
+			<div class="side_right_2" layout:fragment="content">
+		
+			</div>
+		</div>
+	</div>
+	<script th:src="@{/web/js/bootstrap.min.js}" src="js/bootstrap.min.js"></script>
+    <script th:src="@{/js/alertify.min.js}" src="js/alertify.min.js"></script>
+    <script>
+     $('.side_left .ti').on('click','h5',function(){
+       var curent_index = $(this).parent().index();
+       $('.side_left .ti').each(function(i,n){
+    	   if(i != curent_index){
+	    	  $(n).find('h5').removeClass('ab_navTitle'); 
+    	  	  $(n).find('ul').hide();
+    	   }else{
+    		   $(n).find('h5').toggleClass('ab_navTitle');
+    		   $(n).find('ul').toggle();
+    	   }
+       });
+     });
+      (function(){
+    	 var item =  $('#'+$('div[data-sidea]:eq(0)').data('sidea'));
+    	 item.closest('.ti').find('h5').trigger('click');
+    	 item.addClass('active');
+    	 
+    	 $(".xxx").mouseenter(function(){
+    		  $(this).parent().find(".bdpfmenu").css("display","block");
+    	 });
+    	 
+    	 $(".xxx").mouseleave(function(){
+   		  	  $(this).parent().find(".bdpfmenu").css("display","none");
+   		 });
+     })();
+     // var tableCont = document.querySelector('#table-cont');
+     /**
+      * scroll handle
+      * @param {event} e -- scroll event
+      */
+     function scrollHandle (e){
+       var scrollTop = this.scrollTop;
+       $(this).find('thead').css({'backgroundColor':'#fff','zIndex':'100'})
+       if(this.querySelector('thead')){
+    	   this.querySelector('thead').style.transform = 'translateY(' + scrollTop + 'px)'; 
+       }
+       
+     }
+	 //$('#table-cont').on('scroll',scrollHandle);
+     // tableCont.addEventListener('scroll',scrollHandle)
+   </script>
+  </body>
+ </html>

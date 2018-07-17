@@ -1,0 +1,103 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+<title>对账批次列表</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+        ymd();
+        $(".query").click(function(){
+            var bill_date = $(".bill_date").val();
+            var url = "/billmanager/goto_bill_batch_list?bill_date="+bill_date;
+            window.location.href = url;
+        });
+	});
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+			<li class="active">对账批次列表</li>
+		</ol>
+	</div>
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_29">
+		<!--/* 以下为自定义代码块  */-->
+		<!--/* 查询块 */-->
+		<div style="padding:10px 10px; background:#fff" class="screen">
+			<div class="ab_screen">
+				<div class="form-inline">
+					<div class="form-group" style="margin-right: 20px">
+						<label>对账日期：</label>
+						<div class="input-group date datetimepicker1">
+							<input class="form-control  bill_date input-sm" type="text" name="bill_date" th:if="${bill_date != ''}"
+								   th:value="${bill_date}" style="width: 130px;" />
+							<span class="input-group-addon" style="width: 50px; height: 30px;">
+								<span class="glyphicon glyphicon-calendar"></span>
+							</span>
+						</div>
+					</div>
+					<button class="btn btn-primary query btn-sm">查询</button>
+				</div>
+			</div>
+		</div>
+		<div class="table-responsive" style="overflow:auto;">
+		<!--/* 动态  */-->
+			<table id="table-cont" class="table table-striped table-hover">
+				<thead>
+					<tr>
+						<th width="180px">对账批次号</th>
+						<th width="130px">支付方式</th>
+						<th width="130px">对账日期</th>
+						<th width="130px">平台交易单数</th>
+						<th width="130px">第三方交易单数</th>
+						<th width="130px">平台交易总金额</th>
+						<th width="130px">第三方总交易额</th>
+						<th width="130px">平台退款总金额</th>
+						<th width="130px">第三方总退款金额</th>
+						<th width="130px">总企业红包退款金额</th>
+						<th width="130px">第三方手续费总金额</th>
+						<th width="130px">差错总单数</th>
+						<th width="130px">对账成功总单数</th>
+						<th width="130px">第三方返回错误信息</th>
+						<th width="130px">解析失败异常</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="bill_batch:${bill_batchs}">
+						<td style="vertical-align: middle;word-break:break-all" th:text="${bill_batch.bill_batch_id}">xx</td>
+						<td style="vertical-align: middle" th:switch="${bill_batch.pay_type}">
+							<span th:case="1">微信</span>
+							<span th:case="2">支付宝</span>
+						</td>
+						<td style="vertical-align: middle" th:text="${#dates.format(bill_batch.bill_date,'yyyy-MM-dd')}">xx</td>
+						<td style="vertical-align: middle" th:text="${bill_batch.my_total_orders}">xx</td>
+						<td style="vertical-align: middle" th:text="${bill_batch.p_total_orders}">xx</td>
+						<td style="vertical-align: middle" th:text="${#numbers.formatDecimal(bill_batch.my_total_fee*0.01,1,2)}">xx</td>
+						<td style="vertical-align: middle" th:text="${#numbers.formatDecimal(bill_batch.p_total_fee*0.01,1,2)}">xx</td>
+						<td style="vertical-align: middle" th:text="${#numbers.formatDecimal(bill_batch.my_total_refund_fee*0.01,1,2)}">xx</td>
+						<td style="vertical-align: middle" th:text="${#numbers.formatDecimal(bill_batch.p_total_refund_fee*0.01,1,2)}">xx</td>
+						<td style="vertical-align: middle">0.00</td>
+						<td style="vertical-align: middle" th:text="${#numbers.formatDecimal(bill_batch.p_total_service_charge*0.01,1,2)}">xx</td>
+						<td style="vertical-align: middle" th:text="${bill_batch.status_count_3}+${bill_batch.status_count_4}+${bill_batch.status_count_5}">xx</td>
+						<td style="vertical-align: middle" th:text="${bill_batch.status_count_1}">xx</td>
+						<td style="vertical-align: middle" th:text="${bill_batch.error_info}">xx</td>
+						<td style="vertical-align: middle" th:text="${bill_batch.exception_info}">xx</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div th:include="~{tags/pagination::p1(@{/billmanager/goto_bill_batch_list},${page.total},${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+	</div>
+</div>
+</body>
+</html>

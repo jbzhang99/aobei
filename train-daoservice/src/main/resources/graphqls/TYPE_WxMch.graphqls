@@ -1,0 +1,18 @@
+#微信商户信息
+type WxMch{
+
+    mch_id : String
+
+    #key
+    mch_key : String
+
+    #名称
+    name : String
+
+    #api  P12 文件路径
+    keyfile_path : String
+
+    #api  文件过期时间
+    keyfile_expires : Date
+}
+

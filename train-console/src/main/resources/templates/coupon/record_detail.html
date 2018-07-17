@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+
+<html layout:decorate="~{base_layout}">
+<head> 
+<meta charset="UTF-8" />
+<title>使用记录</title>
+
+<script type="text/javascript" th:inline="javascript">
+
+	$(function(){
+		$("#btn_yh_id").click(function(){
+			var yh_id = $("#select_yh_id").val();
+			var pay_order_id = $("#select_pay_order_id").val();
+			var regex = /^1(3|4|5|7|8)\d{9}$/;
+            var regex_number = /^[0-9]*$/;
+			/*if(!regex.test(yh_id)){
+                reset();
+                alertify.alert("请输入正确格式的手机号！")
+                return false;
+			}else if(!regex_number.test(pay_order_id)){
+                reset();
+                alertify.alert("请输入正确格式的订单号！")
+                return false;
+			}*/
+            window.location.href="/couponmanager/record_detail?yh_id="+yh_id+"&pay_order_id="+pay_order_id
+				/*if(regex.test(yh_id)){
+
+				}else{
+					reset();
+					alertify.alert("请输入正确格式的手机号！")
+					return false;
+				}*/
+			
+		})  
+		$("#select_yh_id,#select_coupon_name,#select_app_type").change(function(){
+            var yh_id = $("#select_yh_id").val();
+            var coupon_id = $("#select_coupon_name").val();
+            var type = $("#select_app_type").val();
+            var url = "/couponmanager/record_detail?yh_id="+yh_id+"&coupon_id="+coupon_id+"&type="+type
+            window.location.href=url
+        })
+		//回显检索框数据
+		//var back_uid=[[${yh_id}]]
+		var back_uid = $("#back_uid").val()
+		$("#select_yh_id").val(back_uid)
+		var back_couponid = $("#back_data").val();
+		$("#select_coupon_name").val(back_couponid) 
+		var back_type=[[${type}]]
+		$("#select_app_type").val(back_type)
+		$("#select_pay_order_id").val([[${pay_order_id}]]);
+	})
+</script>
+</head>
+<body>
+
+	<div layout:fragment="content">
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <li class="active">使用记录</li>
+			  
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main" data-sidea="side_16">
+				<div class="form-inline">
+					<div class="form-group">
+						用户手机号： <input id="select_yh_id" class="form-control input-sm" type="text" placeholder="请输入用户手机号">
+						订单号：<input id="select_pay_order_id" class="form-control input-sm" type="text" placeholder="请输入订单号">
+							<button id="btn_yh_id" class="btn btn-primary btn-sm" style="margin-left:20px">查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
+						</br></br>
+						优惠券名称：<select id="select_coupon_name" name="select_coupon_name" class="form-control input-sm" >
+									<option value="">全部</option>
+									<option th:each="coupon:${list_coupon}" th:value="${coupon.coupon_id}" th:text="${coupon.name}"></option> 
+								</select>&nbsp;&nbsp;&nbsp;&nbsp;
+						应用类型：<select id="select_app_type" name="select_app_type"   class="form-control input-sm">
+									<option value="">全部</option>
+									<option value="1">待领取</option>
+									<option value="2">领取</option>
+									<option value="4">下单</option>
+									<option value="5">已过期</option>
+								</select> 
+					</div>
+				</div>
+				<hr>
+			<div class="table-responsive">
+				<table id="table-cont" class="table table-striped table-hover" >
+				<input type="hidden" id="back_uid" th:value="${yh_id}"/>
+				<input type="hidden" id="back_data" th:value="${coupon_id}"/>
+					<thead >
+						<tr>
+							<th>发生时间</th>
+							<th>用户手机号</th>
+							<th>订单号</th>
+							<th>优惠券名称</th>
+							<th>应用类型</th>
+						</tr>
+					</thead>
+					<tbody>
+
+					<!-- 隐藏域传递数据 -->
+						<tr th:each="receive:${list}">
+							<td style="vertical-align: middle;width:200px" th:text="${#dates.format(receive.receive_datetime,'yyyy-MM-dd HH:mm:ss')}"></td>
+							<td style="vertical-align: middle;width:300px" th:text="${receive.phone}"></td>
+							<td style="vertical-align: middle;width:300px" th:text="${receive.pay_order_id}"></td>
+							<th:block th:each="coupon:${list_coupon}" th:if="${coupon.coupon_id==receive.coupon_id}">							
+								<td style="vertical-align:middle" th:value="${coupon.coupon_id}" th:text="${coupon.name}"></td>
+							</th:block>
+							<td style="vertical-align:middle" th:switch="${receive.status}">
+								<span th:case="1">待领取</span>
+								<span th:case="2">领取</span>
+								<span th:case="3">下单</span>
+								<span th:case="4">下单</span>
+								<!--/* <span th:case="4">已删除</span> */-->
+								<span th:case="5">已过期</span>
+								<!--/* <span th:case="6">冻结</span> */-->
+								<!--/* <span th:case="7"></span> */-->
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<h4 th:if="${size==0}" style="text-align: center;color:indianred">无满足条件数据</h4>
+				<div th:include="~{tags/pagination::p1(@{/couponmanager/record_detail(size=${page.pageSize},type=${type},coupon_id=${coupon_id},yh_id=${yh_id},pay_order_id=${pay_order_id})},${page.total},
+								${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+			</div>
+		</div>			
+	</div>
+
+</body>
+</html>

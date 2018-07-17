@@ -1,0 +1,90 @@
+#订单结算
+type BalanceOrder{
+
+    balance_order_id : Long
+
+    #结算期
+    balance_cycle : String
+
+    #订单号
+    pay_order_id : String
+
+    #服务单号
+    serviceunit_id : Long
+
+    #结算类型  1 完成
+    balance_type : Int
+
+    #1 待结算  2 已结算  3 挂起
+    status : Int
+
+    #订单名称
+    order_name : String
+
+    #产品id
+    product_id : Long
+
+    #sku id
+    psku_id : Long
+
+    #订单创建时间
+    order_create_datetime : Date
+
+    #服务人员完成时间
+    work_finish_datetime : Date
+
+    #服务单完成时间
+    finish_datetime : Date
+
+    #订单总价  单位分
+    price_total : Int
+
+    #优惠金额，单位分
+    price_discount : Int
+
+    #实际支付金额 单位分
+    price_pay : Int
+
+    #JSON 优惠数据 [{id:优惠id,descript:优惠说明,price:优惠金额}]
+    discount_data : String
+
+    #合伙人id
+    partner_id : Long
+
+    #合伙人名称
+    partner_name : String
+
+    #合伙人级别
+    partner_level : Int
+
+    #合作日期开始
+    cooperation_start : Date
+
+    #合作日期结束
+    cooperation_end : Date
+
+    #合伙人订单结算金额
+    partner_balance_fee : Int
+
+    #平台订单结算金额
+    balance_fee : Int
+
+    #结算策略id
+    fallinto_id : Long
+
+    #结算策略名称
+    fallinto_name : String
+
+    #结算策略 命中说明
+    fallinto_info : String
+
+    #创建时间
+    create_datetime : Date
+
+    #结算时间
+    balance_datetime : Date
+
+    #状态修改记录 [{"type":"挂起 or  结算","d":"修改时间","operator":"操作人名字"}]
+    change_history : String
+}
+

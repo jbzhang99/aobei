@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+ <html layout:decorate="~{base_layout}">
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"> -->
+<head>
+<meta charset="UTF-8"></meta>
+<title>结算信息</title>
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script TYPE="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<meta name="context-path" th:content="@{/}" />
+<script type="text/javascript" th:inline="javascript">
+//初始化alertify
+reset = function () {
+	$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+	alertify.set({
+	  labels : {
+	    ok   : "确认",
+	    cancel : "取消"
+	  },
+	  delay : 3000,
+	  buttonReverse : false,
+	  buttonFocus  : "ok"
+    });
+};
+
+$(function() {
+    $("#excelFile").fileinput({
+        language: 'zh', //设置语言
+        showPreview: false,
+        showUpload: false,
+        elErrorContainer: '#kartik-file-errors',
+        allowedFileExtensions: ["xlsx", "xls"]
+    });
+
+
+    //搜索功能
+    $("#search_btn").click(function () {
+		var orderId=$('#orderId').val();
+		if(orderId !=null || orderId !=""){
+            window.location.href="/balance/balance_hangup_list?orderId="+orderId;
+		}else{
+            window.location.href="/balance/balance_hangup_list";
+		}
+    });
+});
+
+    //导出
+    function exportBalance() {
+        var mts = [[${application.mts}]];
+        reset();
+        alertify.confirm("确定要以当前条件导出为excel数据吗？",function (e) {
+			if(e){
+			    var bal = $("#balanceDate").val();
+				var json = {"balance_cycle":bal,"mts":mts};
+				var single = {"mts":mts};
+				var status=3;
+			    $.post('/balance/exportBalance?status='+status,bal==null?JSON.stringify(single):JSON.stringify(json),function (data) {
+                    reset();
+                    alertify.success(data.msg);
+                })
+			}else{
+			    reset();
+			    alertify.log("以取消操作！");
+			}
+        })
+		//window.location.href="[(@{/balance/exportBalance})]";
+	}
+
+
+
+//解除挂起
+/*function banlanceOk(balance_order_id){
+    var pageNo=[[${page.pageNo}]];
+    $.ajax({
+        url:'/balance/hangDown/'+balance_order_id,//提交的位置
+        type:'POST',
+        success:function(data){
+            //请求成功时
+            reset();
+            alertify.success(data.message);
+            setTimeout(function (){
+                window.location.href="/balance/balance_waiting_list?pageNo="+pageNo;
+            }, 1000);
+        },
+        dataType:'json'
+    });
+}*/
+
+function sendCycle(balance_order_id,balance_cycle,pageNo){
+    $("#balanceId").val(balance_order_id);
+    $("#cycle").val(balance_cycle);
+    $("#cycleModal").modal('show');
+}
+
+function addCycle(pageNo){
+    var id=$("#balanceId").val();
+    var cycle=$("#cycle").val();
+    $.ajax({
+        url:'/balance/selectCycleMax?cycle='+cycle,//提交的位置
+        type:'POST',
+        success:function(data){
+            if(data==false){
+                reset();
+				alertify.alert("已经大于最大结算期，请重新输入！")
+				return false;
+			}
+            setTimeout(function (){
+                window.location.href="/balance/updCycle?id="+id+"&cycle="+cycle+"&pageNo="+pageNo;
+            }, 1000);
+        },
+        dataType:'json'
+    });
+}
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar form-inline" >
+	
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+		  <li class="active">挂起待结算</li>
+		  <li class="libtn" >
+			<button sec:authorize="hasRole('ROLE_BALANCE_ORDERUP_EDIT')" class="btn btn-primary" th:onclick="|exportBalance()|"><i class="fas fa-sign-out-alt"></i>&nbsp;导出</button>
+		  </li>
+		  <li >
+			<input class="form-control" type="text" id="orderId" name="orderId" placeholder="请输入订单号"/>&nbsp;<button id="search_btn" class="btn btn-primary"><span class="fa fa-search"></span>&nbsp;查询</button>
+		  </li>
+		</ol>
+		
+	</div>
+	
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_45">
+		<!--/* 以下为自定义代码块  */-->
+		<div class="table-responsive">
+			<!-- 动态 -->
+			<table id="table-cont" class="table table-striped table-hover">
+				<thead>
+					<tr bgcolor="#FFFFFF">
+						<!--<th width="200px">结算期</th>-->
+						<th width="200px">订单号</th>
+						<th width="130px">服务单号</th>
+						<th width="130px">类型</th>
+						<th width="200px">商品</th>
+						<th width="200px">订单生成时间</th>
+						<th width="200px">服务人员完成时间</th>
+						<!--<th width="200px">客户确认完成时间</th>-->
+						<th width="150px">订单金额</th>
+						<th width="200px">实付金额</th>
+						<th width="200px">优惠券</th>
+						<th width="200px">礼券</th>
+						<th width="200px">积分</th>
+						<th width="200px">促销优惠金额</th>
+						<th width="200px">合伙人</th>
+						<th width="150px">合伙人ID</th>
+						<th width="150px">合伙人级别</th>
+						<th width="150px">结算策略名称</th>
+						<th width="150px">结算策略类型</th>
+						<th width="150px">合作起日期</th>
+						<th width="150px">合作止日期</th>
+						<th width="150px">结算策略开始时间</th>
+						<th width="150px">结算策略结束时间</th>
+						<th width="150px">订单待结算金额(合伙人)</th>
+						<th width="150px">平台服务费</th>
+						<th width="150px">状态</th>
+						<th width="150px" sec:authorize="hasRole('ROLE_BALANCE_ORDERUP_EDIT')">操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="balanceOrder:${balanceOrderList}">
+						<!--<td th:text="${balanceOrder.balance_cycle}"></td>-->
+						<td th:text="${balanceOrder.pay_order_id}"></td>
+						<td th:text="${balanceOrder.serviceunit_id}"></td>
+						<td th:text="完成"></td>
+						<td>
+							<th:block th:each="product:${products}" th:if="${product.product_id==balanceOrder.product_id}">
+								<span th:text="${product.name}"></span>
+							</th:block>
+						</td>
+						<td th:text="${#dates.format(balanceOrder.order_create_datetime,'yyyy-MM-dd')}"></td>
+						<td th:text="${#dates.format(balanceOrder.work_finish_datetime,'yyyy-MM-dd')}"></td>
+						<!--<td th:text="${#dates.format(balanceOrder.work_finish_datetime,'yyyy-MM-dd')}"></td>-->
+						<td th:text="${#numbers.formatDecimal(balanceOrder.price_total*0.01,1,2)}"></td>
+						<td th:text="${#numbers.formatDecimal(balanceOrder.price_pay*0.01,1,2)}"></td>
+						<td></td><!--优惠券-->
+						<td></td><!--礼券-->
+						<td></td><!--积分-->
+						<td th:text="${#numbers.formatDecimal(balanceOrder.price_discount*0.01,1,2)}"></td><!--促销优惠金额-->
+						<td th:text="${balanceOrder.partner_name}"></td>
+						<td th:text="${balanceOrder.partner_id}"></td>
+						<td th:text="${balanceOrder.partner_level}"></td>
+						<td th:text="${balanceOrder.fallinto_name}"></td>
+						<td>
+							<th:block th:each="fallinto:${fallintos}" th:if="${balanceOrder.fallinto_id==fallinto.fallinto_id}">
+								<th:block th:switch="${fallinto.fallinto_type}">
+									<span th:case="1">底价</span>
+									<span th:case="2">比例</span>
+									<span th:case="3">单数阶梯</span>
+									<span th:case="4">金额阶梯</span>
+									<span th:case="5">客单价阶梯</span>
+								</th:block>
+							</th:block>
+						</td>
+						<td th:text="${#dates.format(balanceOrder.cooperation_start,'yyyy-MM-dd')}"></td>
+						<td th:text="${#dates.format(balanceOrder.cooperation_end,'yyyy-MM-dd')}"></td>
+						<td th:text="${#dates.format(balanceOrder.create_datetime,'yyyy-MM-dd')}">
+							<!--<th:block th:each="partnerFallinto:${partnerFallintos}" th:if="${partnerFallinto.fallinto_id==balanceOrder.fallinto_id && partnerFallinto.product_id==balanceOrder.product_id}">
+								<span th:text="${#dates.format(partnerFallinto.start_datetime,'yyyy-MM-dd')}"></span>
+							</th:block>-->
+						</td>
+						<td th:text="${#dates.format(balanceOrder.balance_datetime,'yyyy-MM-dd')}">
+							<!--<th:block th:each="partnerFallinto:${partnerFallintos}" th:if="${partnerFallinto.fallinto_id==balanceOrder.fallinto_id && partnerFallinto.product_id==balanceOrder.product_id}">
+								<span th:text="${#dates.format(partnerFallinto.end_datetime,'yyyy-MM-dd')}"></span>
+							</th:block>-->
+						</td>
+						<td th:text="${#numbers.formatDecimal(balanceOrder.partner_balance_fee*0.01,1,2)}"></td>
+						<td th:text="${#numbers.formatDecimal(balanceOrder.balance_fee*0.01,1,2)}"></td>
+						<td>
+							<th:block th:switch="${balanceOrder.status}">
+								<span th:case="1">待结算</span>
+								<span th:case="3">挂起</span>
+							</th:block>
+						</td>
+						<td>
+							<button sec:authorize="hasRole('ROLE_BALANCE_ORDERUP_EDIT')" class="btn btn-link btn-xs" th:onclick="|sendCycle('${balanceOrder.balance_order_id}','${balanceOrder.balance_cycle}','${page.pageNo}')|">
+								<span class="glyphicon glyphicon-floppy-remove" aria-hidden="true"></span> 结算
+							</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<div th:include="~{tags/pagination::p1(@{/balance/balance_hangup_list},${page.total},${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+		
+	</div>
+
+	<div class="modal fade" id="cycleModal" data-keyboard="false" data-backdrop="static" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-body">
+					<form id="form1">
+						<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;">结算期:</label>
+						<div class="col-sm-8 form-inline row">
+							<input type="text" name="balanceId" id="balanceId" hidden="hidden">
+							<input class="form-control" type="text" name="cycle" id="cycle" placeholder="请输入结算期">
+						</div>
+					</form>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal" onclick="javascript:closeModel()">关闭</button>
+						<button type="button" class="btn btn-primary"  th:onclick="|addCycle('${page.pageNo}')|">确定</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

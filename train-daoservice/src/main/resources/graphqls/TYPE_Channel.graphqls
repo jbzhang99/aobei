@@ -1,0 +1,19 @@
+#渠道数据
+type Channel{
+
+    channel_id : Int
+
+    #名称
+    channel_name : String
+
+    #code 码
+    code : String
+
+    create_datetime : Date
+
+    channel_type_id : Int
+
+    #是否删除  1 是 0 否
+    deleted : Int
+}
+

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}">
+<head>
+<meta charset="UTF-8">
+<title>内容推荐编辑页</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<style type="text/css">
+	.glyphicon-move{
+		display: none;
+	}
+	button.kv-file-remove{
+		display: none;
+	}
+	.file-upload-indicator{
+		display: none;
+	}
+</style>
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<script type="text/javascript" th:src="@{/js/custom/banner-func.js(v=20180614)}"></script>
+<script type="text/javascript" th:inline="javascript">
+	$(function(){
+	    $("#input_type").attr("checked",true);
+        var id = $("#back_id").val();
+
+	    if([[${href}]]!=0){
+	        $.get('/bannermanager/getProductInfo',{cms_banner_id:id},function (data) {
+                var html = [];
+                html.push("<p id='data' style='color:red;'>");
+				if(data.name!=""){
+                    html.push($("#input_type_text").val()+" | "+data.name);
+                    html.push("<input hidden name='href' value="+data.product_id+" />");
+				}else{
+                    html.push($("#input_type_text").val()+" | "+"此商品不存在");
+                    html.push("<input hidden name='href' value='' />");
+				}
+                html.push("<a style='margin-left:40px;' href='#' onclick='edit_pro1()'>编辑</a>");
+                html.push("<a style='margin-left:40px;' href='#' onclick='del_pro(this)'>删除</a>")
+                html.push("</p>");
+                $("#last_div").html(html.join(''));
+            })
+
+		}else{
+            $("#input_type").attr("checked",false);
+		}
+		ymdhm();
+		var app = [[${back_app}]]
+		$(".back_butn").click(function(){
+			window.location.href = "/bannermanager/goto_banner_list?app="+app;
+		});
+		
+		//fileinput_set();
+	    
+	    //form_validator();
+	    
+		$('#form2').bootstrapValidator({
+	        message: '这个值是无效的！',
+	        live: 'enabled',
+	        feedbackIcons: {
+//			            valid: 'glyphicon glyphicon-ok',
+//			            invalid: 'glyphicon glyphicon-remove',
+//			            validating: 'glyphicon glyphicon-refresh'
+	        },
+	        fields: {
+	        	title: {
+	                validators: {
+// 	                    notEmpty: {
+// 	                        message: '请输入标题！'
+// 	                    },
+	                    stringLength: {
+	                        max: 15,
+	                        message: '标题最长不得多于15个字符'
+	                    } 
+	                }
+	            },
+	            intro: {
+	                validators: {
+// 	                	notEmpty: {
+// 	                        message: '请输入简介！'
+// 	                    },
+	                    stringLength: {
+	                        max: 99,
+	                        message: '简介最长不得多于99个字符'
+	                    } 
+	                }
+	            },
+	            app: {
+	                validators: {
+	                	notEmpty: {
+	                        message: '请选择图片的用途！'
+	                    }
+	                }
+	            },
+	            online_datetime: {
+	                validators: {
+	                    notEmpty: {
+	                        message: '请选择上线时间！'
+	                    }
+	                }
+	            },
+	            offline_datetime: {
+	                validators: {
+	                	notEmpty: {
+	                        message: '请选择下线时间！'
+	                    }
+	                }
+	            }
+	        }
+	    });
+	    
+	    var img_url = [[${img.url}]];
+	    var img_name = [[${img.name}]];
+	    var img_use = [[${img.effect}]];
+	    $("#cover_img").fileinput({
+	    	language: 'zh', //设置语言
+	        //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+	        allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+	        //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+	        //uploadAsync: true, //默认异步上传
+	        showUpload:false, //是否显示上传按钮
+	        showRemove :true, //显示移除按钮
+	        showPreview :true, //是否显示预览
+	        showCaption:false,//是否显示标题
+	        //browseClass:"btn btn-primary", //按钮样式    
+	        dropZoneEnabled: false,//是否显示拖拽区域
+	        /*minImageWidth: 50, //图片的最小宽度
+	        minImageHeight: 50,//图片的最小高度
+	        maxImageWidth: 1080,//图片的最大宽度
+	        maxImageHeight: 343,//图片的最大高度*/
+	        maxFileSize:1000,//单位为kb，如果为0表示不限制文件大小
+	        //minFileCount: 0,
+	        //maxFileCount:10, //表示允许同时上传的最大文件个数
+	        enctype:'multipart/form-data',
+	        validateInitialCount:true,
+	        //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+	        //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+	    	initialPreview: [
+		        "<img src='"+img_url+"' class='file-preview-image' style='width:auto;height:auto;max-width:100%;max-height:100%;' alt='"+img_use+"' title='"+img_use+"'>"
+		    ],
+		    initialPreviewConfig: [
+		        {
+		            caption: img_name
+		        }
+		    ]
+	    });
+	    
+	    $("#edit_save_btn").click(function(){
+	    	$("#form2").bootstrapValidator('validate');//提交验证
+	    	var online_datetime = $("#online_datetime").val();
+			var offline_datetime = $("#offline_datetime").val();
+			if(online_datetime >= offline_datetime){
+				reset();
+				alertify.alert("上线时间应在下线时间之前，请重新选择！");
+				return false;
+			}
+            var app = $("#app").val();
+            if(app==''|| app==0){
+                reset();
+                alertify.alert("请选择使用端!");
+                return false;
+            }
+            var s = $("#rad_yes").prop("checked");
+            /*var data = $("#data").length;
+			 if(s==true & data==0){
+                reset();
+                alertify.alert("请选择跳转路径！");
+                return false;
+			}*/
+			if($("#input_type").attr("checked")){
+				if($("input[name='href']").val()==""){
+					reset();
+					alertify.alert("跳转类型没有选择有效商品！");
+					return false;
+				}
+			}
+	 		if ($("#form2").data('bootstrapValidator').isValid()) {
+		    	var formData = new FormData($("#form2")[0]);
+		    	$.ajax({
+		    		type:'post',
+		    	    url:'/bannermanager/edit_save_banner',
+		    	    data:formData,
+		    	    cache:false,//false是不缓存，true为缓存
+		    	    //async:false,//true为异步，false为同步
+		    	    contentType:false,// 告诉jQuery不要去处理发送的数据
+	                processData:false,// 告诉jQuery不要去设置Content-Type请求头
+		    	    dataType:'json',
+		    	    success:function(data){
+		    	        //请求成功时
+		    	        reset();
+		    	    	alertify.success(data.msg);
+		    	    	setTimeout(function (){
+		    	    		window.location.href = "/bannermanager/goto_banner_list?app="+app;
+						}, 1500);
+		    	    }
+		    	});
+	 		}
+	    	return false;
+		});
+
+        $("#btn_search").click(function () {
+            var con = $("#pro").val()
+            get_product_list(con);
+        })
+
+        $("#btn_search_native").click(function () {
+            var na = $("#native").val()
+            get_native_list(na);
+        })
+
+
+        $("#pro_add_btn").click(function () {
+            load();
+            $("#modal_product").modal('hide')
+        })
+        $("#native_add_btn").click(function () {
+            load();
+			$("#modal_native").modal('hide')
+        })
+	    $("#div_body").hide();
+	    $("#rad_yes").change(function () {
+            var s = $("#rad_yes").prop("checked");
+            if(s){
+                $("#div_body").show();
+            }else{
+                $("#div_body").hide();
+            }
+        })
+
+		//使用端回显
+		$("#port").val([[${group_name}]]);
+        var v = $("#port").val();
+        inint(v);
+		/*----------------0.5 version  新增---------------------*/
+        $("#btn_search1").click(function () {
+            var con1 = $("#pro1").val()
+            get_product_list1(con1);
+        })
+        $("#pro_add_btn1").click(function () {
+            load1();
+            $("#modal_product_1").modal('hide')
+        })
+		$("#pro_close_btn1").click(function () {
+			$("#modal_product_1").modal('hide');
+            if($("input[name='href']").val()==undefined){
+                $("input[name='product_href']").attr("checked",false);
+			}
+
+			if($("input[name='href']").val()==undefined){
+                $("#input_type").attr("checked",false);
+			}
+			/*if($("input:radio:checked[name='product_href']").length==0){
+                $("#input_type").attr("checked",false);
+			}*/
+        })
+        var product_id = $("#val_href").val()
+		if(product_id.length==19){
+            $("input[name='product_href']").each(function (i,k) {
+                if(k.id==product_id){
+                    k.setAttribute("checked","checked");
+                }
+            })
+		}
+
+	});
+    function edit_pro(pro) {
+        goto_page_data(pro);
+    }
+    function del_pro(o) {
+        $(o).parent().remove();
+        $("#input_type").attr("checked",false);
+        $("input[name='product_href']").attr("checked",false);
+    }
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+		  <li><a class="back_butn" style="cursor: pointer;">内容推荐</a></li>
+		  <li class="active">编辑</li>
+		</ol>
+	</div>
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_8">
+		<!--/* 动态   */--> 
+		<form id="form2" class="form-horizontal" enctype="multipart/form-data" action="#" th:action="@{/bannermanager/edit_save_banner}" th:object="${cmsBanner}"  method="post" >
+			<input id="back_id" th:value="${cms_banner_id}" type="hidden"/>
+			<input id="back_app" name="back_app" th:value="${back_app}" type="hidden"/>
+			<input name="mts" th:value="${application.mts}" type="hidden"/>
+			<input type="hidden" th:field="*{cms_banner_id}"/>
+			<input type="hidden" id="val_href" th:value="${substring}"/>
+			<input type="hidden" th:field="*{img_cover}"/>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="cover_img"><span style="color: red;">* </span>封面图</label>
+				<div class="col-sm-4">
+					<input type="file" class="form-control" id="cover_img" 
+						name="cover_img" placeholder="请选择要上传的封面图片" th:value="${img.url}"/><br/>
+					<span style="color: indianred;">建议图片宽：750 高：375，分辨率比例为2：1，最大不能超过1M</span>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="online_datetime"><span style="color: red;">* </span>上线时间</label>
+				<div class="col-sm-4 input-group date datetimepicker2" style="padding:0 15px">
+					<div>
+						<input id="online_datetime" class="form-control" type="text" name="online_datetime" th:value="*{#dates.format(online_datetime,'yyyy-MM-dd HH:mm')}" style="width: 210px;"/>  
+						<span class="input-group-addon" style="width: 50px; height: 34px;">
+		                    <span class="glyphicon glyphicon-calendar"></span>
+		                </span>
+	                </div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="offline_datetime"><span style="color: red;">* </span>下线时间</label>
+				<div class="col-sm-4 input-group date datetimepicker2"  style="padding:0 15px">
+					<div>
+						<input id="offline_datetime" class="form-control" type="text" name="offline_datetime" th:value="*{#dates.format(offline_datetime,'yyyy-MM-dd HH:mm')}" style="width: 210px;"/>  
+						<span class="input-group-addon" style="width: 50px; height: 34px;">
+		                    <span class="glyphicon glyphicon-calendar"></span>
+		                </span>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="title">标题</label>
+				<div class="col-sm-3">
+					<input type="text" class="form-control" id="title"
+						name="title"  th:field="*{title}"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="intro">简介</label>
+				<div class="col-sm-4">
+					<textarea class="form-control" id="intro"
+						name="intro" th:field="*{intro}" style="height: 100px"></textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-4 control-label" for="app"><span style="color: red;">* </span>使用端</label>
+				<div class="col-sm-2">
+					<select class="form-control" id="port" name="port" onchange="change_port(this)">
+						<option value=''>请选择</option>
+						<option value='顾客端'>顾客端</option>
+						<option value='老师端'>老师端</option>
+						<option value='学员端'>学员端</option>
+						<option value='合伙人端'>合伙人端</option>
+					</select>
+				</div>
+				<div class="col-sm-2">
+					<select class="form-control" name="app" id="app">
+
+					</select>
+				</div>
+			</div>
+			<!--<div class="form-group" >
+				<label class="col-sm-4 control-label" >是否更改跳转路径</label>
+				<div class="col-sm-2">
+					<input id="rad_yes" name="yn" type="checkbox" />
+				</div>
+			</div>-->
+			<!--<div id="div_body">-->
+				<!--<div class="form-group" >
+					<label class="col-sm-4 control-label" >跳转类型</label>
+					<div class="col-sm-2">
+						<select id="select_type" class="form-control" name="type" th:onchange="|goto_page(this)|" >
+							<option value="">请选择</option>
+							<option value="1">http跳转</option>
+							<option value="2">native跳转</option>
+						</select>
+					</div>
+				</div>-->
+				<div class="form-group" >
+					<label class="col-sm-4 control-label" >跳转类型</label>
+					<div class="col-sm-2">
+						<input id="input_type" name="type" type="radio" th:onclick="|goto_product(this)|" value="3"/>
+						<input id="input_type_text" type="text" value="指定商品" style="width:100px;border:none;outline:none" readonly/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"></label>
+					<div class="col-sm-5" id="last_div">
+
+					</div>
+				</div>
+			<!--</div>-->
+			<div class="form-group">
+				<div class="col-sm-5 col-sm-offset-4">
+					<button id="edit_save_btn" type="submit" class="btn btn-primary" >确定</button>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<input class="btn btn-primary back_butn" type="button" value="取消" />
+				</div>
+			</div>
+		</form>
+		<!--         ***        http 跳转 模态框     ***       -->
+		<div class="modal fade" id="modal_product" data-keyboard="false"  data-backdrop="static" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">商品信息</h4>
+					</div>
+					<div class="modal-body">
+						<div class="form-inline">
+							<div class="form-group">
+								<!--<label>已上架商品：</label>-->
+								<input id="pro" class="form-control" placeholder="请输入标题名称">
+								<button id="btn_search" class="btn-primary form-control btn-sm" style="margin-left:20px">查询</button>
+							</div>
+						</div><hr>
+						<table class="table table-striped table-hover" >
+							<thead >
+							<tr>
+								<th></th>
+								<th>标题</th>
+
+							</tr>
+							</thead>
+							<tbody id="tbody_product">
+							<tr th:each="cmsUrl:${cmsUrls}">
+								<td style="vertical-align: middle;width:50px">
+									<input  name="banner_href" type="radio"  th:id="${cmsUrl.cms_url_id}" />
+								</td>
+								<td style="vertical-align: middle" th:text="${cmsUrl.title}"></td>
+
+							</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="modal-footer form-group " style="text-align:center">
+						<button id="pro_close_btn" type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+						<button id="pro_add_btn" type="button" class="btn btn-primary" >确定</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!--         ***        native 跳转 模态框     ***       -->
+		<div class="modal fade" id="modal_native" data-keyboard="false"  data-backdrop="static" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">页面信息</h4>
+					</div>
+					<div class="modal-body">
+						<div class="form-inline">
+							<div class="form-group">
+								<!--<label>已上架商品：</label>-->
+								<input id="native" class="form-control" placeholder="请输入标题名称">
+								<button id="btn_search_native" class="btn-primary form-control btn-sm" style="margin-left:20px">查询</button>
+							</div>
+						</div><hr>
+						<table class="table table-striped table-hover" >
+							<thead >
+							<tr>
+								<th></th>
+								<th>标题</th>
+
+							</tr>
+							</thead>
+							<tbody id="tbody_native">
+							<tr th:each="na:${natives}">
+								<td style="vertical-align: middle;width:50px">
+									<input  name="banner_href" type="radio"  th:id="${na.cms_url_id}" />
+								</td>
+								<td style="vertical-align: middle" th:text="${na.title}"></td>
+
+							</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="modal-footer form-group " style="text-align:center">
+						<button id="native_close_btn" type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+						<button id="native_add_btn" type="button" class="btn btn-primary" >确定</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--         ***        商品模态框     ***       -->
+		<div class="modal fade" id="modal_product_1" data-keyboard="false"  data-backdrop="static" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">商品信息</h4>
+					</div>
+					<div class="modal-body" style="display:block;overflow-y:auto;height:350px;">
+						<div class="form-inline">
+							<div class="form-group">
+								<!--<label>已上架商品：</label>-->
+								<input id="pro1" class="form-control" placeholder="请输入商品名称">
+								<button id="btn_search1" class="btn-primary form-control btn-sm" style="margin-left:20px">查询</button>
+							</div>
+						</div><hr>
+						<table class="table table-striped table-hover" >
+							<thead >
+							<tr>
+								<th></th>
+								<th>商品名称</th>
+								<!--<th>创建时间</th>-->
+							</tr>
+							</thead>
+							<tbody id="tbody_product1">
+							<tr th:each="product:${products}">
+								<td style="vertical-align: middle;width:50px">
+									<input  name="product_href" type="radio"  th:id="${product.product_id}"  text="指定商品"/>
+								</td>
+								<td style="vertical-align: middle" th:text="${product.name}"></td>
+								<!--<td style="vertical-align: middle" th:text="${#dates.format(product.create_datetime,'yyyy-MM-dd')}"></td>-->
+							</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="modal-footer form-group " style="text-align:center">
+						<button id="pro_close_btn1" type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+						<button id="pro_add_btn1" type="button" class="btn btn-primary" >确定</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+	</div>
+</div>
+</body>
+</html>

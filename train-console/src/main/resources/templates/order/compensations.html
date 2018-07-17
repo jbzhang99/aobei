@@ -1,0 +1,447 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}">
+<head>
+<title>赔偿信息列表</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
+<script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    $(function(){
+        ymdhm();
+        var partner_id = [[${partner_id}]];
+        if(partner_id){
+            $(".partner_id option").each(function(){
+                if($(this).val() == partner_id){
+                    $(this).prop("selected",true);
+                }
+            });
+        }
+
+        $(".query").click(function(){
+            var pay_order_id = $(".pay_order_id").val();
+            var q_begin_datetime = $(".q_begin_datetime").val();
+            var q_end_datetime = $(".q_end_datetime").val();
+            var cuname = $(".cuname").val();
+            var uphone = $(".uphone").val();
+            var student_name = $(".student_name").val();
+            var partner_id = $(".partner_id").val();
+            var compensation_status = $(".compensation_status").val();
+
+            var url = "/ordermanager/compensations?pay_order_id="+pay_order_id+
+                "&cuname="+cuname+"&uphone="+uphone+"&student_name="+student_name+
+                "&partner_id="+partner_id+"&compensation_status="+compensation_status;
+
+            if(q_begin_datetime != '' && q_end_datetime != ''){
+                if(q_end_datetime < q_begin_datetime){
+                    reset();
+                    alertify.alert("查询结束时间不得小于查询开始时间！");
+                    return;
+                }else{
+                    var q_be = "&q_begin_datetime="+q_begin_datetime+"&q_end_datetime="+q_end_datetime;
+                    url = url + q_be;
+                }
+            }else if(q_begin_datetime != '' || q_end_datetime != ''){
+                reset();
+                alertify.alert("查询开始、结束时间不可以有空值！");
+                return;
+            }
+
+            window.location.href = url;
+        });
+    });
+
+    function detail(pay_order_id,pageNo){
+        window.location.href = "/ordermanager/order_detail?page_current_page="+pageNo+"&pay_order_id="+pay_order_id;
+    }
+
+    function compensation_info(pay_order_id) {
+        $.ajax({
+            url:"/ordermanager/compensation_check_exist",
+            type : 'post',
+            data :{
+                pay_order_id:pay_order_id
+            },
+            success:function(data){
+                if($('#radioA').length<=0){
+                    $.each(data.programmes,function(i,ele){
+                        var html = [];
+                        html.push("<div id='radioA' class='radio'><label>");
+                        html.push("<input style='margin-left: 20px' type='radio' name='coupon_id' value="+ele.coupon_id+">");
+                        html.push("<span style='margin-left: 35px'>"+ele.title+"</span>");
+                        html.push("</label></div>");
+                        $("#coupon_receive").children().last().append(html.join(''));
+                    });
+                }
+                if(data.compensation != null){
+                    $("#amount").val(data.compensation.amount * 0.01);
+                    $("input[type='radio']").each(function(i,ele){
+                        if(ele.value == data.compensation.coupon_id){
+                            $(this).attr('checked',true);
+                        }
+                    });
+                    $("#partner_bear_amount").val(data.compensation.partner_bear_amount * 0.01);
+                    $("#partner_bear_coupon_amount").val(data.compensation.partner_bear_coupon_amount * 0.01);
+                    $("#compensation_info").val(data.compensation.compensation_info);
+                    $("#payee").val(data.compensation.payee);
+                    $("#payee_card").val(data.compensation.payee_card);
+                    $("#receiving_bank").val(data.compensation.receiving_bank);
+                    $("#compensation").modal('show');
+                }
+            }
+        });
+    }
+
+    function compensation_confirm(compensation_id) {
+        $.ajax({
+            url:"/ordermanager/compensation_confirm",
+            type : 'post',
+            data :{
+                compensation_id:compensation_id
+            },
+            success:function(data){
+                reset();
+                alertify.success(data.msg);
+                setTimeout(function (){
+                    location.reload(true);
+                }, 1500);
+            }
+        });
+    }
+
+    function compensation_reject(compensation_id) {
+        $.ajax({
+            url:"/ordermanager/compensation_reject",
+            type : 'post',
+            data :{
+                compensation_id:compensation_id
+            },
+            success:function(data){
+                reset();
+                alertify.success(data.msg);
+                setTimeout(function (){
+                    location.reload(true);
+                }, 1500);
+            }
+        });
+    }
+
+    function exportExcel() {
+        reset();
+        alertify.confirm("确定要以当前条件生成excel列表吗？", function (e) {
+            if (e) {
+                var pay_order_id = $(".pay_order_id").val();
+                var q_begin_datetime = $(".q_begin_datetime").val();
+                var q_end_datetime = $(".q_end_datetime").val();
+                var cuname = $(".cuname").val();
+                var uphone = $(".uphone").val();
+                var student_name = $(".student_name").val();
+                var partner_id = $(".partner_id").val();
+                var compensation_status = $(".compensation_status").val();
+
+                var json = {"pay_order_id":pay_order_id,"q_begin_datetime":q_begin_datetime,"q_end_datetime":q_end_datetime,
+                    "cuname":cuname,"uphone":uphone,"student_name":student_name,"partner_id":partner_id,"compensation_status":compensation_status};
+
+                reset = function () {
+                    $("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
+                    alertify.set({
+                        labels : {
+                            ok   : "确认",
+                            cancel : "取消"
+                        },
+                        delay : 5000,
+                        buttonReverse : false,
+                        buttonFocus  : "ok"
+                    });
+                };
+
+                $.ajax({
+                    url:"/ordermanager/exportCompensations",
+                    type : 'post',
+                    data :{
+                        params:JSON.stringify(json)
+                    },
+                    success:function(data){
+                        reset();
+                        alertify.success(data.msg);
+                    }
+                });
+            } else {
+                reset();
+                alertify.log("已取消操作。");
+            }
+        });
+    }
+</script>
+</head>
+<body>
+<div layout:fragment="content">
+    <!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+    <div class="page_content_bar">
+        <!--/* 面包屑  */-->
+        <ol class="breadcrumb clearfix">
+            <li class="active">赔偿单列表</li>
+            <li class="libtn">
+                <button sec:authorize="hasRole('ROLE_COMPENSATION_EXPORT')" id="export_btn" name="file" class="btn btn-primary" onclick="exportExcel()">
+                    <span class="fas fa-sign-out-alt"></span>导出
+                </button>
+            </li>
+        </ol>
+    </div>
+    <!--/* 页面部分二              页面主内容  */-->
+    <div class="page_content_main" data-sidea="side_27">
+        <div style="padding:10px 10px; background:#fff" class="screen">
+            <div class="ab_screen">
+                <div class="form-inline">
+                    <div class="form-group"  style="margin-right: 20px">
+                        <label>订单号：</label>
+                        <input type="text" name="pay_order_id" th:if="${pay_order_id != ''}" th:value="${pay_order_id}" class="form-control pay_order_id input-sm"/>
+                    </div>
+                    <div class="form-group">
+                        <label>赔偿申请时间：</label>
+                        <div class="input-group date datetimepicker2">
+                            <input class="form-control  q_begin_datetime input-sm" type="text" name="q_begin_datetime" th:if="${q_begin_datetime != ''}"
+                                   th:value="${#dates.format(q_begin_datetime,'yyyy-MM-dd HH:mm')}" style="width: 130px;" />
+                            <span class="input-group-addon" style="width: 50px; height: 30px;">
+										<span class="glyphicon glyphicon-calendar"></span>
+									</span>
+                        </div>
+                        <label>~</label>
+                        <div class="input-group date datetimepicker2">
+                            <input class="form-control  q_end_datetime input-sm" type="text" name="q_end_datetime" th:if="${q_end_datetime != ''}"
+                                   th:value="${#dates.format(q_end_datetime,'yyyy-MM-dd HH:mm')}" style="width: 130px;" />
+                            <span class="input-group-addon" style="width: 50px; height: 30px;">
+										<span class="glyphicon glyphicon-calendar"></span>
+									</span>
+                        </div>
+                    </div>
+                </div>
+                <br/>
+                <div class="form-inline">
+                    <div class="form-group"  style="margin-right: 20px">
+                        <label>顾客姓名：</label>
+                        <input type="text" name="cuname" th:if="${cuname != ''}" th:value="${cuname}" class="form-control cuname input-sm">
+                    </div>
+                    <div class="form-group"  style="margin-right: 20px">
+                        <label>顾客电话：</label>
+                        <input type="text" name="uphone" th:if="${uphone != ''}" th:value="${uphone}" class="form-control uphone input-sm">
+                    </div>
+                    <div class="form-group">
+                        <label>服务人员姓名：</label>
+                        <input type="text" name="student_name" th:if="${student_name != ''}" th:value="${student_name}" class="form-control student_name input-sm">
+                    </div>
+                </div>
+                <br/>
+                <div class="form-inline">
+                    <div class="form-group">
+                        <label>合伙人：</label>
+                        <select class="form-control partner_id input-sm" name="partner_id"  style="margin-right: 20px">
+                            <option value=''>请选择</option>
+                            <option th:each="partner:${partners}" th:value="${partner.partner_id}" th:text="${partner.name}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>赔偿状态：</label>
+                        <select class="form-control compensation_status input-sm" name="compensation_status"  style="margin-right: 20px">
+                            <option value=''>全部</option>
+                            <option value="1" th:if="${compensation_status != null or compensation_status != ''}"
+                                th:selected="${compensation_status == 1} ? 'selected'">待处理</option>
+                            <option value="2" th:if="${compensation_status != null or compensation_status != ''}"
+                                    th:selected="${compensation_status == 2} ? 'selected'">已完成</option>
+                            <option value="3" th:if="${compensation_status != null or compensation_status != ''}"
+                                    th:selected="${compensation_status == 3} ? 'selected'">驳回</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary query btn-sm">查询</button>
+                </div>
+            </div>
+        </div>
+        <!--/* 以下为自定义代码块  */-->
+        <div class="table-responsive" style="overflow:auto;">
+            <!--/* 动态  */-->
+            <table id="table-cont" class="table table-striped table-hover">
+                <thead>
+                <tr>
+                    <th width="100px" sec:authorize="hasRole('ROLE_COMPENSATION_BROWSE')">赔偿单号</th>
+                    <th width="100px" sec:authorize="hasRole('ROLE_ORDER_BROWSE')">订单号</th>
+                    <th width="100px">订单状态</th>
+                    <th width="100px">服务名称</th>
+                    <th width="100px">用户姓名</th>
+                    <th width="100px">顾客电话</th>
+                    <th width="100px">服务地址</th>
+                    <th width="100px">服务价格</th>
+                    <th width="100px">实付金额</th>
+                    <th width="100px">赔偿金额</th>
+                    <th width="100px">赔偿券额</th>
+                    <th width="100px">赔偿原因</th>
+                    <th width="100px">合伙人承担金额</th>
+                    <th width="100px">合伙人承担券额</th>
+                    <th width="100px">赔偿申请人</th>
+                    <th width="100px">收款人姓名</th>
+                    <th width="100px">收款人卡号</th>
+                    <th width="100px">收款银行</th>
+                    <th width="100px">合伙人公司名</th>
+                    <th width="100px">服务人员</th>
+                    <th width="100px">赔偿申请时间</th>
+                    <th width="100px">赔偿状态</th>
+                    <th width="100px">操作时间</th>
+                    <th width="100px">操作人</th>
+                    <th width="100px" sec:authorize="hasRole('ROLE_COMPENSATION_OP')">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="info:${list}">
+                    <td style="vertical-align: middle" sec:authorize="hasRole('ROLE_COMPENSATION_BROWSE')">
+                        <th:block th:if="${info.compensation.compensation_status != 3}">
+                            <a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|compensation_info('${info.pay_order_id}');|" th:text="${info.compensation.compensation_id}"></a>
+                        </th:block>
+                        <th:block th:unless="${info.compensation.compensation_status != 3}">
+                            <span th:text="${info.compensation.compensation_id}"></span>
+                        </th:block>
+                    </td>
+                    <td style="vertical-align: middle" sec:authorize="hasRole('ROLE_ORDER_BROWSE')">
+                        <a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|detail('${info.pay_order_id}','${page.pageNo}');|" th:text="${info.pay_order_id}"></a>
+                    </td>
+                    <td style="vertical-align: middle" th:switch="${info.o_status_active}">
+                        <span th:case="1">待付款</span>
+                        <span th:case="2">
+	                  		<th:block th:if="${info.status_active eq 6}" th:text="已拒单"></th:block>
+	                  		<th:block th:unless="${info.status_active eq 6}" th:text="待确认"></th:block>
+	                  	</span>
+                        <span th:case="3">待服务</span>
+                        <span th:case="4">
+							<th:block th:if="${info.r_status eq 2}" th:text="已退款"></th:block>
+							<th:block th:unless="${info.r_status eq 2}" th:text="已取消"></th:block>
+						</span>
+                        <span th:case="5">已完成</span>
+                    </td>
+                    <td style="vertical-align: middle;width: 100px;" th:text="${info.uname}"></td>
+                    <td style="vertical-align: middle;" th:text="${info.cus_username}"></td>
+                    <td style="vertical-align: middle" th:text="${info.cus_phone}"></td>
+                    <td style="vertical-align: middle" th:text="${info.cus_address}"></td>
+                    <td style="vertical-align: middle" th:text="${#numbers.formatDecimal(info.price_total*0.01,1,2)}"></td>
+                    <td style="vertical-align: middle">
+                        <th:block th:if="${info.price_pay != null}" th:text="${#numbers.formatDecimal(info.price_pay*0.01,1,2)}"></th:block>
+                        <th:block th:unless="${info.price_pay != null}" th:text="订单未支付"></th:block>
+                    </td>
+                    <td style="vertical-align: middle;">
+                        <th:block th:if="${info.compensation.amount != null}">
+                            <span th:text="${#numbers.formatDecimal(info.compensation.amount*0.01,1,2)}"></span>
+                        </th:block>
+                    </td>
+                    <td style="vertical-align: middle;">
+                        <th:block th:if="${info.programmeType != null}">
+                            <span th:text="${#numbers.formatDecimal(info.programmeType.value*0.01,1,2)}"></span>
+                        </th:block>
+                    </td>
+                    <td style="vertical-align: middle;" th:text="${info.compensation.compensation_info}"></td>
+                    <td style="vertical-align: middle;">
+                        <th:block th:if="${info.compensation.partner_bear_amount != null}">
+                            <span th:text="${#numbers.formatDecimal(info.compensation.partner_bear_amount*0.01,1,2)}"></span>
+                        </th:block>
+                    </td>
+                    <td style="vertical-align: middle;">
+                        <th:block th:if="${info.compensation.partner_bear_coupon_amount != null}">
+                            <span th:text="${#numbers.formatDecimal(info.compensation.partner_bear_coupon_amount*0.01,1,2)}"></span>
+                        </th:block>
+                    </td>
+                    <td style="vertical-align: middle;" th:text="${info.operator_create.username}"></td>
+                    <td style="vertical-align: middle;" th:text="${info.compensation.payee}"></td>
+                    <td style="vertical-align: middle;" th:text="${info.compensation.payee_card}"></td>
+                    <td style="vertical-align: middle;" th:text="${info.compensation.receiving_bank}"></td>
+                    <td style="vertical-align: middle">
+                        <th:block th:if="${info.partner_id != null}">
+                            <th:block th:each="partner:${partners}">
+                                <span th:if="${partner.partner_id eq info.partner_id}" th:text="${partner.name}"></span>
+                            </th:block>
+                        </th:block>
+                        <th:block th:unless="${info.partner_id != null}" th:text="还未指派合伙人"></th:block>
+                    </td>
+                    <td style="vertical-align: middle">
+                        <th:block th:if="${info.student_name != null}" th:text="${info.student_name}"></th:block>
+                        <th:block th:unless="${info.student_name != null}" th:text="还未指派服务人员"></th:block>
+                    </td>
+                    <td style="vertical-align: middle;" th:text="${#dates.format(info.compensation.create_datetime,'yyyy-MM-dd HH:mm')}"></td>
+                    <td style="vertical-align: middle;" th:switch="${info.compensation.compensation_status}">
+                        <span th:case="1">待处理</span>
+                        <span th:case="2">完成</span>
+                        <span th:case="3">驳回</span>
+                    </td>
+                    <td style="vertical-align: middle;" th:text="${#dates.format(info.compensation.confirm_datetime,'yyyy-MM-dd HH:mm')}"></td>
+                    <td style="vertical-align: middle;">
+                        <th:block th:if="${info.operator_confirm != null}" th:text="${info.operator_confirm.username}"></th:block>
+                        <th:block th:unless="${info.operator_confirm != null}" th:text="无操作人"></th:block>
+                    </td>
+                    <td style="vertical-align: middle" sec:authorize="hasRole('ROLE_COMPENSATION_OP')">
+                        <th:block th:if="${info.compensation.compensation_status eq 1}" >
+                            <a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|compensation_reject('${info.compensation.compensation_id}');|"><i class="fas fa-times-circle"></i>驳回</a>
+                        </th:block>
+                        <th:block th:if="${info.compensation.compensation_status eq 1}">
+                            <a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|compensation_confirm('${info.compensation.compensation_id}');|"><i class="fas fa-check-circle"></i>确认</a>
+                        </th:block>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:include="~{tags/pagination::p1(@{/ordermanager/compensations(pay_order_id=${pay_order_id},q_begin_datetime=${#dates.format(q_begin_datetime,'yyyy-MM-dd HH:mm')},q_end_datetime=${#dates.format(q_end_datetime,'yyyy-MM-dd HH:mm')},
+			cuname=${cuname},uphone=${uphone},student_name=${student_name},partner_id=${partner_id},compensation_status=${compensation_status})},${page.total}
+					,${page.pageSize},${page.pageNo},${page.totalPage},right,p)}">
+        </div>
+        <div class="modal fade" id="compensation" data-keyboard="false"
+             data-backdrop="static" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h4 class="modal-title">发起赔偿</h4>
+                    </div>
+                    <form id="form1">
+                        <div class="modal-body ">
+                            <input type="hidden" name="pay_order_id" id="pay_order_id"/>
+                            <input type="hidden" name="partner_id" id="partner_id"/>
+                            <div class="form-group">
+                                <label>赔偿金额：</label>
+                                <input id="amount" type="text" name="amount" class="form-control" placeholder="请输入赔偿金额" required />
+                            </div>
+                            <div class="form-group">
+                                <label>赔偿原因：</label>
+                                <textarea class="form-control" id="compensation_info"
+                                          name="compensation_info" placeholder="请输入赔偿原因" style="height: 70px" required></textarea>
+                            </div>
+                            <div class="form-group" id="coupon_receive">
+                                <label>赔偿券：</label>
+                            </div>
+                            <div class="form-group">
+                                <label>合伙人承担金额：</label>
+                                <input id="partner_bear_amount" type="text" name="partner_bear_amount" class="form-control" placeholder="请输入合伙人应承担金额" required/>
+                            </div>
+                            <div class="form-group">
+                                <label>合伙人承担券金额：</label>
+                                <input id="partner_bear_coupon_amount" type="text" name="partner_bear_coupon_amount" class="form-control" placeholder="请输入合伙人应承担券金额"/>
+                            </div>
+                            <div class="form-group">
+                                <label>收款人姓名：</label>
+                                <input id="payee" type="text" name="payee" class="form-control" placeholder="请输入收款人姓名" required/>
+                            </div>
+                            <div class="form-group">
+                                <label>收款人卡号：</label>
+                                <input id="payee_card" type="text" name="payee_card" class="form-control" placeholder="请输入收款人卡号" required/>
+                            </div>
+                            <div class="form-group">
+                                <label>收款银行：</label>
+                                <input id="receiving_bank" type="text" name="receiving_bank" class="form-control" required/>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

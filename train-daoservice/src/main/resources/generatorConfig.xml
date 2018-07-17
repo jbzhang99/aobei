@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <context id="PTables" targetRuntime="MyBatis3">
+        <property name="beginningDelimiter" value="`"></property> <!-- &quot; -->
+        <property name="endingDelimiter" value="`"></property>
+        <!--
+       <plugin type="org.mybatis.generator.plugins.CachePlugin">
+           <property name="cache_readOnly" value="false"/>
+           <property name="cache_type" value="org.mybatis.caches.memcached.MemcachedCache"/>
+
+           cache_eviction
+           cache_flushInterval
+           cache_readOnly
+           cache_size
+           cache_type
+       </plugin>
+
+       <plugin type="com.github.liyiorg.mbg.plugin.CachePlugin"/>
+       -->
+        <!-- ExampleBase plugin -->
+        <plugin type="com.github.liyiorg.mbg.plugin.ExampleBasePlugin"></plugin>
+
+        <!-- Pagination plugin   MySQLPaginationPlugin,OraclePaginationPlugin,PostgreSQLPaginationPlugin-->
+        <plugin type="com.github.liyiorg.mbg.plugin.pagination.MySQLPaginationPlugin"></plugin>
+
+        <!-- Upsert plugin   MySQLUpsertPlugin,OracleUpsertPlugin,PostgreSQLUpsertPlugin-->
+        <plugin type="com.github.liyiorg.mbg.plugin.upsert.MySQLUpsertPlugin"></plugin>
+
+        <!-- Example C plugin -->
+        <plugin type="com.github.liyiorg.mbg.plugin.ExampleCPlugin"></plugin>
+
+        <!-- Example CriterionImprovement plugin-->
+        <plugin type="com.github.liyiorg.mbg.plugin.ci.CriterionImprovementPlugin"></plugin>
+
+        <!-- Select column plugin -->
+        <plugin type="com.github.liyiorg.mbg.plugin.ColumnListPlugin"></plugin>
+
+        <!-- Service generator plugin -->
+        <plugin type="com.github.liyiorg.mbg.plugin.ServiceGeneratorPlugin"></plugin>
+        
+        <plugin type="com.github.liyiorg.mbg.plugin.GraphqlGeneratorPlugin"></plugin>
+
+
+        <plugin type="org.mybatis.generator.plugins.CaseInsensitiveLikePlugin"></plugin>
+        <plugin type="org.mybatis.generator.plugins.SerializablePlugin"></plugin>
+        <plugin type="org.mybatis.generator.plugins.ToStringPlugin"></plugin>
+        <plugin type="org.mybatis.generator.plugins.VirtualPrimaryKeyPlugin"></plugin>
+
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://39.106.165.167:3306/train_all?characterEncoding=utf8&amp;useInformationSchema=True&amp;userSSL=false"
+                        userId="root"
+                        password="m$%$:Tmd4ei0V5/A?p+v">
+        </jdbcConnection>
+
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+        <javaModelGenerator targetPackage="com.aobei.train.model" targetProject="src/main/java">
+            <property name="enableSubPackages" value="true"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <sqlMapGenerator targetPackage="com.aobei.train.mapper" targetProject="src/main/resources">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.aobei.train.mapper" targetProject="src/main/java">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <!--
+        <table schema="" tableName="tableName" domainObjectName="domainObjectName">
+             <property name="useActualColumnNames" value="true" />
+             <property name="ci" value="1" /> 1 or 2
+             <property name="remarks" value="1" /> 0,1,2,3
+             <property name="readonly" value="true" />
+             <property name="virtualKeyColumns" value="id1,id2" />
+             <property name="cacheRef" value="" />
+             <property name="graphql" value="true|false"/>
+             <property name="graphqlIgnores" value="table columns"/>
+             <generatedKey column="id" sqlStatement="MySql" identity="true" />
+             <columnOverride column="" delimitedColumnName="true"></columnOverride>
+         </table>
+         -->
+
+        <!-- 学校、教室、教室课程中间表   三个表的生成 -->
+        <table schema="" tableName="school" domainObjectName="School">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <table schema="" tableName="classroom" domainObjectName="Classroom">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <table schema="" tableName="classroom__course" domainObjectName="ClassroomCourse">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!-- 培训视频信息表、图片表和视屏表的生成 -->
+        <table schema="" tableName="oss_img" domainObjectName="OssImg">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 培训计划信息表的生成 -->
+        <table schema="" tableName="train_plan" domainObjectName="Plan">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 培训计划-合伙人中间表 -->
+        <table schema="" tableName="train_plan__partner" domainObjectName="PlanPartner">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 培训计划-学生中间表 -->
+        <table schema="" tableName="train_plan__student" domainObjectName="PlanStudent">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 培训日程时间表 -->
+        <table schema="" tableName="train_schedule" domainObjectName="TrainSchedule">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 培训日程时间表-学生中间表 -->
+        <table schema="" tableName="train_schedule__student" domainObjectName="TrainScheduleStudent">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 考试计划表 -->
+        <table schema="" tableName="exam_plan" domainObjectName="ExamPlan">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 考试申请表-->
+        <table schema="" tableName="exam_apply" domainObjectName="ExamApply">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!-- 内容推荐banner 信息表的生成 -->
+        <table schema="" tableName="cms_banner" domainObjectName="CmsBanner">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!-- 分类表  -->
+        <table schema="" tableName="category" domainObjectName="Category">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 服务项目表  -->
+        <table schema="" tableName="serviceitem" domainObjectName="Serviceitem">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 课程表  -->
+        <table schema="" tableName="course" domainObjectName="Course">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 课程章节表 -->
+        <table schema="" tableName="chapter" domainObjectName="Chapter">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 学员表 -->
+        <table schema="" tableName="student" domainObjectName="Student">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 合伙人表 -->
+        <table schema="" tableName="partner" domainObjectName="Partner">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 课程与服务项目关联表  -->
+        <table schema="" tableName="course__serviceitem" domainObjectName="CourseServiceitem">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 合伙人与服务项目关联表  -->
+        <table schema="" tableName="partner__serviceitem" domainObjectName="PartnerServiceitem">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 学员与服务项目关联表  -->
+        <table schema="" tableName="student__serviceitem" domainObjectName="StudentServiceitem">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!--课程对应的考试科目 -->
+        <table schema="" tableName="course__exam_subject" domainObjectName="CourseExamSubject">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--考试科目 -->
+        <table schema="" tableName="exam_subject" domainObjectName="ExamSubject">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--题库表 -->
+        <table schema="" tableName="question" domainObjectName="Question">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--试卷表 -->
+        <table schema="" tableName="question_paper" domainObjectName="QuestionPaper">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--教师表 -->
+        <table schema="" tableName="teacher" domainObjectName="Teacher">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--教师和课程关联表-->
+        <table schema="" tableName="teacher__course" domainObjectName="TeacherCourse">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--教师支持的考试科目 -->
+        <table schema="" tableName="teacher__exam_subject" domainObjectName="TeacherExamSubject">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--培训地址数据 -->
+        <table schema="" tableName="train_city" domainObjectName="TrainCity">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!--学员评价 -->
+        <table schema="" tableName="course_evaluate" domainObjectName="CourseEvaluate">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!--用户 -->
+        <table schema="" tableName="users" domainObjectName="Users">
+            <property name="useActualColumnNames" value="true"/>
+            <property name="graphqlIgnores" value="password"/>
+        </table>
+
+        <!-- ***************************************          0.3.0          ************************************ -->
+        <!-- 商品表 -->
+        <table schema="" tableName="product" domainObjectName="Product">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 商品单项SKU -->
+        <table schema="" tableName="psku" domainObjectName="ProSku">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 商品评价表 -->
+        <table schema="" tableName="product_evaluate" domainObjectName="ProEvaluate">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 顾客 -->
+        <table schema="" tableName="customer" domainObjectName="Customer">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 顾客服务地址 -->
+        <table schema="" tableName="customer_address" domainObjectName="CustomerAddress">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 服务站 -->
+        <table schema="" tableName="station" domainObjectName="Station">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 订单表 -->
+        <table schema="" tableName="pay_order" domainObjectName="Order">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 订单包含的商品 -->
+        <table schema="" tableName="pay_order_item" domainObjectName="OrderItem">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 订单变更记录 -->
+        <table schema="" tableName="pay_order_log" domainObjectName="OrderLog">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 微信支付回调通知数据 -->
+        <table schema="" tableName="pay_wx_notify" domainObjectName="PayWxNotify">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 服务单 -->
+        <table schema="" tableName="serviceunit" domainObjectName="ServiceUnit">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!-- 消息通知 -->
+        <table schema="" tableName="message_info" domainObjectName="Message">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 服务单和订单表的视图生成 -->
+        <table schema="" tableName="v_order_unit" domainObjectName="VOrderUnit">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 优惠卷 模板 -->
+        <table schema="" tableName="coupon" domainObjectName="Coupon">
+            <property name="useActualColumnNames" value="true"/>
+            <columnOverride column="condition" delimitedColumnName="true"></columnOverride>
+        </table>
+        <!-- 优惠卷 领取消费 -->
+        <table schema="" tableName="coupon_receive" domainObjectName="CouponReceive">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 系统中需要上传到OSS的文件-->
+        <table schema="" tableName="oss_file" domainObjectName="OssFile">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 上传到OSS的文件数据下载表 -->
+        <table schema="" tableName="data_download" domainObjectName="DataDownload">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--用户和微信的关系表，包含appid等-->
+        <table schema="" tableName="users_wx" domainObjectName="UsersWx">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 系统用户表-->
+        <table schema="" tableName="sys_users" domainObjectName="SysUsers">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--与后台可访问的资源对应的key-->
+        <table schema="" tableName="auth_res" domainObjectName="AuthRes">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--授权的角色-->
+        <table schema="" tableName="auth_role" domainObjectName="AuthRole">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--用户和角色关系-->
+        <table schema="" tableName="auth_role__sys_users" domainObjectName="AuthRoleUser">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--角色和可访问资源key-->
+        <table schema="" tableName="auth_role__res" domainObjectName="AuthRoleRes">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+ 		<!--消息文本-->
+        <table schema="" tableName="msgtext" domainObjectName="Msgtext">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+		<!--日志管理-->
+        <table schema="" tableName="operate_log" domainObjectName="OperateLog">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--微信用户信息-->
+        <table schema="" tableName="users_wx_info" domainObjectName="UsersWxInfo">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--优惠策略-->
+        <table schema="" tableName="coupon_env" domainObjectName="CouponEnv">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--退款申请-->
+        <table schema="" tableName="refund" domainObjectName="Refund">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--退款微信回调结果-->
+        <table schema="" tableName="refund_wx_notify" domainObjectName="RefundWxNotify">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--微信app列表-->
+        <table schema="" tableName="wx_app" domainObjectName="WxApp">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--微信商户列表-->
+        <table schema="" tableName="wx_mch" domainObjectName="WxMch">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 产品派单中间表 -->
+        <table schema="" tableName="product_sole" domainObjectName="ProductSole">
+        	<property name="useActualColumnNames" value="true"/>
+        </table>
+        <table schema="" tableName="metadata" domainObjectName="Metadata">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 产品预约策略(主键自增) -->
+        <table schema="" tableName="bespeak_strategy" domainObjectName="Bespeak">
+        	 <property name="useActualColumnNames" value="true"/>
+        	<generatedKey column="id" sqlStatement="MySql" identity="true" />
+        </table>
+        <!-- 抢单池robbing -->
+        <table schema="" tableName="robbing" domainObjectName="Robbing">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="id" sqlStatement="MySql" identity="true" />
+        </table>
+        <!-- 服务项关联表 -->
+        <table schema="" tableName="serviceunit_person" domainObjectName="ServiceunitPerson">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!--*********************************************   0.4.0   *****************************************-->
+        <!-- 赔偿单表 -->
+        <table schema="" tableName="compensation" domainObjectName="Compensation">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--保险表-->
+        <table schema="" tableName="insurance" domainObjectName="Insurance">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--分成策略表-->
+        <table schema="" tableName="fallinto" domainObjectName="Fallinto">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--保险登记-->
+        <table schema="" tableName="insurance_register" domainObjectName="InsuranceRegister">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--合伙人 分成配置-->
+        <table schema="" tableName="partner_fallinto" domainObjectName="PartnerFallinto">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--合伙人 分成配置-->
+        <table schema="" tableName="cms_url" domainObjectName="CmsUrl">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 对账批次表 -->
+        <table schema="" tableName="bill_batch" domainObjectName="BillBatch">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 对账单表 -->
+        <table schema="" tableName="bill" domainObjectName="Bill">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--结算表-->
+        <table schema="" tableName="balance_order" domainObjectName="BalanceOrder">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--支付宝商户-->
+        <table schema="" tableName="ali_pay" domainObjectName="AliPay">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--支付宝商户-->
+        <table schema="" tableName="pay_ali_notify" domainObjectName="PayAliNotify">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--各端字典表数据-->
+        <table schema="" tableName="app_pack" domainObjectName="AppPack">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!--   *********************************************           0.6.0         *********************************************    -->
+        <!--各端字典表数据-->
+        <table schema="" tableName="complete_apply" domainObjectName="CompleteApply">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 渠道管理类型(主键自增) -->
+        <table schema="" tableName="channel_type" domainObjectName="ChannelType">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="id" sqlStatement="MySql" identity="true" />
+        </table>
+        <!-- 渠道管理(主键自增) -->
+        <table schema="" tableName="channel" domainObjectName="Channel">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="id" sqlStatement="MySql" identity="true" />
+        </table>
+        <!-- APP版本控制表(主键自增) -->
+        <table schema="" tableName="app_growth" domainObjectName="AppGrowth">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="id" sqlStatement="MySql" identity="true" />
+        </table>
+        <!-- 扣款表 -->
+        <table schema="" tableName="deduct_money" domainObjectName="DeductMoney">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!-- 罚款表 -->
+        <table schema="" tableName="fine_money" domainObjectName="FineMoney">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+        <!--取消策略表 -->
+        <table schema="" tableName="cancle_strategy" domainObjectName="CancleStrategy">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="id" sqlStatement="MySql" identity="true" />
+        </table>
+
+        <!--学员请假-->
+        <table schema="" tableName="out_of_service" domainObjectName="OutOfService">
+            <property name="useActualColumnNames" value="true"/>
+            <generatedKey column="id" sqlStatement="MySql" identity="true" />
+        </table>
+
+        <!--退款结算-->
+        <table schema="" tableName="fallinto_refund" domainObjectName="FallintoRefund">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!--赔偿结算-->
+        <table schema="" tableName="fallinto_compensation" domainObjectName="FallintoCompensation">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!--扣款结算-->
+        <table schema="" tableName="fallinto_deduct_money" domainObjectName="FallintoDeductMoney">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!--罚款结算-->
+        <table schema="" tableName="fallinto_fine_money" domainObjectName="FallintoFineMoney">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!--jd订单数据表-->
+        <table schema="" tableName="pay_order_jd" domainObjectName="JdOrder">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+    </context>
+</generatorConfiguration>
