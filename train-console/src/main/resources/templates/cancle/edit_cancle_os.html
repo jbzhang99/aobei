@@ -35,11 +35,22 @@
                 list.push(first_time+"-0-1");
                 var list_data = $("#div_content").children();
                 var flag = true;
-
+                var regex_name = /^[a-zA-Z0-9\u4e00-\u9fa5]+(·[\u4e00-\u9fa5]+)*$/;
                 var c_type = $("#cancle_type").val();
                 if(name==''){
                     reset();
                     alertify.alert("请输入策略名称");
+                    return false;
+                }
+                if(!regex_name.test(name)){
+                    reset();
+                    alertify.alert("策略名称只能是中文、数字或字母！");
+                    return false;
+                }
+
+                if(name.length>30){
+                    reset();
+                    alertify.alert("策略名称不能超过30个汉字！");
                     return false;
                 }
                 if(c_type==0){

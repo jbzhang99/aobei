@@ -7,6 +7,7 @@
 <link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
 <link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
 <link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
 <script TYPE="text/javascript" th:src="@{/js/jquery.form.min.js}"></script>
 <script type="text/javascript" th:src="@{/js/citydata.js}"></script>
 <script type="text/javascript" th:src="@{/js/bootstrapValidator.min.js}"></script>
@@ -14,6 +15,8 @@
 <script type="text/javascript" th:src="@{/js/bootstrap-select.js}"></script>
 <script TYPE="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
 <script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
 <style>
 	.form-style .file-input{float:left; margin-right:10px;}
 </style>
@@ -33,7 +36,7 @@ reset = function () {
 };
 
 	$(function(){
-		
+        ymd();
 		//页面加载默认显示第一个li对应的服务项目
 		$(".nav-tabs li:first-child").addClass("active");
 		$(".tab-content").children("div").eq(0).addClass("active");
@@ -171,6 +174,7 @@ reset = function () {
 		}
 		var street = $("#street").val();
 		var address =pro+" "+city+" "+area+" "+street;
+
 		if(online > upline ){
 			reset();
 			alertify.alert("上线时间不能大于下线时间，请重新选择")
@@ -203,16 +207,16 @@ reset = function () {
 			return false;
 		}
 		if(pro !="" | city!="" | area!=""){
-			<!--/* 如果集合为空，rowid重新开始自增*/-->
+			//如果集合为空，rowid重新开始自增
 			if(addressList.length==0){
 				rowid=0;
 			}
-			<!--/* 获取到table*/-->
+			//获取到table
 			var tab=document.getElementById("tabList");
 			rowid+=1;
  			var tr='<tr id='+rowid+'><td>'+address+'</td><td>'+online+'</td><td>'+upline+'</td><td style="display:none;">'+addressV+'</td><td style="display:none;">'+rowid+'</td><td><a data-toggle="modal" data-target=".bs-example-modal-lg" onclick="addressEdit('+rowid+',this);"  style="cursor: pointer;"><i class="fas fa-edit"></i>编辑</a>&nbsp;&nbsp;&nbsp;<a onclick="addressdel('+rowid+',this)" style="cursor: pointer;"><i class="far fa-trash-alt"></i>删除</a></td></tr>';
 			$('#tabList').append(tr);
-			<!--/* 每次新增的添加到集合中*/-->
+			//每次新增的添加到集合中
 			addressList.push({
 				select_row:rowid,
 				online:online,
@@ -222,7 +226,7 @@ reset = function () {
 	     		area:area
 	     			
 			});
-			<!--/* 清空输入框*/-->
+			//清空输入框
 			$("#gloab_address select[name=userProvinceId]").val('请选择省');
 			$("#gloab_address select[name=userCityId]").val('请选择市');
 			$("#gloab_address select[name=userDistrictId]").val('请选择区');
@@ -235,7 +239,7 @@ reset = function () {
 			return false;
 		}
 	}
-	<!--/* 模态框编辑 */-->
+	//模态框编辑
 	function addressEdit(id,obj){
 		$("#list_id").val($(obj).parent().parent().attr("id"))
 		var select = $('#modal_address').cityPicker({
@@ -243,7 +247,7 @@ reset = function () {
 			renderMode: false,
 			linkage: false
 		});
-		<!--/* 回显功能*/-->
+		//回显功能
 		$(obj).parent().parent().each(function(index,data){
 			$(data).each(function(i,d){
 				var datas = $(d).find('td');
@@ -286,7 +290,7 @@ reset = function () {
 		
 		$("#motifiction_btn").modal('show'); 
 	}
-	<!--/* 删除虚拟地址 */-->
+	//删除虚拟地址
 	function addressdel(rowid,obj){
 		
 		alertify.confirm("确定要删除吗？！",function(e){
@@ -303,19 +307,18 @@ reset = function () {
 		})
 	}
 	
-	<!--/* 取消 */-->
+	//取消
 	function editCancelpartner(){
 		reset();
 		alertify.confirm("确定要取消吗？", function (e) {
 			if(e){
-				<!--/* 获取到上次的页数 */-->
 				var pageNo=[[${pageNo}]];
 				window.location.href="[(@{/partner/showPartner})]?p="+pageNo; 
 			}
 		});
 		
 	}
-	<!--/* 模态框的确认编辑 */-->
+	//模态框的确认编辑
 	function editModal(obj){
 		var data_id = $("#list_id").val();
 		var online = $("#online_modal").val();
@@ -443,7 +446,7 @@ reset = function () {
 			  </div> 
 			  
 			  <div class="form-group">
-					<label for="train_address" class="col-sm-4 control-label"><span
+					<label class="col-sm-4 control-label"><span
 						style="color: red">*</span>&nbsp;&nbsp;服务地址:</label>
 					<div id="gloab_address" class="col-sm-6">
 						<!--省市县三级 -->
@@ -452,7 +455,7 @@ reset = function () {
 					</div>
 				</div>
 				<div class="form-group">
-					<label for="train_address" class="col-sm-4 control-label"><span style="color: red ">*</span>
+					<label class="col-sm-4 control-label"><span style="color: red ">*</span>
 					&nbsp;&nbsp;街道信息：</label>
 					<div class="col-sm-4">
 						<input id="street" type="text" class="form-control" name="street"
@@ -460,17 +463,17 @@ reset = function () {
 					</div>
 				</div>
 				<div class="form-group">
-					<label for="train_address" class="col-sm-4 control-label"><span
+					<label class="col-sm-4 control-label"><span
 						style="color: red">*</span>&nbsp;&nbsp;上线时间：</label>
 					<div class="col-sm-4">
-						<input id="online" type="date" class="form-control" name="online" />
+						<input id="online" placeholder="请选择上线时间" class="form-control datetimepicker1" name="online" readonly/>
 					</div>
 				</div>
 				<div class="form-group">
-					<label for="train_address" class="col-sm-4 control-label"><span
+					<label  class="col-sm-4 control-label"><span
 						style="color: red">*</span>&nbsp;&nbsp;下线时间：</label>
 					<div class="col-sm-4">
-						<input id="upline" type="date" class="form-control" name="upline" />
+						<input id="upline" placeholder="请选择下线时间" class="form-control datetimepicker1" name="upline" readonly/>
 					</div>
 				</div>
 				<div class="form-group">
@@ -523,7 +526,7 @@ reset = function () {
 				      	<input id="list_id" class="form-control" name="list_id" type="hidden"/>
 				        <table id="aa" class="table table-bordered">
 				       			 <div class="form-group">
-									<label for="train_address" class="col-sm-3 control-label"><span
+									<label class="col-sm-3 control-label"><span
 										style="color: red ">*</span> 服务地址:</label>
 									<div class="col-sm-8 form-inline" id="modal_address">
 										<!-- 省市县三级 -->
@@ -532,7 +535,7 @@ reset = function () {
 									</div>
 								</div><br><br>
 								<div class="form-group">
-									<label for="train_address" class="col-sm-3 control-label"><span style="color: red ">*</span>
+									<label class="col-sm-3 control-label"><span style="color: red ">*</span>
 									&nbsp;&nbsp;街道信息：</label>
 									
 									<div class="col-sm-4">
@@ -540,17 +543,17 @@ reset = function () {
 									</div>
 								</div><br><br>
 								<div class="form-group">
-									<label for="train_address" class="col-sm-3 control-label"><span
+									<label class="col-sm-3 control-label"><span
 										style="color: red">*</span> 上线时间：</label>
 									<div class="col-sm-4">
-										<input id="online_modal" type="date" class="form-control" name="online"/>
+										<input id="online_modal" placeholder="请选择上线时间" class="form-control datetimepicker1" name="online" readonly/>
 									</div>
 								</div><br><br>
 								<div class="form-group">
-									<label for="train_address" class="col-sm-3 control-label"><span
+									<label class="col-sm-3 control-label"><span
 										style="color: red">*</span> 下线时间：</label>
 									<div class="col-sm-4">
-										<input id="upline_modal" type="date" class="form-control" name="upline"/>
+										<input id="upline_modal" placeholder="请选择下线时间" class="form-control datetimepicker1" name="upline" readonly/>
 									</div>
 								</div>
 						</table>

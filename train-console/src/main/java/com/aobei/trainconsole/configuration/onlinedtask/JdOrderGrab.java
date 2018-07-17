@@ -32,6 +32,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -104,7 +105,7 @@ public class JdOrderGrab {
      * 定时抓取订单数据
      */
     //@Scheduled(cron = "0 0/10 * * * ?")
-    //@Scheduled(initialDelay = 2000, fixedDelay = 24*60*60*100)
+    @Scheduled(initialDelay = 2000, fixedDelay = 24*60*60*100)
     private void getJdOrder() {
         //保证单实例运行
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -125,8 +126,8 @@ public class JdOrderGrab {
             Date before10m = now.getTime();
             String endDate = sdf.format(nowTime) + ":00";
             String startDate = sdf.format(before10m) + ":00";
-            request.setStartDate(startDate);
-            request.setEndDate(endDate);
+//            request.setStartDate(startDate);
+//            request.setEndDate(endDate);
             request.setOrderState( "WAIT_SELLER_STOCK_OUT,FINISHED_L");
             request.setOptionalFields( "orderId," +  //	订单id
                     "venderId" +   //	商家id
@@ -322,6 +323,7 @@ public class JdOrderGrab {
      * @param orderSearchInfo
      */
     public void initOrderByJdOrder(OrderSearchInfo orderSearchInfo,Customer customer){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         List<ItemInfo> itemInfoList = orderSearchInfo.getItemInfoList();
         UserInfo userInfo = orderSearchInfo.getConsigneeInfo();
         CustomerAddressExample customerAddressExample = new CustomerAddressExample();
@@ -355,7 +357,13 @@ public class JdOrderGrab {
                 order.setPay_type(3);
                 order.setPay_status(1);
                 order.setCreate_datetime(new Date());
-                //order.setPay_datetime();
+                try {
+                    order.setPay_datetime("".equals(orderSearchInfo.getPaymentConfirmTime())
+                            || orderSearchInfo.getPaymentConfirmTime() == null ?
+                            null : sdf.parse(orderSearchInfo.getPaymentConfirmTime()) );
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 order.setCus_username(customer.getName());
                 order.setCustomer_address_id(customerAddress.getCustomer_address_id());
                 order.setCus_phone(customerAddress.getPhone());

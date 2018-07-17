@@ -1377,7 +1377,7 @@ public class PartnerApiServiceImpl implements PartnerApiService {
     /**
      * 抢单
      */
-   // @Transactional(timeout = 3)
+    @Transactional(timeout = 3)
     @Override
     public ApiResponse partnerOrderRobbing(Partner partner, String pay_order_id, List<Long> student_ids) {
         logger.info("api-method:partnerOrderRobbing:params pay_order_id:{},student_ids:{}", pay_order_id, student_ids);
@@ -1517,8 +1517,6 @@ public class PartnerApiServiceImpl implements PartnerApiService {
                     order.setStatus_active(3);
                     orderService.updateByPrimaryKeySelective(order);
                     // 修改抢单记录
-
-
                     RobbingExample updateRobbingExample = new RobbingExample();
                     updateRobbingExample.or().andServiceunit_idEqualTo(master.getServiceunit_id());
                     Robbing updateobbing = new Robbing();
@@ -1527,6 +1525,12 @@ public class PartnerApiServiceImpl implements PartnerApiService {
                     robbing.setStatus(0);
                     robbing.setActived(1);
                     robbingService.updateByPrimaryKey(robbing);
+                    // 接单删除虚拟库存
+                    Set<String> set = redisService.sMembers(pay_order_id);
+                    if (set != null) {
+                        redisService.delete(pay_order_id);
+                        redisService.delete(set);
+                    }
                     // 更新顾客缓存
                     cacheReloadHandler.orderListReload(order.getUid());
                     cacheReloadHandler.orderDetailReload(order.getUid(), pay_order_id);

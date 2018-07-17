@@ -1493,7 +1493,7 @@ public class CustomerApiServiceImpl implements CustomerApiService {
                     String cname = customer.getName() == null ? customer.getPhone() : customer.getName();
                     orderLogService.xInsert(cname, customer.getCustomer_id(), order.getPay_order_id(),
                             "【未支付取消】用户【" + cname + "】取消订单），原因是:" + remark_cancel);
-                    //清除服务人员时间调度副本
+                    // 接单删除虚拟库存
                     Set<String> set = redisService.sMembers(pay_order_id);
                     if (set != null) {
                         redisService.delete(pay_order_id);
@@ -1528,6 +1528,11 @@ public class CustomerApiServiceImpl implements CustomerApiService {
                 robbing.setStatus(0);
                 robbingService.updateByExampleSelective(robbing,robbingExample);
 
+            Set<String> set = redisService.sMembers(pay_order_id);
+            if (set!=null){
+                redisService.delete(pay_order_id);
+                redisService.delete(set);
+            }
 
                 //更新合伙人订单缓存
                 cacheReloadHandler.partner_order_detailReload(pay_order_id);
@@ -1627,7 +1632,12 @@ public class CustomerApiServiceImpl implements CustomerApiService {
                 serviceunitPerson.setStatus_active(Status.OrderStatus.cancel.value);
                 serviceunitPersonService.updateByExampleSelective(serviceunitPerson, personExample);
             }
-
+            // 接单删除虚拟库存
+            Set<String> set = redisService.sMembers(pay_order_id);
+            if (set != null) {
+                redisService.delete(pay_order_id);
+                redisService.delete(set);
+            }
             //推送取消
             if(!Status.ServiceStatus.reject.value.equals(serviceUnit.getStatus_active())) {
                 pushHandler.pushCancelOrderMessageToCustomer(order, customer.getCustomer_id().toString());

@@ -172,6 +172,9 @@ public class OrderController {
 	@Autowired
 	private MessageService messageService;
 
+	@Autowired
+	private ChannelService channelService;
+
 	/**
 	 * 跳转到订单列表页
 	 * @param map
@@ -196,11 +199,13 @@ public class OrderController {
 							 @RequestParam(required = false) String uphone, @RequestParam(required = false) String student_name,
 							 @RequestParam(required = false) Long partner_id, @RequestParam(required = false) Integer statu,
 							 @RequestParam(required = false) String qs_create_time,@RequestParam(required = false) String qe_create_time,
-							 @RequestParam(required = false) String qs_pay_time,@RequestParam(required = false) String qe_pay_time) {
+							 @RequestParam(required = false) String qs_pay_time,@RequestParam(required = false) String qe_pay_time,
+							 @RequestParam(defaultValue = "PUERJIA-001") String channel_code) {
 		VOrderUnitExample orderUnitExample = new VOrderUnitExample();
 		orderUnitExample.setOrderByClause(VOrderUnitExample.C.create_datetime + " desc");
 		//查询条件的对象
 		VOrderUnitExample.Criteria or = orderUnitExample.or();
+		or.andChannelEqualTo(channel_code);
 		or.andPay_order_idLessThan(Integer.MAX_VALUE + "");
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat sdfhms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -296,12 +301,17 @@ public class OrderController {
 		Page<VOrderUnit> page = vOrderUnitService.selectByExample(orderUnitExample, p, ps);
 		List<VOrderUnit> list = page.getList();
 
+
+		List<Channel> channels = channelService.selectByExample(new ChannelExample());
+
 		PartnerExample partnerExample = new PartnerExample();
 		partnerExample.or().andDeletedEqualTo(Status.DeleteStatus.no.value).andStateEqualTo(1);
 		List<Partner> partners = partnerService.selectByExample(partnerExample);
 		map.addAttribute("list", list);
 		map.addAttribute("page", page);
 		map.addAttribute("partners", partners);
+		map.addAttribute("channels",channels);
+		map.addAttribute("channel_code",channel_code);
 		return "order/order_list";
 	}
 
@@ -1589,6 +1599,149 @@ public class OrderController {
 		map.addAttribute("page",page);
 		return "order/scheduling_task";
 	}
+
+	/**
+	 * ******************************************************************************************************************
+	 *      以下：          JD订单派发模块
+	 * ******************************************************************************************************************
+	 */
+
+	/**
+	 * JD订单派发前，查询可用的合伙人和站点信息
+	 * @param pay_order_id
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/assign_order_pre")
+	public Object assign_order_pre(String pay_order_id){
+		Order order = orderService.selectByPrimaryKey(pay_order_id);
+		//根据订单id查询的服务单
+		ServiceUnitExample sue = new ServiceUnitExample();
+		sue.or().andPay_order_idEqualTo(pay_order_id).andPidEqualTo(0l);
+		ServiceUnit serviceUnit = singleResult(serviceUnitService.selectByExample(sue));
+		Product product = productService.selectByPrimaryKey(serviceUnit.getProduct_id());
+		CustomerAddress customerAddress =new CustomerAddress();
+		customerAddress.setCity(order.getCus_city());
+		customerAddress.setLbs_lat(order.getLbs_lat());
+		customerAddress.setLbs_lng(order.getLbs_lng());
+
+		Metadata metadata  = metadataService.selectByPrimaryKey(Constant.MKEY_MAX_SEARCH_RADIUS);
+		Integer integer  = metadata.getMeta_value()==null?Constant.SEARCH_RADIUS:Integer.parseInt(metadata.getMeta_value());
+
+		List<Station> stations = null;
+		ProductSoleExample soleExample = new ProductSoleExample();
+		soleExample.or().andProduct_idEqualTo(product.getProduct_id());
+		List<ProductSole> productSoles = productSoleService.selectByExample(soleExample);
+		if (productSoles.size() != 0) {//绑定合伙人的产品
+			List<Long> partner_ids = productSoles.stream().map(n -> n.getPartner_id()).collect(Collectors.toList());
+			StationExample stationExample = new StationExample();
+			stationExample.or().andPartner_idIn(partner_ids);
+			stations = stationService.selectByExample(stationExample);
+			//将来多个城市了需要的话再拿findNearByStation筛选一遍
+		} else {//未绑定的
+			stations = stationService.findNearByStation(customerAddress, integer,product);
+		}
+		List<Long> ids = stations.stream().map(station -> station.getPartner_id()).collect(Collectors.toList());
+
+		PartnerExample example = new PartnerExample();
+		if (ids.size() > 0) {
+			example.or().andPartner_idIn(ids);
+		} else {
+			ids.add(0l);
+			example.or().andPartner_idIn(ids);
+		}
+		// 根据顾客地址得到的可以选择的就近的合伙人公司
+		List<Partner> partners = partnerService.selectByExample(example);
+		String stationsJson = null;
+		try {
+			stationsJson = JacksonUtil.object_to_json(stations);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		Map<String,Object> map = new HashMap<>();
+		map.put("partners",partners);
+		map.put("stationsJson",stationsJson);
+		return map;
+	}
+
+	/**
+	 * 查询指定 server_date 下的对应订单sku服务时间段的库存足够的可选的服务时间段信息assign_order
+	 * @param pay_order_id
+	 * @param station_id
+	 * @param server_date
+	 * @param num
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/get_optional_time_scope")
+	public Object get_optional_time_scope(String pay_order_id,
+										  Long station_id,
+										  String server_date,
+										  Integer num){
+		//根据pay_order_id查询的服务单
+		ServiceUnitExample sue = new ServiceUnitExample();
+		sue.or().andPay_order_idEqualTo(pay_order_id).andPidEqualTo(0l);
+		ServiceUnit serviceUnit = singleResult(serviceUnitService.selectByExample(sue));
+		ProSku proSku = proSkuService.selectByPrimaryKey(serviceUnit.getPsku_id());
+		String times = proSku.getService_times();
+		List<SkuTime> timesList = JSON.parseArray(times, SkuTime.class);
+
+		Map<String,Object> map = new HashMap<>();
+		StudentExample studentExample = new StudentExample();
+		studentExample.or().andStation_idEqualTo(station_id).andStateEqualTo(1).andDeletedEqualTo(0);
+		List<Student> students = studentService.selectByExample(studentExample);
+
+		OneDayStore oneDayStore = getStudentsStroe(timesList, students, server_date);
+		List<TimeScopeStore> scopeStores = oneDayStore.getScopeStores();
+		scopeStores = scopeStores.stream().filter(n->n.getStore() >= num).collect(Collectors.toList());
+		if (scopeStores.size() <= 0){
+			map.put("msg","该站点下服务人员数量不足！");
+		}else{
+			map.put("scopeStores",scopeStores);
+		}
+		return map;
+	}
+
+	/**
+	 * 分配订单
+	 * @param partner
+	 * @param station
+	 * @param select_date
+	 * @param time
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/assign_order")
+	public Object assign_order(Long partner,
+							   Long station,
+							   String select_date,
+							   String time,
+							   String pay_order_id){
+
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM0-dd HH:mm");
+//		//根据pay_order_id查询的服务单
+//		ServiceUnitExample sue = new ServiceUnitExample();
+//		sue.or().andPay_order_idEqualTo(pay_order_id);
+//		List<ServiceUnit> unitList = serviceUnitService.selectByExample(sue);
+//		unitList.forEach(n ->{
+//			ServiceUnit upUnit = new ServiceUnit();
+//			upUnit.setServiceunit_id(n.getServiceunit_id());
+//			upUnit.setPartner_id(partner);
+//			upUnit.setStation_id(station);
+//			upUnit.setP2s_assign_datetime(new Date());
+//		});
+		Map<String,Object> map = new HashMap<>();
+		return map;
+	}
+
+
+	/**
+	 * ******************************************************************************************************************
+	 *      以上：          JD订单派发模块
+	 *
+	 *      																							I am '分割线'
+	 * ******************************************************************************************************************
+	 */
 
 	/**
 	 * 发送短信

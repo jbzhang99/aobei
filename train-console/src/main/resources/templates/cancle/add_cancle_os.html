@@ -12,9 +12,21 @@
             var product = $("#product").val();
             var name = $("#name").val();
             var c_type = $("#cancle_type").val();
+            var regex_name = /^[a-zA-Z0-9\u4e00-\u9fa5]+(·[\u4e00-\u9fa5]+)*$/;
             if(name==''){
                 reset();
                 alertify.alert("请输入策略名称");
+                return false;
+            }
+            if(!regex_name.test(name)){
+                reset();
+                alertify.alert("策略名称只能是中文、数字或字母！");
+                return false;
+            }
+            console.log(name.length);
+            if(name.length>30){
+                reset();
+                alertify.alert("策略名称不能超过30个汉字！");
                 return false;
             }
             if(c_type==0){
