@@ -3,7 +3,7 @@
 <html layout:decorate="~{base_layout}">
 <head> 
 <meta charset="UTF-8" />
-<title>分成策略列表页</title>
+<title>结算策略列表页</title>
 
 <script type="text/javascript" th:inline="javascript">
 
@@ -51,18 +51,23 @@
     }
 
     function del(fallinto_id,pageNo){
-        $.ajax({
-            url:'/balance/del/'+fallinto_id+"/"+pageNo,//提交的位置
-            type:'POST',
-            success:function(data){
-                //请求成功时
-                reset();
-                alertify.success(data.message);
-                setTimeout(function (){
-                    window.location.href="/balance/balance_tactics_list?p="+pageNo;
-                }, 1000);
-            },
-            dataType:'json'
+        reset();
+        alertify.confirm("确定要删除该条信息吗？", function (e) {
+            if(e){
+                $.ajax({
+                    url:'/balance/del/'+fallinto_id+"/"+pageNo,//提交的位置
+                    type:'POST',
+                    success:function(data){
+                        //请求成功时
+                        reset();
+                        alertify.success(data.message);
+                        setTimeout(function (){
+                            window.location.href="/balance/balance_tactics_list?p="+pageNo;
+                        }, 1000);
+                    },
+                    dataType:'json'
+                });
+            }
         });
     }
 
