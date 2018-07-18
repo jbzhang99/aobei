@@ -148,8 +148,14 @@ public class StudentQuery implements GraphQLQueryResolver {
 		Student student = student_info();
 		return studentApiService.productAvailableTimes(student, psku_id, num);
 	}
-	
 
+	/**
+	 * 是否有新的消息
+	 */
+	public int student_whether_have_new_messages(){
+		StudentInfo studentInfo = student_info();
+		return studentApiService.whetherHaveNewMessages(studentInfo);
+	}
 	
 	
 }

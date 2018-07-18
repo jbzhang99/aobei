@@ -7,11 +7,8 @@ import com.aobei.train.model.Message;
 import com.aobei.train.model.Order;
 import com.aobei.train.model.Student;
 import com.aobei.trainapi.schema.input.StudentOrderInput;
-import com.aobei.trainapi.server.bean.ApiResponse;
-import com.aobei.trainapi.server.bean.CustomerDetail;
-import com.aobei.trainapi.server.bean.Img;
+import com.aobei.trainapi.server.bean.*;
 
-import com.aobei.trainapi.server.bean.MessageContent;
 import custom.bean.OrderInfo;
 import custom.bean.ProductInfo;
 import custom.bean.TimeModel;
@@ -85,10 +82,14 @@ public interface StudentApiService {
 	 * 服务人员取消订单
 	 * @param student
 	 * @param pay_order_id
-	 * @param remark_cancel
 	 * @return
 	 */
 	ApiResponse cancelOrder(Student student, String pay_order_id);
-	
 
+	/**
+	 * 是否有新的消息
+	 * @param studentInfo
+	 * @return
+	 */
+    int whetherHaveNewMessages(StudentInfo studentInfo);
 }

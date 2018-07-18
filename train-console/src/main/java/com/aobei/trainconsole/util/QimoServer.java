@@ -4,11 +4,10 @@ package com.aobei.trainconsole.util;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -16,16 +15,18 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by mr_bl on 2018/7/4.
  */
 public class QimoServer {
 
-    private static final String account = "N00000023280";//账户
-    private static final String secret = "b2f19090-7f35-11e8-a021-337829478c65";//api密码
-    private static final String host = "http://apis.7moor.com";
-    private static Log logger = LogFactory.getLog(QimoServer.class);
+    private static final String ACCOUNT = "N00000023280";//账户
+    private static final String SECRET = "b2f19090-7f35-11e8-a021-337829478c65";//api密码
+    private static final String HOST = "http://apis.7moor.com";
+    private static Logger logger = LoggerFactory.getLogger(QimoServer.class);
 
     /**
      * token验证
@@ -81,9 +82,9 @@ public class QimoServer {
     public static CloseableHttpResponse service(String interfacePath,
                                                 StringEntity requestEntity) throws Exception{
         String time = getDateTime();
-        String sig = md5(account + secret + time);
-        String url = host + interfacePath + account + "?sig=" + sig;
-        String auth = base64(account + ":" + time);
+        String sig = md5(ACCOUNT + SECRET + time);
+        String url = HOST + interfacePath + ACCOUNT + "?sig=" + sig;
+        String auth = base64(ACCOUNT + ":" + time);
         HttpClientBuilder builder = HttpClientBuilder.create();
         CloseableHttpClient client = builder.build();
         HttpPost post = new HttpPost(url);
@@ -96,12 +97,13 @@ public class QimoServer {
     }
 
     public static void main(String[] args) {
+
         String time = getDateTime();
-        String sig = md5(account + secret + time);
+        String sig = md5(ACCOUNT + SECRET + time);
         //查询坐席状态接口
         String interfacePath = "/v20160818/user/queryUserState/";
-        String url = host + interfacePath + account + "?sig=" + sig;
-        String auth = base64(account + ":" + time);
+        String url = HOST + interfacePath + ACCOUNT + "?sig=" + sig;
+        String auth = base64(ACCOUNT + ":" + time);
         HttpClientBuilder builder = HttpClientBuilder.create();
         CloseableHttpClient client = builder.build();
         HttpPost post = new HttpPost(url);
@@ -128,6 +130,29 @@ public class QimoServer {
                 }
             }
         }
+    }
+
+
+    /**
+     * 签名 校验
+     * @param authorizationHeard 请求头数据
+     * @param sig 签名数据
+     * @return
+     */
+    public static boolean sigValidate(String authorizationHeard, String sig){
+        if(Objects.nonNull(authorizationHeard) && Objects.nonNull(sig)){
+            // base64 解码
+            String authorization = new String(java.util.Base64.getDecoder().decode(authorizationHeard));
+            // 获取数据    格式   账户Id + 冒号 + 时间戳
+            String[] authData = authorization.split(":");
+            // 检查开发者账号是否一致
+            if(ACCOUNT.equals(authData[0])){
+                // 生成 MD5 签名
+                String md5Sign = DigestUtils.md5Hex(authorization.replace(":", SECRET)).toUpperCase();
+                return sig.equals(md5Sign);
+            }
+        }
+        return false;
     }
 
 

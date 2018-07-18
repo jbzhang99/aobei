@@ -28,6 +28,7 @@ import com.github.liyiorg.mbg.bean.Page;
 import custom.bean.*;
 import custom.bean.OrderInfo.OrderStatus;
 import custom.util.DateUtil;
+import custom.util.ParamsCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -924,6 +925,10 @@ public class PartnerApiServiceImpl implements PartnerApiService {
         content.setTitle("服务变更通知");
         content.setTypes(1);
         content.setNoticeTypes(2);
+        if (content.getContent() != null && !ParamsCheck.checkStrAndLength(content.getContent(),200)){
+            Errors._41040.throwError("消息长度过长");
+            return response;
+        }
         String object_to_json = null;
         try {
             object_to_json = JSON.toJSONString(content);

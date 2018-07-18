@@ -1,12 +1,14 @@
 package com.aobei.trainconsole.qimo;
 
 import com.alibaba.fastjson.JSONObject;
+import com.aobei.trainconsole.util.QimoServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.StreamUtils;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.InputStream;
+import java.nio.charset.Charset;
 
 /**
  * Created by mr_bl on 2018/7/4.
@@ -17,16 +19,26 @@ public class QimoWorkOrderController {
 
     private static final Logger logger = LoggerFactory.getLogger(QimoWorkOrderController.class);
 
-    @ResponseBody
-    @RequestMapping(value = {"/receiveWorkOrder"} , method = RequestMethod.GET ,
-                    consumes = "application/json")
-    public Object receiveWorkOrder(String workOrdersJson){
+    @PostMapping("/receiveWorkOrder")
+    public String receiveWorkOrder(@RequestHeader("Authorization") String authorization,
+                                   InputStream inputStream,
+                                   @RequestParam String sig) {
+        String returnCode = "400";
         try {
-            JSONObject jsonObject = JSONObject.parseObject(workOrdersJson);
+            // 请求签名校验
+            if (QimoServer.sigValidate(authorization, sig)) {
+                // 获取JSON 数据
+                String workOrdersJson = StreamUtils.copyToString(inputStream, Charset.forName("utf-8"));
+                logger.info("Qimo receiveWorkOrder DATA:{}", workOrdersJson);
+                JSONObject jsonObject = JSONObject.parseObject(workOrdersJson);
+
+                returnCode = "200";
+            }
         } catch (Exception e) {
-            return "";
+            logger.error("Qimo receiveWorkOrder ERROR", e);
         }
-        return "xxxxx";
+        return returnCode;
     }
+
 
 }

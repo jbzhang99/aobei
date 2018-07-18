@@ -12,10 +12,12 @@ import com.aobei.train.model.ServiceUnit;
 import com.aobei.train.model.ServiceUnitExample;
 import com.aobei.train.service.*;
 import com.aobei.trainapi.configuration.CustomProperties;
+import com.aobei.trainapi.schema.Errors;
 import com.aobei.trainapi.server.bean.MessageContent;
 import com.aobei.trainapi.util.JacksonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import custom.bean.ons.CancelOrderMessage;
+import custom.util.ParamsCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,6 +111,10 @@ public class AutoCancelOrderListener implements OnsMessageListener {
 			content.setV("1");
 			content.setTypes(1);
 			content.setTitle("订单取消通知");
+			if (content.getContent() != null && !ParamsCheck.checkStrAndLength(content.getContent(),200)){
+                Errors._41040.throwError("消息长度过长");
+                return false;
+            }
 			String json = null;
 			try {
 				json = JacksonUtil.object_to_json(content);
