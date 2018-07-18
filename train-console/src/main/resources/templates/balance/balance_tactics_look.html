@@ -67,7 +67,7 @@ reset = function () {
 				</br>
 				<div class="col-sm-5 form-group form-inline">
 					<th:block th:if="${fallinto.fallinto_type==1}">
-						底价：<span  th:text="${fallinto.floor_price}"></span>
+						底价：<span  th:text="${#numbers.formatDecimal(fallinto.floor_price*0.01,1,2)}"></span>
 					</th:block>
 					<th:block th:if="${fallinto.fallinto_type==2}">
 						比例：<span  th:text="${fallinto.percent}"></span>%
