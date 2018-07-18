@@ -25,11 +25,12 @@ public class QimoWorkOrderController {
                                    @RequestParam String sig) {
         String returnCode = "400";
         try {
+            logger.info("authorization:{} sig:{}", authorization, sig);
+            // 获取JSON 数据
+            String workOrdersJson = StreamUtils.copyToString(inputStream, Charset.forName("utf-8"));
+            logger.info("Qimo receiveWorkOrder DATA:{}", workOrdersJson);
             // 请求签名校验
             if (QimoServer.sigValidate(authorization, sig)) {
-                // 获取JSON 数据
-                String workOrdersJson = StreamUtils.copyToString(inputStream, Charset.forName("utf-8"));
-                logger.info("Qimo receiveWorkOrder DATA:{}", workOrdersJson);
                 JSONObject jsonObject = JSONObject.parseObject(workOrdersJson);
 
                 returnCode = "200";
