@@ -18,11 +18,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -81,8 +79,8 @@ public class QimoOrderController {
      * @param tabType tab页对接模块类型：normal(来电弹屏)、call（通话记录）、webchat（在线客服）、customer（客户模块）、business（工单）
      * @return
      */
-    @RequestMapping(value = {"/getOrders"}, method = RequestMethod.GET)
-    public String receiveQimoRequest(Model model,
+    @GetMapping("/getOrders")
+    public String receiveQimoRequest(Model model,HttpServletRequest request,
                                      @RequestParam(defaultValue = "1") Integer p,
                                      @RequestParam(defaultValue = "10") Integer ps,
                                      @RequestParam(required = false) String originCallNo,
@@ -121,6 +119,7 @@ public class QimoOrderController {
                                      @RequestParam(required = false) String qs_pay_time,
                                      @RequestParam(required = false) String qe_pay_time
                                      ){
+        logger.info("qimo tab query:{}", request.getQueryString());
         if ("".equals(originCallNo) || originCallNo == null){
             originCallNo = "15010113590";
         }
