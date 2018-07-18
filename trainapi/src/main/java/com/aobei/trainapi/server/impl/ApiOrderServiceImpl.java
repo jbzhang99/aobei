@@ -132,7 +132,7 @@ public class ApiOrderServiceImpl implements ApiOrderService {
 
     }
 
-    @Override
+    /*@Override
     public Station dispatch(Order order, ServiceUnit serviceUnit) {
         Station station = null;
         if (order.getProxyed().equals(0)) {
@@ -272,7 +272,7 @@ public class ApiOrderServiceImpl implements ApiOrderService {
             partnerMap.put(priority, tmp);
         });
         return partnerMap;
-    }
+    }*/
 
     /**
      * 用户领取优惠券
