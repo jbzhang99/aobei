@@ -55,7 +55,6 @@ public class JdOrderGrab {
 
     private static final String client_secret = "ebd674ee3a134862b7b1061bf95e4969";
 
-    //todo 改为京东云鼎的服务器域名
     private static final String server_url = "http://jdapi.aobei.com/routerjson";
 
     @Autowired
@@ -105,7 +104,7 @@ public class JdOrderGrab {
      * 定时抓取订单数据
      */
     //@Scheduled(cron = "0 0/10 * * * ?")
-    @Scheduled(initialDelay = 2000, fixedDelay = 24*60*60*100)
+    //@Scheduled(initialDelay = 2000, fixedDelay = 24*60*60*100)
     private void getJdOrder() {
         //保证单实例运行
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -338,6 +337,9 @@ public class JdOrderGrab {
             if (!"".equals(skuId) && skuId != null){
                 Order order = new Order();
                 ProSku proSku = proSkuService.selectByPrimaryKey(Long.valueOf(skuId));
+                if (proSku == null){
+                    return;
+                }
                 Product product = productService.selectByPrimaryKey(proSku.getProduct_id());
                 String pay_order_id = redisIdGenerator.generatorId("pay_order_id", 1000) + "";
                 if ("dev".equals(profile)) {
@@ -348,7 +350,7 @@ public class JdOrderGrab {
                 order.setPay_order_id(pay_order_id);
                 order.setName(product.getName()+proSku.getName());
                 order.setUid(customer.getCustomer_id());
-                order.setChannel("JD");
+                order.setChannel("JD-001");
                 //order.setClient_id();
                 order.setPrice_total((int)(Double.valueOf(jdPrice)*100*(Integer.valueOf(nItemTotal))));
                 order.setPrice_discount(0);

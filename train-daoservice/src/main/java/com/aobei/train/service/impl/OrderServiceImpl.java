@@ -87,6 +87,15 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
     CouponService couponService;
 
     @Autowired
+    private ProductSoleService productSoleService;
+
+    @Autowired
+    private StationService stationService;
+
+    @Autowired
+    private StoreService storeService;
+
+    @Autowired
     private void initService(MbgMapperTemplateFactory mbgMapperTemplateFactory) {
         super.mbgMapperTemplate = mbgMapperTemplateFactory.getMbgMapperTemplate(orderMapper);
     }
@@ -1248,6 +1257,150 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
         fineMoneyup.setFine_money_id(fineMoney.getFine_money_id());
         fineMoneyup.setFine_status(3);
         return fineMoneyService.updateByPrimaryKeySelective(fineMoneyup);
+    }
+
+    @Override
+    @Transactional
+    public Station dispatchOrder(Order order, ServiceUnit serviceUnit) {
+        Station station = null;
+        if (order.getProxyed().equals(0)) {
+            station = getStation(order, serviceUnit);
+            // 如果找不到任何合伙人，那么这一条订单无法分配了。
+            if (station == null) {
+                String text = "找不到对应的合伙人和工作站，订单不能正常分配！";
+                orderLogService.xInsert("system", 0l, order.getPay_order_id(), text);
+            }
+        }
+        // 更新服务单到等待合伙人确认状态
+        ServiceUnit upUnit = new ServiceUnit();
+        upUnit.setActive(1);
+        upUnit.setStatus_active(station == null ? 1 : 2);
+        if (order.getProxyed().equals(1)) {
+            upUnit.setStatus_active(4);
+        }
+        upUnit.setStation_id(station == null ? null : station.getStation_id());
+        upUnit.setPartner_id(station == null ? null : station.getPartner_id());
+        ServiceUnitExample example = new ServiceUnitExample();
+        example.or()
+                .andPay_order_idEqualTo(order.getPay_order_id())
+                .andGroup_tagEqualTo(serviceUnit.getGroup_tag());
+        serviceUnitService.updateByExampleSelective(upUnit, example);
+        if (order.getProxyed() == 1) {
+            ServiceunitPersonExample serviceunitPersonExample = new ServiceunitPersonExample();
+            serviceunitPersonExample.or()
+                    .andServiceunit_idEqualTo(serviceUnit.getServiceunit_id());
+            ServiceunitPerson serviceunitPerson = new ServiceunitPerson();
+            serviceunitPerson.setStatus_active(Status.OrderStatus.wait_service.value);
+            serviceunitPerson.setServiceunit_id(serviceUnit.getServiceunit_id());
+            serviceunitPersonService.updateByExampleSelective(serviceunitPerson, serviceunitPersonExample);
+
+        }
+
+        return station;
+    }
+
+    private Station getStation(Order order, ServiceUnit serviceUnit) {
+
+        Product product = productService.selectByPrimaryKey(serviceUnit.getProduct_id());
+        ProSku proSku = proSkuService.selectByPrimaryKey(serviceUnit.getPsku_id());
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        OrderItemExample orderItemExample = new OrderItemExample();
+        orderItemExample.or()
+                .andPay_order_idEqualTo(order.getPay_order_id());
+        OrderItem orderItem = singleResult(orderItemService.selectByExample(orderItemExample));
+        CustomerAddress customerAddress = customerAddressService.selectByPrimaryKey(order.getCustomer_address_id());
+        Metadata metadata = metadataService.selectByPrimaryKey(Constant.MKEY_MAX_SEARCH_RADIUS);
+        Integer integer = metadata.getMeta_value() == null ? Constant.SEARCH_RADIUS
+                : Integer.parseInt(metadata.getMeta_value());
+        ProductSoleExample soleExample = new ProductSoleExample();
+        soleExample.or().andProduct_idEqualTo(product.getProduct_id());
+        List<ProductSole> productSoles = productSoleService.selectByExample(soleExample);
+        List<Partner> partners = new ArrayList<>();
+        List<Station> stations = new ArrayList<>();
+        List<Long> partner_ids = new ArrayList<>();
+        //获取到能够提供服务的所有服务站
+        if (productSoles.size() != 0) {// 绑定合伙人的产品
+            partner_ids = productSoles.stream().map(n -> n.getPartner_id()).collect(Collectors.toList());
+            StationExample stationExample = new StationExample();
+            StationExample.Criteria criteria = stationExample.or();
+            criteria.andPartner_idIn(partner_ids);
+            if (customerAddress.getCity() != null){
+                criteria.andCityEqualTo(customerAddress.getCity());
+            }
+            stations = stationService.selectByExample(stationExample);
+        } else {// 未绑定合伙人的产品
+            stations = stationService.findNearbyStation(customerAddress, integer);
+            stations = stationService.filterByProduct(product, stations);
+        }
+        partner_ids = stations.stream().map(n -> n.getPartner_id()).collect(Collectors.toList());
+        PartnerExample partnerExample = new PartnerExample();
+        if (partner_ids.size() > 0) {
+            partnerExample.or().andPartner_idIn(partner_ids);
+            partnerExample.setOrderByClause(PartnerExample.C.dispatch_priority.name());
+            partners = partnerService.selectByExample(partnerExample);
+        }
+        //按照合伙人分组服务站
+        Map<Long, List<Station>> stationMap = groupStationByPartnerId(stations);
+        //按照优先级分组合伙人
+        Map<Integer, List<Partner>> partnerMap = groupPartnerByPriority(partners);
+        Set<Integer> set = partnerMap.keySet();
+        for (Integer key : set) {
+            List<Station> resultStations = new ArrayList<>();
+            for (Partner partner : partnerMap.get(key)) {
+                StationExample stationExample = new StationExample();
+                stationExample.or()
+                        .andPartner_idEqualTo(partner.getPartner_id());
+
+                resultStations.addAll(stationMap.get(partner.getPartner_id()).stream()
+                        .filter(t -> storeService.isStationHasStore(
+                                t,
+                                format.format(serviceUnit.getC_begin_datetime()),
+                                product,
+                                serviceUnit.getC_begin_datetime(),
+                                serviceUnit.getC_end_datetime(),
+                                proSku.getBuy_multiple_o2o() == 1 ? orderItem.getNum() : 1))
+                        .collect(Collectors.toList()));
+            }
+            Station station = stationService.randomAStation(resultStations);
+            if (station != null) {
+                return station;
+            }
+        }
+        return null;
+
+    }
+
+
+    private Map<Long, List<Station>> groupStationByPartnerId(List<Station> stations) {
+        Map<Long, List<Station>> stationMap = new HashMap<>();
+        for (Station station1 : stations) {
+            List<Station> t = new ArrayList<>();
+            if (stationMap.get(station1.getPartner_id()) == null) {
+                t.add(station1);
+            } else {
+                t = stationMap.get(station1.getPartner_id());
+                t.add(station1);
+            }
+            stationMap.put(station1.getPartner_id(), t);
+        }
+        return stationMap;
+    }
+
+    private Map<Integer, List<Partner>> groupPartnerByPriority(List<Partner> partners) {
+        Map<Integer, List<Partner>> partnerMap = new LinkedHashMap<>();
+        partners.forEach(t -> {
+            Integer priority = t.getDispatch_priority();
+            List<Partner> tmp = new ArrayList<>();
+            if (partnerMap.get(priority) == null) {
+                tmp.add(t);
+            } else {
+                tmp = partnerMap.get(priority);
+                tmp.add(t);
+            }
+            partnerMap.put(priority, tmp);
+        });
+        return partnerMap;
     }
 
 }

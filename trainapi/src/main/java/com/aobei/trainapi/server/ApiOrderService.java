@@ -18,7 +18,7 @@ import weixin.popular.bean.paymch.MchPayApp;
 public interface ApiOrderService {
 
     void paySuccess(Order order, int paytype);
-    Station dispatch(Order order, ServiceUnit serviceUnit);
+    //Station dispatch(Order order, ServiceUnit serviceUnit);
 	ApiResponse getCounpons(Customer customer, Long coupon_id);
 	List<CouponResponse> queryConponList(Customer customer, Long product_id, Integer page_index, Integer count);
 

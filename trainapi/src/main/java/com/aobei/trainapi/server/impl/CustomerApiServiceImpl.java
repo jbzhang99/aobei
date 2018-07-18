@@ -1384,7 +1384,7 @@ public class CustomerApiServiceImpl implements CustomerApiService {
                 return response;
             }
             apiOrderService.paySuccess(order, paytype);
-            Station station = apiOrderService.dispatch(order, serviceUnit);
+            Station station = orderService.dispatchOrder(order,serviceUnit);
             // 发送短信
             // 您有一张新的${product_name}订单，订单号：${pay_order_id}}，还有10分钟将被自视为动拒单，请及时确认。
             Partner partner = partnerService.selectByPrimaryKey(station == null ? 0l : station.getPartner_id());
