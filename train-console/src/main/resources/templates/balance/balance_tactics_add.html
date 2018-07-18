@@ -105,6 +105,38 @@ $(function(){
                     alertify.alert("请至少添加两条数据!");
                     return false;
 				}
+                var stepTypeVal=$('input:radio[name="step_type"]:checked').val();
+                var oneValue=$('#newSingularPrice').find("div:last").find('.inputOne').val();
+                var twoValue=$('#newSingularPrice').find("div:last").find('.inputTwo').val();
+                var reg=/^[0-9]*[1-9][0-9]*$/;
+                if(!reg.test(oneValue)){
+                    reset();
+                    alertify.alert("每行第一个数，请输入正整数!");
+                    return false;
+                }
+
+                if(stepTypeVal==1){
+                    var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    if(!reg.test(twoValue)){
+                        reset();
+                        alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
+                        return false;
+                    }
+                }else{
+                    var regs=/^[1-9]\d?$/;
+                    if(!regs.test(twoValue)){
+                        reset();
+                        alertify.alert("比例：每行第二个数，请输入一位或两位整数！");
+                        return false;
+                    }
+                }
+                var prevOneValue=$('#newSingularPrice').find("div:last").prev().find('.inputOne').val();
+                if(oneValue <= prevOneValue){
+                    reset();
+                    alertify.alert("最后一行订单数不能比上一行订单数小！");
+                    return false;
+				}
+                $('#newSingularPrice').find("div:last").find('.inputOne').val();
 				var step_data=[];
                 $('#newSingularPrice').find("div").each(function () {
                     var inputOne=$(this).find('.inputOne').val();
@@ -127,6 +159,36 @@ $(function(){
                     alertify.alert("请至少添加两条数据!");
                     return false;
                 }
+                var stepTypeVal=$('input:radio[name="step_type"]:checked').val();
+                var oneValue=$('#newMoneyPrice').find("div:last").find('.inputOne').val();
+                var twoValue=$('#newMoneyPrice').find("div:last").find('.inputTwo').val();
+                var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                if(!reg.test(oneValue)){
+                    reset();
+                    alertify.alert("每行第一个数，请输入整数或者两位小数!");
+                    return false;
+                }
+                if(stepTypeVal==1){
+                    var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    if(!reg.test(twoValue)){
+                        reset();
+                        alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
+                        return false;
+                    }
+                }else{
+                    var regs=/^[1-9]\d?$/;
+                    if(!regs.test(twoValue)){
+                        reset();
+                        alertify.alert("比例：每行第二个数，请输入一位或两位整数!");
+                        return false;
+                    }
+                }
+                var prevOneValue=$('#newMoneyPrice').find("div:last").prev().find('.inputOne').val();
+                if(Number(oneValue) <= Number(prevOneValue)){
+                    reset();
+                    alertify.alert("最后一行金额数不能比上一行金额数小！");
+                    return false;
+                }
                 var step_data=[];
                 $('#newMoneyPrice').find("div").each(function () {
                     var inputOne=$(this).find('.inputOne').val();
@@ -147,6 +209,36 @@ $(function(){
                 if($('#newGuestPrice').find("div").length<2){
                     reset();
                     alertify.alert("请至少添加两条数据!");
+                    return false;
+                }
+                var stepTypeVal=$('input:radio[name="step_type"]:checked').val();
+                var oneValue=$('#newGuestPrice').find("div:last").find('.inputOne').val();
+                var twoValue=$('#newGuestPrice').find("div:last").find('.inputTwo').val();
+                var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                if (!reg.test(oneValue)) {
+                    reset();
+                    alertify.alert("每行第一个数，请输入整数或者两位小数!");
+                    return false;
+                }
+                if (stepTypeVal == 1) {
+                    var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    if (!reg.test(twoValue)) {
+                        reset();
+                        alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
+                        return false;
+                    }
+                } else {
+                    var regs = /^[1-9]\d?$/;
+                    if (!regs.test(twoValue)) {
+                        reset();
+                        alertify.alert("比例：每行第二个数，请输入一位或两位整数!");
+                        return false;
+                    }
+                }
+                var prevOneValue=$('#newGuestPrice').find("div:last").prev().find('.inputOne').val();
+                if(oneValue <= prevOneValue){
+                    reset();
+                    alertify.alert("最后一行客单价数不能比上一行客单价数小！");
                     return false;
                 }
                 var step_data=[];
@@ -595,7 +687,7 @@ function del(obj) {
 				</div>
 				<div class="form-group">
 					<div class="form-group form-inline" id="firstGuestPrice" style="margin-left: 300px;" hidden="hidden">
-						<input type="text" class="form-control inputOne"  placeholder="请输入客单数"/>
+						<input type="text" class="form-control inputOne"  placeholder="请输入客单价"/>
 						<input type="text" class="form-control inputTwo"  placeholder="请输入整数"/>
 						<span class="spanText">%</span>
 						<button type="button" class="btn btn-default" onclick="del(this)">
