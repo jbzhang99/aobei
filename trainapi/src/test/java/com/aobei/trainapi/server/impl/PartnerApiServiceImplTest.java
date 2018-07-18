@@ -430,20 +430,20 @@ public class PartnerApiServiceImplTest {
 		Message msg = new Message();
 		msg.setId(IdGenerator.generateId());
 		msg.setType(2);
-		msg.setBis_type(3);
-		msg.setUser_id(1130959866060382208l);
-		msg.setUid(1072162763415003136l);
-		msg.setMsg_title("服务变更通知新新新测试");
+		msg.setBis_type(1);
+		msg.setUser_id(1059952139373158400l);
+		msg.setUid(1067677206111346688l);
+		msg.setMsg_title("测试学员消息");
 		// 服务人员修改
 		MessageContent.ContentMsg content = new MessageContent.ContentMsg();
 		content.setMsgtype("native");
-		content.setContent("1535800497_2"+"订单变更");
+		content.setContent("测试的撒大所大大大");
 		Map<String,String> param = new HashMap<>();
 		param.put("orderStatus","waitService");
 		param.put("pay_order_id","1535800497_2");
 		TransmissionContent tContent = new TransmissionContent(TransmissionContent.PARTNER,TransmissionContent.ORDER_DETAIL,param);
 		content.setHref(tContent.getHrefNotEncode());
-		content.setTitle("服务变更通知");
+		content.setTitle("测试学员消息");
 		content.setTypes(1);
 		content.setNoticeTypes(2);
 		String object_to_json = null;
@@ -456,7 +456,7 @@ public class PartnerApiServiceImplTest {
 		msg.setCreate_datetime(new Date());
 		msg.setNotify_datetime(new Date());
 		msg.setGroup_id("1535800497_2");
-		msg.setApp_type(3);
+		msg.setApp_type(1);
 		msg.setSend_type(1);
 		msg.setApp_platform(0);
 		messageService.insertSelective(msg);

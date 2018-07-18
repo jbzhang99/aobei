@@ -17,13 +17,14 @@ import com.aobei.trainapi.server.StudentApiService;
 import com.aobei.trainapi.server.bean.ApiResponse;
 import com.aobei.trainapi.server.bean.CustomerDetail;
 import com.aobei.trainapi.server.bean.MessageContent;
+import com.aobei.trainapi.server.bean.StudentInfo;
 import com.aobei.trainapi.server.handler.OnsHandler;
-import com.aobei.trainapi.util.JacksonUtil;
 import com.github.liyiorg.mbg.bean.Page;
 import custom.bean.*;
 import custom.bean.OrderInfo.OrderStatus;
 import custom.bean.OrderInfo.ServiceStatus;
 import custom.util.DistanceUtil;
+import custom.util.ParamsCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -262,6 +263,10 @@ public class StudentApiServiceImpl implements StudentApiService {
 				content.setHref(tContent.getHrefNotEncode());
 				content.setTitle("订单完成通知");
 				content.setTypes(1);
+				if (content.getContent() != null && !ParamsCheck.checkStrAndLength(content.getContent(),200)){
+					Errors._41040.throwError("消息长度过长");
+					return apiResponse;
+				}
 				String object_to_json = null;
 				try {
 					object_to_json = JSON.toJSONString(content);
@@ -822,6 +827,36 @@ public class StudentApiServiceImpl implements StudentApiService {
 		cacheReloadHandler.my_employeeManagementReload(student.getPartner_id());
 		response.setMutationResult(new MutationResult());
 		return response;
+	}
+
+	/**
+	 * 是否有新的消息
+	 * @param studentInfo
+	 * @return
+	 */
+	@Override
+	public int whetherHaveNewMessages(StudentInfo studentInfo) {
+		int haveNot = 0;
+		try {
+			MessageExample messageExample = new MessageExample();
+			List<Long> ids = new ArrayList<>();
+			ids.add(studentInfo.getUser_id());
+			ids.add(0l);
+			messageExample.or()
+					.andUser_idIn(ids)
+					.andDeletedEqualTo(Status.DeleteStatus.no.value)
+					.andNotify_datetimeLessThanOrEqualTo(new Date())
+					.andSend_typeEqualTo(1)
+					.andApp_typeEqualTo(1)
+					.andStatusEqualTo(0);
+			long messageNum = messageService.countByExample(messageExample);
+			if (messageNum >= 1){
+				haveNot = 1;
+			}
+		}catch (Exception e){
+			logger.error("ERROR api-method:whetherHaveNewMessages",e);
+		}
+		return haveNot;
 	}
 
 }
