@@ -44,7 +44,7 @@ public class CompensationSeventeenthTask {
 	/**
 	 * 每月17号
 	 */
-	//@Scheduled(cron ="0 0 0 17 * ?")
+	@Scheduled(cron ="0 40 16 19 * ?")
 	private void extractData() {
 
         FallintoCompensationExample fallintoCompensationExamples = new FallintoCompensationExample();
@@ -119,7 +119,7 @@ public class CompensationSeventeenthTask {
         FallintoCompensation fallintoCompensation=new FallintoCompensation();
         fallintoCompensation.setFallinto_compensation_id(IdGenerator.generateId());
         String month = localDate.getMonthValue() < 10 ? "0" + localDate.getMonthValue() : localDate.getMonthValue() + "";
-        fallintoCompensation.setBalance_cycle(localDate.getYear() + month + "01");//结算期
+        fallintoCompensation.setBalance_cycle(localDate.getYear() + month + "17");//结算期
         fallintoCompensation.setCompensation_id(compensation.getCompensation_id());//赔偿单号
         fallintoCompensation.setPay_order_id(order.getPay_order_id());//订单号
         fallintoCompensation.setServiceunit_id(serviceUnit.getServiceunit_id());//服务单号

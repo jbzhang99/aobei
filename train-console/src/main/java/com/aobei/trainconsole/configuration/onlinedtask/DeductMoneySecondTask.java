@@ -167,7 +167,7 @@ public class DeductMoneySecondTask {
         FallintoDeductMoney fallintoDeductMoney=new FallintoDeductMoney();
         fallintoDeductMoney.setFallinto_deduct_money_id(IdGenerator.generateId());
         String month = localDate.getMonthValue() < 10 ? "0" + localDate.getMonthValue() : localDate.getMonthValue() + "";
-        fallintoDeductMoney.setBalance_cycle(localDate.getYear() + month + "16");//结算期
+        fallintoDeductMoney.setBalance_cycle(localDate.getYear() + month + "02");//结算期
         fallintoDeductMoney.setDeduct_money_id(deductMoney.getDeduct_money_id());//扣款单号
         fallintoDeductMoney.setPay_order_id(order.getPay_order_id());//订单号
         fallintoDeductMoney.setServiceunit_id(serviceUnit.getServiceunit_id());//服务单号
