@@ -170,7 +170,7 @@ public class RefundSecondTask {
         FallintoRefund fallintoRefund=new FallintoRefund();
         fallintoRefund.setFallinto_refund_id(IdGenerator.generateId());
         String month = localDate.getMonthValue() < 10 ? "0" + localDate.getMonthValue() : localDate.getMonthValue() + "";
-        fallintoRefund.setBalance_cycle(localDate.getYear() + month + "16");//结算期
+        fallintoRefund.setBalance_cycle(localDate.getYear() + month + "02");//结算期
         fallintoRefund.setRefund_id(refund.getRefund_id());//退款单号
         fallintoRefund.setPay_order_id(order.getPay_order_id());//订单号
         fallintoRefund.setServiceunit_id(serviceUnit.getServiceunit_id());//服务单号

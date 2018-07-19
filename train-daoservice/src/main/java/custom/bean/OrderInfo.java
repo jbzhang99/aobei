@@ -232,6 +232,39 @@ public class OrderInfo implements Serializable {
      */
     private Integer buy_multiple_o2o;
 
+    /**
+     * 服务人员点击开始时间
+     * @return
+     */
+    private String  workDateTimeString;
+
+    public String getWorkDateTimeString() {
+       if (serviceUnit == null || serviceUnit.getWork_2_datetime() == null)
+            return null;
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String dateString = format.format(serviceUnit.getWork_2_datetime());
+        this.workDateTimeString = dateString;
+        return workDateTimeString;
+    }
+
+    public void setWorkDateTimeString(String workDateTimeString) {
+        this.workDateTimeString = workDateTimeString;
+    }
+
+    /**
+     * 该条订单是否可以续单(0 可以续单  1不可以续单)
+     * @return
+     */
+    private int whetherCanContinue;
+
+    public int getWhetherCanContinue() {
+        return whetherCanContinue;
+    }
+
+    public void setWhetherCanContinue(int whetherCanContinue) {
+        this.whetherCanContinue = whetherCanContinue;
+    }
+
     public String getUnit() {
         if (proSku != null) {
             this.unit = proSku.getUnit();

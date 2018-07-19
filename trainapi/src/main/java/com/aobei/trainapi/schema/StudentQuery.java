@@ -79,7 +79,7 @@ public class StudentQuery implements GraphQLQueryResolver {
 	/**
 	 * 服务人员端 任务详情
 	 * 
-	 * @param serviceunit_id
+	 * @param
 	 * @param pay_order_id
 	 * @return
 	 */

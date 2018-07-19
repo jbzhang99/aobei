@@ -210,7 +210,6 @@ public interface PartnerApiService {
 
 	/**
 	 * 消息状态修改
-	 * @param
 	 * @param message_id
 	 * @return
 	 */

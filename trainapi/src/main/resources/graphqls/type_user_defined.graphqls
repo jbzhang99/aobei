@@ -152,6 +152,10 @@ type OrderInfo{
 	buy_multiple_o2o:Int
 	#是否支持取消(true:支持取消 false:不支持取消)
 	allowedToCancel:Boolean
+	#服务人员点击开始时间
+	workDateTimeString:String
+	#该条订单是否可以续单(0 可以续单  1不可以续单)
+	whetherCanContinue:Int
 }
 
 type CouponResponse{

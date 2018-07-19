@@ -11,6 +11,7 @@ import com.aobei.train.model.ServiceUnitExample.Criteria;
 import com.aobei.train.service.*;
 import com.aobei.train.service.impl.StoreServiceImpl;
 import com.aobei.trainapi.schema.Errors;
+import com.aobei.trainapi.schema.TokenUtil;
 import com.aobei.trainapi.schema.input.StudentOrderInput;
 import com.aobei.trainapi.schema.type.MutationResult;
 import com.aobei.trainapi.server.StudentApiService;
@@ -90,6 +91,8 @@ public class StudentApiServiceImpl implements StudentApiService {
     CacheReloadHandler cacheReloadHandler;
 	@Autowired
 	Environment env;
+	@Autowired
+	TokenUtil TOKEN;
 	Logger logger = LoggerFactory.getLogger(StudentApiServiceImpl.class);
 
 	/**
@@ -335,6 +338,14 @@ public class StudentApiServiceImpl implements StudentApiService {
 			}
 		}
 		orderInfo.setServiceUnit(serviceUnit);
+		//服务人员是否可以续单
+		ProSkuExample skuExample = new ProSkuExample();
+		skuExample.or().andProduct_idEqualTo(serviceUnit.getProduct_id()).andDispalyEqualTo(1);
+		long skuNum = proSkuService.countByExample(skuExample);
+		orderInfo.setWhetherCanContinue(1);
+		if (skuNum > 0){
+			orderInfo.setWhetherCanContinue(0);
+		}
 		logger.info("api-method:selectStuShowTaskdetail:process orderInfo:{}", orderInfo);
 		return orderInfo;
 	}
@@ -553,170 +564,253 @@ public class StudentApiServiceImpl implements StudentApiService {
 	/**
 	 * 创建订单:
 	 */
-	@Transactional(timeout = 5)
+	//@Transactional(timeout = 5)
 	@Override
-	public ApiResponse<Order> create_order(Student student, StudentOrderInput input) {
+	public ApiResponse<Order> create_order(Student student,String channelId, StudentOrderInput input) {
 		logger.info("api-method:create_order:params student:{},input:{}", student, input);
 		ApiResponse<Order> response = new ApiResponse<>();
-
-		// 获取订单详情
-		// OrderInfo orderInfo =
-		// selectStuShowTaskdetail(student.getStudent_id(),
-		// input.getPay_order_id());
-		// 获取产品的最大最小购买值
-		ProSku sku = proSkuService.selectByPrimaryKey(input.getPsku_id());
-		logger.info("api-method:create_order:process sku:{}", sku);
-		// --------------------------------判断参数值对否-------------------------------------
-		Integer allow_mutiple = sku.getBuy_multiple();
-		boolean flag = true;
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-		Date begin = null;
-		Date end = null;
-		String strBegin = null;
-		if (input.getType() == 0) {
-			Date date = new Date();
-			begin = date;
-			end = date;
-		} else {
-			try {
-				Date now = new Date();
-				begin = format.parse(input.getBegin_datetime());
-				if (!StringUtils.isEmpty(input.getEnd_datatime())) {
-					end = format.parse(input.getEnd_datatime());
-					if (end.before(now)) {
+		try {
+			Order order = new Order();
+			Order oldOlder = orderService.selectByPrimaryKey(input.getPay_order_id());
+			logger.info("api-method:create_order:process oldOlder:{}", oldOlder);
+			Product product = productService.selectByPrimaryKey(input.getProduct_id());
+			OrderItem orderItem = new OrderItem();
+			//服务单1  0元服务,下单支付成功   付费单 2  正常流程,跟小程序一样  其他值都是走正常流程
+			if (input.getContinuousSingleState() == 1){
+				CustomerAddress customerAddress = customerAddressService.selectByPrimaryKey(oldOlder.getCustomer_address_id());
+				if (customerAddress == null) {
+					response.setErrors(Errors._41004);
+					return response;
+				}
+				// 开始生成订单，不计算价格
+				ProSku sku = new ProSku();
+				sku.setName("服务单");
+				sku.setPrice(0);
+				sku.setProduct_id(input.getProduct_id());
+				order = orderService.initOrder(product, sku, customerAddress, input.getNum());
+				String envname = env.getActiveProfiles()[0];
+				String pay_order_id = redisIdGenerator.generatorId("pay_order_id", 1000) + "";
+				if ("dev".equals(envname)) {
+					pay_order_id = pay_order_id + "_1";
+				} else if ("test".equals(envname)) {
+					pay_order_id = pay_order_id + "_2";
+				}
+				order.setPay_order_id(pay_order_id);
+				order.setPrice_discount(0);
+				order.setPrice_pay(0);
+				order.setPrice_total(0);
+				order.setChannel(channelId);
+				order.setPay_type(3);
+				order.setPay_status(StatusConstant.PAY_STATUS_PAYED);
+				order.setRemark(input.getRemark());
+				order.setStatus_active(StatusConstant.ORDER_STATUS_WAITSERVICE);
+				order.setExpire_datetime(null);
+				order.setProxyed(1);
+				order.setProxyed_uid(student.getStudent_id());
+				order.setGroup_tag(oldOlder.getGroup_tag());
+				//订单包含商品
+				orderItem = orderItemService.initOrderItem(order, sku, input.getNum());
+				// 进行存储,成功和失败的判断
+				orderService.insertSelective(order);
+				orderItemService.insertSelective(orderItem);
+
+				Customer customer = customerService.selectByPrimaryKey(customerAddress.getCustomer_id());
+				ServiceUnit[] serviceUnits = initServiceUnit(customer, order, input);
+				Long serviceUnit_id = 0l;
+				for (ServiceUnit serviceUnit : serviceUnits) {
+					serviceUnit.setStudent_id(student.getStudent_id());
+					serviceUnit.setStudent_name(student.getName());
+					serviceUnit.setC_begin_datetime(format.parse(input.getBegin_datetime()));
+					serviceUnit.setC_end_datetime(format.parse(input.getEnd_datatime()));
+					serviceUnit.setPartner_id(student.getPartner_id());
+					serviceUnit.setStation_id(student.getStation_id());
+					serviceUnit.setActive(StatusConstant.SERVICEUNIT_STATUS_ACTIVE);
+					serviceUnit.setStatus_active(StatusConstant.SERVICEUNIT_STATUS_ASSIGNWORKE);
+					serviceUnitService.insertSelective(serviceUnit);
+					if (serviceUnit.getPid() == 0) {
+						serviceUnit_id = serviceUnit.getServiceunit_id();
+					}
+				}
+				// 服务单记录
+				ServiceunitPerson person = new ServiceunitPerson();
+				person.setServiceunit_person_id(IdGenerator.generateId());
+				person.setServiceunit_id(serviceUnit_id);
+				person.setStudent_id(student.getStudent_id());
+				person.setStudent_name(student.getName());
+				person.setStatus_active(StatusConstant.ORDER_STATUS_WAITSERVICE);
+				serviceunitPersonService.insertSelective(person);
+				logger.info("api-method:create_order:process [person = " + person + "]");
+
+				// 占服务人员库存
+				if (!storeService.isStudentHasStore(student, input.getBegin_datetime().substring(0, 10),format.parse(input.getBegin_datetime()), format.parse(input.getEnd_datatime()))) {
+					response.setErrors(Errors._41021);
+					return response;
+				}
+				storeService.updateAvilableTimeUnits(student.getStudent_id(), format.parse(input.getBegin_datetime()), format.parse(input.getEnd_datatime()), StoreServiceImpl.TAKEN);
+
+			}else {
+				ProSku sku = proSkuService.selectByPrimaryKey(input.getPsku_id());
+				logger.info("api-method:create_order:process sku:{}", sku);
+				// --------------------------------判断参数值对否-------------------------------------
+				Integer allow_mutiple = sku.getBuy_multiple();
+				boolean flag = true;
+				Date begin = null;
+				Date end = null;
+				String strBegin = null;
+				if (input.getType() == 0) {
+					Date date = new Date();
+					begin = date;
+					end = date;
+				} else {
+					try {
+						Date now = new Date();
+						begin = format.parse(input.getBegin_datetime());
+						if (!StringUtils.isEmpty(input.getEnd_datatime())) {
+							end = format.parse(input.getEnd_datatime());
+							if (end.before(now)) {
+								flag = false;
+							}
+						}
+
+						if (begin.before(now)) {
+							flag = false;
+						}
+					} catch (ParseException e) {
 						flag = false;
 					}
 				}
-
-				if (begin.before(now)) {
+				strBegin = format.format(begin);
+				Integer num = input.getNum();
+				if (allow_mutiple == 1) {// 允许购买多件
+					Integer max = sku.getBuy_multiple_max();
+					Integer min = sku.getBuy_multiple_min();
+					if (max == 0) {// 不限制购买数量
+						if (num >= min) {
+							flag = true;
+						}
+					} else {
+						if (num >= min && num <= max) {
+							flag = true;
+						}
+					}
+				} else if (num > 1) {
 					flag = false;
 				}
-			} catch (ParseException e) {
-				flag = false;
-			}
-		}
-		strBegin = format.format(begin);
-		Integer num = input.getNum();
-		if (allow_mutiple == 1) {// 允许购买多件
-			Integer max = sku.getBuy_multiple_max();
-			Integer min = sku.getBuy_multiple_min();
-			if (max == 0) {// 不限制购买数量
-				if (num >= min) {
-					flag = true;
-				}
-			} else {
-				if (num >= min && num <= max) {
-					flag = true;
-				}
-			}
-		} else if (num > 1) {
-			flag = false;
-		}
 
-		if (!flag) {
+				if (!flag) {
+					response.setErrors(Errors._41040);
+					return response;
+				}
+				// 用户下单地址校验
+				CustomerAddressExample example = new CustomerAddressExample();
+				example.or().andCustomer_address_idEqualTo(input.getCustomer_address_id());
+				CustomerAddress customerAddress = singleResult(customerAddressService.selectByExample(example));
+				logger.info("api-method:create_order:process customerAddress:{}", customerAddress);
+				if (customerAddress == null) {
+					response.setErrors(Errors._41004);
+					return response;
+				}
+
+				// 要购买的产品的验证
+				logger.info("api-method:create_order:process product:{}", product);
+				if (product == null || sku == null) {
+					response.setErrors(Errors._41006);
+					return response;
+				}
+				Integer buy_multiple_o2o = sku.getBuy_multiple_o2o();
+				if (input.getType() == 1) {
+					if (!storeService.isStudentHasStore(student, strBegin.substring(0, 10), begin, end)) {
+						response.setErrors(Errors._41021);
+						return response;
+					}
+				}
+
+				// 开始生成订单，并计算价格
+				int totalPrice = sku.getPrice() * num;
+				int payPrice = totalPrice;
+				order = orderService.initOrder(product, sku, customerAddress, num);
+				String envname = env.getActiveProfiles()[0];
+				String pay_order_id = redisIdGenerator.generatorId("pay_order_id", 1000) + "";
+				if ("dev".equals(envname)) {
+					pay_order_id = pay_order_id + "_1";
+				} else if ("test".equals(envname)) {
+					pay_order_id = pay_order_id + "_2";
+				}
+				order.setPay_order_id(pay_order_id);
+				order.setProxyed(1);
+				order.setProxyed_uid(student.getStudent_id());
+				order.setGroup_tag(oldOlder.getGroup_tag());
+				order.setPrice_discount(0);
+				order.setPrice_pay(payPrice);
+				order.setPrice_total(totalPrice);
+				order.setRemark(input.getRemark());
+				order.setName(product.getName() + sku.getName());
+				order.setClient_id(TOKEN.getClientId());
+				orderItem = orderItemService.initOrderItem(order, sku, num);
+				Customer customer = customerService.selectByPrimaryKey(customerAddress.getCustomer_id());
+				ServiceUnit[] serviceUnits = initServiceUnit(customer, order, input);
+				// 进行存储,成功和失败的判断
+				orderService.insertSelective(order);
+				orderItemService.insertSelective(orderItem);
+				Long serviceUnit_id = 0l;
+				for (ServiceUnit serviceUnit : serviceUnits) {
+					serviceUnit.setStudent_name(student.getName());
+					serviceUnit.setC_begin_datetime(begin);
+					serviceUnit.setC_end_datetime(end);
+					serviceUnit.setPartner_id(student.getPartner_id());
+					serviceUnit.setStation_id(student.getStation_id());
+					serviceUnitService.insertSelective(serviceUnit);
+					if (serviceUnit.getPid() == 0) {
+						serviceUnit_id = serviceUnit.getServiceunit_id();
+					}
+				}
+
+				// 服务单记录
+				ServiceunitPerson person = new ServiceunitPerson();
+				person.setServiceunit_person_id(IdGenerator.generateId());
+				person.setServiceunit_id(serviceUnit_id);
+				person.setStudent_id(student.getStudent_id());
+				person.setStudent_name(student.getName());
+				person.setStatus_active(1);
+				serviceunitPersonService.insertSelective(person);
+				logger.info("api-method:create_order:process [person = " + person + "]");
+
+				// 发送自动取消的命令
+				Metadata metadata = metadataService.selectByPrimaryKey(Constant.MKEY_MAX_PAY_TIMEOUT);
+				Integer timeOut = metadata.getMeta_value() == null ? Constant.ORDER_PAY_TIMEOUT
+						: Integer.parseInt(metadata.getMeta_value());
+				Long delayTime = System.currentTimeMillis() + timeOut * 60 * 1000;
+				SendResult sendResult = onsHandler.sendCancelMessage(order.getPay_order_id(), delayTime);
+
+				// 占服务人员库存
+				if (input.getType() == 1)
+					storeService.updateAvilableTimeUnits(student.getStudent_id(), begin, end, StoreServiceImpl.TAKEN);
+
+			}
+
+			// 更新顾客端缓存
+			cacheReloadHandler.orderListReload(order.getUid());
+			cacheReloadHandler.orderDetailReload(order.getUid(), orderItem.getPay_order_id());
+
+			String sname = student.getName() == null ? student.getPhone() : student.getName();
+			// 订单日志
+			orderLogService.xInsert(sname, student.getStudent_id(), order.getPay_order_id(), "服务人员【" + sname + "进行了下单操作");
+			response.setT(order);
+
+			// 更新服务人员缓存
+			cacheReloadHandler.student_order_listReload(student.getStudent_id());
+			cacheReloadHandler.selectStuShowTaskdetailReload(student.getStudent_id(), orderItem.getPay_order_id());
+			cacheReloadHandler.selectStuUndoneOrderReload(student.getStudent_id());
+			cacheReloadHandler.my_employeeManagementReload(student.getPartner_id());
+			cacheReloadHandler.productDetailReload(input.getProduct_id());
+			// 更新合伙人订单缓存
+			cacheReloadHandler.partner_order_detailReload(orderItem.getPay_order_id());
+			cacheReloadHandler.partner_order_listReload(student.getPartner_id());
+		}catch (Exception e){
+			logger.error("ERROR create order error", e);
 			response.setErrors(Errors._41040);
-			return response;
 		}
-
-		// 用户下单地址校验
-		CustomerAddressExample example = new CustomerAddressExample();
-		example.or().andCustomer_address_idEqualTo(input.getCustomer_address_id());
-		CustomerAddress customerAddress = singleResult(customerAddressService.selectByExample(example));
-		logger.info("api-method:create_order:process customerAddress:{}", customerAddress);
-		if (customerAddress == null) {
-			response.setErrors(Errors._41004);
-			return response;
-		}
-		// 要购买的产品的验证
-		Product product = productService.selectByPrimaryKey(input.getProduct_id());
-		logger.info("api-method:create_order:process product:{}", product);
-		if (product == null || sku == null) {
-			response.setErrors(Errors._41006);
-			return response;
-		}
-		Integer buy_multiple_o2o = sku.getBuy_multiple_o2o();
-		if (input.getType() == 1) {
-			if (!storeService.isStudentHasStore(student, strBegin.substring(0, 10), begin, end)) {
-				response.setErrors(Errors._41021);
-				return response;
-			}
-		}
-		Order oldOlder = orderService.selectByPrimaryKey(input.getPay_order_id());
-		logger.info("api-method:create_order:process oldOlder:{}", oldOlder);
-		// 开始生成订单，并计算价格
-		int totalPrice = sku.getPrice() * num;
-		int payPrice = totalPrice;
-		Order order = orderService.initOrder(product, sku, customerAddress, num);
-		String envname = env.getActiveProfiles()[0];
-		String pay_order_id = redisIdGenerator.generatorId("pay_order_id", 1000) + "";
-		if ("dev".equals(envname)) {
-			pay_order_id = pay_order_id + "_1";
-		} else if ("test".equals(envname)) {
-			pay_order_id = pay_order_id + "_2";
-		}
-		order.setPay_order_id(pay_order_id);
-		order.setProxyed(1);
-		order.setProxyed_uid(student.getStudent_id());
-		order.setGroup_tag(oldOlder.getGroup_tag());
-		order.setPrice_discount(0);
-		order.setPrice_pay(payPrice);
-		order.setPrice_total(totalPrice);
-		order.setRemark(input.getRemark());
-		order.setName(product.getName() + sku.getName());
-		OrderItem orderItem = orderItemService.initOrderItem(order, sku, num);
-		Customer customer = customerService.selectByPrimaryKey(customerAddress.getCustomer_id());
-		ServiceUnit[] serviceUnits = initServiceUnit(customer, order, input);
-		// 进行存储,成功和失败的判断
-		orderService.insertSelective(order);
-		orderItemService.insertSelective(orderItem);
-		Long serviceUnit_id = 0l;
-		for (ServiceUnit serviceUnit : serviceUnits) {
-			serviceUnit.setStudent_name(student.getName());
-			serviceUnit.setC_begin_datetime(begin);
-			serviceUnit.setC_end_datetime(end);
-			serviceUnit.setPartner_id(student.getPartner_id());
-			serviceUnit.setStation_id(student.getStation_id());
-			serviceUnitService.insertSelective(serviceUnit);
-			if (serviceUnit.getPid() == 0) {
-				serviceUnit_id = serviceUnit.getServiceunit_id();
-			}
-		}
-
-		// 服务单记录
-		ServiceunitPerson person = new ServiceunitPerson();
-		person.setServiceunit_person_id(IdGenerator.generateId());
-		person.setServiceunit_id(serviceUnit_id);
-		person.setStudent_id(student.getStudent_id());
-		person.setStudent_name(student.getName());
-		person.setStatus_active(1);
-		serviceunitPersonService.insertSelective(person);
-		// 更新顾客端缓存
-		cacheReloadHandler.orderListReload(order.getUid());
-		cacheReloadHandler.orderDetailReload(order.getUid(), orderItem.getPay_order_id());
-		logger.info("api-method:create_order:process [person = " + person + "]");
-		String sname = student.getName() == null ? student.getPhone() : student.getName();
-		// 订单日志
-		orderLogService.xInsert(sname, student.getStudent_id(), order.getPay_order_id(), "服务人员【" + sname + "进行了下单操作");
-		response.setT(order);
-
-		// 占服务人员库存
-		if (input.getType() == 1)
-			storeService.updateAvilableTimeUnits(student.getStudent_id(), begin, end, StoreServiceImpl.TAKEN);
-		// 更新服务人员缓存
-		cacheReloadHandler.student_order_listReload(student.getStudent_id());
-		cacheReloadHandler.selectStuShowTaskdetailReload(student.getStudent_id(), orderItem.getPay_order_id());
-		cacheReloadHandler.selectStuUndoneOrderReload(student.getStudent_id());
-		cacheReloadHandler.my_employeeManagementReload(student.getPartner_id());
-		cacheReloadHandler.productDetailReload(input.getProduct_id());
-		// 发送自动取消的命令
-		Metadata metadata = metadataService.selectByPrimaryKey(Constant.MKEY_MAX_PAY_TIMEOUT);
-		Integer timeOut = metadata.getMeta_value() == null ? Constant.ORDER_PAY_TIMEOUT
-				: Integer.parseInt(metadata.getMeta_value());
-		Long delayTime = System.currentTimeMillis() + timeOut * 60 * 1000;
-		SendResult sendResult = onsHandler.sendCancelMessage(order.getPay_order_id(), delayTime);
-		// 更新合伙人订单缓存
-		cacheReloadHandler.partner_order_detailReload(orderItem.getPay_order_id());
-		cacheReloadHandler.partner_order_listReload(student.getPartner_id());
 		return response;
 	}
 
@@ -764,7 +858,9 @@ public class StudentApiServiceImpl implements StudentApiService {
 		serviceUnit.setCustomer_id(customer_id);
 		serviceUnit.setPay_order_id(order.getPay_order_id());
 		serviceUnit.setProduct_id(orderInput.getProduct_id());
-		serviceUnit.setPsku_id(orderInput.getPsku_id());
+		if (!StringUtils.isEmpty(orderInput.getPsku_id())){
+			serviceUnit.setPsku_id(orderInput.getPsku_id());
+		}
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 		serviceUnit.setActive(0);
 		serviceUnit.setPid(0l);

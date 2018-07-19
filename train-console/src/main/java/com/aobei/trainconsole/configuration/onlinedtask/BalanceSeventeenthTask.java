@@ -339,7 +339,7 @@ public class BalanceSeventeenthTask {
         BalanceOrder balance = new BalanceOrder();
         balance.setBalance_order_id(IdGenerator.generateId());
         String month = localDate.getMonthValue() < 10 ? "0" + localDate.getMonthValue() : localDate.getMonthValue() + "";
-        balance.setBalance_cycle(localDate.getYear() + month + "01");//结算期
+        balance.setBalance_cycle(localDate.getYear() + month + "17");//结算期
         balance.setPay_order_id(order.getPay_order_id());//订单号
         balance.setServiceunit_id(serviceUnit.getServiceunit_id());//服务单号
         balance.setBalance_type(1);//结算类型
