@@ -1,6 +1,9 @@
 package com.aobei.trainapi.schema;
 
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +28,9 @@ public class StudentMutation implements GraphQLMutationResolver{
 	private StudentApiService studentApiService;
 	@Autowired
     private MsgtextService msgtextService;
+	@Autowired
+	private TokenUtil TOKEN;
+	Logger logger  = LoggerFactory.getLogger(StudentMutation.class);
 	
 	/**
 	 * 修改学员的4个状态（到达，开始，结束，离开）
@@ -45,16 +51,32 @@ public class StudentMutation implements GraphQLMutationResolver{
 	 */
 	public Order student_create_order(StudentOrderInput orderInput){
 		Student student = query.my_student_bindinfo();
-		ApiResponse<Order> response = studentApiService.create_order(student,orderInput);
-		 Msgtext msg = new Msgtext();
+		ApiResponse<Order> response = new ApiResponse<>();
+		Msgtext msg = new Msgtext();
+		if (orderInput.getNum() > 1000) {
+			Errors._41040.throwError("最大可购买数量：1000");
+		}
+		try {
+			String channelId = TOKEN.getChannel();
+			if (StringUtils.isEmpty(channelId)) {
+				channelId = "0";
+			}
+			 response = studentApiService.create_order(student,channelId,orderInput);
+		} catch (Exception e) {
+			logger.error("ERROR Customer create order fail ", e);
+			Errors._41040.throwError();
+		}
+
 		if (response.getErrors() != null) {
-	           if(response.getErrors().name().equals("_41021")){
-	                msg.setContent("库存不足");
-	            }else{
-	                msg = msgtextService.selectByPrimaryKey(MsgTextConstant.SERVICE_400);
-	            }
-	            response.getErrors().throwError(msg.getContent());
-	        }
+			if (response.getErrors().name().equals("_41021")) {
+				msg.setContent("库存不足");
+			} else if (response.getErrors().name().equals("_41006")) {
+				msg.setContent("该产品已经下架");
+			} else {
+				msg = msgtextService.selectByPrimaryKey(MsgTextConstant.SERVICE_400);
+			}
+			response.getErrors().throwError(msg.getContent());
+		}
 	        return response.getT(); 
 	}
 	

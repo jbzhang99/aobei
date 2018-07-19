@@ -47,7 +47,7 @@ public interface StudentApiService {
 	 * @param orderInput
 	 * @return
 	 */
-	ApiResponse<Order> create_order(Student student, StudentOrderInput orderInput);
+	ApiResponse<Order> create_order(Student student, String channelId,StudentOrderInput orderInput);
 
 	/**
 	 * 商品详情
