@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.aobei.trainapi.server.bean.MessageContent;
+import com.aobei.trainapi.server.bean.StudentServiceOrderStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -156,6 +157,10 @@ public class StudentQuery implements GraphQLQueryResolver {
 		StudentInfo studentInfo = student_info();
 		return studentApiService.whetherHaveNewMessages(studentInfo);
 	}
-	
-	
+
+	public StudentServiceOrderStatistics studentStatisticsOrder(Long student_id){
+		StudentInfo studentInfo = student_info();
+		return studentApiService.studentStatisticsOrder(studentInfo.getStudent_id());
+	}
+
 }

@@ -17,6 +17,7 @@ import com.aobei.trainapi.server.StudentApiService;
 import com.aobei.trainapi.server.bean.ApiResponse;
 import com.aobei.trainapi.server.bean.CustomerDetail;
 import com.aobei.trainapi.server.bean.MessageContent;
+import com.aobei.trainapi.server.bean.StudentServiceOrderStatistics;
 import com.aobei.trainapi.server.bean.StudentInfo;
 import com.aobei.trainapi.server.handler.OnsHandler;
 import com.github.liyiorg.mbg.bean.Page;
@@ -40,6 +41,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -263,10 +266,6 @@ public class StudentApiServiceImpl implements StudentApiService {
 				content.setHref(tContent.getHrefNotEncode());
 				content.setTitle("订单完成通知");
 				content.setTypes(1);
-				if (content.getContent() != null && !ParamsCheck.checkStrAndLength(content.getContent(),200)){
-					Errors._41040.throwError("消息长度过长");
-					return apiResponse;
-				}
 				String object_to_json = null;
 				try {
 					object_to_json = JSON.toJSONString(content);
@@ -859,4 +858,95 @@ public class StudentApiServiceImpl implements StudentApiService {
 		return haveNot;
 	}
 
+	/**
+	 * 统计服务人员订单数
+	 * @param student_id
+	 * @return
+	 */
+	@Override
+	public StudentServiceOrderStatistics studentStatisticsOrder(Long student_id) {
+		StudentServiceOrderStatistics studentServiceOrderStatistics = new StudentServiceOrderStatistics();
+		Student student = studentService.selectByPrimaryKey(student_id);
+		if(student!=null){
+			studentServiceOrderStatistics
+					.setServicedOrder(getServiceUnitPersons(2, student_id,0,false));//本月已服务订单数
+			studentServiceOrderStatistics
+					.setDoneOrder(getServiceUnitPersons(4, student_id,Status.ServiceStatus.done.value,false));//本月服务完成订单
+			studentServiceOrderStatistics
+					.setTodayWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value , true));//今日待服务订单
+			studentServiceOrderStatistics
+					.setAllWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value,false));//全部待服务订单
+			return studentServiceOrderStatistics;
+		}
+		return null;
+	}
+
+	private Integer getServiceUnitPersons(int work_status,Long student_id,int status_active,boolean is_day){
+		Set<Long> set = null;
+		List<ServiceUnit> serviceUnits = null;
+		try{
+			serviceUnits = new ArrayList<ServiceUnit>();
+			ServiceunitPersonExample serviceunitPersonExample = new ServiceunitPersonExample();
+			ServiceunitPersonExample.Criteria or = serviceunitPersonExample.or();
+			if(work_status==2){
+				int[] status = {2,4};
+				or.andWork_statusIn(Arrays.asList(status.length));
+			}
+			if(work_status==4){
+				or.andStatus_activeEqualTo(status_active)
+				  .andWork_statusEqualTo(work_status);
+			}
+			if(status_active==3){
+				or.andStatus_activeEqualTo(status_active)
+				  .andWork_statusEqualTo(2);
+			}
+			or.andStudent_idEqualTo(student_id);
+			List<ServiceunitPerson> serviceUnitPersons = serviceunitPersonService.selectByExample(serviceunitPersonExample);
+			set = new HashSet<Long>();
+			for (ServiceunitPerson snp:serviceUnitPersons) {
+				if(snp!=null)
+					set.add(snp.getServiceunit_id());
+			}
+			if(work_status==0 && !is_day){
+				return set.size();
+			}
+			Calendar instance = Calendar.getInstance();
+			for (Long serviceunit_id:set) {
+				ServiceUnit serviceUnit = serviceUnitService.selectByPrimaryKey(serviceunit_id);
+				SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM");
+				SimpleDateFormat sdh = new SimpleDateFormat("yyyy-MM-dd");
+				if(serviceUnit!=null){
+					if(serviceUnit.getC_begin_datetime()!=null){
+						if(is_day) {
+							String c_begin_time_sdh = sdh.format(serviceUnit.getC_begin_datetime());
+							String local_date_sdh = sdh.format(new Date());
+							if (c_begin_time_sdh.equals(local_date_sdh)) {
+								instance.setTime(sd.parse(local_date_sdh));
+								int day_local = instance.get(Calendar.DAY_OF_MONTH) + 1;//当前时间 /天
+								instance.setTime(sd.parse(c_begin_time_sdh));
+								int day_service = instance.get(Calendar.DAY_OF_MONTH) + 1;//服务时间 /天
+								if (day_local == day_service)
+									serviceUnits.add(serviceUnit);
+							}
+						}else{
+							String c_begin_time = sd.format(serviceUnit.getC_begin_datetime());
+							String local_date = sd.format(new Date());
+							if(local_date.equals(c_begin_time)){
+								instance.setTime(sd.parse(local_date));
+								int month_local = instance.get(Calendar.MONTH) + 1;//当前时间 /月
+								instance.setTime(sd.parse(c_begin_time));
+								int month_service = instance.get(Calendar.MONTH)+1;//服务时间 /月
+								if(month_local==month_service){
+									serviceUnits.add(serviceUnit);
+								}
+							}
+						}
+					}
+				}
+			}
+		}catch(Exception e){
+			logger.error("error api-method : getServiceUnitPersons",e);
+		}
+		return serviceUnits.size();
+	}
 }

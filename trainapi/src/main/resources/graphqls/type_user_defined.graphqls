@@ -529,3 +529,13 @@ type OutOfServiceStatistics{
    #具体的请假列表
    outOfServices:[OutOfService]
 }
+type StudentServiceOrderStatistics{
+    #统计本月已服务订单
+    servicedOrder:Int
+    #本月服务完成单
+    doneOrder:Int
+    #全部待服务订单
+    allWaitServiceOrder:Int
+    #今日待服务订单
+    todayWaitServiceOrder:Int
+}

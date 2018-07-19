@@ -5,6 +5,7 @@ import com.aobei.train.service.CancleStrategyService;
 import com.aobei.train.service.ProductService;
 import com.aobei.train.service.UsersService;
 import custom.bean.Status;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,10 @@ public class CancleStrategyController {
     @RequestMapping("/add_cancle_os")
     public Object add_cancle_os(String list, CancleStrategy strategy,Authentication authentication){
         HashMap<Object, String> map = new HashMap<>();
+        if(StringUtils.isEmpty(list)){
+            map.put("result","取消策略为空，添加失败！");
+            return map;
+        }
         Integer i = strategyService.xInsertCancleStratrgy(list, strategy, authentication);
         Users users = usersService.xSelectUserByUsername(authentication.getName());
         logger.info("M[cancle_os] F[add_cancle_os] U[{}] param[CancleStrategy:{}];  result:{}"
@@ -107,6 +112,10 @@ public class CancleStrategyController {
     @RequestMapping("/edit_cancle_os")
     public Object edit_cancle_os(String list, CancleStrategy strategy,Authentication authentication){
         HashMap<Object, String> map = new HashMap<>();
+        if(StringUtils.isEmpty(list)){
+            map.put("result","取消策略为空，添加失败！");
+            return map;
+        }
         Integer i = strategyService.xUpdateCancleStratrgy(list, strategy, authentication);
         Users users = usersService.xSelectUserByUsername(authentication.getName());
         logger.info("M[cancle_os] F[edit_cancle_os] U[{}] param[CancleStrategy:{}];  result:{}"

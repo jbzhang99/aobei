@@ -1,6 +1,7 @@
 package com.aobei.trainapi.server;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import com.aobei.train.model.Message;
@@ -86,10 +87,12 @@ public interface StudentApiService {
 	 */
 	ApiResponse cancelOrder(Student student, String pay_order_id);
 
+
 	/**
 	 * 是否有新的消息
 	 * @param studentInfo
 	 * @return
 	 */
     int whetherHaveNewMessages(StudentInfo studentInfo);
+	StudentServiceOrderStatistics studentStatisticsOrder(Long student_id);
 }

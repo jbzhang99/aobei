@@ -1739,12 +1739,12 @@ public class PartnerApiServiceImpl implements PartnerApiService {
     /**
      * 消息状态修改
      *
-     * @param partner
+     * @param
      * @param message_id
      * @return
      */
     @Override
-    public MutationResult messageStatusAlter(Partner partner, Long message_id) {
+    public MutationResult messageStatusAlter(Long message_id) {
         Message message = messageService.selectByPrimaryKey(message_id);
         if (message != null && message.getStatus() == 0) {
             message.setStatus(1);
