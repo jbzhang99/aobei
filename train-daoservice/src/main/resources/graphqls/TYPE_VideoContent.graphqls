@@ -1,0 +1,33 @@
+#视频内容
+type VideoContent{
+
+    video_content_id : Long
+
+    #标题
+    title : String
+
+    #描述
+    descripte : String
+
+    #对应 客户端类型  customer,partner,teacher,student
+    client_type : String
+
+    #图片数据 JSON 格式 {“id”:"","url":""}
+    img_url : String
+
+    #视频数据 JSON 格式 {“id”:"","url":""}
+    video_url : String
+
+    #视频上传状态  1 上传中 2 已上传
+    video_upload_status : Int
+
+    #上线状态  0 下线  1 上线 
+    online : Int
+
+    #排序号  0-10000
+    order_num : Int
+
+    #创建时间
+    create_datetime : Date
+}
+
