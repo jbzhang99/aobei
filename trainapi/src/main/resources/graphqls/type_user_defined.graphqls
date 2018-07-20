@@ -156,6 +156,10 @@ type OrderInfo{
 	workDateTimeString:String
 	#该条订单是否可以续单(0 可以续单  1不可以续单)
 	whetherCanContinue:Int
+	#服务人员开始时间
+	studentStartTime:String
+	#服务人员结束时间
+	studentEndTime:String
 }
 
 type CouponResponse{
@@ -279,6 +283,8 @@ type StudentInfo{
 	img:Img
 	#无犯罪证书
 	innocence_proof:String
+	#技能证书集合(加name)
+	jobCerts:[StudentJobCert]
 }
 type StudentType{
 	#学生
@@ -544,4 +550,11 @@ type StudentServiceOrderStatistics{
     allWaitServiceOrder:Int
     #今日待服务订单
     todayWaitServiceOrder:Int
+}
+
+type StudentJobCert{
+    #服务人员姓名
+    studentName:String
+    #技能证书url
+    url:String
 }

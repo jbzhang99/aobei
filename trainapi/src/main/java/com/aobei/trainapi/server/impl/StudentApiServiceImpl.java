@@ -953,6 +953,7 @@ public class StudentApiServiceImpl implements StudentApiService
 					.andApp_typeEqualTo(1)
 					.andStatusEqualTo(0);
 			long messageNum = messageService.countByExample(messageExample);
+            logger.info("api-method:whetherHaveNewMessages:process messageNum:{}", messageNum);
 			if (messageNum >= 1){
 				haveNot = 1;
 			}
@@ -1070,6 +1071,7 @@ public class StudentApiServiceImpl implements StudentApiService
 	 */
 	@Override
 	public List<VideoContent> studentVideoList(String clientId) {
+        logger.info("api-method:studentVideoList:params clientId:{}", clientId);
 		List<VideoContent> videoContents = new ArrayList<>();
 		try {
 			String[] split = clientId.split("_");
@@ -1081,6 +1083,7 @@ public class StudentApiServiceImpl implements StudentApiService
 			videoContentExample.setOrderByClause(VideoContentExample.C.order_num + " DESC");
 			//查询该人员的视频列表
 			videoContents = videoContentService.selectByExample(videoContentExample);
+            logger.info("api-method:studentVideoList:process videoContents:{}", videoContents.size());
 			videoContents.stream().forEach(t ->{
                 Img imgUrl = JSON.parseObject(t.getImg_url(), Img.class);
                 t.setImg_url(imgUrl.getUrl());

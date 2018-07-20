@@ -167,8 +167,15 @@ public class ApiServiceImpl implements ApiService {
 				}
 			}
 			info.setImgs(list);
+			List<StudentJobCert> jobCerts = new ArrayList<>();
+			list.stream().forEach(t->{
+				StudentJobCert jobCert = new StudentJobCert();
+				jobCert.setStudentName(student.getName());
+				jobCert.setUrl(t.getUrl());
+				jobCerts.add(jobCert);
+			});
+			info.setJobCerts(jobCerts);
 		}
-
 		return info;
 	}
 
