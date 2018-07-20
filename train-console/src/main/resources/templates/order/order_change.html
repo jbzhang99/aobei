@@ -23,8 +23,7 @@
             }, 3000);
 		}
 
-
-        ymdhm();
+        ymd();
 
 		$(".back_butn").click(function() {
 			window.history.go(-1);
@@ -66,27 +65,40 @@
 							message : '请选择服务站点！'
 						}
 					}
-				},
-				c_begin_datetime: {
-	                validators: {
-	                    regexp: {
-	                        regexp: /^[1-2][0-9][0-9][0-9]-([1][0-2]|0?[1-9])-([12][0-9]|3[01]|0?[1-9]) ([01][0-9]|[2][0-3]):[0-5][0-9]$/,
-	                        message: '请输入正确的日期格式！如（2018-03-22 11:47）'
-	                    }
-	                }
-	            },
-	            c_end_datetime: {
-	                validators: {
-	                    regexp: {
-	                        regexp: /^[1-2][0-9][0-9][0-9]-([1][0-2]|0?[1-9])-([12][0-9]|3[01]|0?[1-9]) ([01][0-9]|[2][0-3]):[0-5][0-9]$/,
-	                        message: '请输入正确的日期格式！如（2018-03-22 11:47）'
-	                    }
-	                }
-	            }
+				}
+//				c_begin_datetime: {
+//	                validators: {
+//	                    regexp: {
+//	                        regexp: /^[1-2][0-9][0-9][0-9]-([1][0-2]|0?[1-9])-([12][0-9]|3[01]|0?[1-9]) ([01][0-9]|[2][0-3]):[0-5][0-9]$/,
+//	                        message: '请输入正确的日期格式！如（2018-03-22 11:47）'
+//	                    }
+//	                }
+//	            },
+//	            c_end_datetime: {
+//	                validators: {
+//	                    regexp: {
+//	                        regexp: /^[1-2][0-9][0-9][0-9]-([1][0-2]|0?[1-9])-([12][0-9]|3[01]|0?[1-9]) ([01][0-9]|[2][0-3]):[0-5][0-9]$/,
+//	                        message: '请输入正确的日期格式！如（2018-03-22 11:47）'
+//	                    }
+//	                }
+//	            }
 			}
 		});
 	
 		$("#save_btn").click(function() {
+
+            if($("#select_date").val() != ''){
+                if($("input[name='time']:checked").size() <= 0){
+                    reset();
+                    alertify.alert("请选择服务时间段！");
+                    return false;
+                }
+            }
+            var time = $("input[name='time']:checked").val();
+			/*var partner = $("#partner").val();
+			 var station = $("#station").val();*/
+            var select_date = $("#select_date").val();
+
 			$("#form1").bootstrapValidator('validate');//提交验证
 			if ($("#form1").data('bootstrapValidator').isValid()) {
 				//序列化获得表单数据，结果为：user_id=12&user_name=John&user_age=20
@@ -114,6 +126,9 @@
 	});
 
 	function select_partner(partner_id) {
+        $("#server_date").val('');
+        $("#num").val('');
+        $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
 		var stations = $.parseJSON($("#stations").val());
 		var html = [];
 		html.push("<option value=''>请选择服务站点</option>");
@@ -125,25 +140,88 @@
 		$("#station").html(html.join(''));
 	}
 	
-	function change_date(){
-		var c_begin_datetime = $(".c_begin_datetime").val();
-		var c_end_datetime = $(".c_end_datetime").val();
-		if(c_begin_datetime == ''){
-			reset();
-			alertify.alert("请选择预约开始时间！");
-		}
-		if(c_end_datetime == ''){
-			reset();
-			alertify.alert("请选择预约结束时间！");
-		}
-		if(c_begin_datetime != '' && c_end_datetime != ''){
-			if(c_end_datetime < c_begin_datetime){
-				reset();
-				alertify.alert("预约结束时间不得小于预约开始时间！");
-				$(".c_end_datetime").val('');
-			}
-		}
+	function change_date(server_date){
+//		var c_begin_datetime = $(".c_begin_datetime").val();
+//		var c_end_datetime = $(".c_end_datetime").val();
+//		if(c_begin_datetime == ''){
+//			reset();
+//			alertify.alert("请选择预约开始时间！");
+//		}
+//		if(c_end_datetime == ''){
+//			reset();
+//			alertify.alert("请选择预约结束时间！");
+//		}
+//		if(c_begin_datetime != '' && c_end_datetime != ''){
+//			if(c_end_datetime < c_begin_datetime){
+//				reset();
+//				alertify.alert("预约结束时间不得小于预约开始时间！");
+//				$(".c_end_datetime").val('');
+//			}
+//		}
+
+        var timeArray=['00:00','00:30','01:00','01:30','02:00','02:30','03:00','03:30',
+            '04:00','04:30','05:00','05:30','06:00','06:30','07:00','07:30',
+            '08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
+            '12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
+            '16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30',
+            '20:00','20:30','21:00','21:30','22:00','22:30','23:00','23:30'
+        ];
+
+        var station_id = $("#station").val();
+        var pay_order_id = $("#pay_order_id").val();
+        var num = $("#num").val();
+        if(station_id == '' || pay_order_id == '' || num == ''){
+            alertify.alert("请先选择出站点信息和填入需要的服务人员数！");
+            return false;
+        }
+
+        if(server_date == ''){
+            $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
+            return false;
+        }
+
+        $.ajax({
+            url:"/ordermanager/get_optional_time_scope",
+            type : 'post',
+            data :{
+                pay_order_id:pay_order_id,
+                station_id:station_id,
+                server_date:server_date,
+                num:num
+            },
+            success:function(data){
+                var html = [];
+                if (data.msg != null) {
+                    html.push("<span style='color: red'>该站点下服务人员数量不足<span>");
+                }else{
+                    var scopeStores = data.scopeStores;
+                    $.each(scopeStores, function(i, ele) {
+                        var s = ele.skuTime.s;
+                        var e = ele.skuTime.e;
+                        var inputStr = "<input type='radio' class='input timeScope' value='{\"s\":"+s+",\"e\":"+e+"}' name='time'/>";
+                        $.each(timeArray,function (i, n) {
+                            if(i == s){
+                                inputStr += n + ' - ';
+                            }
+                        });
+                        $.each(timeArray,function (i, n) {
+                            if(i == e){
+                                inputStr += n +"&nbsp;&nbsp;&nbsp;";
+                            }
+                        });
+                        html.push(inputStr);
+                    });
+                }
+                $("#time_scope").html(html.join(''));
+            }
+        });
 	}
+	
+	function change_station() {
+		$("#server_date").val('');
+        $("#num").val('');
+        $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
+    }
 </script>
 </head>
 <body>
@@ -247,35 +325,41 @@
 					</select>
 				</div>
 			</div>
-			<div class="form-group form-inline">
-				<label class="col-sm-2 control-label">预约时间</label>
-				<div class="col-sm-5">
-					<div class="input-group date datetimepicker2">
-						<input class="form-control c_begin_datetime" type="text" name="c_begin_datetime" onchange="change_date()" style="width: 140px;"/>  
-						<span class="input-group-addon" style="width: 50px;">  
-							<span class="glyphicon glyphicon-calendar"></span>
-						</span>
-					</div>
-					<label>~</label>
-					<div class="input-group date datetimepicker2">
-						<input class="form-control  c_end_datetime" type="text" name="c_end_datetime" onchange="change_date()" style="width: 140px;" /> 
-						<span class="input-group-addon" style="width: 50px;">
-							<span class="glyphicon glyphicon-calendar"></span>
-						</span>
-					</div>
-				</div>
-			</div>
 			<div class="form-group">
 				<label class="col-sm-2 control-label">
 					<span style="color: red;">* </span>变更站点
 				</label>
 				<div class="col-sm-4" id="station_id">
-					<select id="station" class="form-control" name="station_id">
+					<select id="station" class="form-control" name="station_id" onchange="change_station()">
 						<option value=''>请选择服务站点</option>
 						<!--<option th:each="station:${stations}"
 							th:value="${station.station_id}" th:text="${station.address}">
 						</option>-->
 					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label">服务人数</label>
+				<div class="col-sm-3">
+					<input type="number" id="num" class="form-control" name="num" min="1" max="10" style="width: 250px"/>
+				</div>
+			</div>
+			<div class="form-group form-inline">
+				<label class="col-sm-2 control-label">预约时间</label>
+				<div class="col-sm-5">
+					<div class="input-group date datetimepicker1">
+						<input class="form-control c_begin_datetime" type="text" id="server_date" name="c_begin_datetime" onchange="change_date(this.value)" style="width: 140px;"/>
+						<span class="input-group-addon" style="width: 50px;">
+							<span class="glyphicon glyphicon-calendar"></span>
+						</span>
+					</div>
+
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label">服务时间段</label>
+				<div id="time_scope" class="form-inline col-sm-3">
+					<span style="font-size: 10px;color: red;">&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>
 				</div>
 			</div>
 			<div class="form-group">
@@ -287,7 +371,7 @@
 				</div>
 			</div>
 			<input id="stations" type="hidden" th:value="${ss}"> 
-			<input type="hidden" name="pay_order_id" th:value="${order.pay_order_id}">
+			<input type="hidden" id="pay_order_id" name="pay_order_id" th:value="${order.pay_order_id}">
 			<div class="form-group">
 				<div class="col-sm-3 col-sm-offset-2">
 					<button id="save_btn" type="submit" class="btn btn-primary">确定</button>
