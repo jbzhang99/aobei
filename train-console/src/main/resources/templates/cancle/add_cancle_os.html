@@ -23,7 +23,7 @@
                 alertify.alert("策略名称只能是中文、数字或字母！");
                 return false;
             }
-            console.log(name.length);
+
             if(name.length>30){
                 reset();
                 alertify.alert("策略名称不能超过30个汉字！");
@@ -32,6 +32,11 @@
             if(c_type==0){
                 reset();
                 alertify.alert("请选择策略类型");
+                return false;
+            }
+            if($("#end_time").val()==''){
+                reset();
+                alertify.alert("最后一条取消策略为空！");
                 return false;
             }
             var list = [];
@@ -50,6 +55,8 @@
 
 
             var regex_number = /^[0-9]*$/;
+            var regex_fixed = /^([1-9]\d?|100)$/;
+            var regex_double = /^[0-9]+(.[0-9]{1,2})?$/;
             var div_length=$("#div_content").children("div").length;
             var last_div = $("#div_content").children("div").last();
             var last_hour = last_div.find(".input_hour").val();
@@ -92,6 +99,26 @@
                     return false;
                 }
             }
+            if(div_length==0){
+                var begin = $("#init_begin_time").val();
+                var end = $("#end_time").val();
+                if(Number(begin)!=Number(end)){
+                    reset();
+                    alertify.alert("只有两条策略时，第一条和第二条的小时数应相等！");
+                    flag=false;
+                    return false;
+                }else if(!regex_number.test(begin)){
+                    reset();
+                    alertify.alert("小时数只能为数字！");
+                    flag=false;
+                    return false;
+                }else if(!regex_number.test(end)){
+                    reset();
+                    alertify.alert("小时数只能为数字！");
+                    flag=false;
+                    return false;
+                }
+            }
             if(Number(div_length)>1){
                 if(Number(val)<=Number(last_hour)){
                     $("#end_time").val('');
@@ -104,16 +131,30 @@
                     alertify.alert("小时数只能为数字！");
                     flag=false;
                     return false;
+                }else {
+                    if($("#cancle_type").val()!=3){
+                        if(!regex_fixed.test(last_price)){
+                            reset();
+                            alertify.alert("扣除金额为百分比，请输入1-100的整数！");
+                            flag=false;
+                            return false;
+                        }
+                    }else {
+                        if(!regex_double.test(last_price)){
+                            reset();
+                            alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                            flag=false;
+                            return false;
+                        }
+                    }
                 }
-            }/*else{
-                if(val<=$("#init_begin_time").val()){
-                    $("#init_begin_time").val('');
-                    reset();
-                    alertify.alert("最后一行小时数应比所有取消策略都大！");
-                    flag==false;
-                    return false;
-                }
-            }*/
+            }
+            if(list.length==0){
+                flag=false;
+                reset();
+                alertify.alert("不能添加空数据！");
+                return false;
+            }
             if(flag){
                 $.ajax({
                     url:'/cancleStrategy/add_cancle_os',
@@ -172,6 +213,9 @@
 
         function minus(obj) {
             $(obj).parent().parent().remove();
+            var last_div = $("#div_content").children("div").last();
+            last_div.find(".input_hour").attr("readonly",false);
+            last_div.find(".input_price").attr("readonly",false);
         }
         function plus(obj) {
             var regex_number = /^[0-9]*$/;
@@ -196,7 +240,7 @@
                 alertify.alert("最多只能添加10条取消策略！");
                 return false;
             }
-            if(div_length==0){
+            /*if(div_length==0){
                 var begin = $("#init_begin_time").val();
                 var end = $("#end_time").val();
                 if(Number(begin)!=Number(end)){
@@ -215,7 +259,7 @@
                     flag=false;
                     return false;
                 }
-            }
+            }*/
             if(div_length==1){
                 var init_time = $("#init_begin_time").val();
                 var last_hour = last_div.find(".input_hour").val();
@@ -268,7 +312,7 @@
                     return false;
                 }else if(last_price>=prev_price){
                     reset();
-                    alertify.alert("不能大于等于第一条取消策略扣除金额百分比！");
+                    alertify.alert("不能大于等于"+div_length+"取消策略扣除金额百分比！");
                     flag=false;
                     return false;
                 }else{

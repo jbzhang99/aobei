@@ -1,6 +1,7 @@
 package com.aobei.trainapi.server.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.aliyun.openservices.ons.api.SendResult;
 import com.aobei.common.boot.RedisIdGenerator;
 import com.aobei.train.IdGenerator;
@@ -15,8 +16,8 @@ import com.aobei.trainapi.schema.TokenUtil;
 import com.aobei.trainapi.schema.input.StudentOrderInput;
 import com.aobei.trainapi.schema.type.MutationResult;
 import com.aobei.trainapi.server.StudentApiService;
-import com.aobei.trainapi.server.bean.ApiResponse;
-import com.aobei.trainapi.server.bean.CustomerDetail;
+import com.aobei.trainapi.server.bean.*;
+import com.aobei.trainapi.server.bean.Img;
 import com.aobei.trainapi.server.bean.MessageContent;
 import com.aobei.trainapi.server.bean.StudentServiceOrderStatistics;
 import com.aobei.trainapi.server.bean.StudentInfo;
@@ -47,10 +48,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.aobei.common.bean.IGtPushData.Client.student;
 import static org.springframework.dao.support.DataAccessUtils.singleResult;
 
 @Service
-public class StudentApiServiceImpl implements StudentApiService {
+public class StudentApiServiceImpl implements StudentApiService
+{
 	@Autowired
 	ServiceUnitService serviceUnitService;
 
@@ -93,6 +96,8 @@ public class StudentApiServiceImpl implements StudentApiService {
 	Environment env;
 	@Autowired
 	TokenUtil TOKEN;
+	@Autowired
+	VideoContentService videoContentService;
 	Logger logger = LoggerFactory.getLogger(StudentApiServiceImpl.class);
 
 	/**
@@ -269,6 +274,10 @@ public class StudentApiServiceImpl implements StudentApiService {
 				content.setHref(tContent.getHrefNotEncode());
 				content.setTitle("订单完成通知");
 				content.setTypes(1);
+				if (content.getContent() != null && !ParamsCheck.checkStrAndLength(content.getContent(),500)){
+					Errors._41040.throwError("消息长度过长");
+					return apiResponse;
+				}
 				String object_to_json = null;
 				try {
 					object_to_json = JSON.toJSONString(content);
@@ -945,6 +954,7 @@ public class StudentApiServiceImpl implements StudentApiService {
 					.andApp_typeEqualTo(1)
 					.andStatusEqualTo(0);
 			long messageNum = messageService.countByExample(messageExample);
+            logger.info("api-method:whetherHaveNewMessages:process messageNum:{}", messageNum);
 			if (messageNum >= 1){
 				haveNot = 1;
 			}
@@ -956,27 +966,39 @@ public class StudentApiServiceImpl implements StudentApiService {
 
 	/**
 	 * 统计服务人员订单数
-	 * @param student_id
 	 * @return
 	 */
 	@Override
-	public StudentServiceOrderStatistics studentStatisticsOrder(Long student_id) {
-		StudentServiceOrderStatistics studentServiceOrderStatistics = new StudentServiceOrderStatistics();
-		Student student = studentService.selectByPrimaryKey(student_id);
-		if(student!=null){
-			studentServiceOrderStatistics
-					.setServicedOrder(getServiceUnitPersons(2, student_id,0,false));//本月已服务订单数
-			studentServiceOrderStatistics
-					.setDoneOrder(getServiceUnitPersons(4, student_id,Status.ServiceStatus.done.value,false));//本月服务完成订单
-			studentServiceOrderStatistics
-					.setTodayWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value , true));//今日待服务订单
-			studentServiceOrderStatistics
-					.setAllWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value,false));//全部待服务订单
-			return studentServiceOrderStatistics;
+	public StudentServiceOrderStatistics studentStatisticsOrder(StudentInfo studentInfo) {
+		try{
+			StudentServiceOrderStatistics studentServiceOrderStatistics = new StudentServiceOrderStatistics();
+			Long student_id = studentInfo.getStudent_id();
+			if(student_id!=null){
+				studentServiceOrderStatistics
+						.setServicedOrder(getServiceUnitPersons(2, student_id,0,false));//本月已服务订单数
+				studentServiceOrderStatistics
+						.setDoneOrder(getServiceUnitPersons(4, student_id,Status.ServiceStatus.done.value,false));//本月服务完成订单
+				studentServiceOrderStatistics
+						.setTodayWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value , true));//今日待服务订单
+				studentServiceOrderStatistics
+						.setAllWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value,false));//全部待服务订单
+				return studentServiceOrderStatistics;
+			}
+			logger.info("api-method studentStatisticsOrder");
+		}catch(Exception e){
+			logger.error("error api-method:studentStatisticsOrder",e);
 		}
 		return null;
 	}
 
+	/**
+	 * 统计学员订单数
+	 * @param work_status
+	 * @param student_id
+	 * @param status_active
+	 * @param is_day
+	 * @return
+	 */
 	private Integer getServiceUnitPersons(int work_status,Long student_id,int status_active,boolean is_day){
 		Set<Long> set = null;
 		List<ServiceUnit> serviceUnits = null;
@@ -1045,4 +1067,38 @@ public class StudentApiServiceImpl implements StudentApiService {
 		}
 		return serviceUnits.size();
 	}
+
+
+	/**
+	 * 视频列表
+	 * @param clientId
+	 * @return
+	 */
+	@Override
+	public List<VideoContent> studentVideoList(String clientId) {
+        logger.info("api-method:studentVideoList:params clientId:{}", clientId);
+		List<VideoContent> videoContents = new ArrayList<>();
+		try {
+			String[] split = clientId.split("_");
+			String clientIdnew = split[split.length - 1];
+			VideoContentExample videoContentExample = new VideoContentExample();
+			videoContentExample.or().andClient_typeEqualTo(clientIdnew)
+					.andVideo_upload_statusEqualTo(2)
+					.andOnlineEqualTo(1);
+			videoContentExample.setOrderByClause(VideoContentExample.C.order_num + " DESC");
+			//查询该人员的视频列表
+			videoContents = videoContentService.selectByExample(videoContentExample);
+            logger.info("api-method:studentVideoList:process videoContents:{}", videoContents.size());
+			videoContents.stream().forEach(t ->{
+                Img imgUrl = JSON.parseObject(t.getImg_url(), Img.class);
+                t.setImg_url(imgUrl.getUrl());
+                Img videoUrl = JSON.parseObject(t.getVideo_url(), Img.class);
+                t.setVideo_url(videoUrl.getUrl());
+            });
+		}catch (Exception e){
+			logger.error("ERROR api-method:studentVideoList",e);
+		}
+		return videoContents;
+	}
+
 }

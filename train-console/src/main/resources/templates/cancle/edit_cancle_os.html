@@ -143,22 +143,6 @@
                 var val = $("#end_time").val();
 
                 if(Number(div_length)==0){
-                    /*var d_begin = $("#init_begin_time").val();
-                    var last_div = $("#div_content").children("div").last();
-                    var last_hour = last_div.find(".input_hour").val();
-                    var last_end = last_div.find(".input_price").val();
-                    if(Number(d_begin)<Number(last_hour)){
-                        reset();
-                        alertify.alert("第二行取消策略小时数不能小于等于第一条取消策略！");
-                        flag=false;
-                        return false;
-                    }
-                    if(last_end==''){
-                        reset();
-                        alertify.alert("第二条取消策略金额数不能为空！");
-                        flag=false;
-                        return false;
-                    }*/
                     var begin = $("#init_begin_time").val();
                     var end = $("#end_time").val();
                     if(Number(begin)!=Number(end)){
@@ -191,15 +175,7 @@
                         flag=false;
                         return false;
                     }
-                }/*else{
-                    if(Number(val)<=$("#init_begin_time").val()){
-                        $("#init_begin_time").val('');
-                        reset();
-                        alertify.alert("最后一行小时数应比所有取消策略都大！");
-                        flag=false;
-                        return false;
-                    }
-                }*/
+                }
                 //组装数据
                 $.each(list_data,function (i,k) {
                     var begin_time = $(k).children('div').children().eq(1).val();
@@ -216,7 +192,12 @@
                     alertify.alert("最后一条取消策略小时数不能为空，请输入！");
                     return false;
                 }
-
+                if(list.length==0){
+                    flag=false;
+                    reset();
+                    alertify.alert("不能添加空数据！");
+                    return false;
+                }
                 //send
                 if(flag){
                     $.ajax({
@@ -278,6 +259,9 @@
 
         function minus(obj) {
             $(obj).parent().parent().remove();
+            var last_div = $("#div_content").children("div").last();
+            last_div.find(".input_hour").attr("readonly",false);
+            last_div.find(".input_price").attr("readonly",false);
         }
         function plus(obj) {
             var regex_number = /^[0-9]*$/;
@@ -302,7 +286,7 @@
                 alertify.alert("最多只能添加10条取消策略！");
                 return false;
             }
-            if(div_length==0){
+            /*if(div_length==0){
                 var begin = $("#init_begin_time").val();
                 var end = $("#end_time").val();
                 if(Number(begin)!=Number(end)){
@@ -321,7 +305,7 @@
                     flag=false;
                     return false;
                 }
-            }
+            }*/
             if(div_length==1){
 
                 var init_time = $("#init_begin_time").val();
@@ -375,7 +359,7 @@
                     return false;
                 }else if(Number(last_price)>=Number(prev_price)){
                     reset();
-                    alertify.alert("不能大于等于第一条取消策略扣除金额百分比！");
+                    alertify.alert("不能大于等于"+div_length+"取消策略扣除金额百分比！");
                     flag=false;
                     return false;
                 }else{

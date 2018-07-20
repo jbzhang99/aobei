@@ -139,7 +139,7 @@ public class ApiServiceImpl implements ApiService {
 				OssImg ossImg5 = ossImgService.selectByPrimaryKey(img.getId());
 				String innocenceProof = myFileHandleUtil.get_signature_url(ossImg5.getUrl(),
                         3600l);
-				img.setUrl(innocenceProof);
+				student.setInnocence_proof(innocenceProof);
 			}
 			// 学员服务项
 			StudentServiceitemExample studentServiceitemExample = new StudentServiceitemExample();
@@ -167,8 +167,15 @@ public class ApiServiceImpl implements ApiService {
 				}
 			}
 			info.setImgs(list);
+			List<StudentJobCert> jobCerts = new ArrayList<>();
+			list.stream().forEach(t->{
+				StudentJobCert jobCert = new StudentJobCert();
+				jobCert.setStudentName(student.getName());
+				jobCert.setUrl(t.getUrl());
+				jobCerts.add(jobCert);
+			});
+			info.setJobCerts(jobCerts);
 		}
-
 		return info;
 	}
 

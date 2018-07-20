@@ -13,7 +13,16 @@ public class StudentInfo extends Student{
 	private List<Serviceitem> serviceItems;
 	
 	private Img img;
-	
+
+	private List<StudentJobCert> jobCerts;
+
+	public List<StudentJobCert> getJobCerts() {
+		return jobCerts;
+	}
+
+	public void setJobCerts(List<StudentJobCert> jobCerts) {
+		this.jobCerts = jobCerts;
+	}
 
 	public Img getImg() {
 		return img;

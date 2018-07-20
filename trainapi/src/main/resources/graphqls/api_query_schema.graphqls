@@ -183,6 +183,8 @@ type Query {
     student_product_available_times(psku_id:Long,num:Int):[TimeModel]
     #是否有新的消息(0:没有新消息  1:有新的消息)
     student_whether_have_new_messages:Int
+    #视频列表
+    select_video_list:[VideoContent]
     
     #阿里云返回信息
     query_alioss_credentials:AliOssCredentials
@@ -204,8 +206,8 @@ type Query {
     #============================0.6接口===========================================================
     customer_cancleStrategy(pay_order_id:String):CancleStrategyMethod
 
-
-    studentStatisticsOrder(student_id:Long):StudentServiceOrderStatistics
+    #学员订单统计
+    student_statistics_order:StudentServiceOrderStatistics
 }
 
 
