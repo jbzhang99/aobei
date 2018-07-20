@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html layout:decorate="~{base_layout}">
+<html layout:decorate="~{base_layout}" xmlns:layout="http://www.w3.org/1999/xhtml">
 <head>
     <title>结算策略添加页面</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -40,8 +40,8 @@
                                 message: '请填写名称！'
                             },
                             stringLength: {
-                                max: 50,
-                                message: '名称最长不得多于50个字符'
+                                max: 30,
+                                message: '名称最长不得多于30个字符'
                             }
                         }
                     },
@@ -95,7 +95,7 @@
                         params.push({
                             fallinto_name:fallinto_name,
                             fallinto_type:typeVal,
-                            floor_price:inputVal
+                            percent:inputVal
                         })
                     }
                     var step_type=$('input:radio[name="step_type"]:checked').val();
@@ -210,6 +210,11 @@
                             alertify.alert("请至少添加两条数据!");
                             return false;
                         }
+                        if($('#newGuestPrice').find("div").length>10){
+                            reset();
+                            alertify.alert("只能添加10条数据!");
+                            return false;
+                        }
                         var oneValue=$('#newGuestPrice').find("div:last").find('.inputOne').val();
                         var twoValue=$('#newGuestPrice').find("div:last").find('.inputTwo').val();
                         var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
@@ -280,7 +285,8 @@
                 alertify.confirm("确定要取消操作吗？", function (e) {
                     if(e){
                         var p = [[${p}]];
-                        window.location.href = "/balance/balance_tactics_list?p="+p;
+
+                        window.location.href = "/balance/balance_tactics_list?p="+p==0?1:p;
                     }
                 });
             });

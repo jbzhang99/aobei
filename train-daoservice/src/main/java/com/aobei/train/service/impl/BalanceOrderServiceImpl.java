@@ -63,6 +63,7 @@ public class BalanceOrderServiceImpl extends MbgServiceSupport<BalanceOrderMappe
 		fallinto.setCreate_datetime(new Date());
 		fallinto.setDeleted(0);
 		fallinto.setActived(0);
+		fallinto.setIs_actived(0);
 		fallinto.setCreate_name(users.getUsername());
 		int num = this.fallintoService.insert(fallinto);
 		return num;

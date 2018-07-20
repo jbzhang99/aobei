@@ -88,7 +88,7 @@ reset = function () {
 									>=<span  th:text="${stepData.d}"></span>：<span  th:text="${stepData.v}"></span>%</br>
 								</th:block>
 								<th:block th:if="${fallinto.fallinto_type==4 || fallinto.fallinto_type==5}">
-									>=<span  th:text="${#numbers.formatDecimal(stepData.d*0.01,1,2)}"></span>：<span  th:text="${stepData.v}"></span></br>
+									>=<span  th:text="${#numbers.formatDecimal(stepData.d*0.01,1,2)}"></span>：<span  th:text="${stepData.v}"></span>%</br>
 								</th:block>
 
 							</th:block>

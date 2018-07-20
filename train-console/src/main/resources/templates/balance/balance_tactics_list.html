@@ -12,6 +12,7 @@
         window.location.href="/balance/addTactics?p="+pageNo;
 	}
 
+	//生效
 	function effect(fallinto_id,pageNo){
         $.ajax({
             url:'/balance/effect/'+fallinto_id+"/"+pageNo,//提交的位置
@@ -26,8 +27,9 @@
             },
             dataType:'json'
         });
-	}
 
+	}
+    //失效
     function efficacy(fallinto_id,pageNo){
         $.ajax({
             url:'/balance/efficacy/'+fallinto_id+"/"+pageNo,//提交的位置
@@ -50,6 +52,7 @@
         });
     }
 
+    //删除
     function del(fallinto_id,pageNo){
         reset();
         alertify.confirm("确定要删除该条信息吗？", function (e) {
@@ -132,7 +135,7 @@
 										th:onclick="|efficacy('${fallinto.fallinto_id}','${page.pageNo}')|">
 									<span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span>失效
 								</button>
-								<button th:if="${fallinto.actived==0}" sec:authorize="hasRole('ROLE_BALANCE_TACTICS_EDIT')"
+								<button id="delBtn" th:if="${fallinto.is_actived==0}" sec:authorize="hasRole('ROLE_BALANCE_TACTICS_EDIT')"
 										style="outline: none" class="btn btn-link btn-xs"
 										th:onclick="|del('${fallinto.fallinto_id}','${page.pageNo}')|">
 									<span class="far fa-trash-alt" aria-hidden="true"></span>删除
