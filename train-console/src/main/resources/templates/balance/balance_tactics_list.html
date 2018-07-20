@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html layout:decorate="~{base_layout}">
+<html layout:decorate="~{base_layout}" xmlns:th="http://www.w3.org/1999/xhtml">
 <head> 
 <meta charset="UTF-8" />
 <title>结算策略列表页</title>
@@ -104,7 +104,8 @@
 						<tr>
 							<th width="350px;">策略名称</th>
 							<th>结算策略类型</th>
-							<th>策略创建创建时间</th>
+							<th>策略创建时间</th>
+							<th>创建者</th>
 							<th sec:authorize="hasAnyRole('ROLE_BALANCE_TACTICS_EDIT')">操作</th>
 						</tr>
 					</thead>
@@ -119,6 +120,7 @@
 								<span th:case="5">客单价阶梯</span>
 							</td>
 							<td style="vertical-align: middle" th:text="${#dates.format(fallinto.create_datetime,'yyyy-MM-dd')}"></td>
+							<td th:text="${fallinto.create_name}"></td>
 							<td>
 								<button th:if="${fallinto.actived==0}" sec:authorize="hasRole('ROLE_BALANCE_TACTICS_EDIT')"
 									style="outline: none" class="btn btn-link btn-xs"

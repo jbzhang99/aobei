@@ -151,6 +151,10 @@
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_PARTNER_BROWSE')">
                     <a id="side_11" th:href="@{/partner/showPartner}">合伙人信息</a>
                 </li>
+                <!--sec:authorize="hasRole('ROLE_PARTNER_AUDIT_BROWSE')"-->
+                <li class="list-group-item" >
+                    <a id="side_60" th:href="@{/partner/showAuditPartner}">合伙人信息审核</a>
+                </li>
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_STUDENT_BROWSE')">
                     <a id="side_12" th:href="@{/student/showStudent}">学员信息</a>
                 </li>
