@@ -97,10 +97,9 @@ public interface StudentApiService {
 
 	/**
 	 * 学员订单统计
-	 * @param student_id
 	 * @return
 	 */
-	StudentServiceOrderStatistics studentStatisticsOrder(Long student_id);
+	StudentServiceOrderStatistics studentStatisticsOrder(StudentInfo studentInfo);
 
 
 }
