@@ -48,6 +48,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.aobei.common.bean.IGtPushData.Client.student;
 import static org.springframework.dao.support.DataAccessUtils.singleResult;
 
 @Service
@@ -965,23 +966,27 @@ public class StudentApiServiceImpl implements StudentApiService
 
 	/**
 	 * 统计服务人员订单数
-	 * @param student_id
 	 * @return
 	 */
 	@Override
-	public StudentServiceOrderStatistics studentStatisticsOrder(Long student_id) {
-		StudentServiceOrderStatistics studentServiceOrderStatistics = new StudentServiceOrderStatistics();
-		Student student = studentService.selectByPrimaryKey(student_id);
-		if(student!=null){
-			studentServiceOrderStatistics
-					.setServicedOrder(getServiceUnitPersons(2, student_id,0,false));//本月已服务订单数
-			studentServiceOrderStatistics
-					.setDoneOrder(getServiceUnitPersons(4, student_id,Status.ServiceStatus.done.value,false));//本月服务完成订单
-			studentServiceOrderStatistics
-					.setTodayWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value , true));//今日待服务订单
-			studentServiceOrderStatistics
-					.setAllWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value,false));//全部待服务订单
-			return studentServiceOrderStatistics;
+	public StudentServiceOrderStatistics studentStatisticsOrder(StudentInfo studentInfo) {
+		try{
+			StudentServiceOrderStatistics studentServiceOrderStatistics = new StudentServiceOrderStatistics();
+			Long student_id = studentInfo.getStudent_id();
+			if(student_id!=null){
+				studentServiceOrderStatistics
+						.setServicedOrder(getServiceUnitPersons(2, student_id,0,false));//本月已服务订单数
+				studentServiceOrderStatistics
+						.setDoneOrder(getServiceUnitPersons(4, student_id,Status.ServiceStatus.done.value,false));//本月服务完成订单
+				studentServiceOrderStatistics
+						.setTodayWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value , true));//今日待服务订单
+				studentServiceOrderStatistics
+						.setAllWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value,false));//全部待服务订单
+				return studentServiceOrderStatistics;
+			}
+			logger.info("api-method studentStatisticsOrder");
+		}catch(Exception e){
+			logger.error("error api-method:studentStatisticsOrder",e);
 		}
 		return null;
 	}

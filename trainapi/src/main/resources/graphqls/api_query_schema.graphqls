@@ -207,7 +207,7 @@ type Query {
     customer_cancleStrategy(pay_order_id:String):CancleStrategyMethod
 
     #学员订单统计
-    student_statistics_order(student_id:Long):StudentServiceOrderStatistics
+    student_statistics_order:StudentServiceOrderStatistics
 }
 
 

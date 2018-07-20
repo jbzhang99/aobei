@@ -161,12 +161,11 @@ public class StudentQuery implements GraphQLQueryResolver {
 
 	/**
 	 * 统计学员订单量
-	 * @param student_id
 	 * @return
 	 */
-	public StudentServiceOrderStatistics student_statistics_order(Long student_id){
+	public StudentServiceOrderStatistics student_statistics_order(){
 		StudentInfo studentInfo = student_info();
-		return studentApiService.studentStatisticsOrder(studentInfo.getStudent_id());
+		return studentApiService.studentStatisticsOrder(studentInfo);
 	}
 
 
