@@ -7,6 +7,7 @@ import java.util.List;
 import com.aobei.train.model.Message;
 import com.aobei.train.model.Order;
 import com.aobei.train.model.Student;
+import com.aobei.train.model.VideoContent;
 import com.aobei.trainapi.schema.input.StudentOrderInput;
 import com.aobei.trainapi.server.bean.*;
 
@@ -101,6 +102,13 @@ public interface StudentApiService {
 	 * @return
 	 */
 	StudentServiceOrderStatistics studentStatisticsOrder(Long student_id);
+
+	/**
+	 * 视频列表
+	 * @param clientId
+	 * @return
+	 */
+	List<VideoContent> studentVideoList(String clientId);
 
 
 }

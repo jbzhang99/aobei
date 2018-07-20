@@ -3,6 +3,7 @@ package com.aobei.trainapi.schema;
 import java.util.Date;
 import java.util.List;
 
+import com.aobei.train.model.VideoContent;
 import com.aobei.trainapi.server.bean.MessageContent;
 import com.aobei.trainapi.server.bean.StudentServiceOrderStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -166,6 +167,14 @@ public class StudentQuery implements GraphQLQueryResolver {
 	public StudentServiceOrderStatistics student_statistics_order(Long student_id){
 		StudentInfo studentInfo = student_info();
 		return studentApiService.studentStatisticsOrder(studentInfo.getStudent_id());
+	}
+
+
+	/**
+	 * 视频列表
+	 */
+	public List<VideoContent> select_video_list(){
+		return studentApiService.studentVideoList(TOKEN.getClientId());
 	}
 
 }

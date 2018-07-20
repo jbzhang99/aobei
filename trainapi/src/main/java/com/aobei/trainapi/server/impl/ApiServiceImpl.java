@@ -139,7 +139,7 @@ public class ApiServiceImpl implements ApiService {
 				OssImg ossImg5 = ossImgService.selectByPrimaryKey(img.getId());
 				String innocenceProof = myFileHandleUtil.get_signature_url(ossImg5.getUrl(),
                         3600l);
-				img.setUrl(innocenceProof);
+				student.setInnocence_proof(innocenceProof);
 			}
 			// 学员服务项
 			StudentServiceitemExample studentServiceitemExample = new StudentServiceitemExample();
