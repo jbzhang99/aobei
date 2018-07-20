@@ -111,7 +111,7 @@ public class AutoCancelOrderListener implements OnsMessageListener {
 			content.setV("1");
 			content.setTypes(1);
 			content.setTitle("订单取消通知");
-			if (content.getContent() != null && !ParamsCheck.checkStrAndLength(content.getContent(),200)){
+			if (content.getContent() != null && !ParamsCheck.checkStrAndLength(content.getContent(),500)){
                 Errors._41040.throwError("消息长度过长");
                 return false;
             }

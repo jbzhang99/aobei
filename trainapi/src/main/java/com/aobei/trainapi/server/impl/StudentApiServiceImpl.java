@@ -273,7 +273,7 @@ public class StudentApiServiceImpl implements StudentApiService
 				content.setHref(tContent.getHrefNotEncode());
 				content.setTitle("订单完成通知");
 				content.setTypes(1);
-				if (content.getContent() != null && !ParamsCheck.checkStrAndLength(content.getContent(),200)){
+				if (content.getContent() != null && !ParamsCheck.checkStrAndLength(content.getContent(),500)){
 					Errors._41040.throwError("消息长度过长");
 					return apiResponse;
 				}
