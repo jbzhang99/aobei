@@ -277,6 +277,8 @@ type StudentInfo{
 	serviceItems:[Serviceitem]
 	#无犯罪记录
 	img:Img
+	#无犯罪证书
+	innocence_proof:String
 }
 type StudentType{
 	#学生
