@@ -418,7 +418,7 @@ public class StudentApiServiceImpl implements StudentApiService {
 	/**
 	 * 订单列表
 	 */
-	@Cacheable(value = "student_order_list", key = "'student_id:'+#student_id+':status:'+#status+#page_index+':'+#count", unless = "#result == null")
+	//@Cacheable(value = "student_order_list", key = "'student_id:'+#student_id+':status:'+#status+#page_index+':'+#count", unless = "#result == null")
 	@Override
 	public List<OrderInfo> student_order_list(String status, Long student_id, int page_index, int count) {
 		logger.info("api-method:student_order_list:params status:{},student_id:{},page_index:{},count:{}", status,
@@ -977,6 +977,14 @@ public class StudentApiServiceImpl implements StudentApiService {
 		return null;
 	}
 
+	/**
+	 * 统计学员订单数
+	 * @param work_status
+	 * @param student_id
+	 * @param status_active
+	 * @param is_day
+	 * @return
+	 */
 	private Integer getServiceUnitPersons(int work_status,Long student_id,int status_active,boolean is_day){
 		Set<Long> set = null;
 		List<ServiceUnit> serviceUnits = null;
@@ -1045,4 +1053,6 @@ public class StudentApiServiceImpl implements StudentApiService {
 		}
 		return serviceUnits.size();
 	}
+
+
 }

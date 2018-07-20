@@ -94,5 +94,13 @@ public interface StudentApiService {
 	 * @return
 	 */
     int whetherHaveNewMessages(StudentInfo studentInfo);
+
+	/**
+	 * 学员订单统计
+	 * @param student_id
+	 * @return
+	 */
 	StudentServiceOrderStatistics studentStatisticsOrder(Long student_id);
+
+
 }

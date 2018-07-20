@@ -158,7 +158,12 @@ public class StudentQuery implements GraphQLQueryResolver {
 		return studentApiService.whetherHaveNewMessages(studentInfo);
 	}
 
-	public StudentServiceOrderStatistics studentStatisticsOrder(Long student_id){
+	/**
+	 * 统计学员订单量
+	 * @param student_id
+	 * @return
+	 */
+	public StudentServiceOrderStatistics student_statistics_order(Long student_id){
 		StudentInfo studentInfo = student_info();
 		return studentApiService.studentStatisticsOrder(studentInfo.getStudent_id());
 	}

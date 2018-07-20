@@ -204,8 +204,8 @@ type Query {
     #============================0.6接口===========================================================
     customer_cancleStrategy(pay_order_id:String):CancleStrategyMethod
 
-
-    studentStatisticsOrder(student_id:Long):StudentServiceOrderStatistics
+    #学员订单统计
+    student_statistics_order(student_id:Long):StudentServiceOrderStatistics
 }
 
 
