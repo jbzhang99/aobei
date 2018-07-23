@@ -1042,7 +1042,7 @@ public class PartnerApiServiceImpl implements PartnerApiService {
                             pushHandler.pushOrderMessageToStudent(orderInfo,student.getStudent_id().toString());
                             //发送站内消息
                             inStationHandler.sentToStudentOrder(student.getStudent_id(),pay_order_id);
-                            //暂无取消
+                            //暂无 服务时间提醒类型
                             //inStationHandler.sentToStudentRemindService(orderInfo);//前一天八点提醒
                             //inStationHandler.sentToCustomerRemindService(orderInfo);//前一天9点整
                         }

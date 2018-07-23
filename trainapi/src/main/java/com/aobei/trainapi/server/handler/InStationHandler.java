@@ -14,6 +14,7 @@ import custom.bean.TransmissionContent;
 import custom.util.ParamsCheck;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -28,6 +29,7 @@ import java.util.Map;
 /**
  * Created by adminL on 2018/7/20.
  */
+@Component
 public class InStationHandler {
 
     @Autowired

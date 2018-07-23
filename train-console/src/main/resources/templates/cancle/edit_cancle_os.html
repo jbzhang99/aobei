@@ -7,9 +7,10 @@
         $(function () {
             var val = [[${list}]];
             var data = $.parseJSON(val);
+            var type = [[${type}]];
             $.each(data,function (i,k) {
                 if(k.value!=0){
-                    show_back_plus(k);
+                    show_back_plus(k,type);
                 }else{
                     if(k.allow){
                         $("#end_time").val(k.beforeHour)
@@ -81,7 +82,7 @@
                             }else {
                                 if(!regex_double.test(price)){
                                     reset();
-                                    alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                                    alertify.alert("扣除金额为固定金额，只能输入整数或两位小数金额！");
                                     flag=false;
                                     return false;
                                 }
@@ -114,7 +115,7 @@
                             }else {
                                 if(!regex_double.test(price)){
                                     reset();
-                                    alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                                    alertify.alert("扣除金额为固定金额，只能输入整数或两位小数金额！");
                                     flag=false;
                                     return false;
                                 }
@@ -333,7 +334,7 @@
                     }else {
                         if(!regex_double.test(last_price)){
                             reset();
-                            alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                            alertify.alert("扣除金额为固定金额，只能输入整数或两位小数金额！");
                             flag=false;
                             return false;
                         }
@@ -373,7 +374,7 @@
                     }else {
                         if(!regex_double.test(last_price)){
                             reset();
-                            alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                            alertify.alert("扣除金额为固定金额，只能输入整数或两位小数金额！");
                             flag=false;
                             return false;
                         }
@@ -406,7 +407,7 @@
 
             $("#div_content").append(html.join(" "));
         }
-        function show_back_plus(k) {
+        function show_back_plus(k,type) {
             var sel = $("#cancle_type").val();
             var html = [];
             html.push("<div class='form-group form-inline'><label class='col-sm-3 control-label'></label>");
@@ -414,7 +415,11 @@
             html.push("<span>距离服务开始时间</span>");
             html.push("<input type='text' name='begin_time' class='input_hour form-control input-sm' style='width: 60px;margin-left: 13px' value="+k.beforeHour+" placeholder='小时'/>");
             html.push("<span>小时前<span style='margin-left: 40px'></span>扣除</span>");
-            html.push("<input type='text' name='price' class='input_price form-control input-sm' style='width: 60px' value="+k.value+" placeholder='金额'/>");
+            if(Number(type)==3){
+                html.push("<input type='text' name='price' class='input_price form-control input-sm' style='width: 60px' value="+k.value/100+" placeholder='金额'/>");
+            }else{
+                html.push("<input type='text' name='price' class='input_price form-control input-sm' style='width: 60px' value="+k.value+" placeholder='金额'/>");
+            }
             html.push("<input type='hidden' name='is_oper_end' value='0'/>");
             if(sel==2 || sel ==1){
                 html.push("%");
