@@ -881,7 +881,9 @@ public class PartnerController {
 	@RequestMapping("/isHaveFallinto")
     public Object isHaveFallinto(){
 		//查询出所有的分成策略
-		List<Fallinto> fallintos = this.fallintoService.selectByExample(new FallintoExample());
+        FallintoExample fallintoExample = new FallintoExample();
+        fallintoExample.or().andActivedEqualTo(1);
+        List<Fallinto> fallintos = this.fallintoService.selectByExample(fallintoExample);
 		return fallintos;
 	}
 
