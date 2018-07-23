@@ -288,8 +288,17 @@ public class ApiOrderServiceImpl implements ApiOrderService {
         }
         if (coupon.getReceive_end_datetime().after(new Date()) && coupon.getType()==3) {
             if (coupon.getNum_limit() == 1) {
-                coupon.setNum_able(coupon.getNum_able() - 1);
-                couponService.updateByPrimaryKeySelective(coupon);
+                CouponExample couponExample = new CouponExample();
+                couponExample.or().andCoupon_idEqualTo(coupon_id)
+                        .andNum_ableGreaterThan(0);
+                Coupon updateCoupon = new Coupon();
+                updateCoupon.setNum_able(coupon.getNum_able() - 1);
+                int  count  = couponService.updateByExampleSelective(updateCoupon,couponExample);
+                if (count==0){
+                    response.setErrors(Errors._42029);
+                    logger.info("api-method:getCounpons:process  the numAble is out of size");
+                    return response;
+                }
             }
             CouponReceiveExample couponReceiveExample  =new CouponReceiveExample();
             couponReceiveExample.or()
