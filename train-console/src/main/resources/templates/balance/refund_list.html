@@ -39,6 +39,12 @@ $(function() {
     $("#search_btn").click(function () {
 		var balanceDate=$('#balanceDate').val();
 		var refundId=$('#refund_id').val();
+        var reg=/^[0-9]+$/;
+        if(!reg.test(refundId)){
+            reset();
+            alertify.alert("退款单号只能输入数字！");
+            return false;
+        }
 		if(balanceDate !=null || balanceDate !=""){
             window.location.href="/balance/refund_list?balanceDate="+balanceDate+"&refundId="+refundId;
 		}else{

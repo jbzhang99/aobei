@@ -58,7 +58,7 @@ public class BalanceSecondTask {
     /**
      * 每月2号
      */
-	//@Scheduled(cron ="0 12 14 23 * ?")
+	//@Scheduled(cron ="0 22 17 23 * ?")
 	private void extractData(){
        // 没有挂起的数据自动处理为“已结算”“挂起”的数据进入下一个结算月数据
         BalanceOrderExample balanceOrderExample = new BalanceOrderExample();
