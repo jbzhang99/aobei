@@ -327,7 +327,7 @@
 					<th width="60px">创建人</th>
 					<th width="60px">审核人</th>
 <!--sec:authorize="hasAnyRole('ROLE_PARTNER_AUDIT_EDIT,ROLE_PARTNER_AUDIT_DEL,ROLE_PARTNER_AUDIT_FALLINTO')"-->
-					<th width="240px" >操作</th>
+					<th width="240px" sec:authorize="hasAnyRole('ROLE_PARTNER_AUDIT_EDIT,ROLE_PARTNER_AUDIT_DEL,ROLE_PARTNER_AUDIT_FALLINTO,ROLE_PARTNER_AUDIT_OPINION')">操作</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -368,17 +368,17 @@
 						<span th:text="${list.audit_name}"></span>
 					</td>
 					<td style="vertical-align:middle;">
-						<a class="btn btn-link btn-xs" th:if="${list.audit_state==4}" sec:authorize="hasRole('ROLE_PARTNER_EDIT')"  th:onclick="|editPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class="fas fa-edit"></i>基本信息</a>&nbsp;
-						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_DEL')" th:if="${list.audit_state==4 && list.state==0}" th:onclick="|upPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='fa fa-arrow-circle-up' aria-hidden='true'></i>上线</a>
-						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_DEL')" th:if="${list.audit_state==4 && list.state==1}" th:onclick="|delPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='fa fa-arrow-circle-down' aria-hidden='true'></i>下线</a>
+						<a class="btn btn-link btn-xs" th:if="${list.audit_state==4}" sec:authorize="hasRole('ROLE_PARTNER_AUDIT_EDIT')"  th:onclick="|editPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class="fas fa-edit"></i>基本信息</a>&nbsp;
+						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_AUDIT_DEL')" th:if="${list.audit_state==4 && list.state==0}" th:onclick="|upPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='fa fa-arrow-circle-up' aria-hidden='true'></i>上线</a>
+						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_AUDIT_DEL')" th:if="${list.audit_state==4 && list.state==1}" th:onclick="|delPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='fa fa-arrow-circle-down' aria-hidden='true'></i>下线</a>
 						<th:block th:if="${list.audit_state==4}">
 							</br>
 						</th:block>
-						<a class="btn btn-link btn-xs" th:if="${list.audit_state==4}"sec:authorize="hasRole('ROLE_PARTNER_EDIT')" th:onclick="|editPartnerCategory('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class="fas fa-edit"></i>合作项目</a>
+						<a class="btn btn-link btn-xs" th:if="${list.audit_state==4}"sec:authorize="hasRole('ROLE_PARTNER_AUDIT_EDIT')" th:onclick="|editPartnerCategory('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class="fas fa-edit"></i>合作项目</a>
 
-						<a class="btn btn-link btn-xs" th:if="${list.audit_state==4}"  sec:authorize="hasRole('ROLE_PARTNER_FALLINTO')"  th:onclick="|addFallinto('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='glyphicon glyphicon-align-justify'></i>分成策略</a>&nbsp;
-						<a class="btn btn-link btn-xs" th:if="${list.audit_state==2}" th:onclick="|okAuditPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;" data-toggle="modal" data-target="#auditPartnerModal"><i class='glyphicon glyphicon-ok'></i>通过</a>
-						<a class="btn btn-link btn-xs" th:if="${list.audit_state==2}" th:onclick="|noAuditPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;" data-toggle="modal" data-target="#auditPartnerModal"><i class='glyphicon glyphicon-remove'></i>驳回</a>
+						<a class="btn btn-link btn-xs" th:if="${list.audit_state==4}"  sec:authorize="hasRole('ROLE_PARTNER_AUDIT_FALLINTO')"  th:onclick="|addFallinto('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='glyphicon glyphicon-align-justify'></i>分成策略</a>&nbsp;
+						<a class="btn btn-link btn-xs" th:if="${list.audit_state==2}" sec:authorize="hasRole('ROLE_PARTNER_AUDIT_OPINION')" th:onclick="|okAuditPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;" data-toggle="modal" data-target="#auditPartnerModal"><i class='glyphicon glyphicon-ok'></i>通过</a>
+						<a class="btn btn-link btn-xs" th:if="${list.audit_state==2}" sec:authorize="hasRole('ROLE_PARTNER_AUDIT_OPINION')" th:onclick="|noAuditPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;" data-toggle="modal" data-target="#auditPartnerModal"><i class='glyphicon glyphicon-remove'></i>驳回</a>
 					</td>
 				</tr>
 			</tbody>

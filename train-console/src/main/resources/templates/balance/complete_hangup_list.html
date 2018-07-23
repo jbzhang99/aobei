@@ -150,7 +150,7 @@ function addCycle(pageNo){
 						<th width="200px">商品</th>
 						<th width="200px">订单生成时间</th>
 						<th width="200px">服务人员完成时间</th>
-						<!--<th width="200px">客户确认完成时间</th>-->
+						<th width="200px">订单完成时间</th>
 						<th width="150px">订单金额</th>
 						<th width="200px">实付金额</th>
 						<th width="200px">优惠券</th>
@@ -185,13 +185,13 @@ function addCycle(pageNo){
 						</td>
 						<td th:text="${#dates.format(balanceOrder.order_create_datetime,'yyyy-MM-dd')}"></td>
 						<td th:text="${#dates.format(balanceOrder.work_finish_datetime,'yyyy-MM-dd')}"></td>
-						<!--<td th:text="${#dates.format(balanceOrder.work_finish_datetime,'yyyy-MM-dd')}"></td>-->
+						<td th:text="${#dates.format(balanceOrder.finish_datetime,'yyyy-MM-dd')}"></td>
 						<td th:text="${#numbers.formatDecimal(balanceOrder.price_total*0.01,1,2)}"></td>
 						<td th:text="${#numbers.formatDecimal(balanceOrder.price_pay*0.01,1,2)}"></td>
-						<td></td><!--优惠券-->
+						<td th:text="${#numbers.formatDecimal(balanceOrder.price_discount*0.01,1,2)}"></td><!--优惠券-->
 						<td></td><!--礼券-->
 						<td></td><!--积分-->
-						<td th:text="${#numbers.formatDecimal(balanceOrder.price_discount*0.01,1,2)}"></td><!--促销优惠金额-->
+						<td ></td><!--促销优惠金额-->
 						<td th:text="${balanceOrder.partner_name}"></td>
 						<td th:text="${balanceOrder.partner_id}"></td>
 						<td th:text="${balanceOrder.partner_level}"></td>
