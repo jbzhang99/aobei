@@ -1,6 +1,7 @@
 package com.aobei.trainapi.server;
 
 import com.aobei.train.model.Customer;
+import com.aobei.train.model.Student;
 import com.aobei.trainapi.server.bean.ApiResponse;
 
 public interface ApiUserService {
@@ -20,6 +21,15 @@ public interface ApiUserService {
      * @return
      */
     ApiResponse<Customer> bindUser(Long user_id, String phone, String channel);
+
+    /**
+     * 新版绑定用户(服务人员端)
+     * @param user_id
+     * @param phone
+     * @param channel
+     * @return
+     */
+    ApiResponse<Student> bindUserStudent(Long user_id, String phone, String channel);
 
     /**
      * 更新用户角色

@@ -1,6 +1,10 @@
 package com.aobei.trainapi.schema;
 
 
+import com.aobei.trainapi.server.ApiUserService;
+import com.aobei.trainapi.server.CustomerApiService;
+import com.aobei.trainapi.server.bean.StudentInfo;
+import custom.util.RegexUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +34,10 @@ public class StudentMutation implements GraphQLMutationResolver{
     private MsgtextService msgtextService;
 	@Autowired
 	private TokenUtil TOKEN;
+	@Autowired
+	private CustomerApiService customerApiService;
+	@Autowired
+	private ApiUserService apiUserService;
 	Logger logger  = LoggerFactory.getLogger(StudentMutation.class);
 	
 	/**
@@ -86,6 +94,31 @@ public class StudentMutation implements GraphQLMutationResolver{
 	public MutationResult student_order_cancel(String pay_order_id){
 		Student student = query.my_student_bindinfo();
 		ApiResponse response =  studentApiService.cancelOrder(student,pay_order_id);
+		return response.getMutationResult();
+	}
+
+	/**
+	 * 服务人员绑定
+	 */
+	public MutationResult student_bind_user(String code, String phone) {
+		Msgtext msg = new Msgtext();
+		if (!RegexUtil.check(RegexUtil.MOBILE_PHONE_REGEX_SIMPLE, phone)) {
+			msg = msgtextService.selectByPrimaryKey(MsgTextConstant.INVALID_PHONE_FORMAT);
+			Errors._41010.throwError(msg.getContent());
+		}
+		if (!customerApiService.checkVerificationCode(TOKEN.getUuid(), code, phone)) {
+			msg = msgtextService.selectByPrimaryKey(MsgTextConstant.INVALID_CODE);
+			Errors._41011.throwError(msg.getContent());
+		}
+		StudentInfo studentInfo = query.my_student_bindinfo();
+		if (studentInfo != null) {
+			msg = msgtextService.selectByPrimaryKey(MsgTextConstant.PHONE_TAKEN);
+			Errors._41022.throwError(msg.getContent());
+		}
+		ApiResponse response = apiUserService.bindUserStudent(TOKEN.getUuid(), phone,TOKEN.getChannel());
+		if (response.getErrors() != null) {
+			response.getErrors().throwError();
+		}
 		return response.getMutationResult();
 	}
 	

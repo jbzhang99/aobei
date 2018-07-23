@@ -110,6 +110,8 @@ type Mutation {
    student_create_order(student_order_input:StudentOrderInput):Order
    #服务人员取消订单
    student_order_cancel(pay_order_id:String!):MutationResult
+   #服务人员绑定
+   student_bind_user(code:String!,phone:String!):MutationResult
 
 
    #==============================0.6新增的接口========================================
