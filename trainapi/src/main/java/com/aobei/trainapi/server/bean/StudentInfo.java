@@ -14,14 +14,14 @@ public class StudentInfo extends Student{
 	
 	private Img img;
 
-	private List<StudentJobCert> jobCerts;
+	private List<StudentImgInfo> imgUrl;
 
-	public List<StudentJobCert> getJobCerts() {
-		return jobCerts;
+	public List<StudentImgInfo> getImgUrl() {
+		return imgUrl;
 	}
 
-	public void setJobCerts(List<StudentJobCert> jobCerts) {
-		this.jobCerts = jobCerts;
+	public void setImgUrl(List<StudentImgInfo> imgUrl) {
+		this.imgUrl = imgUrl;
 	}
 
 	public Img getImg() {
