@@ -282,6 +282,10 @@ public class ApiOrderServiceImpl implements ApiOrderService {
         logger.info("api-method:getCounpons:params customer:{},coupon_id:{}", customer, coupon_id);
         ApiResponse response = new ApiResponse();
         Coupon coupon = couponService.selectByPrimaryKey(coupon_id);
+        if (coupon.getNum_limit() == 1 && coupon.getNum_able() < 1){
+            response.setErrors(Errors._42029);
+            return response;
+        }
         if (coupon.getReceive_end_datetime().after(new Date()) && coupon.getType()==3) {
             if (coupon.getNum_limit() == 1) {
                 CouponExample couponExample = new CouponExample();
@@ -339,6 +343,9 @@ public class ApiOrderServiceImpl implements ApiOrderService {
         //第一步：顾虑满足指定商品的优惠券
         List<Coupon> coupons = queryList(page_index, count);
         coupons =  coupons.stream().filter(t->{
+            if(t.getNum_able()<=0){
+                return  false;
+            }
             Condition_type condition = JSON.parseObject(t.getCondition(), Condition_type.class);
             if (t.getCondition_type()==1 || t.getCondition_type()==3){
               return   true;
