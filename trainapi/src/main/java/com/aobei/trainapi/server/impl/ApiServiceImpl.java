@@ -167,14 +167,19 @@ public class ApiServiceImpl implements ApiService {
 				}
 			}
 			info.setImgs(list);
-			List<StudentJobCert> jobCerts = new ArrayList<>();
+			//图片信息封装一起
+			List<StudentImgInfo> jobCerts = new ArrayList<>();
 			list.stream().forEach(t->{
-				StudentJobCert jobCert = new StudentJobCert();
+				StudentImgInfo jobCert = new StudentImgInfo();
 				jobCert.setStudentName(student.getName());
-				jobCert.setUrl(t.getUrl());
+				jobCert.setJobCertUrl(t.getUrl());
+				jobCert.setCardJustUrl(student.getCard_just());
+				jobCert.setCardAgainstUrl(student.getCard_against());
+				jobCert.setHealthUrl(student.getHealth());
+				jobCert.setInnocenceProofUrl(student.getInnocence_proof());
 				jobCerts.add(jobCert);
 			});
-			info.setJobCerts(jobCerts);
+			info.setImgUrl(jobCerts);
 		}
 		return info;
 	}
