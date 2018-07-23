@@ -19,6 +19,7 @@ import com.aobei.trainapi.server.PartnerApiService;
 import com.aobei.trainapi.server.bean.*;
 import com.aobei.trainapi.server.bean.Img;
 import com.aobei.trainapi.server.bean.MessageContent;
+import com.aobei.trainapi.server.handler.InStationHandler;
 import com.aobei.trainapi.server.handler.PushHandler;
 import com.aobei.trainapi.server.handler.SmsHandler;
 import com.aobei.trainapi.server.listener.AutoRobbingOrderListener;
@@ -124,6 +125,10 @@ public class PartnerApiServiceImpl implements PartnerApiService {
     ApiOrderService apiOrderService;
     @Autowired
     ProSkuService proSkuService;
+
+    @Autowired
+    InStationHandler inStationHandler;
+
 	Logger logger = LoggerFactory.getLogger(PartnerApiServiceImpl.class);
 
 
@@ -817,6 +822,8 @@ public class PartnerApiServiceImpl implements PartnerApiService {
 					format.format(unit.getC_begin_datetime()), order.getCus_phone(), student.getPhone());
 			//推送消息  新服务人员新订单通知
 			pushHandler.pushOrderMessageToStudent(orderInfo,student.getStudent_id().toString());
+			//站内消息(学员)
+            inStationHandler.sentToStudentOrder(student.getStudent_id(),pay_order_id);
 		}
 		// 原来的服务人员
 		Collection oldexists = new ArrayList(oldIds);
@@ -828,7 +835,9 @@ public class PartnerApiServiceImpl implements PartnerApiService {
 					order.getCus_username(), order.getCus_address(), student.getPhone());
 			//推送消息  原服务人员取消订单
 			pushHandler.pushCancelOrderMessageToStudent(orderInfo,student.getStudent_id().toString());
-		}
+			//站内消息(学员)
+            inStationHandler.sentToStudentCancleOrder(pay_order_id,student);
+        }
 
 		// 您的${produce_name}订单服务人员变为${worker_name}，服务时间变更为${c_begin_datetime}去${cus_address}为您进行服务。
 		Student randomStudent = studentService.selectByPrimaryKey(student_ids.get(0));
@@ -905,7 +914,8 @@ public class PartnerApiServiceImpl implements PartnerApiService {
 		cacheReloadHandler.my_mission_scheduled_informationReload(partner.getPartner_id());
         //推送消息 服务人员进行变更，发送给顾客
         pushHandler.pushOrderMessageWhenStudentChangeToCustomer(orderInfo,customer.getCustomer_id().toString());
-
+        //站内消息，服务人员变更（通知顾客）
+        inStationHandler.sentToCustomerChangeOrder(orderInfo,student_ids,pay_order_id);
         Message msg = new Message();
         msg.setId(IdGenerator.generateId());
         msg.setType(2);
@@ -1030,7 +1040,11 @@ public class PartnerApiServiceImpl implements PartnerApiService {
 
                             //推送新订单 通知到服务人员0_0
                             pushHandler.pushOrderMessageToStudent(orderInfo,student.getStudent_id().toString());
-                            //pushHandler.pushOrderMessageBeforServiceToStudent(orderInfo,student.getStudent_id().toString());
+                            //发送站内消息
+                            inStationHandler.sentToStudentOrder(student.getStudent_id(),pay_order_id);
+                            //暂无取消
+                            //inStationHandler.sentToStudentRemindService(orderInfo);//前一天八点提醒
+                            //inStationHandler.sentToCustomerRemindService(orderInfo);//前一天9点整
                         }
 
                         // 接单,更新服务人员缓存//服务人员订单列表//服务人员当前订单
