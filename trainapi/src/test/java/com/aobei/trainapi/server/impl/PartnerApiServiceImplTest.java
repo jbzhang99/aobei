@@ -8,6 +8,7 @@ import com.aobei.train.service.*;
 import com.aobei.trainapi.util.JsonUtil;
 import custom.bean.ProductTag;
 import custom.bean.TransmissionContent;
+import custom.util.ParamsCheck;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -437,15 +438,18 @@ public class PartnerApiServiceImplTest {
 		// 服务人员修改
 		MessageContent.ContentMsg content = new MessageContent.ContentMsg();
 		content.setMsgtype("native");
-		content.setContent("测试的撒大所大大大");
-		Map<String,String> param = new HashMap<>();
+		content.setContent("这个是测试学员消息的哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈");
+		/*Map<String,String> param = new HashMap<>();
 		param.put("orderStatus","waitService");
-		param.put("pay_order_id","1535800497_2");
+		param.put("pay_order_id","1531986036_1");
 		TransmissionContent tContent = new TransmissionContent(TransmissionContent.PARTNER,TransmissionContent.ORDER_DETAIL,param);
-		content.setHref(tContent.getHrefNotEncode());
+		content.setHref(tContent.getHrefNotEncode());*/
 		content.setTitle("测试学员消息");
 		content.setTypes(1);
 		content.setNoticeTypes(2);
+		if (!ParamsCheck.checkStrAndLength(content.getContent(),200)){
+			return;
+		}
 		String object_to_json = null;
 		try {
 			object_to_json = JacksonUtil.object_to_json(content);
@@ -455,7 +459,7 @@ public class PartnerApiServiceImplTest {
 		msg.setMsg_content(object_to_json);
 		msg.setCreate_datetime(new Date());
 		msg.setNotify_datetime(new Date());
-		msg.setGroup_id("1535800497_2");
+		msg.setGroup_id("1531986036_1");
 		msg.setApp_type(1);
 		msg.setSend_type(1);
 		msg.setApp_platform(0);

@@ -258,6 +258,7 @@
         });
 
         $("#save_btn").click(function(){
+            $('#form1').data('bootstrapValidator').resetForm();
             $("#form1").bootstrapValidator('validate');
             if ($("#form1").data('bootstrapValidator').isValid()) {
                 var amount = $("#amount").val();
@@ -275,6 +276,9 @@
                         reset();
                         alertify.alert("请填写合伙人承担金额！");
                         return false;
+					} else {
+                        $("#partner_bear_coupon_amount").val(0);
+                        partner_bear_coupon_amount = 0;
 					}
 				}
                 if(coupon_id != null && coupon_id != ''){
@@ -282,21 +286,24 @@
                         reset();
                         alertify.alert("请填写合伙人承担券金额！");
                         return false;
-                    }
+                    } else {
+                        $("#partner_bear_amount").val(0);
+                        partner_bear_amount = 0;
+					}
                 }
                 var payee = $("#payee").val();
                 var payee_card = $("#payee_card").val();
                 var receiving_bank = $("#receiving_bank").val();
                 var partner_id = $("#partner_id").val();
                 var pay_order_id = $("#pay_order_id").val();
-                if(Number(amount) > 1000000){
+                if(Number(amount) > 1000000 || Number(amount) < 0){
                     reset();
-                    alertify.alert("赔偿金额最大不能超过1000000.00元！");
+                    alertify.alert("赔偿金额最小不能等于0元，最大不能超过1000000.00元！");
                     return false;
 				}
-                if(Number(partner_bear_coupon_amount) > 1000000){
+                if(Number(partner_bear_coupon_amount) > 1000000 || Number(partner_bear_coupon_amount) < 0){
                     reset();
-                    alertify.alert("合伙人承担券金额最大不能超过1000000.00元！");
+                    alertify.alert("合伙人承担券金额最小不能等于0元，最大不能超过1000000.00元！");
                     return false;
                 }
                 if(amount != '' && Number(partner_bear_amount) > Number(amount)){
@@ -333,14 +340,15 @@
         });
 
         $("#save_btn1").click(function () {
+            $('#form2').data('bootstrapValidator').resetForm();
             $("#form2").bootstrapValidator('validate');
             if ($("#form2").data('bootstrapValidator').isValid()) {
                 var deduct_amount = $("#deduct_amount").val();
                 var deduct_info = $("#deduct_info").val();
                 var pay_order_id = $("#pay_order_id_deduct").val();
-                if(Number(deduct_amount) > 1000000){
+                if(Number(deduct_amount) > 1000000 || Number(deduct_amount) <= 0){
                     reset();
-                    alertify.alert("扣款金额最大不能超过1000000.00元！");
+                    alertify.alert("扣款金额最小不能等于0元，最大不能超过1000000.00元！");
                     return false;
                 }
                 $.ajax({
@@ -458,6 +466,19 @@
                     $("#compensation").modal('show');
                     $(".modal-footer").hide();
                 }else{
+                    $(".modal-footer").show();
+
+                    $("#amount").val('');
+                    $("input[type='radio']").each(function(i,ele){
+						$(this).attr('checked',false);
+                    });
+                    $("#partner_bear_amount").val('');
+                    $("#partner_bear_coupon_amount").val('');
+                    $("#compensation_info").val('');
+                    $("#payee").val('');
+                    $("#payee_card").val('');
+                    $("#receiving_bank").val('');
+
                     $("#partner_id").val(partner_id);
                     $("#pay_order_id").val(pay_order_id);
                     $("#compensation").modal('show');
@@ -480,6 +501,9 @@
                     $("#deduct_money").modal('show');
                     $(".modal-footer").hide();
                 }else{
+                    $(".modal-footer").show();
+                    $("#deduct_info").val('');
+                    $("#deduct_amount").val('');
                     $("#pay_order_id_deduct").val(pay_order_id);
                     $("#deduct_money").modal('show');
                 }
@@ -815,7 +839,7 @@
 						<th:block sec:authorize="hasAnyRole('ROLE_DEDUCT_MONEY_ADD','ROLE_DEDUCT_MONEY_BROWSE')" th:if="${(info.o_status_active eq 5) or (info.work_status gt 1)}" >
 							<a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|deduct_money('${info.pay_order_id}');|"><i class="fab fa-bitcoin"></i>扣款</a>
 						</th:block>
-						<th:block sec:authorize="hasRole('ROLE_ORDER_EDIT')" th:if="${info.o_status_active eq 2 and info.channel eq 'JD-001' and info.status_active != 6}">
+						<th:block sec:authorize="hasRole('ROLE_ORDER_EDIT')" th:if="${info.o_status_active eq 2 and info.channel eq 'JD-001' and info.status_active eq 1}">
 							<a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|assign_order_pre('${info.pay_order_id}');|"><span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span>派发订单</a>
 						</th:block>
 					</td>

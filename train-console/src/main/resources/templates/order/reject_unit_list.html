@@ -101,15 +101,16 @@
         });
 
         $("#save_btn").click(function () {
+            $('#form1').data('bootstrapValidator').resetForm();
             $("#form1").bootstrapValidator('validate');
             if ($("#form1").data('bootstrapValidator').isValid()) {
                 var fine_amount = $("#fine_amount").val();
                 var fine_info = $("#fine_info").val();
                 var pay_order_id = $("#pay_order_id").val();
                 var partner_id = $("#partner_id").val();
-                if(Number(fine_amount) > 1000000){
+                if(Number(fine_amount) > 1000000 || Number(fine_amount) <= 0){
                     reset();
-                    alertify.alert("扣款金额最大不能超过1000000.00元！");
+                    alertify.alert("扣款金额最小不能等于0元，最大不能超过1000000.00元！");
                     return false;
                 }
                 $.ajax({
@@ -153,6 +154,9 @@
                     $("#fine_money").modal('show');
                     $(".modal-footer").hide();
                 }else{
+                    $(".modal-footer").show();
+                    $("#fine_info").val('');
+                    $("#fine_amount").val('');
                     $("#pay_order_id").val(pay_order_id);
                     $("#partner_id").val(partner_id);
                     $("#fine_money").modal('show');

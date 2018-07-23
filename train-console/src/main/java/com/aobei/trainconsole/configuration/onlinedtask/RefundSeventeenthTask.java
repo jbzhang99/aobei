@@ -86,7 +86,7 @@ public class RefundSeventeenthTask {
             refunds = refunds.stream().filter(refund -> refund.getFee() < refund.getPrice_pay()).collect(Collectors.toList());
             refunds.stream().forEach(refund -> {
                 ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
-                serviceUnitExample.or().andPay_order_idEqualTo(refund.getPay_order_id()).andActiveEqualTo(1).andPidEqualTo(0L);
+                serviceUnitExample.or().andPay_order_idEqualTo(refund.getPay_order_id()).andPidEqualTo(0L);
                 ServiceUnit serviceUnit = DataAccessUtils.singleResult(this.serviceUnitService.selectByExample(serviceUnitExample));
                 if(serviceUnit!=null){
                     //找出半月结的数据

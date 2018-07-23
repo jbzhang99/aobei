@@ -13,7 +13,16 @@ public class StudentInfo extends Student{
 	private List<Serviceitem> serviceItems;
 	
 	private Img img;
-	
+
+	private List<StudentImgInfo> imgUrl;
+
+	public List<StudentImgInfo> getImgUrl() {
+		return imgUrl;
+	}
+
+	public void setImgUrl(List<StudentImgInfo> imgUrl) {
+		this.imgUrl = imgUrl;
+	}
 
 	public Img getImg() {
 		return img;

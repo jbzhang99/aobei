@@ -111,10 +111,10 @@ function addCycle(pageNo){
 			<button sec:authorize="hasRole('ROLE_BALANCE_COMPENSATIONUP_EDIT')" class="btn btn-primary" th:onclick="|exportBalance()|"><i class="fas fa-sign-out-alt"></i>&nbsp;导出</button>
 		  </li>
 		<li >
-			<input class="form-control" type="text" id="OrderId" name="OrderId" placeholder="请输入订单号"/>&nbsp;
+			<input class="form-control" type="text" id="OrderId" name="OrderId" placeholder="请输入订单号" onkeyup="value=value.replace(/[^0-9_]/ig,'')" maxlength="30"/>&nbsp;
 		</li>
 		  <li >
-			<input class="form-control" type="text" id="compensation_id" name="compensation_id" placeholder="请输入赔偿单号"/>&nbsp;<button id="search_btn" class="btn btn-primary"><span class="fa fa-search"></span>&nbsp;查询</button>
+			<input class="form-control" type="text" id="compensation_id" name="compensation_id" placeholder="请输入赔偿单号" onkeyup="value=value.replace(/[^0-9_]/ig,'')" maxlength="30"/>&nbsp;<button id="search_btn" class="btn btn-primary"><span class="fa fa-search"></span>&nbsp;查询</button>
 		  </li>
 		</ol>
 		

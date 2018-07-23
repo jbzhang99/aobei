@@ -156,6 +156,10 @@ type OrderInfo{
 	workDateTimeString:String
 	#该条订单是否可以续单(0 可以续单  1不可以续单)
 	whetherCanContinue:Int
+	#服务人员开始时间
+	studentStartTime:String
+	#服务人员结束时间
+	studentEndTime:String
 }
 
 type CouponResponse{
@@ -277,6 +281,10 @@ type StudentInfo{
 	serviceItems:[Serviceitem]
 	#无犯罪记录
 	img:Img
+	#无犯罪证书
+	innocence_proof:String
+	#图片url
+	imgUrl:[StudentImgInfo]
 }
 type StudentType{
 	#学生
@@ -532,4 +540,21 @@ type OutOfServiceStatistics{
    totalDays:Int
    #具体的请假列表
    outOfServices:[OutOfService]
+}
+type StudentServiceOrderStatistics{
+    #统计本月已服务订单
+    servicedOrder:Int
+    #本月服务完成单
+    doneOrder:Int
+    #全部待服务订单
+    allWaitServiceOrder:Int
+    #今日待服务订单
+    todayWaitServiceOrder:Int
+}
+
+type StudentImgInfo{
+    #姓名
+    name:String
+    #url
+    url:String
 }

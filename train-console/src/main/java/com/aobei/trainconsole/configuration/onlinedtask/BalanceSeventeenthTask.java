@@ -7,12 +7,8 @@ import com.aobei.train.service.*;
 import custom.bean.StepData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
-
-import javax.annotation.PostConstruct;
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -105,6 +101,19 @@ public class BalanceSeventeenthTask {
         ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
         serviceUnitExample.or().andFinish_datetimeBetween(firstDate,endDate).andActiveEqualTo(1).andPidEqualTo(0L);
         List<ServiceUnit> serviceUnits = this.serviceUnitService.selectByExample(serviceUnitExample);
+        //之前的数据
+        ServiceUnitExample serviceUnitExamples = new ServiceUnitExample();
+        serviceUnitExamples.or().andFinish_datetimeLessThan(firstDate).andActiveEqualTo(1).andPidEqualTo(0L);
+        List<ServiceUnit> serviceUnitLists = this.serviceUnitService.selectByExample(serviceUnitExamples);
+        serviceUnitLists.stream().forEach(serviceUnit -> {
+            BalanceOrderExample balanceOrderExample = new BalanceOrderExample();
+            balanceOrderExample.or().andPay_order_idEqualTo(serviceUnit.getPay_order_id()).andServiceunit_idEqualTo(serviceUnit.getServiceunit_id());
+            List<BalanceOrder> balanceOrders = this.balanceOrderService.selectByExample(balanceOrderExample);
+            if(balanceOrders.isEmpty()){
+                serviceUnits.add(serviceUnit);
+            }
+        });
+
         if(!serviceUnits.isEmpty()){
             serviceUnits.stream().forEach(serviceUnit -> {
                 //根据服务单找到对应订单

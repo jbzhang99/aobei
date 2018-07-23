@@ -344,6 +344,79 @@ public class OrderInfo implements Serializable {
     private Roles roles;
 
     private String dServiceStartTime;
+
+    /**
+     * 服务人员开始时间
+     */
+    private String studentStartTime;
+
+    public String getStudentStartTime() {
+        Date date = serviceUnit.getWork_2_datetime();
+        if(date!= null) {
+            Instant instant = date.toInstant();
+            ZoneId zone = ZoneId.systemDefault();
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, zone);
+            StringBuilder  builder  = new StringBuilder(localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE));
+            builder.append("(");
+            builder.append(DateUtil.getWeekSay(localDateTime.getDayOfWeek()));
+            builder.append(")");
+            builder.append("  ");
+            builder.append(getStudentStart());
+            studentStartTime = builder.toString();
+        }
+        return studentStartTime;
+    }
+
+
+
+    /**
+     * 服务人员结束时间
+     */
+    private String studentEndTime;
+
+    public String getStudentEndTime() {
+        Date date = serviceUnit.getWork_4_datetime();
+        if(date!= null) {
+            Instant instant = date.toInstant();
+            ZoneId zone = ZoneId.systemDefault();
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, zone);
+            StringBuilder  builder  = new StringBuilder(localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE));
+            builder.append("(");
+            builder.append(DateUtil.getWeekSay(localDateTime.getDayOfWeek()));
+            builder.append(")");
+            builder.append("  ");
+            builder.append(getStudentEnd());
+            studentEndTime = builder.toString();
+        }
+        return studentEndTime;
+    }
+
+    /**
+     * 服务人员点击开始时间 时分秒
+     * @return
+     */
+    private String studentStart;
+
+    public String getStudentStart() {
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+        if (serviceUnit.getWork_2_datetime() != null)
+            studentStart = format.format(serviceUnit.getWork_2_datetime());
+        return studentStart;
+    }
+
+    /**
+     * 服务人员点击离开时间 时分秒
+     * @return
+     */
+    private String studentEnd;
+
+    public String getStudentEnd() {
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+        if (serviceUnit.getWork_4_datetime() != null)
+            studentEnd = format.format(serviceUnit.getWork_4_datetime());
+        return studentEnd;
+    }
+
     /**
      * 通用构造方法，自己指定需要传进来的实体类型。Roles是必须的。
      *

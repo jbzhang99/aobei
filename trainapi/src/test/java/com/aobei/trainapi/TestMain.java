@@ -368,9 +368,17 @@ public class TestMain {
 
 
     public static void main(String[] args){
-        Pattern pattern = Pattern.compile("^[a-zA-Z]{5}(\\-)\\d{4}$", Pattern.DOTALL);
+        /*Pattern pattern = Pattern.compile("^[a-zA-Z]{5}(\\-)\\d{4}$", Pattern.DOTALL);
 
-        System.out.println(pattern.matcher("abace-1233").find());
+        System.out.println(pattern.matcher("abace-1233").find());*/
+
+        Instant instant = new Date().toInstant();
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDateTime localDateTime = instant.atZone(zoneId).toLocalDateTime();
+        LocalDateTime localDateTime1 = localDateTime.minusDays(1).withHour(8).withMinute(0).withSecond(0);
+        ZonedDateTime zonedDateTime = localDateTime1.atZone(zoneId);
+        Date date = Date.from(zonedDateTime.toInstant());
+        System.out.println(date);
     }
 
 

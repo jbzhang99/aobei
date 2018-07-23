@@ -1,11 +1,13 @@
 package com.aobei.trainapi.server;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import com.aobei.train.model.Message;
 import com.aobei.train.model.Order;
 import com.aobei.train.model.Student;
+import com.aobei.train.model.VideoContent;
 import com.aobei.trainapi.schema.input.StudentOrderInput;
 import com.aobei.trainapi.server.bean.*;
 
@@ -86,10 +88,26 @@ public interface StudentApiService {
 	 */
 	ApiResponse cancelOrder(Student student, String pay_order_id);
 
+
 	/**
 	 * 是否有新的消息
 	 * @param studentInfo
 	 * @return
 	 */
     int whetherHaveNewMessages(StudentInfo studentInfo);
+
+	/**
+	 * 学员订单统计
+	 * @return
+	 */
+	StudentServiceOrderStatistics studentStatisticsOrder(StudentInfo studentInfo);
+
+	/**
+	 * 视频列表
+	 * @param clientId
+	 * @return
+	 */
+	List<VideoContent> studentVideoList(String clientId,int page_index,int  count);
+
+
 }

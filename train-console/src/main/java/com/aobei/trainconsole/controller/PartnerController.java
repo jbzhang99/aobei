@@ -89,7 +89,8 @@ public class PartnerController {
 	 * @return
 	 */
 	@RequestMapping("/showPartner")
-	public String showPartner(Model model,@RequestParam(value="p",defaultValue="1") Integer p,@RequestParam(value="ps",defaultValue="10") Integer ps,Authentication authentication){
+	public String showPartner(Model model,@RequestParam(value="p",defaultValue="1") Integer p,@RequestParam(value="ps",defaultValue="10") Integer ps,Authentication authentication,
+							  @RequestParam(defaultValue="2") int state_selected, @RequestParam(defaultValue="0") int auditState_selected){
 
 		//获取登录的用户id
 		Users users = usersService.xSelectUserByUsername(authentication.getName());
@@ -97,6 +98,13 @@ public class PartnerController {
 
 		//分页显示
 		PartnerExample partnerExample = new PartnerExample();
+        PartnerExample.Criteria criteria = partnerExample.or();
+        if(state_selected !=2){
+            criteria.andStateEqualTo(state_selected);
+		}
+		if(auditState_selected !=0){
+            criteria.andAudit_stateEqualTo(auditState_selected);
+		}
 		partnerExample.setOrderByClause(PartnerExample.C.cdate+" desc");
 		Page<Partner> page = this.partnerService.selectByExample(partnerExample,p,ps);
 		List<Partner> partnerList = page.getList();
@@ -107,6 +115,8 @@ public class PartnerController {
 		}
 		model.addAttribute("partnerList", partnerList);
 		model.addAttribute("page", page);
+		model.addAttribute("state_selected",state_selected);
+		model.addAttribute("auditState_selected",auditState_selected);
 		return "partner/partner_list";
 	}
 	
@@ -269,7 +279,7 @@ public class PartnerController {
 		Map<String,Object> map=resultJson;
 		logger.info("M[partner] F[addPartner] U[{}],params 合伙人信息以及服务项id集合： map:{}",users.getUser_id(),map);
 		//保存合伙人信息封装方法
-		Partner partner=this.partnerService.xAddPartner(map);
+		Partner partner=this.partnerService.xAddPartner(map,users);
 		
 		//获取虚拟地址，维护station表
 		String stationList = request.getParameter("stationList");
@@ -871,7 +881,9 @@ public class PartnerController {
 	@RequestMapping("/isHaveFallinto")
     public Object isHaveFallinto(){
 		//查询出所有的分成策略
-		List<Fallinto> fallintos = this.fallintoService.selectByExample(new FallintoExample());
+        FallintoExample fallintoExample = new FallintoExample();
+        fallintoExample.or().andActivedEqualTo(1);
+        List<Fallinto> fallintos = this.fallintoService.selectByExample(fallintoExample);
 		return fallintos;
 	}
 
@@ -893,4 +905,154 @@ public class PartnerController {
 	}
 
 
+	/**
+	 * 提审
+	 * @param partner_id
+	 * @param authentication
+	 * @return
+	 */
+	@Transactional
+	@ResponseBody
+	@RequestMapping("/auditPartner/{partner_id}")
+	public Object auditPartner(@PathVariable(value = "partner_id") Long partner_id,Authentication authentication){
+		//获取登录的用户id
+		Users users = usersService.xSelectUserByUsername(authentication.getName());
+		logger.info("M[partner] F[auditPartner] U[{}],params partnerid:{}",users.getUser_id(),partner_id);
+        Partner partner = this.partnerService.selectByPrimaryKey(partner_id);
+        partner.setAudit_state(2);
+        int num = this.partnerService.updateByPrimaryKey(partner);
+        Map<String, Object> resultMap=new HashMap<>();
+		resultMap.put("msg",String.format("提审%s", num> 0 ? "成功":"失败"));
+		logger.info("M[partner] F[auditPartner] U[{}],execute result:{}",users.getUser_id(),String.format("提审%s", num> 0 ? "成功":"失败"));
+		return resultMap;
+	}
+
+	/**
+	 * 合伙人信息审核列表
+	 * @param model
+	 * @param p
+	 * @param ps
+	 * @param authentication
+	 * @return
+	 */
+	@RequestMapping("/showAuditPartner")
+	public String showAuditPartner(Model model,@RequestParam(value="p",defaultValue="1") Integer p,@RequestParam(value="ps",defaultValue="10") Integer ps,Authentication authentication,
+                                   @RequestParam(defaultValue="2") int state_selected, @RequestParam(defaultValue="0") int auditState_selected){
+
+		//获取登录的用户id
+		Users users = usersService.xSelectUserByUsername(authentication.getName());
+		logger.info("M[partner] F[showAuditPartner] U[{}] log messages",users.getUser_id());
+
+		//分页显示
+		PartnerExample partnerExample = new PartnerExample();
+        PartnerExample.Criteria criteria = partnerExample.or();
+        if(state_selected !=2){
+            criteria.andStateEqualTo(state_selected);
+        }
+        if(auditState_selected !=0){
+            criteria.andAudit_stateEqualTo(auditState_selected);
+        }
+        criteria.andAudit_stateBetween(2,4);
+		partnerExample.setOrderByClause(PartnerExample.C.cdate+" desc");
+		Page<Partner> page = this.partnerService.selectByExample(partnerExample,p,ps);
+		List<Partner> partnerList = page.getList();
+		//删除最后一页只有一条数据时，跳转到上一页
+		if(partnerList.size() == 0 & p>1) {
+			page = this.partnerService.selectByExample(partnerExample,p-1,ps);
+			partnerList = page.getList();
+		}
+		model.addAttribute("partnerList", partnerList);
+		model.addAttribute("page", page);
+		model.addAttribute("state_selected",state_selected);
+		model.addAttribute("auditState_selected",auditState_selected);
+		return "partner/partner_audit_list";
+	}
+
+	/**
+	 * 审核通过
+	 * @param partner_id
+	 * @param authentication
+	 * @param auditOpinionValue
+	 * @param auditState
+	 * @return
+	 */
+	@Transactional
+	@ResponseBody
+	@RequestMapping("/saveAuditOpinion/{partner_id}")
+	public Object saveAuditOpinion(@PathVariable(value = "partner_id") Long partner_id,Authentication authentication,String auditOpinionValue,int auditState){
+		//获取登录的用户id
+		Users users = usersService.xSelectUserByUsername(authentication.getName());
+		logger.info("M[partner] F[saveAuditOpinion] U[{}],params partnerid:{},auditOpinionValue:{}",users.getUser_id(),partner_id,auditOpinionValue);
+		Partner partner = this.partnerService.selectByPrimaryKey(partner_id);
+		if(auditState==3){
+			partner.setAudit_state(3);
+		}else if(auditState==4){
+			partner.setAudit_state(4);
+		}
+		partner.setAudit_opinion(auditOpinionValue);
+		partner.setAudit_name(users.getUsername());
+		int num = this.partnerService.updateByPrimaryKey(partner);
+		Map<String, Object> resultMap=new HashMap<>();
+		resultMap.put("msg",String.format("提审%s", num> 0 ? "成功":"失败"));
+		logger.info("M[partner] F[auditPartner] U[{}],execute result:{}",users.getUser_id(),String.format("提审%s", num> 0 ? "成功":"失败"));
+		return resultMap;
+	}
+
+    /**
+     * 合伙人详情
+     * @param partner_id
+     * @param model
+     * @return
+     */
+	@RequestMapping("/partnerDetail/{partner_id}")
+	public String partnerDetail(@PathVariable(value = "partner_id") Long partner_id,Model model){
+        Partner partner = this.partnerService.selectByPrimaryKey(partner_id);
+        OssImg logoImg =new OssImg();
+        OssImg businessImg =new OssImg();
+        OssImg justImg =new OssImg();
+        OssImg againstImg =new OssImg();
+
+        if(partner.getLogo_img() !=null){
+            logoImg = this.ossImgService.selectByPrimaryKey(Long.parseLong(partner.getLogo_img()));
+        }
+        if(partner.getBusiness_license() !=null) {
+            businessImg = this.ossImgService.selectByPrimaryKey(Long.parseLong(partner.getBusiness_license()));
+            String url = myfileHandleUtil.get_signature_url(PathType.image_partner_businesslicense, businessImg, 3600l);
+            businessImg.setUrl(url);
+        }
+        if(partner.getIdentity_card_just() !=null) {
+            justImg = this.ossImgService.selectByPrimaryKey(Long.parseLong(partner.getIdentity_card_just()));
+            String url = myfileHandleUtil.get_signature_url(PathType.image_user_idcard, justImg, 3600l);
+            justImg.setUrl(url);
+        }
+        if(partner.getIdentity_card_against() !=null) {
+            againstImg = this.ossImgService.selectByPrimaryKey(Long.parseLong(partner.getIdentity_card_against()));
+            String url = myfileHandleUtil.get_signature_url(PathType.image_user_idcard, againstImg, 3600l);
+            againstImg.setUrl(url);
+        }
+        //合伙人包含的站点
+        StationExample stationExample = new StationExample();
+        stationExample.or().andPartner_idEqualTo(partner_id).andDeletedEqualTo(0);
+        List<Station> stations = this.stationService.selectByExample(stationExample);
+
+        //合伙人存在的服务项目
+        List<Serviceitem> serviceitemList=new ArrayList<>();
+        PartnerServiceitemExample partnerServiceitemExample = new PartnerServiceitemExample();
+        partnerServiceitemExample.or().andPartner_idEqualTo(partner_id);
+        List<PartnerServiceitem> partnerServiceitems = partnerServiceitemService.selectByExample(partnerServiceitemExample);
+        if(!partnerServiceitems.isEmpty()){
+            partnerServiceitems.stream().forEach(partnerServiceitem -> {
+                Serviceitem serviceitem = serviceitemService.selectByPrimaryKey(partnerServiceitem.getServiceitem_id());
+                serviceitemList.add(serviceitem);
+            });
+        }
+        model.addAttribute("partner",partner);
+        model.addAttribute("logoImg",logoImg);
+        model.addAttribute("businessImg",businessImg);
+        model.addAttribute("justImg",justImg);
+        model.addAttribute("againstImg",againstImg);
+        model.addAttribute("stations",stations);
+        model.addAttribute("serviceitemList",serviceitemList);
+        return "partner/partner_detail";
+    }
 }

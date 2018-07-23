@@ -1,6 +1,7 @@
 package com.aobei.trainapi.server.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.aliyun.openservices.ons.api.SendResult;
 import com.aobei.common.boot.RedisIdGenerator;
 import com.aobei.train.IdGenerator;
@@ -15,9 +16,10 @@ import com.aobei.trainapi.schema.TokenUtil;
 import com.aobei.trainapi.schema.input.StudentOrderInput;
 import com.aobei.trainapi.schema.type.MutationResult;
 import com.aobei.trainapi.server.StudentApiService;
-import com.aobei.trainapi.server.bean.ApiResponse;
-import com.aobei.trainapi.server.bean.CustomerDetail;
+import com.aobei.trainapi.server.bean.*;
+import com.aobei.trainapi.server.bean.Img;
 import com.aobei.trainapi.server.bean.MessageContent;
+import com.aobei.trainapi.server.bean.StudentServiceOrderStatistics;
 import com.aobei.trainapi.server.bean.StudentInfo;
 import com.aobei.trainapi.server.handler.OnsHandler;
 import com.github.liyiorg.mbg.bean.Page;
@@ -41,13 +43,17 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.aobei.common.bean.IGtPushData.Client.student;
 import static org.springframework.dao.support.DataAccessUtils.singleResult;
 
 @Service
-public class StudentApiServiceImpl implements StudentApiService {
+public class StudentApiServiceImpl implements StudentApiService
+{
 	@Autowired
 	ServiceUnitService serviceUnitService;
 
@@ -90,6 +96,8 @@ public class StudentApiServiceImpl implements StudentApiService {
 	Environment env;
 	@Autowired
 	TokenUtil TOKEN;
+	@Autowired
+	VideoContentService videoContentService;
 	Logger logger = LoggerFactory.getLogger(StudentApiServiceImpl.class);
 
 	/**
@@ -266,7 +274,7 @@ public class StudentApiServiceImpl implements StudentApiService {
 				content.setHref(tContent.getHrefNotEncode());
 				content.setTitle("订单完成通知");
 				content.setTypes(1);
-				if (content.getContent() != null && !ParamsCheck.checkStrAndLength(content.getContent(),200)){
+				if (content.getContent() != null && !ParamsCheck.checkStrAndLength(content.getContent(),500)){
 					Errors._41040.throwError("消息长度过长");
 					return apiResponse;
 				}
@@ -946,6 +954,7 @@ public class StudentApiServiceImpl implements StudentApiService {
 					.andApp_typeEqualTo(1)
 					.andStatusEqualTo(0);
 			long messageNum = messageService.countByExample(messageExample);
+            logger.info("api-method:whetherHaveNewMessages:process messageNum:{}", messageNum);
 			if (messageNum >= 1){
 				haveNot = 1;
 			}
@@ -953,6 +962,143 @@ public class StudentApiServiceImpl implements StudentApiService {
 			logger.error("ERROR api-method:whetherHaveNewMessages",e);
 		}
 		return haveNot;
+	}
+
+	/**
+	 * 统计服务人员订单数
+	 * @return
+	 */
+	@Override
+	public StudentServiceOrderStatistics studentStatisticsOrder(StudentInfo studentInfo) {
+		try{
+			StudentServiceOrderStatistics studentServiceOrderStatistics = new StudentServiceOrderStatistics();
+			Long student_id = studentInfo.getStudent_id();
+			if(student_id!=null){
+				studentServiceOrderStatistics
+						.setServicedOrder(getServiceUnitPersons(2, student_id,0,false));//本月已服务订单数
+				studentServiceOrderStatistics
+						.setDoneOrder(getServiceUnitPersons(4, student_id,Status.ServiceStatus.done.value,false));//本月服务完成订单
+				studentServiceOrderStatistics
+						.setTodayWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value , true));//今日待服务订单
+				studentServiceOrderStatistics
+						.setAllWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value,false));//全部待服务订单
+				return studentServiceOrderStatistics;
+			}
+			logger.info("api-method studentStatisticsOrder");
+		}catch(Exception e){
+			logger.error("error api-method:studentStatisticsOrder",e);
+		}
+		return null;
+	}
+
+	/**
+	 * 统计学员订单数
+	 * @param work_status
+	 * @param student_id
+	 * @param status_active
+	 * @param is_day
+	 * @return
+	 */
+	private Integer getServiceUnitPersons(int work_status,Long student_id,int status_active,boolean is_day){
+		Set<Long> set = null;
+		List<ServiceUnit> serviceUnits = null;
+		try{
+			serviceUnits = new ArrayList<ServiceUnit>();
+			ServiceunitPersonExample serviceunitPersonExample = new ServiceunitPersonExample();
+			ServiceunitPersonExample.Criteria or = serviceunitPersonExample.or();
+			if(work_status==2){
+				int[] status = {2,4};
+				or.andWork_statusIn(Arrays.asList(status.length));
+			}
+			if(work_status==4){
+				or.andStatus_activeEqualTo(status_active)
+				  .andWork_statusEqualTo(work_status);
+			}
+			if(status_active==3){
+				or.andStatus_activeEqualTo(status_active)
+				  .andWork_statusEqualTo(2);
+			}
+			or.andStudent_idEqualTo(student_id);
+			List<ServiceunitPerson> serviceUnitPersons = serviceunitPersonService.selectByExample(serviceunitPersonExample);
+			set = new HashSet<Long>();
+			for (ServiceunitPerson snp:serviceUnitPersons) {
+				if(snp!=null)
+					set.add(snp.getServiceunit_id());
+			}
+			if(work_status==0 && !is_day){
+				return set.size();
+			}
+			Calendar instance = Calendar.getInstance();
+			for (Long serviceunit_id:set) {
+				ServiceUnit serviceUnit = serviceUnitService.selectByPrimaryKey(serviceunit_id);
+				SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM");
+				SimpleDateFormat sdh = new SimpleDateFormat("yyyy-MM-dd");
+				if(serviceUnit!=null){
+					if(serviceUnit.getC_begin_datetime()!=null){
+						if(is_day) {
+							String c_begin_time_sdh = sdh.format(serviceUnit.getC_begin_datetime());
+							String local_date_sdh = sdh.format(new Date());
+							if (c_begin_time_sdh.equals(local_date_sdh)) {
+								instance.setTime(sd.parse(local_date_sdh));
+								int day_local = instance.get(Calendar.DAY_OF_MONTH) + 1;//当前时间 /天
+								instance.setTime(sd.parse(c_begin_time_sdh));
+								int day_service = instance.get(Calendar.DAY_OF_MONTH) + 1;//服务时间 /天
+								if (day_local == day_service)
+									serviceUnits.add(serviceUnit);
+							}
+						}else{
+							String c_begin_time = sd.format(serviceUnit.getC_begin_datetime());
+							String local_date = sd.format(new Date());
+							if(local_date.equals(c_begin_time)){
+								instance.setTime(sd.parse(local_date));
+								int month_local = instance.get(Calendar.MONTH) + 1;//当前时间 /月
+								instance.setTime(sd.parse(c_begin_time));
+								int month_service = instance.get(Calendar.MONTH)+1;//服务时间 /月
+								if(month_local==month_service){
+									serviceUnits.add(serviceUnit);
+								}
+							}
+						}
+					}
+				}
+			}
+		}catch(Exception e){
+			logger.error("error api-method : getServiceUnitPersons",e);
+		}
+		return serviceUnits.size();
+	}
+
+
+	/**
+	 * 视频列表
+	 * @param clientId
+	 * @return
+	 */
+	@Override
+	public List<VideoContent> studentVideoList(String clientId,int page_index,int count) {
+        logger.info("api-method:studentVideoList:params clientId:{}", clientId);
+		List<VideoContent> videoContents = new ArrayList<>();
+		try {
+			String[] split = clientId.split("_");
+			String clientIdnew = split[split.length - 1];
+			VideoContentExample videoContentExample = new VideoContentExample();
+			videoContentExample.or().andClient_typeEqualTo(clientIdnew)
+					.andVideo_upload_statusEqualTo(2)
+					.andOnlineEqualTo(1);
+			videoContentExample.setOrderByClause(VideoContentExample.C.order_num + " DESC");
+			//查询该人员的视频列表
+            videoContents = videoContentService.selectByExample(videoContentExample,page_index,count).getList();
+            logger.info("api-method:studentVideoList:process videoContents:{}", videoContents.size());
+			videoContents.stream().forEach(t ->{
+                Img imgUrl = JSON.parseObject(t.getImg_url(), Img.class);
+                t.setImg_url(imgUrl.getUrl());
+                Img videoUrl = JSON.parseObject(t.getVideo_url(), Img.class);
+                t.setVideo_url(videoUrl.getUrl());
+            });
+		}catch (Exception e){
+			logger.error("ERROR api-method:studentVideoList",e);
+		}
+		return videoContents;
 	}
 
 }

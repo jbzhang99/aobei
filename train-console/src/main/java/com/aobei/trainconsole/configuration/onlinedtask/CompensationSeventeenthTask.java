@@ -44,7 +44,7 @@ public class CompensationSeventeenthTask {
 	/**
 	 * 每月17号
 	 */
-	@Scheduled(cron ="0 40 16 19 * ?")
+	@Scheduled(cron ="0 15 17 19 * ?")
 	private void extractData() {
 
         FallintoCompensationExample fallintoCompensationExamples = new FallintoCompensationExample();
@@ -79,7 +79,11 @@ public class CompensationSeventeenthTask {
 
         CompensationExample compensationExample = new CompensationExample();
         compensationExample.or().andConfirm_datetimeBetween(firstDate,endDate).andCompensation_statusEqualTo(2);
+
+        //CompensationExample compensationExamples = new CompensationExample();
+       // compensationExamples.or().andConfirm_datetimeLessThan(firstDate).andCompensation_statusEqualTo(2);
         List<Compensation> compensations = compensationService.selectByExample(compensationExample);
+        //compensations.addAll(compensationService.selectByExample(compensationExamples));
         if(!compensations.isEmpty()){
             compensations.stream().forEach(compensation -> {
                 ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
