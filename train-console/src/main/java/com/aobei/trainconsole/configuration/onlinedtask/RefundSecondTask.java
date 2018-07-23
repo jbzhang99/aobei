@@ -47,7 +47,7 @@ public class RefundSecondTask {
 	/**
 	 * 每月2号
 	 */
-	//@Scheduled(cron ="0 0 0 2 * ?")
+	//@Scheduled(cron ="0 01 15 23 * ?")
 	private void extractData() {
         //抽取数据之前先将待结算的变为已结算
         FallintoRefundExample fallintoRefundExample = new FallintoRefundExample();
@@ -60,13 +60,13 @@ public class RefundSecondTask {
             });
         }
 
-        RedisIdGenerator idGenerator = new RedisIdGenerator();
+        /*RedisIdGenerator idGenerator = new RedisIdGenerator();
         idGenerator.setRedisTemplate(redisTemplate);
         String date = LocalDate.now().toString();
         long autoIncrId = idGenerator.getAutoIncrNum("RSCT"+date);
         if (autoIncrId != 1){
             return;
-        }
+        }*/
         halfMonth();
         totalMonth();
     }
@@ -91,7 +91,7 @@ public class RefundSecondTask {
             refunds = refunds.stream().filter(refund -> refund.getFee() < refund.getPrice_pay()).collect(Collectors.toList());
             refunds.stream().forEach(refund -> {
                 ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
-                serviceUnitExample.or().andPay_order_idEqualTo(refund.getPay_order_id()).andActiveEqualTo(1).andPidEqualTo(0L);
+                serviceUnitExample.or().andPay_order_idEqualTo(refund.getPay_order_id()).andPidEqualTo(0L);
                 ServiceUnit serviceUnit = DataAccessUtils.singleResult(this.serviceUnitService.selectByExample(serviceUnitExample));
                 if(serviceUnit!=null){
                     //找出半月结的数据
@@ -134,7 +134,7 @@ public class RefundSecondTask {
             refunds = refunds.stream().filter(refund -> refund.getFee() < refund.getPrice_pay()).collect(Collectors.toList());
             refunds.stream().forEach(refund -> {
                 ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
-                serviceUnitExample.or().andPay_order_idEqualTo(refund.getPay_order_id()).andActiveEqualTo(1).andPidEqualTo(0L);
+                serviceUnitExample.or().andPay_order_idEqualTo(refund.getPay_order_id()).andPidEqualTo(0L);
                 ServiceUnit serviceUnit = DataAccessUtils.singleResult(this.serviceUnitService.selectByExample(serviceUnitExample));
                 if(serviceUnit!=null){
                     //找出半月结的数据
@@ -162,7 +162,7 @@ public class RefundSecondTask {
         Order order = this.orderService.selectByPrimaryKey(refund.getPay_order_id());
         //对应服务单
         ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
-        serviceUnitExample.or().andPay_order_idEqualTo(order.getPay_order_id()).andActiveEqualTo(1).andPidEqualTo(0L);
+        serviceUnitExample.or().andPay_order_idEqualTo(order.getPay_order_id()).andPidEqualTo(0L);
         ServiceUnit serviceUnit = DataAccessUtils.singleResult(serviceUnitService.selectByExample(serviceUnitExample));
         //找到对应订单合伙人信息，对应结算策略信息
         Partner partner = partnerService.selectByPrimaryKey(serviceUnit.getPartner_id());
