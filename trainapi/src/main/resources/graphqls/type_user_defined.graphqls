@@ -283,8 +283,8 @@ type StudentInfo{
 	img:Img
 	#无犯罪证书
 	innocence_proof:String
-	#技能证书集合(加name)
-	jobCerts:[StudentJobCert]
+	#图片url
+	imgUrl:[StudentImgInfo]
 }
 type StudentType{
 	#学生
@@ -552,9 +552,17 @@ type StudentServiceOrderStatistics{
     todayWaitServiceOrder:Int
 }
 
-type StudentJobCert{
+type StudentImgInfo{
     #服务人员姓名
     studentName:String
     #技能证书url
-    url:String
+    jobCertUrl:String
+    #身份证正面
+    cardJustUrl:String
+    #身份证反面
+    cardAgainstUrl:String
+    #健康证
+    healthUrl:String
+    #无犯罪证明
+    innocenceProofUrl:String
 }
