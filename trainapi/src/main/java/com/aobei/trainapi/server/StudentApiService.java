@@ -107,7 +107,7 @@ public interface StudentApiService {
 	 * @param clientId
 	 * @return
 	 */
-	List<VideoContent> studentVideoList(String clientId);
+	List<VideoContent> studentVideoList(String clientId,int page_index,int  count);
 
 
 }
