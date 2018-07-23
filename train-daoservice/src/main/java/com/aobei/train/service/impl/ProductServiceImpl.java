@@ -782,6 +782,7 @@ public class ProductServiceImpl extends MbgServiceSupport<ProductMapper, Long, P
                 .andValidEqualTo(1);
 
 		List<Coupon> coupons = couponService.selectByExample(couponExample);
+		coupons = coupons.stream().filter(t->t.getNum_able()>0).collect(Collectors.toList());
 		Map<Long,Coupon> map  = new HashMap<>();
 		try {
 			for (Coupon coupon : coupons) {
