@@ -135,8 +135,7 @@
                             }
                         }
                         var prevOneValue=$('#newSingularPrice').find("div:last").prev().find('.inputOne').val();
-                        console.log(oneValue <= prevOneValue);
-                        if(oneValue <= prevOneValue){
+                        if(Number(oneValue) <= Number(prevOneValue)){
                             reset();
                             alertify.alert("最后一行订单数不能比上一行订单数小！");
                             return false;
