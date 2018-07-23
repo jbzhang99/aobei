@@ -105,6 +105,11 @@
                             alertify.alert("请至少添加两条数据!");
                             return false;
                         }
+                        if($('#newSingularPrice').find("div").length>10){
+                            reset();
+                            alertify.alert("只能添加10条数据!");
+                            return false;
+                        }
                         var oneValue=$('#newSingularPrice').find("div:last").find('.inputOne').val();
                         var twoValue=$('#newSingularPrice').find("div:last").find('.inputTwo').val();
                         var reg=/^[0-9]*[1-9][0-9]*$/;
@@ -157,6 +162,11 @@
                         if($('#newMoneyPrice').find("div").length<2){
                             reset();
                             alertify.alert("请至少添加两条数据!");
+                            return false;
+                        }
+                        if($('#newMoneyPrice').find("div").length>10){
+                            reset();
+                            alertify.alert("只能添加10条数据!");
                             return false;
                         }
                         var oneValue=$('#newMoneyPrice').find("div:last").find('.inputOne').val();
@@ -285,8 +295,7 @@
                 alertify.confirm("确定要取消操作吗？", function (e) {
                     if(e){
                         var p = [[${p}]];
-
-                        window.location.href = "/balance/balance_tactics_list?p="+p==0?1:p;
+                        window.location.href = "/balance/balance_tactics_list?p="+p;
                     }
                 });
             });
@@ -325,6 +334,11 @@
             }
             //判断是否是阶梯类型的形式
             var divLength=$("#newSingularPrice").find("div").length;
+            if(divLength>=10){
+                reset();
+                alertify.alert("只能添加10条数据!");
+                return false;
+            }
             if(divLength>1){
                 var lastDiv=$("#newSingularPrice div").last();
                 var lastDivPrev=lastDiv.prev();
@@ -353,7 +367,7 @@
                         return false;
                     }
                 }
-                if(OneVal<=PrevVal){
+                if(Number(OneVal)<=Number(PrevVal)){
                     reset();
                     alertify.alert("最后一行订单数不能比上一行订单数小！");
                     return false;
@@ -415,6 +429,11 @@
             }
             //判断是否是阶梯类型的形式
             var divLength=$("#newMoneyPrice").find("div").length;
+            if(divLength>=10){
+                reset();
+                alertify.alert("只能添加10条数据!");
+                return false;
+            }
             if(divLength>1){
                 var lastDiv=$("#newMoneyPrice div").last();
                 var lastDivPrev=lastDiv.prev();
@@ -503,6 +522,11 @@
             }
             //判断是否是阶梯类型的形式
             var divLength = $("#newGuestPrice").find("div").length;
+            if(divLength>=10){
+                reset();
+                alertify.alert("只能添加10条数据!");
+                return false;
+            }
             if (divLength > 1) {
                 var lastDiv = $("#newGuestPrice div").last();
                 var lastDivPrev = lastDiv.prev();

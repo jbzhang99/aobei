@@ -288,8 +288,17 @@ public class ApiOrderServiceImpl implements ApiOrderService {
         }
         if (coupon.getReceive_end_datetime().after(new Date()) && coupon.getType()==3) {
             if (coupon.getNum_limit() == 1) {
-                coupon.setNum_able(coupon.getNum_able() - 1);
-                couponService.updateByPrimaryKeySelective(coupon);
+                CouponExample couponExample = new CouponExample();
+                couponExample.or().andCoupon_idEqualTo(coupon_id)
+                        .andNum_ableGreaterThan(0);
+                Coupon updateCoupon = new Coupon();
+                updateCoupon.setNum_able(coupon.getNum_able() - 1);
+                int  count  = couponService.updateByExampleSelective(updateCoupon,couponExample);
+                if (count==0){
+                    response.setErrors(Errors._42029);
+                    logger.info("api-method:getCounpons:process  the numAble is out of size");
+                    return response;
+                }
             }
             CouponReceiveExample couponReceiveExample  =new CouponReceiveExample();
             couponReceiveExample.or()
@@ -334,6 +343,9 @@ public class ApiOrderServiceImpl implements ApiOrderService {
         //第一步：顾虑满足指定商品的优惠券
         List<Coupon> coupons = queryList(page_index, count);
         coupons =  coupons.stream().filter(t->{
+            if(t.getNum_able()<=0){
+                return  false;
+            }
             Condition_type condition = JSON.parseObject(t.getCondition(), Condition_type.class);
             if (t.getCondition_type()==1 || t.getCondition_type()==3){
               return   true;

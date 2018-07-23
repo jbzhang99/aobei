@@ -60,6 +60,7 @@
             var div_length=$("#div_content").children("div").length;
             var last_div = $("#div_content").children("div").last();
             var last_hour = last_div.find(".input_hour").val();
+            var last_price = last_div.find(".input_price").val();
             var val = $("#end_time").val();
             if(Number(div_length)==0){
                 /*var d_begin = $("#init_begin_time").val();
@@ -142,7 +143,7 @@
                     }else {
                         if(!regex_double.test(last_price)){
                             reset();
-                            alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                            alertify.alert("扣除金额为固定金额，只能输入整数或两位小数金额！");
                             flag=false;
                             return false;
                         }
@@ -286,7 +287,7 @@
                     }else {
                         if(!regex_double.test(last_price)){
                             reset();
-                            alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                            alertify.alert("扣除金额为固定金额，只能输入整数或两位小数金额！");
                             flag=false;
                             return false;
                         }
@@ -326,7 +327,7 @@
                     }else {
                         if(!regex_double.test(last_price)){
                             reset();
-                            alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                            alertify.alert("扣除金额为固定金额，只能输入整数或两位小数金额！");
                             flag=false;
                             return false;
                         }

@@ -45,7 +45,7 @@ public class FineMoneySecondTask {
 	/**
 	 * 每月2号
 	 */
-	//@Scheduled(cron ="0 0 0 2 * ?")
+	//@Scheduled(cron ="0 24 15 23 * ?")
 	private void extractData() {
         FallintoFineMoneyExample fallintoFineMoneyExample = new FallintoFineMoneyExample();
         fallintoFineMoneyExample.or().andStatusEqualTo(1);

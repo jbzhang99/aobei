@@ -45,7 +45,7 @@ public class CompensationSecondTask {
 	/**
 	 * 每月2号
 	 */
-	//@Scheduled(cron = "0 0 0 2 * ?")
+	//@Scheduled(cron = "0 10 15 23 * ?")
 	private void extractData() {
         FallintoCompensationExample fallintoCompensationExample = new FallintoCompensationExample();
         fallintoCompensationExample.or().andStatusEqualTo(1);
