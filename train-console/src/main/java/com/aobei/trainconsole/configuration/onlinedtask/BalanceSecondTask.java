@@ -118,6 +118,18 @@ public class BalanceSecondTask {
         ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
         serviceUnitExample.or().andFinish_datetimeBetween(sixteenDate,endDate).andActiveEqualTo(1).andPidEqualTo(0L);
         List<ServiceUnit> serviceUnits = this.serviceUnitService.selectByExample(serviceUnitExample);
+
+        ServiceUnitExample serviceUnitExamples = new ServiceUnitExample();
+        serviceUnitExamples.or().andFinish_datetimeLessThan(firstDate).andActiveEqualTo(1).andPidEqualTo(0L);
+        List<ServiceUnit> serviceUnitLists = this.serviceUnitService.selectByExample(serviceUnitExamples);
+        serviceUnitLists.stream().forEach(serviceUnit -> {
+            BalanceOrderExample balanceOrderExample = new BalanceOrderExample();
+            balanceOrderExample.or().andPay_order_idEqualTo(serviceUnit.getPay_order_id()).andServiceunit_idEqualTo(serviceUnit.getServiceunit_id());
+            List<BalanceOrder> balanceOrders = this.balanceOrderService.selectByExample(balanceOrderExample);
+            if(balanceOrders.isEmpty()){
+                serviceUnits.add(serviceUnit);
+            }
+        });
         if(!serviceUnits.isEmpty()){
             serviceUnits.stream().forEach(serviceUnit -> {
                 //根据服务单找到对应订单
@@ -169,6 +181,20 @@ public class BalanceSecondTask {
         ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
         serviceUnitExample.or().andFinish_datetimeBetween(firstDate,endDate).andActiveEqualTo(1).andPidEqualTo(0L);
         List<ServiceUnit> serviceUnits = this.serviceUnitService.selectByExample(serviceUnitExample);
+
+        //找出之前漏掉的数据
+        ServiceUnitExample serviceUnitExamples = new ServiceUnitExample();
+        serviceUnitExamples.or().andFinish_datetimeLessThan(firstDate).andActiveEqualTo(1).andPidEqualTo(0L);
+        List<ServiceUnit> serviceUnitLists = this.serviceUnitService.selectByExample(serviceUnitExamples);
+        serviceUnitLists.stream().forEach(serviceUnit -> {
+            BalanceOrderExample balanceOrderExample = new BalanceOrderExample();
+            balanceOrderExample.or().andPay_order_idEqualTo(serviceUnit.getPay_order_id()).andServiceunit_idEqualTo(serviceUnit.getServiceunit_id());
+            List<BalanceOrder> balanceOrders = this.balanceOrderService.selectByExample(balanceOrderExample);
+            if(balanceOrders.isEmpty()){
+                serviceUnits.add(serviceUnit);
+            }
+        });
+
         if(!serviceUnits.isEmpty()){
             serviceUnits.stream().forEach(serviceUnit -> {
                 //根据服务单找到对应订单

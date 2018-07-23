@@ -146,10 +146,10 @@ $(function() {
 						<td th:text="${#dates.format(balanceOrder.finish_datetime,'yyyy-MM-dd')}"></td>
 						<td th:text="${#numbers.formatDecimal(balanceOrder.price_total*0.01,1,2)}"></td>
 						<td th:text="${#numbers.formatDecimal(balanceOrder.price_pay*0.01,1,2)}"></td>
-						<td></td><!--优惠券-->
+						<td th:text="${#numbers.formatDecimal(balanceOrder.price_discount*0.01,1,2)}"></td><!--优惠券-->
 						<td></td><!--礼券-->
 						<td></td><!--积分-->
-						<td th:text="${#numbers.formatDecimal(balanceOrder.price_discount*0.01,1,2)}"></td><!--促销优惠金额-->
+						<td ></td><!--促销优惠金额-->
 						<td th:text="${balanceOrder.partner_name}"></td>
 						<td th:text="${balanceOrder.partner_id}"></td>
 						<td th:text="${balanceOrder.partner_level}"></td>
