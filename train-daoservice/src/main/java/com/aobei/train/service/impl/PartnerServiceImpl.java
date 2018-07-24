@@ -191,7 +191,7 @@ public class PartnerServiceImpl extends MbgServiceSupport<PartnerMapper, Long, P
 		partner.setPartner_id(IdGenerator.generateId());
 		partner.setState(1);
 		partner.setDeleted(Status.DeleteStatus.no.value);
-		partner.setAudit_state(1);
+		partner.setAudit_state(0);
 		partner.setCreat_name(users.getUsername());
 		String regex = "\\s+";
 		partner.setLinkman(partner.getLinkman().replaceAll(regex,""));
