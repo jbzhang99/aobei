@@ -649,6 +649,7 @@
 					<select class="form-control channel_code input-sm" name="channel_code"  style="margin-right: 20px">
 						<option value=''>请选择</option>
 						<th:block th:each="channel:${channels}">
+							<option value="">全部</option>
 							<option  th:value="${channel.code}" th:text="${channel.channel_name}" th:selected="${channel_code eq channel.code}"></option>
 						</th:block>
 					</select>

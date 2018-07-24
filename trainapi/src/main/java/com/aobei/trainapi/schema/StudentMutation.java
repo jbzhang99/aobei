@@ -1,6 +1,7 @@
 package com.aobei.trainapi.schema;
 
 
+import com.aobei.trainapi.server.ApiService;
 import com.aobei.trainapi.server.ApiUserService;
 import com.aobei.trainapi.server.CustomerApiService;
 import com.aobei.trainapi.server.bean.StudentInfo;
@@ -38,6 +39,8 @@ public class StudentMutation implements GraphQLMutationResolver{
 	private CustomerApiService customerApiService;
 	@Autowired
 	private ApiUserService apiUserService;
+	@Autowired
+	private ApiService apiService;
 	Logger logger  = LoggerFactory.getLogger(StudentMutation.class);
 	
 	/**
@@ -110,7 +113,7 @@ public class StudentMutation implements GraphQLMutationResolver{
 			msg = msgtextService.selectByPrimaryKey(MsgTextConstant.INVALID_CODE);
 			Errors._41011.throwError(msg.getContent());
 		}
-		StudentInfo studentInfo = query.my_student_bindinfo();
+		StudentInfo studentInfo = apiService.studentInfoByUserId(TOKEN.getUuid());
 		if (studentInfo != null) {
 			msg = msgtextService.selectByPrimaryKey(MsgTextConstant.PHONE_TAKEN);
 			Errors._41022.throwError(msg.getContent());
