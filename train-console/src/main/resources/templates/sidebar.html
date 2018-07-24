@@ -404,4 +404,42 @@
             </ul>
         </div>
     </th:block>
+
+    <th:block sec:authorize="hasRole('ROLE_CHANNEL_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+               <span>
+                 <i class="icon iconfont icon-arrRight-fill"></i>
+               </span>
+                数据统计
+            </h5>
+            <!--  -->
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item">
+                    <a id="side_61" th:href="@{/channel/channel_list}">dashboard概况</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_62" th:href="@{/channelType/channelType_list}">订单数据统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_63" th:href="@{/channelType/channelType_list}">顾客数据统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_64" th:href="@{/dataManager/partnerDatas}">合伙人数据统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_65" th:href="@{/channelType/channelType_list}">服务人员数据统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_66" th:href="@{/channelType/channelType_list}">优惠券统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_67" th:href="@{/channelType/channelType_list}">产品转化率统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_68" th:href="@{/channelType/channelType_list}">各渠道流量转化</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
 </th:block>

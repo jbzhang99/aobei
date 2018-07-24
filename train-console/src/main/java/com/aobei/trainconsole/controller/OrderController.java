@@ -211,12 +211,14 @@ public class OrderController {
 							 @RequestParam(required = false) Long partner_id, @RequestParam(required = false) Integer statu,
 							 @RequestParam(required = false) String qs_create_time,@RequestParam(required = false) String qe_create_time,
 							 @RequestParam(required = false) String qs_pay_time,@RequestParam(required = false) String qe_pay_time,
-							 @RequestParam(defaultValue = "PUERJIA-001") String channel_code) {
+							 @RequestParam(required = false) String channel_code) {
 		VOrderUnitExample orderUnitExample = new VOrderUnitExample();
 		orderUnitExample.setOrderByClause(VOrderUnitExample.C.create_datetime + " desc");
 		//查询条件的对象
 		VOrderUnitExample.Criteria or = orderUnitExample.or();
-		or.andChannelEqualTo(channel_code);
+		if (!"".equals(channel_code) && channel_code != null){
+			or.andChannelEqualTo(channel_code);
+		}
 		or.andPay_order_idLessThan(Integer.MAX_VALUE + "");
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat sdfhms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -312,8 +314,9 @@ public class OrderController {
 		Page<VOrderUnit> page = vOrderUnitService.selectByExample(orderUnitExample, p, ps);
 		List<VOrderUnit> list = page.getList();
 
-
-		List<Channel> channels = channelService.selectByExample(new ChannelExample());
+        ChannelExample channelExample = new ChannelExample();
+        channelExample.or().andDeletedEqualTo(0);
+        List<Channel> channels = channelService.selectByExample(channelExample);
 
 		PartnerExample partnerExample = new PartnerExample();
 		partnerExample.or().andDeletedEqualTo(Status.DeleteStatus.no.value).andStateEqualTo(1);
@@ -1546,9 +1549,12 @@ public class OrderController {
 		}).collect(Collectors.toList());
 
 		Partner partner = partnerService.selectByPrimaryKey(partner_id);
-
-		List<Product> products = productService.selectByExample(new ProductExample());
-		List<ProSku> skus = proSkuService.selectByExample(new ProSkuExample());
+        ProductExample productExample = new ProductExample();
+        productExample.or().andDeletedEqualTo(0).andOnlineEqualTo(1);
+        List<Product> products = productService.selectByExample(productExample);
+        ProSkuExample proSkuExample = new ProSkuExample();
+        proSkuExample.or().andDeletedEqualTo(0);
+        List<ProSku> skus = proSkuService.selectByExample(proSkuExample);
 		String json = null;
 		try {
 			json = JacksonUtil.object_to_json(skus);
