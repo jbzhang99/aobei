@@ -68,7 +68,7 @@ public class VideoController {
      * @return
      */
     @GetMapping("/video_list")
-    public String goto_video_list(
+    public String gotoVideoList(
             @RequestParam(required = false) String clientType,
             @RequestParam(defaultValue = "1", required = false) Integer p,
             @RequestParam(defaultValue = "10") Integer ps,
@@ -92,7 +92,7 @@ public class VideoController {
      * @return
      */
     @GetMapping("/to_video_update")
-    public String to_video_update(
+    public String toVideoUpdate(
             @RequestParam(required = false) Long id,
             ModelMap modelMap) {
         if (id != null) {
@@ -114,7 +114,7 @@ public class VideoController {
      * 去视屏添加页面
      */
     @PostMapping("/video_update")
-    public String video_update(
+    public String videoUpdate(
             Authentication authentication,
             @ModelAttribute VideoContent videoContent,
             @RequestParam(required = false) MultipartFile imgFile) {
