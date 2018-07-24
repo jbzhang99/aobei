@@ -497,7 +497,7 @@
             success:function(data){
                 if(data.pay_order_id != null){
                     $("#deduct_info").val(data.deduct_info);
-                    $("#deduct_amount").val(data.deduct_amount);
+                    $("#deduct_amount").val(data.deduct_amount * 0.01);
                     $("#deduct_money").modal('show');
                     $(".modal-footer").hide();
                 }else{
@@ -647,9 +647,8 @@
 				<div class="form-inline">
 					<label>订单来源：</label>
 					<select class="form-control channel_code input-sm" name="channel_code"  style="margin-right: 20px">
-						<option value=''>请选择</option>
+						<option value=''>全部</option>
 						<th:block th:each="channel:${channels}">
-							<option value="">全部</option>
 							<option  th:value="${channel.code}" th:text="${channel.channel_name}" th:selected="${channel_code eq channel.code}"></option>
 						</th:block>
 					</select>

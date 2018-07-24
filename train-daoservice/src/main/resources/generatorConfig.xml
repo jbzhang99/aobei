@@ -481,5 +481,10 @@
         <table schema="" tableName="pay_order_jd" domainObjectName="JdOrder">
             <property name="useActualColumnNames" value="true"/>
         </table>
+
+        <!--优惠券和优惠策略中间表-->
+        <table schema="" tableName="coupon__coupon_env" domainObjectName="CouponAndCouponEnv">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
     </context>
 </generatorConfiguration>
