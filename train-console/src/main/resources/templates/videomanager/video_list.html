@@ -42,7 +42,7 @@
             var self = $(this);
             var val = $(this).val();
             var id = $(this).closest('tr').data('id');
-            if(/^([1-9]\d*)|0{1}$/.test(val) && val <= 10000 && val > 0){
+            if(/^([1-9]\d*)|0{1}$/.test(val) && val <= 10000 && val >= 0){
                 if(self.prev().find('span').text().trim() == val){
                     // 数据无修改
                     self.hide().prev().show();
@@ -67,8 +67,14 @@
         $('.video_img').click(function(){
             var url = $(this).data('videourl').url;
             $('#videoModal').modal('show');
-            $('#videoModal').find('video').html('<source src="'+ url +'" type="video/mp4">');
+            $('#videoBox').html('<video class="kv-preview-data file-preview-video" autoplay="autoplay" style="width:750px;height:375px;"><source src="'+ url +'" type="video/mp4"></video>');
+
         });
+
+        // 视频模态隐藏事件
+        $('#videoModal').on('hidden.bs.modal', function (e) {
+            $('#videoBox').html('');
+        })
 
         // 下拉选择端
         $('#category_name_selected').change(function(){
@@ -160,10 +166,9 @@
 
         <div id="videoModal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
             <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content" style="text-align: center">
-                    <video class="kv-preview-data file-preview-video" autoplay="autoplay" style="width:750px;height:375px;">
+                <div id="videoBox" class="modal-content" style="text-align: center">
 
-                    </video>
+
                 </div>
             </div>
         </div>
