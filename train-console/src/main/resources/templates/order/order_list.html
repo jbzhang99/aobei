@@ -272,24 +272,30 @@
                     return false;
 				}
 				if(amount != ''){
-					if(partner_bear_amount == ''){
+					if($("#partner_bear_amount").val() == ''){
                         reset();
                         alertify.alert("请填写合伙人承担金额！");
                         return false;
-					} else {
-                        $("#partner_bear_coupon_amount").val(0);
-                        partner_bear_coupon_amount = 0;
 					}
 				}
                 if(coupon_id != null && coupon_id != ''){
-                    if(partner_bear_coupon_amount == ''){
+                    if($("#partner_bear_coupon_amount").val() == ''){
                         reset();
                         alertify.alert("请填写合伙人承担券金额！");
                         return false;
-                    } else {
+                    }
+                }
+                if($("#partner_bear_amount").val() != ''){
+                    if(amount == ''){
                         $("#partner_bear_amount").val(0);
                         partner_bear_amount = 0;
-					}
+                    }
+                }
+                if($("#partner_bear_coupon_amount").val() != ''){
+                    if(coupon_id == ''){
+                        $("#partner_bear_coupon_amount").val(0);
+                        partner_bear_coupon_amount = 0;
+                    }
                 }
                 var payee = $("#payee").val();
                 var payee_card = $("#payee_card").val();
