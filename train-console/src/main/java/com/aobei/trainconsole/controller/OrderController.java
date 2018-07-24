@@ -1292,36 +1292,38 @@ public class OrderController {
 								 String time) {
 		//更新服务时间到服务单上
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-		SkuTime skuTime = null;
-		if (!"".equals(time) && time != null){
-			try {
-				skuTime =JacksonUtil.json_to_object(time,SkuTime.class);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		int s = skuTime.getS();
-		int e = skuTime.getE();
-		String begins = null;
-		String ends = null;
-		Map<String, Integer> timeUnisMap = Constant.timeUnisMap;
-		Iterator<Map.Entry<String, Integer>> iterator = timeUnisMap.entrySet().iterator();
-		while (iterator.hasNext()){
-			Map.Entry<String, Integer> entry = iterator.next();
-			if (entry.getValue().equals(s)){
-				begins = c_begin_datetime + " " + entry.getKey();
-			}
-			if (entry.getValue().equals(e)){
-				ends = c_begin_datetime + " " + entry.getKey();
-			}
-		}
+        SkuTime skuTime = null;
+        String begins = null;
+        String ends = null;
+        if (!"".equals(time) && time != null){
+            try {
+                skuTime =JacksonUtil.json_to_object(time,SkuTime.class);
+                int s = skuTime.getS();
+                int e = skuTime.getE();
+                Map<String, Integer> timeUnisMap = Constant.timeUnisMap;
+                Iterator<Map.Entry<String, Integer>> iterator = timeUnisMap.entrySet().iterator();
+                while (iterator.hasNext()){
+                    Map.Entry<String, Integer> entry = iterator.next();
+                    if (entry.getValue().equals(s)){
+                        begins = c_begin_datetime + " " + entry.getKey();
+                    }
+                    if (entry.getValue().equals(e)){
+                        ends = c_begin_datetime + " " + entry.getKey();
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
 		Date cBeginDatetime = null;
 		Date c_end_datetime = null;
 
 		try {
-			cBeginDatetime = sdf.parse(begins);
-			c_end_datetime = sdf.parse(ends);
+		    if (!"".equals(begins) && begins != null){
+                cBeginDatetime = sdf.parse(begins);
+                c_end_datetime = sdf.parse(ends);
+            }
 		} catch (ParseException e1) {
 			e1.printStackTrace();
 		}
@@ -1342,7 +1344,7 @@ public class OrderController {
 		criteria.andPartner_idEqualTo(partner_id);
 		criteria.andStation_idEqualTo(station_id);
 		criteria.andPidEqualTo(0l);
-		if(c_begin_datetime!=null) {
+		if(cBeginDatetime!=null) {
 			criteria.andC_begin_datetimeEqualTo(cBeginDatetime);
 			criteria.andC_end_datetimeEqualTo(c_end_datetime);
 		}
