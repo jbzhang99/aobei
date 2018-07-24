@@ -2,7 +2,7 @@
 <!--/* 引入模板页面  */-->
 <html layout:decorate="~{base_layout}" xmlns:th="http://www.thymeleaf.org">
 <head>
-<title>视屏[[${param.id}? '编辑':'添加']]</title>
+<title>视屏管理</title>
 
 <link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
 <link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
@@ -120,9 +120,13 @@
                         $('#progress').find('.progress-bar').width(p * 100 + '%');
                         $('#progress').find('span').text(p * 100 + '%');
                         console.log('Progress: ' + p);
+
                         videoUploading = p == 1;
                         if(p == 1){
 							$('#video_url').val('https://' + [[${bucket}]] + '.oss-cn-beijing.aliyuncs.com' + storeAs);
+                            $('#subBtn').attr('disabled',false);
+                        }else{
+                            $('#subBtn').attr('disabled',true);
 						}
                     }
                 }).then(function (result) {
@@ -251,17 +255,19 @@
 					</label>
 					<div class="col-sm-2">
 						<select class="form-control" id="client_type" name="client_type">
+							<option value="student" th:selected="${videoContent?.client_type} == 'student'?'selected'">服务人员</option>
+							<!--
 							<option value="custom" th:selected="${videoContent?.client_type} == 'custom'?'selected'">顾客</option>
 							<option value="partner" th:selected="${videoContent?.client_type} == 'partner'?'selected'">合伙人</option>
-							<option value="student" th:selected="${videoContent?.client_type} == 'student'?'selected'">服务人员</option>
 							<option value="teacher" th:selected="${videoContent?.client_type} == 'teacher'?'selected'">老师</option>
+							-->
 						</select>
 					</div>
 				</div>
 
 				<div class="form-group">
 					<div class="col-sm-9 col-sm-offset-4">
-						<button type="submit" class="btn btn-primary" >确定</button>
+						<button type="submit" id="subBtn" class="btn btn-primary" >确定</button>
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 						<a th:href="@{/videomanager/video_list(clientType=${param.clientType},p=${param.p})}" class="btn btn-primary">取消</a>
 					</div>
