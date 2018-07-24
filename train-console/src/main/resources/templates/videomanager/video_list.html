@@ -110,7 +110,7 @@
                 <label for="category_name_selected">使用端：</label>
                 <select id="category_name_selected" name="clientType" class="form-control input-sm">
                     <option value="">全部</option>
-                    <option value="customer" th:selected="${clientType} == 'customer'?'selected'">顾客</option>
+                    <option value="custom" th:selected="${clientType} == 'custom'?'selected'">顾客</option>
                     <option value="partner" th:selected="${clientType} == 'partner'?'selected'">合伙人</option>
                     <option value="student" th:selected="${clientType} == 'student'?'selected'">服务人员</option>
                     <option value="teacher" th:selected="${clientType} == 'teacher'?'selected'">老师</option>
