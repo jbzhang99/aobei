@@ -120,7 +120,8 @@
                         }
 
                         if(step_type==1){
-                            var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                           // var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                            var reg = /^\d+(\.\d{1,2})?$/;
                             if(!reg.test(twoValue)){
                                 reset();
                                 alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -170,14 +171,15 @@
                         }
                         var oneValue=$('#newMoneyPrice').find("div:last").find('.inputOne').val();
                         var twoValue=$('#newMoneyPrice').find("div:last").find('.inputTwo').val();
-                        var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                       // var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                        var reg = /^\d+(\.\d{1,2})?$/;
                         if(!reg.test(oneValue)){
                             reset();
                             alertify.alert("每行第一个数，请输入整数或者两位小数!");
                             return false;
                         }
                         if(step_type==1){
-                            var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                            //var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
                             if(!reg.test(twoValue)){
                                 reset();
                                 alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -226,14 +228,16 @@
                         }
                         var oneValue=$('#newGuestPrice').find("div:last").find('.inputOne').val();
                         var twoValue=$('#newGuestPrice').find("div:last").find('.inputTwo').val();
-                        var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                        //var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                        var reg = /^\d+(\.\d{1,2})?$/;
                         if (!reg.test(oneValue)) {
                             reset();
                             alertify.alert("每行第一个数，请输入整数或者两位小数!");
                             return false;
                         }
                         if (step_type == 1) {
-                            var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                            //var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+
                             if (!reg.test(twoValue)) {
                                 reset();
                                 alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -352,7 +356,8 @@
                 }
 
                 if(stepTypeVal==1){
-                    var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    //var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    var reg = /^\d+(\.\d{1,2})?$/;
                     if(!reg.test(TwoVal)){
                         reset();
                         alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -380,7 +385,8 @@
                 }
 
                 if(stepTypeVal==1){
-                    var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    //var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    var reg = /^\d+(\.\d{1,2})?$/;
                     if(!reg.test($("#newSingularPrice div").first().find(".inputTwo").val())){
                         reset();
                         alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -439,14 +445,16 @@
                 var PrevVal=lastDivPrev.find(".inputOne").val();
                 var OneVal=lastDiv.find(".inputOne").val();
                 var TwoVal=lastDiv.find(".inputTwo").val();
-                var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                //var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                var reg = /^\d+(\.\d{1,2})?$/;
                 if(!reg.test(OneVal)){
                     reset();
                     alertify.alert("每行第一个数，请输入整数或者两位小数!");
                     return false;
                 }
                 if(stepTypeVal==1){
-                    var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    //var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    var reg = /^\d+(\.\d{1,2})?$/;
                     if(!reg.test(TwoVal)){
                         reset();
                         alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -466,14 +474,16 @@
                     return false;
                 }
             }else if(divLength==1){
-                var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+               // var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                var reg = /^\d+(\.\d{1,2})?$/;
                 if(!reg.test($("#newMoneyPrice div").first().find(".inputOne").val())){
                     reset();
                     alertify.alert("每行第一个数，请输入整数或者两位小数!");
                     return false;
                 }
                 if(stepTypeVal==1){
-                    var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    //var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    var reg = /^\d+(\.\d{1,2})?$/;
                     if(!reg.test($("#newMoneyPrice div").first().find(".inputTwo").val())){
                         reset();
                         alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -532,14 +542,16 @@
                 var PrevVal = lastDivPrev.find(".inputOne").val();
                 var OneVal = lastDiv.find(".inputOne").val();
                 var TwoVal = lastDiv.find(".inputTwo").val();
-                var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                //var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                var reg = /^\d+(\.\d{1,2})?$/;
                 if (!reg.test(OneVal)) {
                     reset();
                     alertify.alert("每行第一个数，请输入整数或者两位小数!");
                     return false;
                 }
                 if (stepTypeVal == 1) {
-                    var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    //var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    var reg = /^\d+(\.\d{1,2})?$/;
                     if (!reg.test(TwoVal)) {
                         reset();
                         alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -559,14 +571,16 @@
                     return false;
                 }
             } else if (divLength == 1) {
-                var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                //var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                var reg = /^\d+(\.\d{1,2})?$/;
                 if (!reg.test($("#newGuestPrice div").first().find(".inputOne").val())) {
                     reset();
                     alertify.alert("每行第一个数，请输入整数或者两位小数!");
                     return false;
                 }
                 if (stepTypeVal == 1) {
-                    var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                   // var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    var reg = /^\d+(\.\d{1,2})?$/;
                     if (!reg.test($("#newGuestPrice div").first().find(".inputTwo").val())) {
                         reset();
                         alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
