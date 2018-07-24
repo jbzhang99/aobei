@@ -172,8 +172,8 @@ public class StudentQuery implements GraphQLQueryResolver {
 	/**
 	 * 视频列表
 	 */
-	public List<VideoContent> select_video_list(){
-		return studentApiService.studentVideoList(TOKEN.getClientId());
+	public List<VideoContent> select_video_list(int page_index,int count){
+		return studentApiService.studentVideoList(TOKEN.getClientId(),page_index,count);
 	}
 
 }

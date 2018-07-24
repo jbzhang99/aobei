@@ -58,7 +58,7 @@ public class BalanceSecondTask {
     /**
      * 每月2号
      */
-	//@Scheduled(cron ="0 0 0 2 * ?")
+	//@Scheduled(cron ="0 22 17 23 * ?")
 	private void extractData(){
        // 没有挂起的数据自动处理为“已结算”“挂起”的数据进入下一个结算月数据
         BalanceOrderExample balanceOrderExample = new BalanceOrderExample();
@@ -72,13 +72,13 @@ public class BalanceSecondTask {
             });
         }
 
-        RedisIdGenerator idGenerator = new RedisIdGenerator();
+       /* RedisIdGenerator idGenerator = new RedisIdGenerator();
         idGenerator.setRedisTemplate(redisTemplate);
         String date = LocalDate.now().toString();
         long autoIncrId = idGenerator.getAutoIncrNum("BSCT"+date);
         if (autoIncrId != 1){
             return;
-        }
+        }*/
         halfMonth();
         totalMonth();
     }

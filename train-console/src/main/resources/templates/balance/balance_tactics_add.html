@@ -105,6 +105,11 @@
                             alertify.alert("请至少添加两条数据!");
                             return false;
                         }
+                        if($('#newSingularPrice').find("div").length>10){
+                            reset();
+                            alertify.alert("只能添加10条数据!");
+                            return false;
+                        }
                         var oneValue=$('#newSingularPrice').find("div:last").find('.inputOne').val();
                         var twoValue=$('#newSingularPrice').find("div:last").find('.inputTwo').val();
                         var reg=/^[0-9]*[1-9][0-9]*$/;
@@ -115,7 +120,8 @@
                         }
 
                         if(step_type==1){
-                            var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                           // var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                            var reg = /^\d+(\.\d{1,2})?$/;
                             if(!reg.test(twoValue)){
                                 reset();
                                 alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -130,8 +136,7 @@
                             }
                         }
                         var prevOneValue=$('#newSingularPrice').find("div:last").prev().find('.inputOne').val();
-                        console.log(oneValue <= prevOneValue);
-                        if(oneValue <= prevOneValue){
+                        if(Number(oneValue) <= Number(prevOneValue)){
                             reset();
                             alertify.alert("最后一行订单数不能比上一行订单数小！");
                             return false;
@@ -159,16 +164,22 @@
                             alertify.alert("请至少添加两条数据!");
                             return false;
                         }
+                        if($('#newMoneyPrice').find("div").length>10){
+                            reset();
+                            alertify.alert("只能添加10条数据!");
+                            return false;
+                        }
                         var oneValue=$('#newMoneyPrice').find("div:last").find('.inputOne').val();
                         var twoValue=$('#newMoneyPrice').find("div:last").find('.inputTwo').val();
-                        var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                       // var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                        var reg = /^\d+(\.\d{1,2})?$/;
                         if(!reg.test(oneValue)){
                             reset();
                             alertify.alert("每行第一个数，请输入整数或者两位小数!");
                             return false;
                         }
                         if(step_type==1){
-                            var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                            //var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
                             if(!reg.test(twoValue)){
                                 reset();
                                 alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -217,14 +228,16 @@
                         }
                         var oneValue=$('#newGuestPrice').find("div:last").find('.inputOne').val();
                         var twoValue=$('#newGuestPrice').find("div:last").find('.inputTwo').val();
-                        var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                        //var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                        var reg = /^\d+(\.\d{1,2})?$/;
                         if (!reg.test(oneValue)) {
                             reset();
                             alertify.alert("每行第一个数，请输入整数或者两位小数!");
                             return false;
                         }
                         if (step_type == 1) {
-                            var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                            //var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+
                             if (!reg.test(twoValue)) {
                                 reset();
                                 alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -285,8 +298,7 @@
                 alertify.confirm("确定要取消操作吗？", function (e) {
                     if(e){
                         var p = [[${p}]];
-
-                        window.location.href = "/balance/balance_tactics_list?p="+p==0?1:p;
+                        window.location.href = "/balance/balance_tactics_list?p="+p;
                     }
                 });
             });
@@ -325,6 +337,11 @@
             }
             //判断是否是阶梯类型的形式
             var divLength=$("#newSingularPrice").find("div").length;
+            if(divLength>=10){
+                reset();
+                alertify.alert("只能添加10条数据!");
+                return false;
+            }
             if(divLength>1){
                 var lastDiv=$("#newSingularPrice div").last();
                 var lastDivPrev=lastDiv.prev();
@@ -339,7 +356,8 @@
                 }
 
                 if(stepTypeVal==1){
-                    var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    //var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    var reg = /^\d+(\.\d{1,2})?$/;
                     if(!reg.test(TwoVal)){
                         reset();
                         alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -353,7 +371,7 @@
                         return false;
                     }
                 }
-                if(OneVal<=PrevVal){
+                if(Number(OneVal)<=Number(PrevVal)){
                     reset();
                     alertify.alert("最后一行订单数不能比上一行订单数小！");
                     return false;
@@ -367,7 +385,8 @@
                 }
 
                 if(stepTypeVal==1){
-                    var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    //var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    var reg = /^\d+(\.\d{1,2})?$/;
                     if(!reg.test($("#newSingularPrice div").first().find(".inputTwo").val())){
                         reset();
                         alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -415,20 +434,27 @@
             }
             //判断是否是阶梯类型的形式
             var divLength=$("#newMoneyPrice").find("div").length;
+            if(divLength>=10){
+                reset();
+                alertify.alert("只能添加10条数据!");
+                return false;
+            }
             if(divLength>1){
                 var lastDiv=$("#newMoneyPrice div").last();
                 var lastDivPrev=lastDiv.prev();
                 var PrevVal=lastDivPrev.find(".inputOne").val();
                 var OneVal=lastDiv.find(".inputOne").val();
                 var TwoVal=lastDiv.find(".inputTwo").val();
-                var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                //var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                var reg = /^\d+(\.\d{1,2})?$/;
                 if(!reg.test(OneVal)){
                     reset();
                     alertify.alert("每行第一个数，请输入整数或者两位小数!");
                     return false;
                 }
                 if(stepTypeVal==1){
-                    var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    //var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    var reg = /^\d+(\.\d{1,2})?$/;
                     if(!reg.test(TwoVal)){
                         reset();
                         alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -448,14 +474,16 @@
                     return false;
                 }
             }else if(divLength==1){
-                var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+               // var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                var reg = /^\d+(\.\d{1,2})?$/;
                 if(!reg.test($("#newMoneyPrice div").first().find(".inputOne").val())){
                     reset();
                     alertify.alert("每行第一个数，请输入整数或者两位小数!");
                     return false;
                 }
                 if(stepTypeVal==1){
-                    var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    //var reg=/^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    var reg = /^\d+(\.\d{1,2})?$/;
                     if(!reg.test($("#newMoneyPrice div").first().find(".inputTwo").val())){
                         reset();
                         alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -503,20 +531,27 @@
             }
             //判断是否是阶梯类型的形式
             var divLength = $("#newGuestPrice").find("div").length;
+            if(divLength>=10){
+                reset();
+                alertify.alert("只能添加10条数据!");
+                return false;
+            }
             if (divLength > 1) {
                 var lastDiv = $("#newGuestPrice div").last();
                 var lastDivPrev = lastDiv.prev();
                 var PrevVal = lastDivPrev.find(".inputOne").val();
                 var OneVal = lastDiv.find(".inputOne").val();
                 var TwoVal = lastDiv.find(".inputTwo").val();
-                var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                //var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                var reg = /^\d+(\.\d{1,2})?$/;
                 if (!reg.test(OneVal)) {
                     reset();
                     alertify.alert("每行第一个数，请输入整数或者两位小数!");
                     return false;
                 }
                 if (stepTypeVal == 1) {
-                    var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    //var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    var reg = /^\d+(\.\d{1,2})?$/;
                     if (!reg.test(TwoVal)) {
                         reset();
                         alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");
@@ -536,14 +571,16 @@
                     return false;
                 }
             } else if (divLength == 1) {
-                var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                //var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                var reg = /^\d+(\.\d{1,2})?$/;
                 if (!reg.test($("#newGuestPrice div").first().find(".inputOne").val())) {
                     reset();
                     alertify.alert("每行第一个数，请输入整数或者两位小数!");
                     return false;
                 }
                 if (stepTypeVal == 1) {
-                    var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                   // var reg = /^\d{0,8}\.{0,1}(\d{1,2})?$/;
+                    var reg = /^\d+(\.\d{1,2})?$/;
                     if (!reg.test($("#newGuestPrice div").first().find(".inputTwo").val())) {
                         reset();
                         alertify.alert("底价：每行第二个数，请输入整数或者两位小数!");

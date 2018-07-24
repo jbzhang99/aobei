@@ -108,6 +108,9 @@
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_BURL_BROWSE')">
                     <a id="side_33" th:href="@{/bannermanager/cmsurl_list}">banner图路径</a>
                 </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_VIDEO_BROWSE')">
+                    <a id="side_60" th:href="@{/videomanager/video_list}">视频管理</a>
+                </li>
             </ul>
         </div>
     </th:block>
@@ -153,7 +156,7 @@
                 </li>
                 <!--sec:authorize="hasRole('ROLE_PARTNER_AUDIT_BROWSE')"-->
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_PARTNER_AUDIT_BROWSE')">
-                    <a id="side_60" th:href="@{/partner/showAuditPartner}">合伙人信息审核</a>
+                    <a id="side_61" th:href="@{/partner/showAuditPartner}">合伙人信息审核</a>
                 </li>
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_STUDENT_BROWSE')">
                     <a id="side_12" th:href="@{/student/showStudent}">学员信息</a>

@@ -98,6 +98,7 @@ public class CancleStrategyController {
         model.addAttribute("cancleStrategy", cancleStrategy);
         model.addAttribute("list", cancleStrategy.getCancle_strategy());
         model.addAttribute("cancle_strategy_id",cancle_strategy_id);
+        model.addAttribute("type", cancleStrategy.getCancle_type());
         return "cancle/edit_cancle_os";
     }
 

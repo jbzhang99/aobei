@@ -1075,7 +1075,7 @@ public class StudentApiServiceImpl implements StudentApiService
 	 * @return
 	 */
 	@Override
-	public List<VideoContent> studentVideoList(String clientId) {
+	public List<VideoContent> studentVideoList(String clientId,int page_index,int count) {
         logger.info("api-method:studentVideoList:params clientId:{}", clientId);
 		List<VideoContent> videoContents = new ArrayList<>();
 		try {
@@ -1087,7 +1087,7 @@ public class StudentApiServiceImpl implements StudentApiService
 					.andOnlineEqualTo(1);
 			videoContentExample.setOrderByClause(VideoContentExample.C.order_num + " DESC");
 			//查询该人员的视频列表
-			videoContents = videoContentService.selectByExample(videoContentExample);
+            videoContents = videoContentService.selectByExample(videoContentExample,page_index,count).getList();
             logger.info("api-method:studentVideoList:process videoContents:{}", videoContents.size());
 			videoContents.stream().forEach(t ->{
                 Img imgUrl = JSON.parseObject(t.getImg_url(), Img.class);

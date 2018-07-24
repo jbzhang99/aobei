@@ -25,10 +25,10 @@ import com.aobei.trainapi.server.PayService;
 import com.aobei.trainapi.server.bean.ApiResponse;
 import com.aobei.trainapi.server.bean.Img;
 import com.aobei.trainapi.server.bean.MessageContent;
+import com.aobei.trainapi.server.handler.InStationHandler;
 import com.aobei.trainapi.server.handler.OnsHandler;
 import com.aobei.trainapi.server.handler.PushHandler;
 import com.aobei.trainapi.server.handler.SmsHandler;
-import com.aobei.trainapi.util.JacksonUtil;
 import com.github.liyiorg.mbg.bean.Page;
 import custom.bean.*;
 import custom.bean.OrderInfo.OrderStatus;
@@ -146,6 +146,8 @@ public class CustomerApiServiceImpl implements CustomerApiService {
     PushHandler pushHandler;
     @Autowired
     RobbingService robbingService;
+    @Autowired
+    InStationHandler inStationHandler;
 
     Logger logger = LoggerFactory.getLogger(CustomerApiServiceImpl.class);
     //分页固定数值
@@ -1595,6 +1597,7 @@ public class CustomerApiServiceImpl implements CustomerApiService {
             messageService.insertSelective(msg);*/
 
                 pushHandler.pushCancelOrderMessageToPartner(order, partner.getPartner_id().toString());
+                inStationHandler.sentToPartnerCancleOrder(pay_order_id,partner);
             }
             // 取消订单 有服务人员 释放库存
             ServiceunitPersonExample personExample = new ServiceunitPersonExample();
@@ -1625,7 +1628,8 @@ public class CustomerApiServiceImpl implements CustomerApiService {
                     cacheReloadHandler.selectStuUndoneOrderReload(t.getStudent_id());
                     //取消,推送服务人员
                     pushHandler.pushCancelOrderMessageToStudent(orderInfo, t.getStudent_id().toString());
-
+                    //站内消息（取消）
+                    inStationHandler.sentToStudentCancleOrder(pay_order_id,studentService.selectByPrimaryKey(t.getStudent_id()));
                 });
                 //同步serviceunitPerson的状态
                 ServiceunitPerson serviceunitPerson = new ServiceunitPerson();

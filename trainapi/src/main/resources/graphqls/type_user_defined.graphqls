@@ -285,6 +285,8 @@ type StudentInfo{
 	innocence_proof:String
 	#图片url
 	imgUrl:[StudentImgInfo]
+	#等级描述
+	gradeDesc:String
 }
 type StudentType{
 	#学生
@@ -553,16 +555,8 @@ type StudentServiceOrderStatistics{
 }
 
 type StudentImgInfo{
-    #服务人员姓名
-    studentName:String
-    #技能证书url
-    jobCertUrl:String
-    #身份证正面
-    cardJustUrl:String
-    #身份证反面
-    cardAgainstUrl:String
-    #健康证
-    healthUrl:String
-    #无犯罪证明
-    innocenceProofUrl:String
+    #姓名
+    name:String
+    #url
+    url:String
 }

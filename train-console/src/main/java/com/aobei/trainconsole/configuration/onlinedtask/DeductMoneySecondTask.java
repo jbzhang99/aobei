@@ -59,14 +59,14 @@ public class DeductMoneySecondTask {
             });
         }
 
-        RedisIdGenerator idGenerator = new RedisIdGenerator();
+       /* RedisIdGenerator idGenerator = new RedisIdGenerator();
         idGenerator.setRedisTemplate(redisTemplate);
         String date = LocalDate.now().toString();
         long autoIncrId = idGenerator.getAutoIncrNum("DSCT"+date);
         if (autoIncrId != 1){
             return;
         }
-
+*/
         halfMonth();
         totalMonth();
     }

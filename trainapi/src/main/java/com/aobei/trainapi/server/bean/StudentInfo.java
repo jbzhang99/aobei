@@ -16,6 +16,16 @@ public class StudentInfo extends Student{
 
 	private List<StudentImgInfo> imgUrl;
 
+	private String gradeDesc;
+
+	public String getGradeDesc() {
+		return gradeDesc;
+	}
+
+	public void setGradeDesc(String gradeDesc) {
+		this.gradeDesc = gradeDesc;
+	}
+
 	public List<StudentImgInfo> getImgUrl() {
 		return imgUrl;
 	}

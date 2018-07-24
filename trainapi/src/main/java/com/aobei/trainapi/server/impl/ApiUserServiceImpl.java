@@ -4,10 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.aobei.train.IdGenerator;
 import com.aobei.train.Roles;
 import com.aobei.train.model.*;
-import com.aobei.train.service.ChannelService;
-import com.aobei.train.service.CustomerService;
-import com.aobei.train.service.UsersService;
-import com.aobei.train.service.UsersWxInfoService;
+import com.aobei.train.service.*;
 import com.aobei.trainapi.schema.Errors;
 import com.aobei.trainapi.schema.type.MutationResult;
 import com.aobei.trainapi.server.ApiUserService;
@@ -35,6 +32,8 @@ public class ApiUserServiceImpl implements ApiUserService {
     UsersWxInfoService wxInfoService;
     @Autowired
     ChannelService channelService;
+    @Autowired
+    StudentService studentService;
     @Override
     public Customer customerInfo(Long userId) {
         CustomerExample example = new CustomerExample();
@@ -103,6 +102,55 @@ public class ApiUserServiceImpl implements ApiUserService {
             logger.error("ERROR binduser" ,e);
         }
 
+        return response;
+    }
+
+    /**
+     * 服务人员端绑定
+     * @param user_id
+     * @param phone
+     * @param channelCode
+     * @return
+     */
+    public ApiResponse<Student> bindUserStudent(Long user_id, String phone, String channelCode) {
+        ApiResponse<Student> response = new ApiResponse<>();
+        try{
+            StudentExample studentExample = new StudentExample();
+            studentExample.or().andPhoneEqualTo(phone);
+            Student student = singleResult(studentService.selectByExample(studentExample));
+            if (student == null){
+                response.setErrors(Errors._40101);
+                return response;
+            }
+            student.setUser_id(user_id);
+            Users users  = usersService.selectByPrimaryKey(user_id);
+            String wx_id  = users.getWx_id();
+            //如果用户绑定微信的第三方登录。查看微信的一些基本信息作为顾客的基本信息
+            if(wx_id!=null){
+                UsersWxInfo  info = wxInfoService.selectByPrimaryKey(wx_id);
+                if(info!=null){
+                    if(student.getName() == null) {
+                        student.setName(info.getNickName());
+                    }
+                    if(student.getLogo_img() == null){
+                        Img img = new Img();
+                        img.setId(0l);
+                        img.setUrl(info.getAvatarUrl());
+                        student.setLogo_img(JSON.toJSONString(img));
+                    }
+                }
+            }
+            //插入或更新服务人员信息。
+            int count = studentService.updateByPrimaryKeySelective(student);
+            if (count > 0) {
+                userAddRole(user_id, Roles.STUDENT.roleName());
+                response.setMutationResult(new MutationResult());
+                return response;
+            }
+            response.setErrors(Errors._41001);
+        }catch (Exception e ){
+            logger.error("ERROR binduser" ,e);
+        }
         return response;
     }
 
