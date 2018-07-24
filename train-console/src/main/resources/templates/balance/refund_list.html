@@ -66,10 +66,10 @@ $(function() {
 		<ol class="breadcrumb clearfix">
 		  <li class="active">退款已结算</li>
 		  <li >
-			<input class="form-control" type="text" id="balanceDate" name="balanceDate" placeholder="请输入结算期"/>&nbsp;
+			<input class="form-control" type="text" id="balanceDate" name="balanceDate" placeholder="请输入结算期" onkeyup="value=value.replace(/[^0-9]/ig,'')" maxlength="8"/>&nbsp;
 		  </li>
 			<li >
-				<input class="form-control" type="text" id="refund_id" name="refund_id" placeholder="请输入退款单号"/>&nbsp;<button id="search_btn" class="btn btn-primary"><span class="fa fa-search"></span>&nbsp;查询</button>
+				<input class="form-control" type="text" id="refund_id" name="refund_id" placeholder="请输入退款单号" onkeyup="value=value.replace(/[^0-9]/ig,'')" maxlength="30"/>&nbsp;<button id="search_btn" class="btn btn-primary"><span class="fa fa-search"></span>&nbsp;查询</button>
 			</li>
 		</ol>
 		
