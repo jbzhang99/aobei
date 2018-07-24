@@ -1626,8 +1626,12 @@ public class OrderController {
 			map.addAttribute("c_begin_date", c_begin_date);
 			map.addAttribute("c_end_date", c_end_date);
 		}
-		List<Product> products = productService.selectByExample(new ProductExample());
-		List<ProSku> skus = proSkuService.selectByExample(new ProSkuExample());
+        ProductExample productExample = new ProductExample();
+        productExample.or().andDeletedEqualTo(0).andOnlineEqualTo(1);
+        List<Product> products = productService.selectByExample(productExample);
+        ProSkuExample proSkuExample = new ProSkuExample();
+        proSkuExample.or().andDeletedEqualTo(0);
+        List<ProSku> skus = proSkuService.selectByExample(proSkuExample);
 		String json = null;
 		try {
 			json = JacksonUtil.object_to_json(skus);
