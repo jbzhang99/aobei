@@ -140,7 +140,9 @@
                         <img th:attr="data-imgurl=${item.img_url},data-videourl=${item.video_url}" class="img-thumbnail video_img" style="width:120px;height:60px;cursor: pointer">
                     </td>
 					<td th:text="${item.title}"></td>
-					<td th:text="${item.descripte}"></td>
+					<td>
+                        <div style="max-width: 200px;word-wrap:break-word;" th:text="${item.descripte}"></div>
+                    </td>
 					<td th:text="${#calendars.format(item.create_datetime,'yyyy-MM-dd HH:mm:ss')}"></td>
 					<td style="cursor: pointer;">
                         <div style="width: 80px;text-align: right;">
