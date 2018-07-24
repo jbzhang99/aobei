@@ -1,7 +1,7 @@
 package com.aobei.trainapi.server.impl;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONArray;
 import com.aliyun.openservices.ons.api.SendResult;
 import com.aobei.common.boot.RedisIdGenerator;
 import com.aobei.train.IdGenerator;
@@ -43,12 +43,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.aobei.common.bean.IGtPushData.Client.student;
 import static org.springframework.dao.support.DataAccessUtils.singleResult;
 
 @Service
@@ -534,8 +532,11 @@ public class StudentApiServiceImpl implements StudentApiService
 	@Override
 	public ProductInfo productDetail(Long product_id) {
 		logger.info("api-method:productDetail:params product_id:{}", product_id);
+        Product product = productService.selectByPrimaryKey(product_id);
+        if (product == null) {
+           Errors._41006.throwError("商品信息不存在");
+        }
 		ProductInfo productInfo = new ProductInfo();
-		Product product = productService.selectByPrimaryKey(product_id);
 		logger.info("api-method:productDetail:process product:{}", product);
 		OrderItemExample orderItemExample = new OrderItemExample();
 		orderItemExample.or().andProduct_idEqualTo(product_id);
@@ -544,7 +545,24 @@ public class StudentApiServiceImpl implements StudentApiService
 		List<ProSku> proSkus = proSkuList(product.getProduct_id(), 1, 20);
 		productInfo.setProduct(product);
 		productInfo.setProSkus(proSkus);
-		logger.info("api-method:productDetail:process productInfo:{}", productInfo);
+        String tag_images = product.getTag_images();
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(tag_images)) {
+            List<ProductTag> productTags = JSONArray.parseArray(tag_images, ProductTag.class);
+            productInfo.setProductTags(productTags);
+        } else {
+            productInfo.setProductTags(new ArrayList<>());
+        }
+        List<CouponResponse> couponResponses= new ArrayList<>();
+        productInfo.setCouponResponse(couponResponses);
+        String imgstring = product.getLite_image();
+        try {
+            custom.bean.Img img = JSON.parseObject(imgstring, custom.bean.Img.class);
+            product.setLite_image(img.getUrl());
+        } catch (Exception e) {
+            logger.warn("product{} liteImage not exits", product_id);
+        }
+        productInfo.setCouponResponse(new ArrayList<>());
+        logger.info("api-method:productDetail:process productInfo:{}", productInfo);
 		return productInfo;
 	}
 
