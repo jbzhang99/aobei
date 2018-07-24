@@ -188,6 +188,15 @@ public class ApiServiceImpl implements ApiService {
 				jobCerts.add(studentJobcert);
 			});
 			info.setImgUrl(jobCerts);
+			Integer gradeDesc = student.getGrade();
+			if (!StringUtils.isEmpty(gradeDesc)){
+				switch (gradeDesc){
+					case 1:info.setGradeDesc("高级");break;
+					case 2:info.setGradeDesc("中级");break;
+					case 3:info.setGradeDesc("初级");break;
+				}
+			}
+
 		}
 		return info;
 	}

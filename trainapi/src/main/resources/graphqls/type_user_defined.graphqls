@@ -285,6 +285,8 @@ type StudentInfo{
 	innocence_proof:String
 	#图片url
 	imgUrl:[StudentImgInfo]
+	#等级描述
+	gradeDesc:String
 }
 type StudentType{
 	#学生
