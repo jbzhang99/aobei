@@ -211,7 +211,7 @@ public class OrderController {
 							 @RequestParam(required = false) Long partner_id, @RequestParam(required = false) Integer statu,
 							 @RequestParam(required = false) String qs_create_time,@RequestParam(required = false) String qe_create_time,
 							 @RequestParam(required = false) String qs_pay_time,@RequestParam(required = false) String qe_pay_time,
-							 @RequestParam(required = false) String channel_code) {
+							 @RequestParam(required = false,defaultValue = "") String channel_code) {
 		VOrderUnitExample orderUnitExample = new VOrderUnitExample();
 		orderUnitExample.setOrderByClause(VOrderUnitExample.C.create_datetime + " desc");
 		//查询条件的对象
