@@ -65,7 +65,7 @@ public class FineMoneySeventeenthTask {
             return;
         }
 
-        LocalDate localDate = LocalDate.now().minusMonths(2);
+        LocalDate localDate = LocalDate.now().minusMonths(1);
         // 取本月第1天：
         LocalDate firstDayOfThisMonth = localDate.with(TemporalAdjusters.firstDayOfMonth());
         ZoneId zoneId = ZoneId.systemDefault();
