@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -74,6 +76,7 @@ public class BalanceSeventeenthTask {
         if (autoIncrId != 1){
             return;
         }
+
         LocalDate localDate = LocalDate.now().minusMonths(1);
         // 取本月第1天：
         LocalDate firstDayOfThisMonth = localDate.with(TemporalAdjusters.firstDayOfMonth());
@@ -224,7 +227,7 @@ public class BalanceSeventeenthTask {
                             serviceUnitList.stream().forEach(serviceUnit -> {
                                 Order order = this.orderService.selectByPrimaryKey(serviceUnit.getPay_order_id());
                                 BalanceOrder balance = combine(localDate, serviceUnit);
-                                balance.setPartner_balance_fee(Integer.parseInt(sd.getV()));//合伙人订单结算金额
+                                balance.setPartner_balance_fee(Integer.parseInt(sd.getV())*100);//合伙人订单结算金额
                                 balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
                                 balance.setFallinto_info(">=" + sd.getD() + "底价:" + sd.getV());//结算策略 命中说明
                                 this.balanceOrderService.insert(balance);
@@ -377,7 +380,7 @@ public class BalanceSeventeenthTask {
                 balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
                 break;
             case 2:
-                balance.setPartner_balance_fee(order.getPrice_total() * fallinto.getPercent());//合伙人订单结算金额
+                balance.setPartner_balance_fee((int) (order.getPrice_pay() * Double.parseDouble(fallinto.getPercent()*0.01+"")));//合伙人订单结算金额
                 balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
                 break;
             /*case 3:

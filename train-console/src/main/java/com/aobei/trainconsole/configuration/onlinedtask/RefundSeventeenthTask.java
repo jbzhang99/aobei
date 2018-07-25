@@ -52,7 +52,7 @@ public class RefundSeventeenthTask {
         FallintoRefundExample fallintoRefundExamples = new FallintoRefundExample();
         fallintoRefundExamples.or().andStatusEqualTo(1);
         List<FallintoRefund> fallintoRefunds = this.fallintoRefundService.selectByExample(fallintoRefundExamples);
-        if(fallintoRefunds.isEmpty()){
+        if(!fallintoRefunds.isEmpty()){
             fallintoRefunds.stream().forEach(fallintoRefund -> {
                 fallintoRefund.setStatus(2);
                 this.fallintoRefundService.updateByPrimaryKeySelective(fallintoRefund);
@@ -83,7 +83,7 @@ public class RefundSeventeenthTask {
         refundExample.or().andRefund_dateBetween(firstDate, endDate).andStatusEqualTo(2);
         List<Refund> refunds = refundService.selectByExample(refundExample);
         if (!refunds.isEmpty()){
-            refunds = refunds.stream().filter(refund -> refund.getFee() < refund.getPrice_pay()).collect(Collectors.toList());
+            refunds = refunds.stream().filter(refund -> refund.getFee() < refund.getPrice_total()).collect(Collectors.toList());
             refunds.stream().forEach(refund -> {
                 ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
                 serviceUnitExample.or().andPay_order_idEqualTo(refund.getPay_order_id()).andPidEqualTo(0L);
@@ -114,7 +114,7 @@ public class RefundSeventeenthTask {
         Order order = this.orderService.selectByPrimaryKey(refund.getPay_order_id());
         //对应服务单
         ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
-        serviceUnitExample.or().andPay_order_idEqualTo(order.getPay_order_id()).andActiveEqualTo(1).andPidEqualTo(0L);
+        serviceUnitExample.or().andPay_order_idEqualTo(order.getPay_order_id()).andPidEqualTo(0L);
         ServiceUnit serviceUnit = DataAccessUtils.singleResult(serviceUnitService.selectByExample(serviceUnitExample));
         //找到对应订单合伙人信息，对应结算策略信息
         Partner partner = partnerService.selectByPrimaryKey(serviceUnit.getPartner_id());
