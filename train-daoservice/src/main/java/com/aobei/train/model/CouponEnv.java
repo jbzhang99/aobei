@@ -1,6 +1,8 @@
 package com.aobei.train.model;
 
 import com.github.liyiorg.mbg.support.model.ModelUpsert;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -66,6 +68,7 @@ public class CouponEnv implements ModelUpsert, Serializable {
      *
      * @mbg.generated Tue Jul 24 18:35:02 CST 2018
      */
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     private Date start_datetime;
 
     /**
@@ -75,6 +78,7 @@ public class CouponEnv implements ModelUpsert, Serializable {
      *
      * @mbg.generated Tue Jul 24 18:35:02 CST 2018
      */
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     private Date end_datetime;
 
     /**

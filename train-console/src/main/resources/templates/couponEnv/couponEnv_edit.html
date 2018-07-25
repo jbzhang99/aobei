@@ -4,19 +4,31 @@
 <head> 
 <meta charset="UTF-8" />
 <title>优惠策略编辑</title>
+<link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
 <link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
 <script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
 <script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
 <script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
 <script th:src="@{/js/custom/couponenv-list.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-select.min.js}"></script>
 <script type="text/javascript" th:inline="javascript">
 $(function(){
 	//回显使用类型数据
 	var env = $("#env").val()
 	var s = [[${env.type}]]
 	$("#type").val(s)
+	var coupon_env_type = [[${env.coupon_env_type}]]
+	$("#coupon_env_type").val(coupon_env_type);
     ymdhm();
-
+    var val = $("#coupon_env_type").val();
+    if(val==1){
+        $("#div_0").show();
+        $("#div_1").hide();
+    }
+    if(val==2){
+        $("#div_1").show();
+        $("#div_0").hide()
+    }
 	/*
 	 $('.datetimepicker1').datetimepicker({//初始化使劲按控件
 	 language: 'zh-CN',//显示中文
@@ -67,28 +79,61 @@ $(function(){
 				}
 			}
 		})
-	
-		$("#coupon_id").change(function(){			
+    $("#coupon_id1").change(function () {
+        var sv = $("#coupon_id1 option:selected").val();
+        var type = $("#coupon_env_type").val();
+        if($("#coupon_env_type").val()==2) {
+            $.post('/couponEnv/queryNumber', {coupon_id: sv, type: type}, function (data) {
+                if (data.message.num_limit == 0) {
+                    var phtml = "<p style='color:red;'>该优惠券数量没有限制</p>"
+                    $("#div_number").show();
+                    $("#p_hidden").html(phtml);
+                    $("#p_hidden").show();
+                } else {
+                    var phtml = "<p style='color:red;'>该优惠券剩余" + data.message.num_able + "张</p>"
+                    $("#div_number").show();
+                    $("#p_hidden").html(phtml);
+                    $("#p_hidden").show();
+                }
+            })
+        }
+    })
+		$("#coupon_number").blur(function(){
 			var sv = $("#coupon_id option:selected").val();
-			if(sv!=0){
-				$.post('/couponEnv/queryNumber',{coupon_id:sv},function(data){
-					if(data.message.num_limit==0){
-						var phtml = "<p style='color:red;'>该优惠券数量没有限制</p>"
-						$("#div_number").show();
-						$("#p_hidden").html(phtml);
-						$("#p_hidden").show();
-					}else{						
-						var phtml = "<p style='color:red;'>该优惠券剩余"+data.message.num_able+"张</p>"
-						$("#div_number").show();
-						$("#p_hidden").html(phtml);
-						$("#p_hidden").show();
-					}
-				})
-			}else{
-				$("#div_number").hide();
+			var env = $("#couponEnv_id").val();
+			var num = $("#coupon_number").val();
+			var type = $("#coupon_env_type").val();
+			if(type==1){
+				if(num!=0){
+					$.post('/couponEnv/queryNumber',{coupon_ids:sv,coupon_env_id:env},function(data){
+						if(data.message!=null){
+							alertify.alert("最小优惠券数量为" + data.message.num_limit+"优惠券数量不能大于此数！");
+							return false;
+						}
+					})
+				}
 			}
-		}) 
-		
+		})
+    var courponsTeam =[[${courponsTeam}]];
+    $.each(courponsTeam,function(i,item){
+        $(".selectpicker option").each(function(m){
+            var op=$(this).val();
+            if(item.coupon_id ==op){
+                $(this).prop("selected",true);
+            }
+        })
+    });
+    $("#coupon_env_type").change(function () {
+		var val = $(this).val();
+		if(val==1){
+            $("#div_0").show();
+            $("#div_1").hide();
+		}
+		if(val==2){
+			$("#div_1").show();
+			$("#div_0").hide()
+		}
+    })
 	$("#add_btn").click(function(){
 				
 			var cname = $("#c_name").val();
@@ -98,8 +143,12 @@ $(function(){
 			var sdatetime = $("#start_datetime").val();
 			var coupon_number = $("#coupon_number").val()
 			var select_coupon = $("#coupon_id option:selected").val()
-			var select_type = $("#type option:selected").val()
-			
+			var select_type = $("#type option:selected").val();
+			var select_couponenv_type = $("#couponenv_type").val();
+			var sv = $("#coupon_id option:selected").val();
+			var env = $("#couponEnv_id").val();
+			var num = $("#coupon_number").val();
+
 			if(coupon_number!=""){
 				var regex = /^[0-9]*$/;
 				var data = $("#coupon_number").val();
@@ -108,6 +157,14 @@ $(function(){
 					alertify.alert("优惠券数量只能输入数字！")
 					return false;
 				}
+			}
+			if(num!=0){
+				$.post('/couponEnv/queryNumber',{coupon_ids:sv,coupon_env_id:env},function(data){
+                    if(data.message!=null){
+                        alertify.alert("最小优惠券数量为" + data.message.num_limit+"优惠券数量不能大于此数！");
+                        return false;
+                    }
+				})
 			}
 			if($("#type option:selected").val()==1){
 				if(sdate==""){
@@ -138,7 +195,12 @@ $(function(){
 				reset();
 				alertify.alert("请选择适用类型！")
 				return false;
-			}else if(coupon_number==""){
+			}else if(select_couponenv_type==0){
+                $("#type").focus();
+                reset();
+                alertify.alert("请选择策略类型！")
+                return false;
+            }else if(coupon_number==""){
 				reset();
 				alertify.alert("请输入优惠数量！")
 				return false;
@@ -217,7 +279,16 @@ $(function(){
 					</div>
 				</div>
 				<div class="form-group">
-					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>适用类型</label>		
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>策略类型</label>
+					<div class="col-sm-2">
+						<select id="coupon_env_type" name="coupon_env_type" class="form-control">
+							<option value="1">注册派券</option>
+							<option value="2">首单立减</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>适用顾客类型</label>
 					<div class="col-sm-2">	
 						<select id="type" name="type" class="form-control">
 						
@@ -237,11 +308,20 @@ $(function(){
 						<input id="e_date" name="e_date" th:value="${edate}" class="form-control datetimepicker2" data-date-fomat="yyyy-MM-dd HH:mm" placeholder="请选择顾客注册结束时间" readonly/>
 					</div>
 				</div>
-				<div class="form-group">
+				<div class="form-group" id="div_0" hidden="hidden">
 					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>优惠券</label>		
-					<div class="col-sm-2">	
-						<select id="coupon_id" name="coupon_id" class="form-control" >
+					<div class="col-sm-3">
+						<select id="coupon_id" name="coupon_ids" class="form-control selectpicker"  multiple title="请选择优惠券" >
 							
+							<option th:each="coupon:${list_coupon}" th:value="${coupon.coupon_id}" th:text="${coupon.name}" th:selected="${env.coupon_id==coupon.coupon_id}"></option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group" id="div_1" hidden="hidden">
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>优惠券</label>
+					<div class="col-sm-3">
+						<select id="coupon_id1" name="coupon_id" class="form-control" title="请选择优惠券" >
+
 							<option th:each="coupon:${list_coupon}" th:value="${coupon.coupon_id}" th:text="${coupon.name}" th:selected="${env.coupon_id==coupon.coupon_id}"></option>
 						</select>
 					</div>
