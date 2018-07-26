@@ -189,9 +189,9 @@ public class PartnerServiceImpl extends MbgServiceSupport<PartnerMapper, Long, P
 		JSONObject json = JSONObject.parseObject(map.get("parList").toString());
 		Partner partner = JSONObject.toJavaObject(json,Partner.class);
 		partner.setPartner_id(IdGenerator.generateId());
-		partner.setState(1);
+		partner.setState(0);
 		partner.setDeleted(Status.DeleteStatus.no.value);
-		partner.setAudit_state(0);
+		partner.setAudit_state(1);
 		partner.setCreat_name(users.getUsername());
 		String regex = "\\s+";
 		partner.setLinkman(partner.getLinkman().replaceAll(regex,""));
