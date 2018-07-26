@@ -358,11 +358,6 @@
                     alertify.alert("小时数只能是数字！");
                     flag=false;
                     return false;
-                }else if(Number(last_price)>=Number(prev_price)){
-                    reset();
-                    alertify.alert("不能大于等于"+div_length+"取消策略扣除金额百分比！");
-                    flag=false;
-                    return false;
                 }else{
                     if($("#cancle_type").val()!=3){
                         if(!regex_fixed.test(last_price)){
@@ -371,10 +366,22 @@
                             flag=false;
                             return false;
                         }
+                        if(Number(last_price)>=Number(prev_price)){
+                            reset();
+                            alertify.alert("不能大于等于第"+div_length+"条取消策略扣除金额百分比！");
+                            flag=false;
+                            return false;
+                        }
                     }else {
                         if(!regex_double.test(last_price)){
                             reset();
                             alertify.alert("扣除金额为固定金额，只能输入整数或两位小数金额！");
+                            flag=false;
+                            return false;
+                        }
+                        if(Number(last_price)>=Number(prev_price)){
+                            reset();
+                            alertify.alert("不能大于等于第"+div_length+"条取消策略扣除金额！");
                             flag=false;
                             return false;
                         }

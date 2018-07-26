@@ -11,6 +11,16 @@
 <script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
 <meta name="context-path" th:content="@{/}" />
 <script type="text/javascript" th:inline="javascript">
+    <style>
+    td
+    {
+        text-align:center;
+    }
+    th
+    {
+        text-align:center;
+    }
+    </style>
 //初始化alertify
 reset = function () {
 	$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
@@ -97,9 +107,9 @@ $(function() {
 	<!--/* 页面部分二              页面主内容  */-->
 	<div class="page_content_main" data-sidea="side_40">
 		<!--/* 以下为自定义代码块  */-->
-		<div class="table-responsive">
+		<div class="table-responsive" style="overflow:auto;">
 			<!-- 动态 -->
-			<table id="table-cont" class="table-striped table-hover">
+			<table id="table-cont" class="table-striped table-hover" style="width:200%">
 				<thead>
 					<tr bgcolor="#FFFFFF">
 						<th width="200px">结算期</th>
@@ -119,12 +129,12 @@ $(function() {
 						<th width="200px">合伙人</th>
 						<th width="150px">合伙人ID</th>
 						<th width="150px">合伙人级别</th>
-						<th width="150px">结算策略名称</th>
-						<th width="150px">结算策略类型</th>
-						<th width="150px">合作起日期</th>
-						<th width="150px">合作止日期</th>
-						<th width="150px">结算策略开始时间</th>
-						<th width="150px">结算策略结束时间</th>
+						<th width="250px">结算策略名称</th>
+						<th width="200px">结算策略类型</th>
+						<th width="200px">合作起日期</th>
+						<th width="200px">合作止日期</th>
+						<th width="200px">结算策略开始时间</th>
+						<th width="200px">结算策略结束时间</th>
 						<th width="150px">订单待结算金额(合伙人)</th>
 						<th width="150px">平台服务费</th>
 						<th width="150px">状态</th>
