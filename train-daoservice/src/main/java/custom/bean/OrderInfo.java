@@ -837,6 +837,8 @@ public class OrderInfo implements Serializable {
         if (serviceUnit == null)
             return null;
         this.c_begin_datetime = serviceUnit.getC_begin_datetime();
+        if (c_begin_datetime == null)
+            return null;
         this.c_end_datetime = serviceUnit.getC_end_datetime();
         if(c_begin_datetime.equals(c_end_datetime)){
         	return null;
@@ -848,6 +850,8 @@ public class OrderInfo implements Serializable {
         if (serviceUnit == null)
             return null;
         this.c_end_datetime = serviceUnit.getC_end_datetime();
+        if (c_end_datetime == null)
+            return null;
         this.c_begin_datetime = serviceUnit.getC_begin_datetime();
         if(c_end_datetime != null){
         	if(c_end_datetime.equals(c_begin_datetime)){

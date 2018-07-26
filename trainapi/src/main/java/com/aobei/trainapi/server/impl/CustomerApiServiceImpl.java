@@ -713,11 +713,15 @@ public class CustomerApiServiceImpl implements CustomerApiService {
                 break;
             case 2:
             case 3:
-                CancleStrategyMethod cancleStrategyMethod = cancleStrategyMethod(customer, pay_order_id).getT();
-                if (cancleStrategyMethod == null) {
+                if (orderInfo.getOrder().getChannel().equals("JD-001")){
                     orderInfo.setAllowedToCancel(false);
-                } else {
-                    orderInfo.setAllowedToCancel(true);
+                }else {
+                    CancleStrategyMethod cancleStrategyMethod = cancleStrategyMethod(customer, pay_order_id).getT();
+                    if (cancleStrategyMethod == null) {
+                        orderInfo.setAllowedToCancel(false);
+                    } else {
+                        orderInfo.setAllowedToCancel(true);
+                    }
                 }
                 break;
             case 4:
