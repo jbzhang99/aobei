@@ -188,7 +188,7 @@
                     <td style="vertical-align: middle;" th:text="${#dates.format(info.unit.c_begin_datetime,'yyyy-MM-dd HH:mm')}"></td>
                     <td style="vertical-align: middle;" th:text="${info.apply_operator.username}"></td>
                     <td style="vertical-align: middle;" th:text="${#dates.format(info.create_datetime,'yyyy-MM-dd HH:mm')}"></td>
-                    <td style="vertical-align: middle;" th:text="${info.complete_info}"></td>
+                    <td style="vertical-align: middle;word-break:break-all" th:text="${info.complete_info}"></td>
                     <td style="vertical-align: middle;" th:switch="${info.apply_status}">
                         <span th:case="1">待处理</span>
                         <span th:case="2">完成</span>
