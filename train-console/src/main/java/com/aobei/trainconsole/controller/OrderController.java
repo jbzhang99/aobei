@@ -1750,20 +1750,17 @@ public class OrderController {
 	 * @param pay_order_id
 	 * @param server_date
 	 * @param address
-	 * @param province
-	 * @param city
-	 * @param area
 	 * @return
 	 */
 	@ResponseBody
 	@RequestMapping("/get_has_store_time_scope")
 	public Object get_has_store_time_scope(String pay_order_id,
 										   String server_date,
-										   String address,
+										   String address/*,
 										   Integer province,
 										   Integer city,
-										   Integer area){
-		Order original_order = orderService.selectByPrimaryKey(pay_order_id);
+										   Integer area*/){
+		/*Order original_order = orderService.selectByPrimaryKey(pay_order_id);
 		if (province != null && city != null && area != null && !"".equals(address) && address != null){
 			Order upOrder = new Order();
 			upOrder.setPay_order_id(pay_order_id);
@@ -1797,7 +1794,7 @@ public class OrderController {
 			upCustomerAddress.setLbs_lat(lat);
 			upCustomerAddress.setLbs_lng(lng);
 			customerAddressService.updateByPrimaryKeySelective(upCustomerAddress);
-		}
+		}*/
 		Order order = orderService.selectByPrimaryKey(pay_order_id);
 
 		OrderItemExample orderItemExample = new OrderItemExample();
@@ -1816,9 +1813,31 @@ public class OrderController {
 
 		Product product = productService.selectByPrimaryKey(serviceUnit.getProduct_id());
 		CustomerAddress customerAddress =new CustomerAddress();
-		customerAddress.setCity(order.getCus_city());
-		customerAddress.setLbs_lat(order.getLbs_lat());
-		customerAddress.setLbs_lng(order.getLbs_lng());
+		String lat = "";
+		String lng = "";
+		if (!"".equals(address) && address != null){
+			try {
+				Map<String, String> addressMap = HttpAddressUtil.coordinate_GaoDe(address, "");
+				if(addressMap!=null){
+					//经度
+					lng = addressMap.get("lng_b");
+					//纬度
+					lat = addressMap.get("lat_b");
+				}
+			} catch (Exception e) {
+				logger.info("M[order] F[get_has_store_time_scope] error[{}].",e.toString());
+				map.put("msg","地址信息解析出错！");
+				return map;
+			}
+			customerAddress.setCity(null);
+			customerAddress.setLbs_lat(lat);
+			customerAddress.setLbs_lng(lng);
+		}else{
+			customerAddress.setCity(order.getCus_city());
+			customerAddress.setLbs_lat(order.getLbs_lat());
+			customerAddress.setLbs_lng(order.getLbs_lng());
+		}
+
 
 		Metadata metadata  = metadataService.selectByPrimaryKey(Constant.MKEY_MAX_SEARCH_RADIUS);
 		Integer integer  = metadata.getMeta_value()==null?Constant.SEARCH_RADIUS:Integer.parseInt(metadata.getMeta_value());
@@ -1906,7 +1925,39 @@ public class OrderController {
 	@RequestMapping("/assign_order")
 	public Object assign_order(String select_date,
 							   String time,
-							   String pay_order_id){
+							   String pay_order_id,String address){
+		Order original_order = orderService.selectByPrimaryKey(pay_order_id);
+		Map<String,Object> map = new HashMap<>();
+		String lat = "";
+		String lng = "";
+		if (!"".equals(address) && address != null){
+			try {
+				Map<String, String> addressMap = HttpAddressUtil.coordinate_GaoDe(address, "");
+				if(addressMap!=null){
+					//经度
+					lng = addressMap.get("lng_b");
+					//纬度
+					lat = addressMap.get("lat_b");
+				}
+			} catch (Exception e) {
+				logger.info("M[order] F[assign_order] error[{}].",e.toString());
+				map.put("msg","地址信息解析出错！");
+				return map;
+			}
+			Order upOrder = new Order();
+			upOrder.setPay_order_id(pay_order_id);
+			upOrder.setCus_address(address);
+			upOrder.setLbs_lat(lat);
+			upOrder.setLbs_lng(lng);
+			orderService.updateByPrimaryKeySelective(upOrder);
+			CustomerAddress customerAddress = customerAddressService.selectByPrimaryKey(original_order.getCustomer_address_id());
+			CustomerAddress upCustomerAddress = new CustomerAddress();
+			upCustomerAddress.setCustomer_address_id(customerAddress.getCustomer_address_id());
+			upCustomerAddress.setAddress(address);
+			upCustomerAddress.setLbs_lat(lat);
+			upCustomerAddress.setLbs_lng(lng);
+			customerAddressService.updateByPrimaryKeySelective(upCustomerAddress);
+		}
 		//更新服务时间到服务单上
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 		SkuTime skuTime = null;
@@ -1994,7 +2045,7 @@ public class OrderController {
 		cacheReloadHandler.orderListReload(order.getUid());
 		cacheReloadHandler.orderDetailReload(order.getUid(), pay_order_id);
 
-		Map<String,Object> map = new HashMap<>();
+
 		map.put("msg",String.format("订单派发%s!", partner != null ? "成功" : "失败"));
 		return map;
 	}
