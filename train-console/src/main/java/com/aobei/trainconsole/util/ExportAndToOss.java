@@ -115,6 +115,7 @@ public class ExportAndToOss implements Callable<Integer>{
 		List<Station> stations = stationService.selectByExample(stationExample);
 		Map<Long, Station> sta_map = stations.stream().collect(Collectors.toMap(Station::getStation_id, Function.identity()));
 
+
 //		long s = System.currentTimeMillis();
 		List<Object[]> dataList = list.stream().map(ou ->{
 			OrderItemExample orderItemExample = new OrderItemExample();
@@ -136,16 +137,20 @@ public class ExportAndToOss implements Callable<Integer>{
 			String w_statu = null;
 			String pay_type_info = null;
 
-			switch (pay_type){
-				case 1:
-					pay_type_info = "微信";
-					break;
-				case 2:
-					pay_type_info = "支付宝";
-					break;
-				default:
-					pay_type_info = "其他";
-					break;
+			if (pay_type != null){
+				switch (pay_type){
+					case 1:
+						pay_type_info = "微信";
+						break;
+					case 2:
+						pay_type_info = "支付宝";
+						break;
+					default:
+						pay_type_info = "其他";
+						break;
+				}
+			}else{
+				pay_type_info = "其他";
 			}
 
             if(r_status != null) {
