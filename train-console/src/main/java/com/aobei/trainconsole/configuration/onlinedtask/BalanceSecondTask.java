@@ -58,7 +58,7 @@ public class BalanceSecondTask {
     /**
      * 每月2号
      */
-	//@Scheduled(cron ="0 22 17 23 * ?")
+	//@Scheduled(cron ="0 0 0 2 * ?")
 	private void extractData(){
        // 没有挂起的数据自动处理为“已结算”“挂起”的数据进入下一个结算月数据
         BalanceOrderExample balanceOrderExample = new BalanceOrderExample();
@@ -72,15 +72,16 @@ public class BalanceSecondTask {
             });
         }
 
-       /* RedisIdGenerator idGenerator = new RedisIdGenerator();
+        RedisIdGenerator idGenerator = new RedisIdGenerator();
         idGenerator.setRedisTemplate(redisTemplate);
         String date = LocalDate.now().toString();
         long autoIncrId = idGenerator.getAutoIncrNum("BSCT"+date);
         if (autoIncrId != 1){
             return;
-        }*/
-        halfMonth();
+        }
         totalMonth();
+        halfMonth();
+
     }
 
 
@@ -154,7 +155,7 @@ public class BalanceSecondTask {
 
     //整月结
     public void  totalMonth(){
-        LocalDate localDate = LocalDate.now().minusMonths(2);
+        LocalDate localDate = LocalDate.now().minusMonths(1);
         // 取本月第1天：
         LocalDate firstDayOfThisMonth = localDate.with(TemporalAdjusters.firstDayOfMonth());
         ZoneId zoneId = ZoneId.systemDefault();
@@ -263,7 +264,7 @@ public class BalanceSecondTask {
                 balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
                 break;
             case 2:
-                balance.setPartner_balance_fee(order.getPrice_total() * fallinto.getPercent());//合伙人订单结算金额
+                balance.setPartner_balance_fee((int) (order.getPrice_pay() * Double.parseDouble(fallinto.getPercent()*0.01+"")));//合伙人订单结算金额
                 balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
                 break;
             /*case 3:
@@ -418,7 +419,7 @@ public class BalanceSecondTask {
         //底价
         if (!floorPriceList.isEmpty()) {
             floorPriceList.stream().forEach(serviceUnit -> {
-                BalanceOrder balance = combine(localDate, serviceUnit);
+                BalanceOrder balance = combine(LocalDate.now(), serviceUnit);
                 balance.setFallinto_info("底价结算");
                 this.balanceOrderService.insert(balance);
             });
@@ -427,7 +428,7 @@ public class BalanceSecondTask {
         //比例
         if (!percentList.isEmpty()) {
             percentList.stream().forEach(serviceUnit -> {
-                BalanceOrder balance = combine(localDate, serviceUnit);
+                BalanceOrder balance = combine(LocalDate.now(), serviceUnit);
                 balance.setFallinto_info("比例结算");
                 this.balanceOrderService.insert(balance);
             });
@@ -436,7 +437,7 @@ public class BalanceSecondTask {
         //单数阶梯
         if (!numList.isEmpty()) {
             Map<String, Map<String, List<ServiceUnit>>> mapList = partnerFallintoMap(numList,3,bType);
-
+            List<StepData> newStepDataList=new ArrayList<>();
             mapList.forEach((String k, Map<String, List<ServiceUnit>> v) ->{
                 Map<String, List<ServiceUnit>> stringListMap = mapList.get(k);
                 stringListMap.forEach((key,val) ->{
@@ -447,30 +448,38 @@ public class BalanceSecondTask {
                         if (stepData.size() != 0) {
                             stepData.stream().forEach(step -> {
                                 if (serviceUnitList.size() >= step.getD()) {
-                                    serviceUnitList.stream().forEach(serviceUnit -> {
-                                        Order order = this.orderService.selectByPrimaryKey(serviceUnit.getPay_order_id());
-                                        BalanceOrder balance = combine(localDate, serviceUnit);
-                                        balance.setPartner_balance_fee(Integer.parseInt(step.getV()));//合伙人订单结算金额
-                                        balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
-                                        balance.setFallinto_info(">=" + step.getD() + "底价:" + step.getV());//结算策略 命中说明
-                                        this.balanceOrderService.insert(balance);
-                                    });
+                                    newStepDataList.add(step);
                                 }
+                            });
+                        }
+                        if(!newStepDataList.isEmpty()){
+                            StepData sd = newStepDataList.get(newStepDataList.size() - 1);
+                            serviceUnitList.stream().forEach(serviceUnit -> {
+                                Order order = this.orderService.selectByPrimaryKey(serviceUnit.getPay_order_id());
+                                BalanceOrder balance = combine(LocalDate.now(), serviceUnit);
+                                balance.setPartner_balance_fee(Integer.parseInt(sd.getV())*100);//合伙人订单结算金额
+                                balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
+                                balance.setFallinto_info(">=" + sd.getD() + "底价:" + sd.getV());//结算策略 命中说明
+                                this.balanceOrderService.insert(balance);
                             });
                         }
                     } else {
                         if (stepData.size() != 0) {
                             stepData.stream().forEach(step -> {
                                 if (serviceUnitList.size() >= step.getD()) {
-                                    serviceUnitList.stream().forEach(serviceUnit -> {
-                                        Order order = this.orderService.selectByPrimaryKey(serviceUnit.getPay_order_id());
-                                        BalanceOrder balance = combine(localDate, serviceUnit);
-                                        balance.setPartner_balance_fee((int) (order.getPrice_total() * Double.parseDouble(Integer.parseInt(step.getV())*0.01+"")));//合伙人订单结算金额
-                                        balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
-                                        balance.setFallinto_info(">=" + step.getD() + "比例:" + step.getV());//结算策略 命中说明
-                                        this.balanceOrderService.insert(balance);
-                                    });
+                                    newStepDataList.add(step);
                                 }
+                            });
+                        }
+                        if(!newStepDataList.isEmpty()){
+                            StepData step = newStepDataList.get(newStepDataList.size() - 1);
+                            serviceUnitList.stream().forEach(serviceUnit -> {
+                                Order order = this.orderService.selectByPrimaryKey(serviceUnit.getPay_order_id());
+                                BalanceOrder balance = combine(LocalDate.now(), serviceUnit);
+                                balance.setPartner_balance_fee((int) (order.getPrice_total() * Double.parseDouble(Integer.parseInt(step.getV())*0.01+"")));//合伙人订单结算金额
+                                balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
+                                balance.setFallinto_info(">=" + step.getD() + "比例:" + step.getV());//结算策略 命中说明
+                                this.balanceOrderService.insert(balance);
                             });
                         }
                     }
@@ -484,7 +493,7 @@ public class BalanceSecondTask {
         //金额阶梯
         if (!moneyList.isEmpty()) {
             Map<String, Map<String, List<ServiceUnit>>> mapList = partnerFallintoMap(moneyList,4,bType);
-
+            List<StepData> newStepDataList=new ArrayList<>();
             mapList.forEach((String k, Map<String, List<ServiceUnit>> v) ->{
                 v.forEach((key,val) ->{
                     Fallinto fallinto = this.fallintoService.selectByPrimaryKey(Long.parseLong(key));
@@ -498,32 +507,40 @@ public class BalanceSecondTask {
                     if (fallinto.getStep_type() == 1) {
                         if (stepData.size() != 0) {
                             for(StepData step:stepData){
-                                if (sumPrice >=step.getD()) {
-                                    serviceUnitList.stream().forEach(serviceUnit -> {
-                                        Order order = this.orderService.selectByPrimaryKey(serviceUnit.getPay_order_id());
-                                        BalanceOrder balance = combine(localDate, serviceUnit);
-                                        balance.setPartner_balance_fee(Integer.parseInt(step.getV())*100);
-                                        balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
-                                        balance.setFallinto_info(">=" + step.getD() + "底价:" + step.getV());//结算策略 命中说明
-                                        this.balanceOrderService.insert(balance);
-                                    });
+                                if (sumPrice >= step.getD()) {
+                                    newStepDataList.add(step);
                                 }
                             }
+                        }
+                        if(!newStepDataList.isEmpty()){
+                            StepData step = newStepDataList.get(newStepDataList.size() - 1);
+                            serviceUnitList.stream().forEach(serviceUnit -> {
+                                Order order = this.orderService.selectByPrimaryKey(serviceUnit.getPay_order_id());
+                                BalanceOrder balance = combine(LocalDate.now(), serviceUnit);
+                                balance.setPartner_balance_fee(Integer.parseInt(step.getV())*100);
+                                balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
+                                balance.setFallinto_info(">=" + step.getD() + "底价:" + step.getV());//结算策略 命中说明
+                                this.balanceOrderService.insert(balance);
+                            });
                         }
                     }else {
                         if (stepData.size() != 0) {
                             for(StepData step:stepData){
                                 if (sumPrice >=step.getD()) {
-                                    serviceUnitList.stream().forEach(serviceUnit -> {
-                                        Order order = this.orderService.selectByPrimaryKey(serviceUnit.getPay_order_id());
-                                        BalanceOrder balance = combine(localDate, serviceUnit);
-                                        balance.setPartner_balance_fee((int) (order.getPrice_total() * Double.parseDouble(Integer.parseInt(step.getV())*0.01+"")));
-                                        balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
-                                        balance.setFallinto_info(">=" + step.getD() + "比例:" + step.getV());//结算策略 命中说明
-                                        this.balanceOrderService.insert(balance);
-                                    });
+                                    newStepDataList.add(step);
                                 }
                             }
+                        }
+                        if(!newStepDataList.isEmpty()){
+                            StepData step = newStepDataList.get(newStepDataList.size() - 1);
+                            serviceUnitList.stream().forEach(serviceUnit -> {
+                                Order order = this.orderService.selectByPrimaryKey(serviceUnit.getPay_order_id());
+                                BalanceOrder balance = combine(LocalDate.now(), serviceUnit);
+                                balance.setPartner_balance_fee((int) (order.getPrice_total() * Double.parseDouble(Integer.parseInt(step.getV())*0.01+"")));
+                                balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
+                                balance.setFallinto_info(">=" + step.getD() + "比例:" + step.getV());//结算策略 命中说明
+                                this.balanceOrderService.insert(balance);
+                            });
                         }
                     }
                 });
@@ -532,7 +549,7 @@ public class BalanceSecondTask {
 
         if (!guestList.isEmpty()) {
             guestList.stream().forEach(serviceUnit -> {
-                BalanceOrder balance = combine(localDate, serviceUnit);
+                BalanceOrder balance = combine(LocalDate.now(), serviceUnit);
                 this.balanceOrderService.insert(balance);
             });
         }

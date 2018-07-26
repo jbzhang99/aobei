@@ -44,7 +44,7 @@ public class CompensationSeventeenthTask {
 	/**
 	 * 每月17号
 	 */
-	@Scheduled(cron ="0 15 17 19 * ?")
+	//@Scheduled(cron ="0 0 0 17 * ?")
 	private void extractData() {
 
         FallintoCompensationExample fallintoCompensationExamples = new FallintoCompensationExample();
