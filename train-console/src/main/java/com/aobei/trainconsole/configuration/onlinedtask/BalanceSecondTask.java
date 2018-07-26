@@ -58,7 +58,7 @@ public class BalanceSecondTask {
     /**
      * 每月2号
      */
-	//@Scheduled(cron ="0 0 0 2 * ?")
+	@Scheduled(cron ="0 06 15 26 * ?")
 	private void extractData(){
        // 没有挂起的数据自动处理为“已结算”“挂起”的数据进入下一个结算月数据
         BalanceOrderExample balanceOrderExample = new BalanceOrderExample();
@@ -72,13 +72,13 @@ public class BalanceSecondTask {
             });
         }
 
-        RedisIdGenerator idGenerator = new RedisIdGenerator();
+        /*RedisIdGenerator idGenerator = new RedisIdGenerator();
         idGenerator.setRedisTemplate(redisTemplate);
         String date = LocalDate.now().toString();
         long autoIncrId = idGenerator.getAutoIncrNum("BSCT"+date);
         if (autoIncrId != 1){
             return;
-        }
+        }*/
         totalMonth();
         halfMonth();
 
@@ -335,8 +335,7 @@ public class BalanceSecondTask {
 
         //结算
         BalanceOrderExample balanceOrderExample = new BalanceOrderExample();
-        balanceOrderExample.or().andPay_order_idEqualTo(order.getPay_order_id()).andServiceunit_idEqualTo(serviceUnit.getServiceunit_id())
-                .andStatusEqualTo(2);
+        balanceOrderExample.or().andPay_order_idEqualTo(order.getPay_order_id()).andServiceunit_idEqualTo(serviceUnit.getServiceunit_id());
         List<BalanceOrder> balanceOrders = balanceOrderService.selectByExample(balanceOrderExample);
 
         if (refunds.isEmpty() & compensations.isEmpty() & balanceOrders.isEmpty() & deductMonies.isEmpty()) {
@@ -437,10 +436,10 @@ public class BalanceSecondTask {
         //单数阶梯
         if (!numList.isEmpty()) {
             Map<String, Map<String, List<ServiceUnit>>> mapList = partnerFallintoMap(numList,3,bType);
-            List<StepData> newStepDataList=new ArrayList<>();
             mapList.forEach((String k, Map<String, List<ServiceUnit>> v) ->{
                 Map<String, List<ServiceUnit>> stringListMap = mapList.get(k);
                 stringListMap.forEach((key,val) ->{
+                    List<StepData> newStepDataList=new ArrayList<>();
                     Fallinto fallinto = this.fallintoService.selectByPrimaryKey(Long.parseLong(key));
                     List<ServiceUnit> serviceUnitList = stringListMap.get(key);
                     List<StepData> stepData = com.alibaba.fastjson.JSONArray.parseArray(fallinto.getStep_data(), StepData.class);
