@@ -700,7 +700,7 @@ public class CustomerApiServiceImpl implements CustomerApiService {
      * @param pay_order_id 订单号
      * @return OrderInfo
      */
-    //@Cacheable(value = "orderDetail",key = "'customer_id:'+#customer.customer_id+':pay_order_id:'+#pay_order_id",unless = "#result == null")
+    @Cacheable(value = "orderDetail",key = "'customer_id:'+#customer.customer_id+':pay_order_id:'+#pay_order_id",unless = "#result == null")
     @Override
     public OrderInfo orderDetail(Customer customer, String pay_order_id) {
         logger.info("api-method:orderDetail:params customer:{},pay_order_id:{}", customer, pay_order_id);
@@ -713,7 +713,7 @@ public class CustomerApiServiceImpl implements CustomerApiService {
                 break;
             case 2:
             case 3:
-                if (orderInfo.getOrder().getChannel().equals("JD-001")){
+                if ("JD-001".equals(orderInfo.getOrder().getChannel())){
                     orderInfo.setAllowedToCancel(false);
                 }else {
                     CancleStrategyMethod cancleStrategyMethod = cancleStrategyMethod(customer, pay_order_id).getT();
