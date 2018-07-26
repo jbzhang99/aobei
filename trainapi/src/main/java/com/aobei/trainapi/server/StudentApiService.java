@@ -94,7 +94,7 @@ public interface StudentApiService {
 	 * @param studentInfo
 	 * @return
 	 */
-    int whetherHaveNewMessages(StudentInfo studentInfo);
+    MessageState whetherHaveNewMessages(StudentInfo studentInfo);
 
 	/**
 	 * 学员订单统计
@@ -109,5 +109,10 @@ public interface StudentApiService {
 	 */
 	List<VideoContent> studentVideoList(String clientId,int page_index,int  count);
 
-
+	/**
+	 * 服务人员解绑
+	 * @param studentInfo
+	 * @return
+	 */
+	ApiResponse removeTheBing(StudentInfo studentInfo);
 }

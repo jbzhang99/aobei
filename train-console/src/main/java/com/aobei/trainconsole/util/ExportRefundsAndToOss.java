@@ -72,7 +72,7 @@ public class ExportRefundsAndToOss implements Callable<Integer>{
 		
 		String[] rowsName = new String[]{"订单号", "退款状态", "服务名称", "用户姓名","顾客电话",
 										"服务地址","服务价格（元）","实付金额（元）","退款金额（元）","退款原因",
-										"退款申请人","合伙人公司名","服务人员","退款申请时间"};
+										"退款申请人","合伙人公司名","服务人员","退款申请时间","退款完成时间"};
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		Set<Long> user_set = list.stream().map(n -> n.getUser_id()).collect(Collectors.toSet());
 		List<Long> user_ids = new ArrayList<>(user_set);
@@ -114,7 +114,8 @@ public class ExportRefundsAndToOss implements Callable<Integer>{
 			Object[] obj = {refund.getPay_order_id(),statu,refund.getOrder_name(),refund.getCuname(),refund.getUphone(),
 					refund.getCus_address(),refund.getPrice_total()/100d+"",refund.getPrice_pay()/100d+"",refund.getFee()/100d+"",refund.getInfo(),
 					users == null ? "" : users.getUsername(),partner == null ? "" : partner.getName(),
-					refund.getStudent_name() == null ? "":refund.getStudent_name(),sdf.format(refund.getCreate_date())};
+					refund.getStudent_name() == null ? "":refund.getStudent_name(),sdf.format(refund.getCreate_date()),
+					refund.getRefund_date() == null ? "" : sdf.format(refund.getRefund_date())};
 			return obj;
 		}).collect(Collectors.toList());
 

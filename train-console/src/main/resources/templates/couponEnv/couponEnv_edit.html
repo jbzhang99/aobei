@@ -105,7 +105,7 @@ $(function(){
 			var type = $("#coupon_env_type").val();
 			if(type==1){
 				if(num!=0){
-					$.post('/couponEnv/queryNumber',{coupon_ids:sv,coupon_env_id:env},function(data){
+					$.post('/couponEnv/queryNumber',{coupon_ids:sv,coupon_env_id:env, type: type},function(data){
 						if(data.message!=null){
 							alertify.alert("最小优惠券数量为" + data.message.num_limit+"优惠券数量不能大于此数！");
 							return false;

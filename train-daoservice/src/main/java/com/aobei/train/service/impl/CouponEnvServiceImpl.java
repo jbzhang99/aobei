@@ -47,7 +47,9 @@ public class CouponEnvServiceImpl extends MbgServiceSupport<CouponEnvMapper, Lon
         CouponEnvExample couponEnvExample = new CouponEnvExample();
         couponEnvExample.or().andStart_datetimeLessThanOrEqualTo(now)
                 .andEnd_datetimeGreaterThanOrEqualTo(now)
-                .andStatusEqualTo(1);
+                .andStatusEqualTo(1)
+                .andCoupon_env_typeEqualTo(2)
+                .andCoupon_idNotEqualTo(0l);
         List<CouponEnv> couponEnvs = selectByExample(couponEnvExample);
         if (couponEnvs == null || couponEnvs.size() == 0) {
             return new DiscountData();

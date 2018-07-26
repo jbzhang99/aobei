@@ -3,6 +3,7 @@ package com.aobei.trainapi.server.impl;
 import com.alibaba.fastjson.JSON;
 import com.aobei.train.IdGenerator;
 import com.aobei.train.Roles;
+import com.aobei.train.handler.CacheReloadHandler;
 import com.aobei.train.model.*;
 import com.aobei.train.service.*;
 import com.aobei.trainapi.schema.Errors;
@@ -10,13 +11,18 @@ import com.aobei.trainapi.schema.type.MutationResult;
 import com.aobei.trainapi.server.ApiUserService;
 import com.aobei.trainapi.server.bean.ApiResponse;
 import com.aobei.trainapi.server.bean.Img;
+import custom.bean.Constant;
+import custom.bean.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.util.Date;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.springframework.dao.support.DataAccessUtils.singleResult;
@@ -34,6 +40,18 @@ public class ApiUserServiceImpl implements ApiUserService {
     ChannelService channelService;
     @Autowired
     StudentService studentService;
+    @Autowired
+    CouponEnvService couponEnvService;
+    @Autowired
+    CouponAndCouponEnvService couponAndCouponEnvService;
+    @Autowired
+    CouponReceiveService couponReceiveService;
+    @Autowired
+    CacheReloadHandler cacheReloadHandler;
+    @Autowired
+    StringRedisTemplate redisTemplate;
+    @Autowired
+    CouponService couponService;
     @Override
     public Customer customerInfo(Long userId) {
         CustomerExample example = new CustomerExample();
@@ -51,6 +69,7 @@ public class ApiUserServiceImpl implements ApiUserService {
      * @return
      */
     @Override
+    @Transactional(timeout = 5)
     public ApiResponse<Customer> bindUser(Long user_id, String phone, String channelCode) {
         ApiResponse<Customer> response = new ApiResponse<>();
         try{
@@ -94,6 +113,63 @@ public class ApiUserServiceImpl implements ApiUserService {
             int count = customerService.upsertSelective(customer);
             if (count > 0) {
                 userAddRole(user_id, Roles.CUSTOMER.roleName());
+                //插入新注册用户优惠券
+                CouponEnvExample couponEnvExample = new CouponEnvExample();
+                CouponEnvExample.Criteria or = couponEnvExample.or();
+                or.andTypeEqualTo(1)
+                  .andStatusEqualTo(1)
+                  .andCoupon_env_typeEqualTo(1)
+                  .andEnd_datetimeGreaterThanOrEqualTo(new Date());
+                CouponEnv couponEnv = singleResult(couponEnvService.selectByExample(couponEnvExample));
+                if (!StringUtils.isEmpty(couponEnv)){
+                    String condition_env = couponEnv.getCondition_env();
+                    Map<String,String> envMap = new HashMap<>();
+                    Map map = JSON.parseObject(condition_env, envMap.getClass());
+                    String sdate = (String) map.get("sdate");
+                    String edate = (String) map.get("edate");
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                    Date startdate = format.parse(sdate);
+                    Date endDate = format.parse(edate);
+                    Date cusCreateDate = customer.getCreate_datetime();
+                    //顾客注册时间是否在策略之内
+                    if (cusCreateDate.before(endDate) && cusCreateDate.after(startdate)){
+                        CouponAndCouponEnvExample couponAndCouponEnvExample = new CouponAndCouponEnvExample();
+                        couponAndCouponEnvExample.or().andCoupon_env_idEqualTo(couponEnv.getCoupon_env_id());
+                        List<CouponAndCouponEnv> couponAndCouponEnvs = couponAndCouponEnvService.selectByExample(couponAndCouponEnvExample);
+                        for (CouponAndCouponEnv couponandCouponEnv: couponAndCouponEnvs) {
+                            //减优惠券数量
+                            Coupon coupon = couponService.selectByPrimaryKey(couponandCouponEnv.getCoupon_id());
+                            String key = Constant.getCouponKey(coupon.getCoupon_id());
+                            if (!redisTemplate.hasKey(key)) {
+                                if(coupon.getNum_able()>0){
+                                    redisTemplate.opsForValue().set(key,coupon.getNum_able()+"");
+                                }
+                            }else  if(Integer.parseInt(String.valueOf(redisTemplate.opsForValue().get(key)))==0){
+                                response.setErrors(Errors._41009);
+                                redisTemplate.delete(key);
+                                return response;
+                            }
+                            coupon.setNum_able(Integer.parseInt(redisTemplate.opsForValue().increment(key,-1L)+""));
+                            couponService.updateByPrimaryKeySelective(coupon);
+                            //为用户添加使用记录
+                            CouponReceive couponReceive = new CouponReceive();
+                            couponReceive.setCoupon_receive_id(IdGenerator.generateId());
+                            couponReceive.setUid(customer.getCustomer_id());
+                            couponReceive.setCoupon_id(couponandCouponEnv.getCoupon_id());
+                            couponReceive.setReceive_datetime(new Date());
+                            couponReceive.setStatus(2);//待使用状态
+                            couponReceive.setVerification(0);//未核销
+                            couponReceive.setDeleted(Status.DeleteStatus.no.value);
+                            couponReceive.setCoupon_env_id(couponandCouponEnv.getCoupon_env_id());
+                            couponReceive.setCreate_datetime(new Date());
+                            couponReceiveService.insert(couponReceive);
+                            //每次清除对应顾客优惠券缓存信息
+                            cacheReloadHandler.couponListReload(customer.getCustomer_id());
+                            cacheReloadHandler.userCouponListReload(customer.getCustomer_id());
+
+                        }
+                    }
+                }
                 response.setMutationResult(new MutationResult());
                 return response;
             }
@@ -101,7 +177,6 @@ public class ApiUserServiceImpl implements ApiUserService {
         }catch (Exception e ){
             logger.error("ERROR binduser" ,e);
         }
-
         return response;
     }
 
@@ -178,5 +253,26 @@ public class ApiUserServiceImpl implements ApiUserService {
         }
         users.setRoles(org.springframework.util.StringUtils.arrayToCommaDelimitedString(roles));
         return usersService.updateByPrimaryKeySelective(users);
+    }
+
+    /**
+     * 解绑
+     * @param customer
+     * @return
+     */
+    @Override
+    public ApiResponse customerRemoveTheBing(Customer customer) {
+        ApiResponse response = new ApiResponse();
+        if (StringUtils.isEmpty(customer)){
+            response.setErrors(Errors._41003);
+            return response;
+        }else {
+            cacheReloadHandler.customerInfoReload(customer.getUser_id());
+            customer.setUser_id(0l);
+            customerService.updateByPrimaryKey(customer);
+        }
+        response.setMutationResult(new MutationResult());
+        return response;
+
     }
 }

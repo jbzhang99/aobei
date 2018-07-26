@@ -124,5 +124,17 @@ public class StudentMutation implements GraphQLMutationResolver{
 		}
 		return response.getMutationResult();
 	}
+
+	/**
+	 * 服务人员解绑
+	 */
+	public MutationResult student_remove_the_bind(){
+		StudentInfo studentInfo = query.my_student_bindinfo();
+		ApiResponse response = studentApiService.removeTheBing(studentInfo);
+		if (response.getErrors() != null){
+			response.getErrors().throwError();
+		}
+		return new MutationResult();
+	}
 	
 }

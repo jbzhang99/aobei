@@ -320,7 +320,7 @@
                     <td style="vertical-align: middle;width: 100px;" th:text="${info.uname}"></td>
                     <td style="vertical-align: middle;" th:text="${info.cus_username}"></td>
                     <td style="vertical-align: middle" th:text="${info.cus_phone}"></td>
-                    <td style="vertical-align: middle" th:text="${info.cus_address}"></td>
+                    <td style="vertical-align: middle;word-break:break-all" th:text="${info.cus_address}"></td>
                     <td style="vertical-align: middle" th:text="${#numbers.formatDecimal(info.price_total*0.01,1,2)}"></td>
                     <td style="vertical-align: middle">
                         <th:block th:if="${info.price_pay != null}" th:text="${#numbers.formatDecimal(info.price_pay*0.01,1,2)}"></th:block>
@@ -336,7 +336,7 @@
                             <span th:text="${#numbers.formatDecimal(info.programmeType.value*0.01,1,2)}"></span>
                         </th:block>
                     </td>
-                    <td style="vertical-align: middle;" th:text="${info.compensation.compensation_info}"></td>
+                    <td style="vertical-align: middle;word-break:break-all" th:text="${info.compensation.compensation_info}"></td>
                     <td style="vertical-align: middle;">
                         <th:block th:if="${info.compensation.partner_bear_amount != null}">
                             <span th:text="${#numbers.formatDecimal(info.compensation.partner_bear_amount*0.01,1,2)}"></span>
@@ -347,9 +347,9 @@
                             <span th:text="${#numbers.formatDecimal(info.compensation.partner_bear_coupon_amount*0.01,1,2)}"></span>
                         </th:block>
                     </td>
-                    <td style="vertical-align: middle;" th:text="${info.operator_create.username}"></td>
-                    <td style="vertical-align: middle;" th:text="${info.compensation.payee}"></td>
-                    <td style="vertical-align: middle;" th:text="${info.compensation.payee_card}"></td>
+                    <td style="vertical-align: middle;word-break:break-all" th:text="${info.operator_create.username}"></td>
+                    <td style="vertical-align: middle;word-break:break-all" th:text="${info.compensation.payee}"></td>
+                    <td style="vertical-align: middle;word-break:break-all" th:text="${info.compensation.payee_card}"></td>
                     <td style="vertical-align: middle;" th:text="${info.compensation.receiving_bank}"></td>
                     <td style="vertical-align: middle">
                         <th:block th:if="${info.partner_id != null}">
