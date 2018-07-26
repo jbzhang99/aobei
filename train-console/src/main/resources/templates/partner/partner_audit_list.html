@@ -236,9 +236,20 @@
     function saveAudit (pageNo) {
 		var partner_id=$("#parId").val();
 		var auditOpinionValue=$("#auditOpinion").val();
+		if(auditOpinionValue.length==0){
+            reset();
+            alertify.alert("审核意见不能为空！");
+            return false;
+		}
 		if(auditOpinionValue.length>200){
             reset();
-            alertify.alert("审核意见不能超过200个字");
+            alertify.alert("审核意见不能超过200个字！");
+            return false;
+		}
+		var reg=/^\S.*\S$/;
+		if(!reg.test(auditOpinionValue)){
+            reset();
+            alertify.alert("审核意见前后两端不能存在空格！");
             return false;
 		}
         var auditState=$("#auditState").val();
