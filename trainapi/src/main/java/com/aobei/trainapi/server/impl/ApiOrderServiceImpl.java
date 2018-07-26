@@ -17,6 +17,7 @@ import com.aobei.trainapi.server.ApiOrderService;
 import com.aobei.trainapi.server.PayService;
 import com.aobei.trainapi.server.bean.AliPayClientMap;
 import com.aobei.trainapi.server.bean.ApiResponse;
+import com.aobei.trainapi.server.bean.StudentInfo;
 import com.aobei.trainapi.server.handler.OnsHandler;
 import com.aobei.trainapi.server.handler.PushHandler;
 import com.github.liyiorg.mbg.bean.Page;
@@ -790,7 +791,38 @@ public class ApiOrderServiceImpl implements ApiOrderService {
         });
     }
 
-
+    /**
+     * 服务人员重新计算订单价格
+     * @param studentInfo
+     * @param psku_id
+     * @param num
+     * @return
+     */
+    @Override
+    public ApiResponse<OrderPrice> studentRecalculatePrice(StudentInfo studentInfo, Long psku_id, Integer num) {
+        logger.info("api-method:studentRecalculatePrice:params studentInfo:{},psku_id:{},num:{}", studentInfo, psku_id, num);
+        ApiResponse<OrderPrice> response = new ApiResponse<>();
+        ProSku proSku = proSkuService.selectByPrimaryKey(psku_id);
+        if (proSku == null) {
+            response.setErrors(Errors._41006);
+            return response;
+        }
+        if (num==null || num == 0) {
+            if (proSku.getBuy_limit() == 1) {
+                num  =  proSku.getBuy_multiple_min();
+            }else {
+                num = 1;
+            }
+        }
+        Integer totalPrice = proSku.getPrice() * num;
+        Integer payPrice = totalPrice;
+        OrderPrice orderPrice = new OrderPrice();
+        orderPrice.setTotalPrice(totalPrice);
+        orderPrice.setPayPrice(payPrice);
+        orderPrice.setDiscountPrice(0);
+        response.setT(orderPrice);
+        return response;
+    }
 
 
 }

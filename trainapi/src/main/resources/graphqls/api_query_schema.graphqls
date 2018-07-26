@@ -185,6 +185,8 @@ type Query {
     student_whether_have_new_messages:MessageState
     #视频列表
     select_video_list(page_index:Int,count:Int):[VideoContent]
+    #计算订单价格
+    student_recalculate_price(psku_id:Long,num:Int):OrderPrice
     
     #阿里云返回信息
     query_alioss_credentials:AliOssCredentials

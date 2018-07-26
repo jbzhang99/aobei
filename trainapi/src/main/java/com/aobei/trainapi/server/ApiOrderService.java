@@ -1,16 +1,12 @@
 package com.aobei.trainapi.server;
 
 import java.util.List;
-
-import com.aobei.train.model.Coupon;
 import com.aobei.train.model.Customer;
 import com.aobei.train.model.Order;
-import com.aobei.train.model.ServiceUnit;
-import com.aobei.train.model.Station;
 import com.aobei.trainapi.schema.type.PageResult;
 import com.aobei.trainapi.server.bean.ApiResponse;
+import com.aobei.trainapi.server.bean.StudentInfo;
 import custom.bean.CouponResponse;
-import custom.bean.OrderInfo;
 import custom.bean.OrderPrice;
 import weixin.popular.bean.paymch.MchPayApp;
 
@@ -33,4 +29,6 @@ public interface ApiOrderService {
     ApiResponse<OrderPrice> recalculatePriceV2(Customer customer, Long psku_id, Long coupon_receive_id, Integer num);
     //发起抢单方法
     void startRobbing(Order order);
+    //服务人员计算订单价钱
+    ApiResponse<OrderPrice> studentRecalculatePrice(StudentInfo studentInfo,Long psku_id, Integer num);
 }

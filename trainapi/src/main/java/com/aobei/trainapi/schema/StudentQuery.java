@@ -4,7 +4,11 @@ import java.util.Date;
 import java.util.List;
 
 import com.aobei.train.model.VideoContent;
+import com.aobei.trainapi.server.ApiOrderService;
 import com.aobei.trainapi.server.bean.*;
+import custom.bean.OrderPrice;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +36,15 @@ public class StudentQuery implements GraphQLQueryResolver {
 	CustomerApiService customerApiService;
 	@Autowired
 	private StudentApiService studentApiService;
+	@Autowired
+	private ApiOrderService apiOrderService;
 
+	Logger logger  = LoggerFactory.getLogger(StudentQuery.class);
+
+	/**
+	 * 服务人员信息
+	 * @return
+	 */
 	public StudentInfo student_info() {
 		StudentInfo studentInfo =  apiService.studentInfoByUserId(TOKEN.getUuid());
 		if (studentInfo == null) {
@@ -171,6 +183,26 @@ public class StudentQuery implements GraphQLQueryResolver {
 	 */
 	public List<VideoContent> select_video_list(int page_index,int count){
 		return studentApiService.studentVideoList(TOKEN.getClientId(),page_index,count);
+	}
+
+	/**
+	 * 服务人员计算价格
+	 */
+	public OrderPrice student_recalculate_price(Long psku_id, Integer num){
+		ApiResponse<OrderPrice> response = new ApiResponse<>();
+		if (num > 1000) {
+			Errors._41040.throwError("最大可购买数量：1000");
+		}
+		try {
+			StudentInfo studentInfo = student_info();
+			response = apiOrderService.studentRecalculatePrice(studentInfo,psku_id, num);
+			if (response.getErrors() != null)
+				response.getErrors().throwError();
+		} catch (Exception e) {
+			logger.error("ERROR student_recalculate_price", e);
+			Errors._41040.throwError();
+		}
+		return response.getT();
 	}
 
 }
