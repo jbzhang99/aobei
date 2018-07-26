@@ -38,4 +38,11 @@ public interface ApiUserService {
      * @return
      */
     int userAddRole(Long user_id, String roleName);
+
+    /**
+     * 顾客解绑
+     * @param customer
+     * @return
+     */
+    ApiResponse customerRemoveTheBing(Customer customer);
 }

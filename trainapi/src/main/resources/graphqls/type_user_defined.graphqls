@@ -560,3 +560,8 @@ type StudentImgInfo{
     #url
     url:String
 }
+
+type MessageState{
+    #状态
+    state:Int
+}

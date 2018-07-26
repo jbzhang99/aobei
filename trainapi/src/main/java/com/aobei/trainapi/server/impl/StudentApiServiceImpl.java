@@ -591,13 +591,31 @@ public class StudentApiServiceImpl implements StudentApiService
 	/**
 	 * 创建订单:
 	 */
-	//@Transactional(timeout = 5)
+	@Transactional(timeout = 5)
 	@Override
 	public ApiResponse<Order> create_order(Student student,String channelId, StudentOrderInput input) {
 		logger.info("api-method:create_order:params student:{},input:{}", student, input);
 		ApiResponse<Order> response = new ApiResponse<>();
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 		try {
+            boolean flag = true;
+            Date begin = null;
+            Date end = null;
+            try {
+                begin = format.parse(input.getBegin_datetime());
+                if (org.apache.commons.lang3.StringUtils.isEmpty(input.getEnd_datatime()) || org.apache.commons.lang3.StringUtils.equals(input.getEnd_datatime(), "null")) {
+                    end = null;
+                } else {
+                    end = format.parse(input.getEnd_datatime());
+                }
+                Date now = new Date();
+                if (begin.before(now)) {
+                    flag = false;
+                }
+            } catch (ParseException e) {
+                flag = false;
+            }
+
 			Order order = new Order();
 			Order oldOlder = orderService.selectByPrimaryKey(input.getPay_order_id());
 			logger.info("api-method:create_order:process oldOlder:{}", oldOlder);
@@ -632,7 +650,7 @@ public class StudentApiServiceImpl implements StudentApiService
 				order.setPay_status(StatusConstant.PAY_STATUS_PAYED);
 				order.setRemark(input.getRemark());
 				order.setStatus_active(StatusConstant.ORDER_STATUS_WAITSERVICE);
-				order.setExpire_datetime(null);
+				//order.setExpire_datetime(null);
 				order.setProxyed(1);
 				order.setProxyed_uid(student.getStudent_id());
 				order.setGroup_tag(oldOlder.getGroup_tag());
@@ -648,8 +666,8 @@ public class StudentApiServiceImpl implements StudentApiService
 				for (ServiceUnit serviceUnit : serviceUnits) {
 					serviceUnit.setStudent_id(student.getStudent_id());
 					serviceUnit.setStudent_name(student.getName());
-					serviceUnit.setC_begin_datetime(format.parse(input.getBegin_datetime()));
-					serviceUnit.setC_end_datetime(format.parse(input.getEnd_datatime()));
+					serviceUnit.setC_begin_datetime(begin);
+					serviceUnit.setC_end_datetime(end);
 					serviceUnit.setPartner_id(student.getPartner_id());
 					serviceUnit.setStation_id(student.getStation_id());
 					serviceUnit.setActive(StatusConstant.SERVICEUNIT_STATUS_ACTIVE);
@@ -670,44 +688,18 @@ public class StudentApiServiceImpl implements StudentApiService
 				logger.info("api-method:create_order:process [person = " + person + "]");
 
 				// 占服务人员库存
-				if (!storeService.isStudentHasStore(student, input.getBegin_datetime().substring(0, 10),format.parse(input.getBegin_datetime()), format.parse(input.getEnd_datatime()))) {
+				if (!storeService.isStudentHasStore(student, input.getBegin_datetime().substring(0, 10),begin, end)) {
 					response.setErrors(Errors._41021);
 					return response;
 				}
-				storeService.updateAvilableTimeUnits(student.getStudent_id(), format.parse(input.getBegin_datetime()), format.parse(input.getEnd_datatime()), StoreServiceImpl.TAKEN);
+				storeService.updateAvilableTimeUnits(student.getStudent_id(), begin, end, StoreServiceImpl.TAKEN);
 
 			}else {
 				ProSku sku = proSkuService.selectByPrimaryKey(input.getPsku_id());
 				logger.info("api-method:create_order:process sku:{}", sku);
 				// --------------------------------判断参数值对否-------------------------------------
 				Integer allow_mutiple = sku.getBuy_multiple();
-				boolean flag = true;
-				Date begin = null;
-				Date end = null;
-				String strBegin = null;
-				if (input.getType() == 0) {
-					Date date = new Date();
-					begin = date;
-					end = date;
-				} else {
-					try {
-						Date now = new Date();
-						begin = format.parse(input.getBegin_datetime());
-						if (!StringUtils.isEmpty(input.getEnd_datatime())) {
-							end = format.parse(input.getEnd_datatime());
-							if (end.before(now)) {
-								flag = false;
-							}
-						}
-
-						if (begin.before(now)) {
-							flag = false;
-						}
-					} catch (ParseException e) {
-						flag = false;
-					}
-				}
-				strBegin = format.format(begin);
+				String strBegin = format.format(begin);
 				Integer num = input.getNum();
 				if (allow_mutiple == 1) {// 允许购买多件
 					Integer max = sku.getBuy_multiple_max();
@@ -957,8 +949,8 @@ public class StudentApiServiceImpl implements StudentApiService
 	 * @return
 	 */
 	@Override
-	public int whetherHaveNewMessages(StudentInfo studentInfo) {
-		int haveNot = 0;
+	public MessageState whetherHaveNewMessages(StudentInfo studentInfo) {
+	    MessageState messageState = new MessageState();
 		try {
 			MessageExample messageExample = new MessageExample();
 			List<Long> ids = new ArrayList<>();
@@ -973,13 +965,15 @@ public class StudentApiServiceImpl implements StudentApiService
 					.andStatusEqualTo(0);
 			long messageNum = messageService.countByExample(messageExample);
             logger.info("api-method:whetherHaveNewMessages:process messageNum:{}", messageNum);
-			if (messageNum >= 1){
-				haveNot = 1;
-			}
+			if (messageNum > 0){
+				messageState.setState(1);
+			}else {
+			    messageState.setState(0);
+            }
 		}catch (Exception e){
 			logger.error("ERROR api-method:whetherHaveNewMessages",e);
 		}
-		return haveNot;
+		return messageState;
 	}
 
 	/**
@@ -1118,5 +1112,25 @@ public class StudentApiServiceImpl implements StudentApiService
 		}
 		return videoContents;
 	}
+
+    /**
+     * 服务人员解绑
+     * @param studentInfo
+     * @return
+     */
+    @Override
+    public ApiResponse removeTheBing(StudentInfo studentInfo) {
+        ApiResponse response = new ApiResponse();
+        if (!StringUtils.isEmpty(studentInfo)){
+            cacheReloadHandler.customerInfoReload(studentInfo.getUser_id());
+            studentInfo.setUser_id(0l);
+            studentService.updateByPrimaryKey(studentInfo);
+        }else {
+            response.setErrors(Errors._40111);
+            return response;
+        }
+        response.setMutationResult(new MutationResult());
+        return response;
+    }
 
 }

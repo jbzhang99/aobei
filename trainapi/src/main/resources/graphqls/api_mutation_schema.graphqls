@@ -81,6 +81,8 @@ type Mutation {
 	customer_exchange_code_to_coupon(exchange_code:String!):MutationResult
 	#推送，绑定设备和推送账户
 	mutation_push_bind(push_client_id:String):MutationResult
+	#顾客解绑
+	customer_remove_the_bind:MutationResult
 
     #合伙人端绑定用户信息（姓名,手机号,身份证号）
     partner_binduser(	
@@ -112,6 +114,8 @@ type Mutation {
    student_order_cancel(pay_order_id:String!):MutationResult
    #服务人员绑定
    student_bind_user(code:String!,phone:String!):MutationResult
+   #服务人员解绑
+   student_remove_the_bind:MutationResult
 
 
    #==============================0.6新增的接口========================================

@@ -4,8 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.aobei.train.model.VideoContent;
-import com.aobei.trainapi.server.bean.MessageContent;
-import com.aobei.trainapi.server.bean.StudentServiceOrderStatistics;
+import com.aobei.trainapi.server.bean.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +13,6 @@ import com.aobei.train.model.Student;
 import com.aobei.trainapi.server.ApiService;
 import com.aobei.trainapi.server.CustomerApiService;
 import com.aobei.trainapi.server.StudentApiService;
-import com.aobei.trainapi.server.bean.CustomerDetail;
-import com.aobei.trainapi.server.bean.StudentInfo;
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 
 import custom.bean.OrderInfo;
@@ -154,7 +151,7 @@ public class StudentQuery implements GraphQLQueryResolver {
 	/**
 	 * 是否有新的消息
 	 */
-	public int student_whether_have_new_messages(){
+	public MessageState student_whether_have_new_messages(){
 		StudentInfo studentInfo = student_info();
 		return studentApiService.whetherHaveNewMessages(studentInfo);
 	}
