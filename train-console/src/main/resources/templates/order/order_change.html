@@ -198,7 +198,11 @@
                     $.each(scopeStores, function(i, ele) {
                         var s = ele.skuTime.s;
                         var e = ele.skuTime.e;
-                        var inputStr = "<input type='radio' class='input timeScope' value='{\"s\":"+s+",\"e\":"+e+"}' name='time'/>";
+                        var inputStr = "";
+                        if(i != 0 && (i+1)%2 != 0){
+                            inputStr += "</br>";
+                        }
+                        inputStr += "<input type='radio' class='input timeScope' value='{\"s\":"+s+",\"e\":"+e+"}' name='time'/>";
                         $.each(timeArray,function (i, n) {
                             if(i == s){
                                 inputStr += n + ' - ';
@@ -209,6 +213,7 @@
                                 inputStr += n +"&nbsp;&nbsp;&nbsp;";
                             }
                         });
+
                         html.push(inputStr);
                     });
                 }

@@ -45,7 +45,7 @@ public class CompensationSecondTask {
 	/**
 	 * 每月2号
 	 */
-	//@Scheduled(cron = "0 10 15 23 * ?")
+	//@Scheduled(cron = "0 0 0 2 * ?")
 	private void extractData() {
         FallintoCompensationExample fallintoCompensationExample = new FallintoCompensationExample();
         fallintoCompensationExample.or().andStatusEqualTo(1);
@@ -105,7 +105,7 @@ public class CompensationSecondTask {
                         fallintoCompensationExample.or().andCompensation_idEqualTo(compensation.getCompensation_id()).andPay_order_idEqualTo(compensation.getPay_order_id());
                         FallintoCompensation fc = DataAccessUtils.singleResult(fallintoCompensationService.selectByExample(fallintoCompensationExample));
                         if(fc==null){
-                            FallintoCompensation fallintoCompensation = combine(localDate, compensation);
+                            FallintoCompensation fallintoCompensation = combine(LocalDate.now(), compensation);
                             this.fallintoCompensationService.insert(fallintoCompensation);
                         }
                     }
@@ -147,7 +147,7 @@ public class CompensationSecondTask {
                         fallintoCompensationExample.or().andCompensation_idEqualTo(compensation.getCompensation_id()).andPay_order_idEqualTo(compensation.getPay_order_id());
                         FallintoCompensation fc = DataAccessUtils.singleResult(fallintoCompensationService.selectByExample(fallintoCompensationExample));
                         if(fc==null){
-                            FallintoCompensation fallintoCompensation = combine(localDate, compensation);
+                            FallintoCompensation fallintoCompensation = combine(LocalDate.now(), compensation);
                             this.fallintoCompensationService.insert(fallintoCompensation);
                         }
                     }

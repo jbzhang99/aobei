@@ -100,7 +100,7 @@ public class FineMoneySecondTask {
                         fallintoFineMoneyExample.or().andFine_money_idEqualTo(fineMoney.getFine_money_id()).andPay_order_idEqualTo(fineMoney.getPay_order_id());
                         FallintoFineMoney fallintoFineMoney = DataAccessUtils.singleResult(fallintoFineMoneyService.selectByExample(fallintoFineMoneyExample));
                         if(fallintoFineMoney==null){
-                            FallintoFineMoney fm = combine(localDate, fineMoney);
+                            FallintoFineMoney fm = combine(LocalDate.now(), fineMoney);
                             this.fallintoFineMoneyService.insert(fm);
                         }
                     }
@@ -141,7 +141,7 @@ public class FineMoneySecondTask {
                         fallintoFineMoneyExample.or().andFine_money_idEqualTo(fineMoney.getFine_money_id()).andPay_order_idEqualTo(fineMoney.getPay_order_id());
                         FallintoFineMoney fallintoFineMoney = DataAccessUtils.singleResult(fallintoFineMoneyService.selectByExample(fallintoFineMoneyExample));
                         if(fallintoFineMoney==null){
-                            FallintoFineMoney fm = combine(localDate, fineMoney);
+                            FallintoFineMoney fm = combine(LocalDate.now(), fineMoney);
                             this.fallintoFineMoneyService.insert(fm);
                         }
                     }

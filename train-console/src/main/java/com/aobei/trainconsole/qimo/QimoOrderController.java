@@ -21,6 +21,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -80,7 +81,9 @@ public class QimoOrderController {
      * @return
      */
     @GetMapping("/getOrders")
-    public String receiveQimoRequest(Model model,HttpServletRequest request,
+    public String receiveQimoRequest(Model model,
+                                     HttpServletRequest request,
+                                     HttpServletResponse response,
                                      @RequestParam(defaultValue = "1") Integer p,
                                      @RequestParam(defaultValue = "10") Integer ps,
                                      @RequestParam(required = false) String originCallNo,
@@ -121,7 +124,7 @@ public class QimoOrderController {
                                      ){
         logger.info("qimo tab query:{}", request.getQueryString());
         if ("".equals(originCallNo) || originCallNo == null){
-            originCallNo = "15010113590";
+            originCallNo = "15313882039";
         }
         SimpleDateFormat sdfhms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -278,7 +281,7 @@ public class QimoOrderController {
             orderOr.andPay_order_idIn(payOrderIds);
             orderOrAndCustomer.andPay_order_idIn(payOrderIds);
         }
-
+        response.setHeader("X-Frame-Options","ALLOW-FROM http://kf7.7moor.com");
         Page<OrderInfo> page = orderService.orderInfoList(Roles.TMANAGER, orderExample, p, ps);
         List<OrderInfo> orderInfos = page.getList();
         model.addAttribute("page",page);
@@ -289,7 +292,7 @@ public class QimoOrderController {
 
     @ResponseBody
     @RequestMapping(value = {"/getOrderDetail"}, method = RequestMethod.POST)
-    public Object getOrderDetail(String pay_order_id){
+    public Object getOrderDetail(String pay_order_id,HttpServletResponse response){
         if ("".equals(pay_order_id) || pay_order_id == null)
             return null;
         // 查询日志
@@ -297,6 +300,7 @@ public class QimoOrderController {
         orderLogExample.or().andPay_order_idEqualTo(pay_order_id);
         List<OrderLog> logs = orderLogService.selectByExample(orderLogExample);
         Order order = orderService.selectByPrimaryKey(pay_order_id);
+        response.setHeader("X-Frame-Options","ALLOW-FROM http://kf7.7moor.com");
         Map<String,Object> map = new HashMap<>();
         map.put("data",orderService.orderInfoDetail(Roles.TMANAGER, order));
         map.put("logs",logs);
@@ -305,22 +309,22 @@ public class QimoOrderController {
 
     @ResponseBody
     @RequestMapping(value = {"/generateWorkOrder"} , method = RequestMethod.POST)
-    public Object generateWorkOrder(String pay_order_id,String customer_phone,String agent){
+    public Object generateWorkOrder(String pay_order_id,String customer_phone,String agent,HttpServletResponse servletResponse){
         QimoGenerateRequestBody requestBody = new QimoGenerateRequestBody();
         requestBody.set_id("");
         requestBody.setCustomerId("");
-        requestBody.setTargeUser("auto");
-        requestBody.setCreateUser("8000");
+        requestBody.setTargeUser(agent);
+        requestBody.setCreateUser(agent);
         requestBody.setFlowName("工单记录");
         requestBody.setComment("");
-        requestBody.setStepName("建立工单");
+        requestBody.setStepName("业务编辑");
         requestBody.setAction("");
         requestBody.setPriority("1");
             List<QimoFiled> filds = new ArrayList<>();
             QimoFiled qimoFiledRadio = new QimoFiled();
             qimoFiledRadio.setName("性别");
             qimoFiledRadio.setType("radio");
-            qimoFiledRadio.setValue("");
+            qimoFiledRadio.setValue("男，女");
             filds.add(qimoFiledRadio);
 
             QimoFiled qimoFiledLink = new QimoFiled();
@@ -371,6 +375,7 @@ public class QimoOrderController {
             qimoFiledRemark.setValue("");
             filds.add(qimoFiledRemark);
         requestBody.setFields(filds);
+        servletResponse.setHeader("X-Frame-Options","ALLOW-FROM http://kf7.7moor.com");
 
         String requestBodyJson = JSON.toJSONString(requestBody, true);
         CloseableHttpResponse response = null;

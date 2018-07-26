@@ -11,8 +11,30 @@
 <script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
 <script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
 <script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<script type="text/javascript" th:src="@{/js/citydata.js}"></script>
+<script type="text/javascript" th:src="@{/js/cityPicker-1.0.0.js?v=1}"></script>
 <script type="text/javascript" th:inline="javascript">
 	$(function(){
+        var select = $('.city-picker-select').cityPicker({
+            dataJson: cityData,
+            renderMode: false,
+            linkage: false
+        });
+
+        var province = [[${province}]];
+        var city = [[${city}]];
+        var area = [[${area}]];
+        if(province && city && area){
+            select.setCityVal([{
+                'id':province.toString()
+            },{
+                'id':city.toString()
+            },{
+                'id':area.toString()
+            }
+            ]);
+        }
+
 		ymd();
         var mts = [[${application.mts}]];
 		var partner_id = [[${partner_id}]];
@@ -220,14 +242,14 @@
         });
 
         $("#assign_btn").click(function () {
-            if($("input[name='time']:checked").size() <= 0){
-                reset();
-                alertify.alert("请选择服务时间段！");
-                return false;
-			}
             if($("#select_date").val() == ''){
                 reset();
                 alertify.alert("请选择服务日期！");
+                return false;
+            }
+            if($("input[name='time']:checked").size() <= 0){
+                reset();
+                alertify.alert("请选择服务时间段！");
                 return false;
             }
             var time = $("input[name='time']:checked").val();
@@ -402,8 +424,9 @@
                 var qe_create_time = $(".qe_create_time").val();
                 var qs_pay_time = $(".qs_pay_time").val();
                 var qe_pay_time = $(".qe_pay_time").val();
+                var channel_code = $(".channel_code").val();
 
-                var json = {"uname":uname,"pay_order_id":pay_order_id,"c_begin_datetime":c_begin_datetime,"c_end_datetime":c_end_datetime,
+                var json = {"channel_code":channel_code,"uname":uname,"pay_order_id":pay_order_id,"c_begin_datetime":c_begin_datetime,"c_end_datetime":c_end_datetime,
                     "cuname":cuname,"uphone":uphone,"student_name":student_name,"partner_id":partner_id,"statu":statu,
                     "qs_create_time":qs_create_time,"qe_create_time":qe_create_time,"qs_pay_time":qs_pay_time,"qe_pay_time":qe_pay_time,"mts":mts};
 
@@ -518,15 +541,15 @@
 	}
 
 	function assign_order_pre(pay_order_id) {
-        var timeArray=['00:00','00:30','01:00','01:30','02:00','02:30','03:00','03:30',
+        /*var timeArray=['00:00','00:30','01:00','01:30','02:00','02:30','03:00','03:30',
             '04:00','04:30','05:00','05:30','06:00','06:30','07:00','07:30',
             '08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
             '12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
             '16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30',
             '20:00','20:30','21:00','21:30','22:00','22:30','23:00','23:30'
-        ];
+        ];*/
         $("#form3_pay_order_id").val(pay_order_id);
-        $.ajax({
+        /*$.ajax({
             url:"/ordermanager/assign_order_pre",
             type : 'post',
             data :{
@@ -553,7 +576,8 @@
                 });
                 $("#time_scope").html(html.join(''));
             }
-        });
+        });*/
+        $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
         $("#assign_order").modal('show');
     }
 
@@ -569,7 +593,7 @@
         $("#station").html(html.join(''));
     }*/
     
-    /*function server_date(server_date) {
+    function server_date(server_date) {
         var timeArray=['00:00','00:30','01:00','01:30','02:00','02:30','03:00','03:30',
             '04:00','04:30','05:00','05:30','06:00','06:30','07:00','07:30',
             '08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
@@ -578,13 +602,27 @@
             '20:00','20:30','21:00','21:30','22:00','22:30','23:00','23:30'
         ];
 
-		var station_id = $("#station").val();
+		//var station_id = $("#station").val();
 		var pay_order_id = $("#form3_pay_order_id").val();
-		var num = $("#num").val();
+		/*var num = $("#num").val();
 		if(station_id == '' || pay_order_id == '' || num == ''){
 		    alertify.alert("请先选择出站点信息和填入需要的服务人员数！");
 		    return false;
+		}*/
+        var province = $("select[name='userProvinceId']").val();
+        var city = $("select[name='userCityId']").val();
+        var area = $("select[name='userDistrictId']").val();
+
+        if(province == "请选择省"){
+			province = "";
 		}
+        if(city == "请选择市"){
+			city = "";
+        }
+        if(area == "请选择区"){
+			area = "";
+        }
+		var address = $("#address").val();
 
 		if(server_date == ''){
             $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
@@ -592,24 +630,32 @@
 		}
 
         $.ajax({
-            url:"/ordermanager/get_optional_time_scope",
+            url:"/ordermanager/get_has_store_time_scope",
             type : 'post',
             data :{
                 pay_order_id:pay_order_id,
-				station_id:station_id,
+				//station_id:station_id,
 				server_date:server_date,
-				num:num
+				address:address,
+                province:province,
+                city:city,
+                area:area
+				//num:num
             },
             success:function(data){
                 var html = [];
                 if (data.msg != null) {
-                    html.push("<span style='color: red'>该站点下服务人员数量不足<span>");
+                    html.push("<span style='color: red'>无可供选择的服务时间段！<span>");
                 }else{
 					var scopeStores = data.scopeStores;
                     $.each(scopeStores, function(i, ele) {
                         var s = ele.skuTime.s;
                         var e = ele.skuTime.e;
-                        var inputStr = "<input type='radio' class='input timeScope' value='{\"s\":"+s+",\"e\":"+e+"}' name='time'/>";
+                        var inputStr = "";
+                        if(i != 0 && (i+1)%2 != 0){
+                            inputStr += "</br>";
+                        }
+                        inputStr += "<input type='radio' class='input timeScope' value='{\"s\":"+s+",\"e\":"+e+"}' name='time'/>";
                         $.each(timeArray,function (i, n) {
 							if(i == s){
 								inputStr += n + ' - ';
@@ -624,12 +670,14 @@
                     });
 				}
                 $("#time_scope").html(html.join(''));
-                $(".modal-footer").removeAttr('hidden');
             }
         });
 
-
-    }*/
+        $("select[name='userProvinceId']").attr("disabled",true);
+		$("select[name='userCityId']").attr("disabled",true);
+        $("select[name='userDistrictId']").attr("disabled",true);
+        $("#address").attr("disabled",true);
+    }
 </script>
 </head>
 <body>
@@ -954,7 +1002,7 @@
 						<h4 class="modal-title">派发订单</h4>
 					</div>
 					<form id="form3">
-						<div class="modal-body " style="margin-left: 160px">
+						<div class="modal-body " style="margin-left: 70px">
 							<input type="hidden" name="pay_order_id" id="form3_pay_order_id"/>
 							<!--<div class="form-group" >
 								<label>合伙人：</label>
@@ -976,9 +1024,23 @@
 							</div>
 							<br/>-->
 							<div class="form-group">
+								<label>如需修改地址请选择省市区：</label>
+								<div>
+									<!-- /* 省市县三级 */ -->
+									<div class="city-picker-select form-inline"></div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label>服务地址：</label>
+								<textarea class="form-control input-sm" id="address" name="address" minlength="5" maxlength="20" style="width: 250px;height: 50px"></textarea>
+							</div>
+							<div class="form-group">
+								<label style="color: red">特别提示：如需修改地址信息，请提前选择，否则选完日期后地址不可编辑！！！</label>
+							</div>
+							<div class="form-group">
 								<label>服务日期：</label>
 								<div class="input-group date datetimepicker1">
-									<input class="form-control input-sm" type="text" id="select_date" style="width: 200px;"/>
+									<input class="form-control input-sm" type="text" id="select_date" style="width: 200px;" onchange="server_date(this.value)"/>
 									<span class="input-group-addon" style="width: 50px; height: 30px;">
 										<span class="glyphicon glyphicon-calendar"></span>
 									</span>
