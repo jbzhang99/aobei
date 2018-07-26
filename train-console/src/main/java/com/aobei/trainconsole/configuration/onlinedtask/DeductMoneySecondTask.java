@@ -59,14 +59,14 @@ public class DeductMoneySecondTask {
             });
         }
 
-       /* RedisIdGenerator idGenerator = new RedisIdGenerator();
+        RedisIdGenerator idGenerator = new RedisIdGenerator();
         idGenerator.setRedisTemplate(redisTemplate);
         String date = LocalDate.now().toString();
         long autoIncrId = idGenerator.getAutoIncrNum("DSCT"+date);
         if (autoIncrId != 1){
             return;
         }
-*/
+
         halfMonth();
         totalMonth();
     }
@@ -103,7 +103,7 @@ public class DeductMoneySecondTask {
                         fallintoDeductMoneyExample.or().andDeduct_money_idEqualTo(deductMoney.getDeduct_money_id()).andPay_order_idEqualTo(deductMoney.getPay_order_id());
                         FallintoDeductMoney fd = DataAccessUtils.singleResult(fallintoDeductMoneyService.selectByExample(fallintoDeductMoneyExample));
                         if(fd==null){
-                            FallintoDeductMoney fallintoDeductMoney = combine(localDate, deductMoney);
+                            FallintoDeductMoney fallintoDeductMoney = combine(LocalDate.now(), deductMoney);
                             this.fallintoDeductMoneyService.insert(fallintoDeductMoney);
                         }
 
@@ -145,7 +145,7 @@ public class DeductMoneySecondTask {
                         fallintoDeductMoneyExample.or().andDeduct_money_idEqualTo(deductMoney.getDeduct_money_id()).andPay_order_idEqualTo(deductMoney.getPay_order_id());
                         FallintoDeductMoney fd = DataAccessUtils.singleResult(fallintoDeductMoneyService.selectByExample(fallintoDeductMoneyExample));
                         if(fd==null){
-                            FallintoDeductMoney fallintoDeductMoney = combine(localDate, deductMoney);
+                            FallintoDeductMoney fallintoDeductMoney = combine(LocalDate.now(), deductMoney);
                             this.fallintoDeductMoneyService.insert(fallintoDeductMoney);
                         }
                     }

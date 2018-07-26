@@ -47,26 +47,26 @@ public class RefundSecondTask {
 	/**
 	 * 每月2号
 	 */
-	//@Scheduled(cron ="0 01 15 23 * ?")
+	//@Scheduled(cron ="0 0 0 2 * ?")
 	private void extractData() {
         //抽取数据之前先将待结算的变为已结算
         FallintoRefundExample fallintoRefundExample = new FallintoRefundExample();
         fallintoRefundExample.or().andStatusEqualTo(1);
         List<FallintoRefund> fallintoRefunds = this.fallintoRefundService.selectByExample(fallintoRefundExample);
-        if(fallintoRefunds.isEmpty()){
+        if(!fallintoRefunds.isEmpty()){
             fallintoRefunds.stream().forEach(fallintoRefund -> {
                 fallintoRefund.setStatus(2);
                 this.fallintoRefundService.updateByPrimaryKeySelective(fallintoRefund);
             });
         }
 
-        /*RedisIdGenerator idGenerator = new RedisIdGenerator();
+        RedisIdGenerator idGenerator = new RedisIdGenerator();
         idGenerator.setRedisTemplate(redisTemplate);
         String date = LocalDate.now().toString();
         long autoIncrId = idGenerator.getAutoIncrNum("RSCT"+date);
         if (autoIncrId != 1){
             return;
-        }*/
+        }
         halfMonth();
         totalMonth();
     }
@@ -105,7 +105,7 @@ public class RefundSecondTask {
                         fallintoRefundExample.or().andRefund_idEqualTo(refund.getRefund_id()).andPay_order_idEqualTo(refund.getPay_order_id());
                         FallintoRefund fd = DataAccessUtils.singleResult(this.fallintoRefundService.selectByExample(fallintoRefundExample));
                         if(fd==null){
-                            FallintoRefund fallintoRefund = combine(localDate, refund);
+                            FallintoRefund fallintoRefund = combine(LocalDate.now(), refund);
                             this.fallintoRefundService.insert(fallintoRefund);
                         }
                     }
@@ -148,7 +148,7 @@ public class RefundSecondTask {
                         fallintoRefundExample.or().andRefund_idEqualTo(refund.getRefund_id()).andPay_order_idEqualTo(refund.getPay_order_id());
                         FallintoRefund fd = DataAccessUtils.singleResult(this.fallintoRefundService.selectByExample(fallintoRefundExample));
                         if(fd==null){
-                            FallintoRefund fallintoRefund = combine(localDate, refund);
+                            FallintoRefund fallintoRefund = combine(LocalDate.now(), refund);
                             this.fallintoRefundService.insert(fallintoRefund);
                         }
                     }
