@@ -400,4 +400,36 @@
             </ul>
         </div>
     </th:block>
+    <th:block sec:authorize="hasRole('ROLE_DATA_STATISTICS')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+               <span>
+                 <i class="icon iconfont icon-arrRight-fill"></i>
+               </span>
+                数据统计
+            </h5>
+            <!--  -->
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item">
+                    <a id="side_61" th:href="@{/data_statistics/dashboard/index}">dashboard概况</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_62" th:href="@{/data_statistics/orders/index}">订单数据统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_63" th:href="@{/data_statistics/custom/index}">顾客数据统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_64" th:href="@{/data_statistics/partner/index}">合伙人数据统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_65" th:href="@{/data_statistics/student/index}">服务人员数据统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_66" th:href="@{/data_statistics/coupon/index}">优惠券统计</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>
+
 </th:block>
