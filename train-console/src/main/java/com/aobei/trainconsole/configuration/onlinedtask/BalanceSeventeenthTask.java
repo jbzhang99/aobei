@@ -208,9 +208,9 @@ public class BalanceSeventeenthTask {
         //单数阶梯
         if (!numList.isEmpty()) {
             Map<String, Map<String, List<ServiceUnit>>> mapList = partnerFallintoMap(numList,3,1);
-            List<StepData> newStepDataList=new ArrayList<>();
             mapList.forEach((String k, Map<String, List<ServiceUnit>> v) ->{
                 v.forEach((key,val) ->{
+                    List<StepData> newStepDataList=new ArrayList<>();
                     Fallinto fallinto = this.fallintoService.selectByPrimaryKey(Long.parseLong(key));
                     List<ServiceUnit> serviceUnitList = v.get(key);
                     List<StepData> stepData = com.alibaba.fastjson.JSONArray.parseArray(fallinto.getStep_data(), StepData.class);
