@@ -268,8 +268,10 @@ public class ApiUserServiceImpl implements ApiUserService {
             return response;
         }else {
             cacheReloadHandler.customerInfoReload(customer.getUser_id());
-            customer.setUser_id(0l);
-            customerService.updateByPrimaryKey(customer);
+            Customer cus = new Customer();
+            cus.setCustomer_id(customer.getCustomer_id());
+            cus.setUser_id(0l);
+            customerService.updateByPrimaryKeySelective(cus);
         }
         response.setMutationResult(new MutationResult());
         return response;

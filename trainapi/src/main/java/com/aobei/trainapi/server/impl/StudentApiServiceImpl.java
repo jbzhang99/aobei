@@ -650,7 +650,6 @@ public class StudentApiServiceImpl implements StudentApiService
 				order.setPay_status(StatusConstant.PAY_STATUS_PAYED);
 				order.setRemark(input.getRemark());
 				order.setStatus_active(StatusConstant.ORDER_STATUS_WAITSERVICE);
-				//order.setExpire_datetime(null);
 				order.setProxyed(1);
 				order.setProxyed_uid(student.getStudent_id());
 				order.setGroup_tag(oldOlder.getGroup_tag());
@@ -688,18 +687,23 @@ public class StudentApiServiceImpl implements StudentApiService
 				logger.info("api-method:create_order:process [person = " + person + "]");
 
 				// 占服务人员库存
-				if (!storeService.isStudentHasStore(student, input.getBegin_datetime().substring(0, 10),begin, end)) {
-					response.setErrors(Errors._41021);
-					return response;
-				}
-				storeService.updateAvilableTimeUnits(student.getStudent_id(), begin, end, StoreServiceImpl.TAKEN);
+                if (input.getType() == 1){
+                    if (!storeService.isStudentHasStore(student, input.getBegin_datetime().substring(0, 10),begin, end)) {
+                        response.setErrors(Errors._41021);
+                        return response;
+                    }
+                    storeService.updateAvilableTimeUnits(student.getStudent_id(), begin, end, StoreServiceImpl.TAKEN);
+                }
 
 			}else {
 				ProSku sku = proSkuService.selectByPrimaryKey(input.getPsku_id());
 				logger.info("api-method:create_order:process sku:{}", sku);
 				// --------------------------------判断参数值对否-------------------------------------
 				Integer allow_mutiple = sku.getBuy_multiple();
-				String strBegin = format.format(begin);
+                String strBegin = null;
+                if (!StringUtils.isEmpty(begin)){
+                    strBegin = format.format(begin);
+                }
 				Integer num = input.getNum();
 				if (allow_mutiple == 1) {// 允许购买多件
 					Integer max = sku.getBuy_multiple_max();
@@ -1123,8 +1127,10 @@ public class StudentApiServiceImpl implements StudentApiService
         ApiResponse response = new ApiResponse();
         if (!StringUtils.isEmpty(studentInfo)){
             cacheReloadHandler.customerInfoReload(studentInfo.getUser_id());
-            studentInfo.setUser_id(0l);
-            studentService.updateByPrimaryKey(studentInfo);
+            StudentInfo info = new StudentInfo();
+            info.setStudent_id(studentInfo.getStudent_id());
+            info.setUser_id(0l);
+            studentService.updateByPrimaryKeySelective(info);
         }else {
             response.setErrors(Errors._40111);
             return response;
