@@ -1849,7 +1849,11 @@ public class OrderController {
 		if (productSoles.size() != 0) {//绑定合伙人的产品
 			List<Long> partner_ids = productSoles.stream().map(n -> n.getPartner_id()).collect(Collectors.toList());
 			StationExample stationExample = new StationExample();
-			stationExample.or().andPartner_idIn(partner_ids).andCityEqualTo(customerAddress.getCity());
+			StationExample.Criteria or = stationExample.or();
+			or.andPartner_idIn(partner_ids);
+			if (customerAddress.getCity() != null){
+				or.andCityEqualTo(customerAddress.getCity());
+			}
 			stationList = stationService.selectByExample(stationExample);
 		} else {//未绑定的
 			stationList = stationService.findNearbyStation(customerAddress, integer);
