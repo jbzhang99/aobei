@@ -864,6 +864,7 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
                 }
             }
             String cuname = (String) map.get("cuname");
+            String channel_code = (String) map.get("channel_code");
             String uphone = (String) map.get("uphone");
             String student_name = (String) map.get("student_name");
             String par_id = (String) map.get("partner_id");
@@ -880,6 +881,9 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
             VOrderUnitExample orderUnitExample = new VOrderUnitExample();
             orderUnitExample.setOrderByClause(VOrderUnitExample.C.create_datetime + " desc");
             VOrderUnitExample.Criteria or = orderUnitExample.or();
+            if (!"".equals(channel_code) && channel_code != null){
+                or.andChannelEqualTo(channel_code);
+            }
             or.andPay_order_idLessThan(Integer.MAX_VALUE + "");
             if (statu != null) {
                 if (statu < 10) {

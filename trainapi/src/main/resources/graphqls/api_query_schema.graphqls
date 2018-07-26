@@ -182,7 +182,7 @@ type Query {
     #服务人员的可预约时间
     student_product_available_times(psku_id:Long,num:Int):[TimeModel]
     #是否有新的消息(0:没有新消息  1:有新的消息)
-    student_whether_have_new_messages:Int
+    student_whether_have_new_messages:MessageState
     #视频列表
     select_video_list(page_index:Int,count:Int):[VideoContent]
     
