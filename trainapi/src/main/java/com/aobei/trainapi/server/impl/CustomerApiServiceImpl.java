@@ -1407,7 +1407,7 @@ public class CustomerApiServiceImpl implements CustomerApiService {
                 String min = metadata1 == null ? "8" : metadata1.getMeta_value();
                 String rejectTime = metadata2 == null ? "30" : metadata2.getMeta_value();
                 Long delayTime = System.currentTimeMillis() + Integer.parseInt(rejectTime) * 60 * 1000;
-                if (time <= Integer.parseInt(min)) {
+                if (time < Integer.parseInt(min)) {
                     delayTime = local.withHour(8).withMinute(30).toInstant(ZoneOffset.of("+8")).toEpochMilli();
                 } else if (time >= Integer.parseInt(max)) {
                     delayTime = local.plusDays(1).withHour(8).withMinute(30).toInstant(ZoneOffset.of("+8")).toEpochMilli();
