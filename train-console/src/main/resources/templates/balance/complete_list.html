@@ -10,17 +10,18 @@
 <script TYPE="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
 <script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
 <meta name="context-path" th:content="@{/}" />
+	<style>
+		td
+		{
+			text-align:center;
+		}
+		th
+		{
+			text-align:center;
+		}
+	</style>
 <script type="text/javascript" th:inline="javascript">
-    <style>
-    td
-    {
-        text-align:center;
-    }
-    th
-    {
-        text-align:center;
-    }
-    </style>
+
 //初始化alertify
 reset = function () {
 	$("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
