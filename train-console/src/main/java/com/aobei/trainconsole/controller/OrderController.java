@@ -185,6 +185,12 @@ public class OrderController {
 	@Autowired
 	private OnsHandler onsHandler;
 
+	@Autowired
+	private OrderItemService orderItemService;
+
+	@Autowired
+	private StoreService storeService;
+
 
 	/**
 	 * 跳转到订单列表页
@@ -1736,6 +1742,119 @@ public class OrderController {
 		List<SkuTime> timesList = JSON.parseArray(serviceTimes, SkuTime.class);
 		Map<String,Object> map = new HashMap<>();
 		map.put("timesList",timesList);
+		return map;
+	}
+
+	/**
+	 * 派单前查看选择日期是否又库存，且订单
+	 * @param pay_order_id
+	 * @param server_date
+	 * @param address
+	 * @param province
+	 * @param city
+	 * @param area
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/get_has_store_time_scope")
+	public Object get_has_store_time_scope(String pay_order_id,
+										   String server_date,
+										   String address,
+										   Integer province,
+										   Integer city,
+										   Integer area){
+		Order original_order = orderService.selectByPrimaryKey(pay_order_id);
+		if (province != null && city != null && area != null && !"".equals(address) && address != null){
+			Order upOrder = new Order();
+			upOrder.setPay_order_id(pay_order_id);
+			upOrder.setCus_address(address);
+			upOrder.setCus_province(province);
+			upOrder.setCus_city(city);
+			upOrder.setCus_area(area);
+			String lat = "";
+			String lng = "";
+			try {
+				Map<String, String> addressMap = HttpAddressUtil.coordinate_GaoDe(address, "");
+				if(addressMap!=null){
+					//经度
+					lng = addressMap.get("lng_b");
+					//纬度
+					lat = addressMap.get("lat_b");
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			upOrder.setLbs_lat(lat);
+			upOrder.setLbs_lng(lng);
+			orderService.updateByPrimaryKeySelective(upOrder);
+			CustomerAddress customerAddress = customerAddressService.selectByPrimaryKey(original_order.getCustomer_address_id());
+			CustomerAddress upCustomerAddress = new CustomerAddress();
+			upCustomerAddress.setCustomer_address_id(customerAddress.getCustomer_address_id());
+			upCustomerAddress.setAddress(address);
+			upCustomerAddress.setProvince(province);
+			upCustomerAddress.setCity(city);
+			upCustomerAddress.setArea(area);
+			upCustomerAddress.setLbs_lat(lat);
+			upCustomerAddress.setLbs_lng(lng);
+			customerAddressService.updateByPrimaryKeySelective(upCustomerAddress);
+		}
+		Order order = orderService.selectByPrimaryKey(pay_order_id);
+
+		OrderItemExample orderItemExample = new OrderItemExample();
+		orderItemExample.or().andPay_order_idEqualTo(pay_order_id);
+		OrderItem orderItem = singleResult(orderItemService.selectByExample(orderItemExample));
+
+		//根据pay_order_id查询的服务单
+		ServiceUnitExample sue = new ServiceUnitExample();
+		sue.or().andPay_order_idEqualTo(pay_order_id).andPidEqualTo(0l);
+		ServiceUnit serviceUnit = singleResult(serviceUnitService.selectByExample(sue));
+		ProSku proSku = proSkuService.selectByPrimaryKey(serviceUnit.getPsku_id());
+		String times = proSku.getService_times();
+		List<SkuTime> timesList = JSON.parseArray(times, SkuTime.class);
+
+		Map<String,Object> map = new HashMap<>();
+
+		Product product = productService.selectByPrimaryKey(serviceUnit.getProduct_id());
+		CustomerAddress customerAddress =new CustomerAddress();
+		customerAddress.setCity(order.getCus_city());
+		customerAddress.setLbs_lat(order.getLbs_lat());
+		customerAddress.setLbs_lng(order.getLbs_lng());
+
+		Metadata metadata  = metadataService.selectByPrimaryKey(Constant.MKEY_MAX_SEARCH_RADIUS);
+		Integer integer  = metadata.getMeta_value()==null?Constant.SEARCH_RADIUS:Integer.parseInt(metadata.getMeta_value());
+
+		List<Station> stationList = null;
+		ProductSoleExample soleExample = new ProductSoleExample();
+		soleExample.or().andProduct_idEqualTo(product.getProduct_id());
+		List<ProductSole> productSoles = productSoleService.selectByExample(soleExample);
+		if (productSoles.size() != 0) {//绑定合伙人的产品
+			List<Long> partner_ids = productSoles.stream().map(n -> n.getPartner_id()).collect(Collectors.toList());
+			StationExample stationExample = new StationExample();
+			stationExample.or().andPartner_idIn(partner_ids).andCityEqualTo(customerAddress.getCity());
+			stationList = stationService.selectByExample(stationExample);
+		} else {//未绑定的
+			stationList = stationService.findNearbyStation(customerAddress, integer);
+			stationList = stationService.filterByProduct(product, stationList);
+		}
+
+		List<List<TimeScopeStore>> listTime = stationList.stream().map(n -> {
+			StudentExample studentExample = new StudentExample();
+			studentExample.or().andStation_idEqualTo(n.getStation_id());
+			List<Student> students = studentService.selectByExample(studentExample);
+			OneDayStore oneDayStore = getStudentsStroe(timesList, students, server_date);
+			List<TimeScopeStore> scopeStores = oneDayStore.getScopeStores();
+			scopeStores = scopeStores.stream().filter(t -> t.getStore() >= (proSku.getBuy_multiple_o2o() == 1 ? orderItem.getNum() : 1)).collect(Collectors.toList());
+			return scopeStores;
+		}).collect(Collectors.toList());
+
+		listTime.sort( (a, b) -> b.size() - a.size());
+
+		List<TimeScopeStore> scopeStores = listTime.get(0);
+		if (scopeStores.size() <= 0){
+			map.put("msg","该站点下服务人员数量不足！");
+		}else{
+			map.put("scopeStores",scopeStores);
+		}
 		return map;
 	}
 
