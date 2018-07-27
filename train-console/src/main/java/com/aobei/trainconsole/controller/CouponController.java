@@ -701,7 +701,14 @@ public class CouponController {
 			if (coupon.getNum_limit() == 1) {//有总数量
 
 				//coupon.setNum_able(resultSingle.getNum_able());
+				String key = Constant.getCouponKey(coupon.getCoupon_id());
+				if (!redisTemplate.hasKey(key)) {
+					if(coupon.getNum_able()>0){
+						redisTemplate.opsForValue().set(key,coupon.getNum_able()+"");
+					}
+				}
 				coupon.setNum_able(coupon.getNum_total());
+				redisTemplate.opsForValue().set(key,coupon.getNum_able()+"");
 				if(Status.CouponType.exchange_type.value==coupon.getType()){
 					coupon.setNum_able(0);
 				}
