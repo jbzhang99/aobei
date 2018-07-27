@@ -85,6 +85,8 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
     FineMoneyService fineMoneyService;
     @Autowired
     CouponService couponService;
+    @Autowired
+    RejectRecordService rejectRecordService;
 
     @Autowired
     private void initService(MbgMapperTemplateFactory mbgMapperTemplateFactory) {
@@ -743,6 +745,33 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
         ServiceUnitExample unitup = new ServiceUnitExample();
         unitup.or().andServiceunit_idEqualTo(unit.getServiceunit_id());
         int i = serviceUnitService.updateByExample(unit,unitup);
+
+        //变更完成后的被动变为拒单的子单记录插入到拒单记录表里
+        ServiceUnitExample rejectUnitExample = new ServiceUnitExample();
+        rejectUnitExample.or()
+                .andPidEqualTo(unit.getServiceunit_id())
+                .andPay_order_idEqualTo(order.getPay_order_id())
+                .andStatus_activeEqualTo(6);
+        List<ServiceUnit> units = serviceUnitService.selectByExample(rejectUnitExample);
+        if (units.size() > 0){
+            units.forEach(n ->{
+                RejectRecord rejectRecord = new RejectRecord();
+                rejectRecord.setReject_record_id(IdGenerator.generateId());
+                rejectRecord.setPay_order_id(n.getPay_order_id());
+                rejectRecord.setServiceunit_id(n.getServiceunit_id());
+                rejectRecord.setCreate_datetime(new Date());
+                rejectRecord.setCus_username(order.getCus_username());
+                rejectRecord.setCus_phone(order.getCus_phone());
+                rejectRecord.setCus_address(order.getCus_address());
+                rejectRecord.setPrice_total(order.getPrice_total());
+                rejectRecord.setPrice_pay(order.getPrice_pay());
+                rejectRecord.setReject_type(2);
+                rejectRecord.setReject_info("[SYSTEM]订单改派拒单！");
+                rejectRecord.setPartner_id(n.getPartner_id());
+                rejectRecord.setServer_datetime(n.getC_begin_datetime());
+                rejectRecordService.insert(rejectRecord);
+            });
+        }
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         // 新订单通知，2018-1-2 12:00 建国饭店1203.张先生，电话12312341234
