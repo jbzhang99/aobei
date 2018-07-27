@@ -481,5 +481,10 @@
         <table schema="" tableName="pay_order_jd" domainObjectName="JdOrder">
             <property name="useActualColumnNames" value="true"/>
         </table>
+
+        <!--合伙人拒单记录表-->
+        <table schema="" tableName="reject_record" domainObjectName="RejectRecord">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
     </context>
 </generatorConfiguration>
