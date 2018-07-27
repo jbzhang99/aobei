@@ -366,7 +366,7 @@ public class JdOrderGrab {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                order.setCus_username(customer.getName());
+                order.setCus_username(customerAddress.getUsername());
                 order.setCustomer_address_id(customerAddress.getCustomer_address_id());
                 order.setCus_phone(customerAddress.getPhone());
                 order.setCus_address(customerAddress.getAddress());
