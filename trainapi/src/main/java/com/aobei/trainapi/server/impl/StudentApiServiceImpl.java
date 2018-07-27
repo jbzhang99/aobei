@@ -591,7 +591,7 @@ public class StudentApiServiceImpl implements StudentApiService
 	/**
 	 * 创建订单:
 	 */
-	//@Transactional(timeout = 5)
+	@Transactional(timeout = 5)
 	@Override
 	public ApiResponse<Order> create_order(Student student,String channelId, StudentOrderInput input) {
 		logger.info("api-method:create_order:params student:{},input:{}", student, input);
@@ -602,16 +602,23 @@ public class StudentApiServiceImpl implements StudentApiService
             Date begin = null;
             Date end = null;
             try {
-                begin = format.parse(input.getBegin_datetime());
+				if (org.apache.commons.lang3.StringUtils.isEmpty(input.getBegin_datetime()) || org.apache.commons.lang3.StringUtils.equals(input.getBegin_datetime(), "null")) {
+					begin = null;
+				} else {
+					begin = format.parse(input.getBegin_datetime());
+				}
+
                 if (org.apache.commons.lang3.StringUtils.isEmpty(input.getEnd_datatime()) || org.apache.commons.lang3.StringUtils.equals(input.getEnd_datatime(), "null")) {
                     end = null;
                 } else {
                     end = format.parse(input.getEnd_datatime());
                 }
                 Date now = new Date();
-                if (begin.before(now)) {
-                    flag = false;
-                }
+				if (!StringUtils.isEmpty(begin)){
+					if (begin.before(now)) {
+						flag = false;
+					}
+				}
             } catch (ParseException e) {
                 flag = false;
             }
@@ -924,8 +931,10 @@ public class StudentApiServiceImpl implements StudentApiService
 		ServiceUnit serviceUnit = DataAccessUtils.singleResult(serviceUnitService.selectByExample(serviceUnitExample));
 		logger.info("api-method:cancelOrder:process serviceUnit:{}", serviceUnit);
 		// 删除该学员的库存
-		storeService.updateAvilableTimeUnits(student.getStudent_id(), serviceUnit.getC_begin_datetime(),
-				serviceUnit.getC_end_datetime(), StoreServiceImpl.RELEASE);
+		if (!StringUtils.isEmpty(serviceUnit.getC_begin_datetime())){
+			storeService.updateAvilableTimeUnits(student.getStudent_id(), serviceUnit.getC_begin_datetime(),
+					serviceUnit.getC_end_datetime(), StoreServiceImpl.RELEASE);
+		}
 		Order order = orderService.selectByPrimaryKey(pay_order_id);
 		logger.info("api-method:cancelOrder:process order:{}", order);
 		order.setStatus_active(Status.OrderStatus.cancel.value);
