@@ -294,6 +294,25 @@ public class OrderInfo implements Serializable {
     private String startTime;
     private String endTime;
 
+    /**
+     * 订单经纬度
+     */
+    private String lbsLat;
+    private String lbsLng;
+
+    public String getLbsLat() {
+        if (order == null)
+            return null;
+        this.lbsLat = order.getLbs_lat();
+        return lbsLat;
+    }
+
+    public String getLbsLng() {
+        if (order == null)
+            return null;
+        this.lbsLng = order.getLbs_lng();
+        return lbsLng;
+    }
 
     //需要的实体类型
     List<Remark> remarkList;

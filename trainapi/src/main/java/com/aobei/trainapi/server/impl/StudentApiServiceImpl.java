@@ -350,7 +350,7 @@ public class StudentApiServiceImpl implements StudentApiService
 		skuExample.or().andProduct_idEqualTo(serviceUnit.getProduct_id()).andDispalyEqualTo(1);
 		long skuNum = proSkuService.countByExample(skuExample);
 		orderInfo.setWhetherCanContinue(1);
-		if (skuNum > 0){
+		if (skuNum == 0){
 			orderInfo.setWhetherCanContinue(0);
 		}
 		logger.info("api-method:selectStuShowTaskdetail:process orderInfo:{}", orderInfo);
@@ -591,7 +591,7 @@ public class StudentApiServiceImpl implements StudentApiService
 	/**
 	 * 创建订单:
 	 */
-	@Transactional(timeout = 5)
+	//@Transactional(timeout = 5)
 	@Override
 	public ApiResponse<Order> create_order(Student student,String channelId, StudentOrderInput input) {
 		logger.info("api-method:create_order:params student:{},input:{}", student, input);
