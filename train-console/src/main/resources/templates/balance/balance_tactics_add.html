@@ -468,7 +468,7 @@
                         return false;
                     }
                 }
-                if(OneVal<=PrevVal){
+                if(Number(OneVal)<=Number(PrevVal)){
                     reset();
                     alertify.alert("最后一行金额数不能比上一行金额数小！");
                     return false;
@@ -565,7 +565,7 @@
                         return false;
                     }
                 }
-                if (OneVal <= PrevVal) {
+                if (Number(OneVal) <= Number(PrevVal)) {
                     reset();
                     alertify.alert("最后一行客单价数不能比上一行客单价数小！");
                     return false;
