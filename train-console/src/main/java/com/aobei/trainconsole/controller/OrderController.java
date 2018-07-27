@@ -200,12 +200,15 @@ public class OrderController {
 							 @RequestParam(required = false) Long partner_id, @RequestParam(required = false) Integer statu,
 							 @RequestParam(required = false) String qs_create_time,@RequestParam(required = false) String qe_create_time,
 							 @RequestParam(required = false) String qs_pay_time,@RequestParam(required = false) String qe_pay_time,
-							 @RequestParam(defaultValue = "PUERJIA-001") String channel_code) {
+							 @RequestParam(required = false) String channel_code) {
 		VOrderUnitExample orderUnitExample = new VOrderUnitExample();
 		orderUnitExample.setOrderByClause(VOrderUnitExample.C.create_datetime + " desc");
 		//查询条件的对象
 		VOrderUnitExample.Criteria or = orderUnitExample.or();
-		or.andChannelEqualTo(channel_code);
+//		if (!"".equals(channel_code) && channel_code != null){
+//			or.andChannelEqualTo(channel_code);
+//		}
+//		or.andChannelEqualTo(channel_code);
 		or.andPay_order_idLessThan(Integer.MAX_VALUE + "");
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat sdfhms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
