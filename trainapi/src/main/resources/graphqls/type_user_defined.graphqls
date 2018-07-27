@@ -160,6 +160,10 @@ type OrderInfo{
 	studentStartTime:String
 	#服务人员结束时间
 	studentEndTime:String
+	#订单坐标 纬度
+	lbsLat:String
+	#坐标 经度
+	lbsLng:String
 }
 
 type CouponResponse{
