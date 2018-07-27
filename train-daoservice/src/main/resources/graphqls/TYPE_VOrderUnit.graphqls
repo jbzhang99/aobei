@@ -99,13 +99,13 @@ type VOrderUnit{
     #下单时间
     create_datetime : Date
 
-    #订单来源渠道
+    #订单来源渠道（JD、）
     channel : String
 
     #优惠金额，单位分
     price_discount : Int
 
-    #支付方式  1 微信 2 支付宝
+    #支付方式  1 微信 2 支付宝 3其他
     pay_type : Int
 
     #可退金额  单位分
@@ -134,5 +134,8 @@ type VOrderUnit{
 
     #名称
     cuname : String
+
+    #购买数量
+    num : Int
 }
 
