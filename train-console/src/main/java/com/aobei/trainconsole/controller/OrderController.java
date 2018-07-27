@@ -373,9 +373,15 @@ public class OrderController {
 			List<ServiceunitPerson> persons_done = serviceunitPersonService.selectByExample(example);
 			map.addAttribute("persons",persons_done);
 		}
+
+		OrderItemExample orderItemExample = new OrderItemExample();
+		orderItemExample.or().andPay_order_idEqualTo(pay_order_id);
+		OrderItem item = singleResult(orderItemService.selectByExample(orderItemExample));
+
 		String Referer = request.getHeader("Referer");
 		map.addAttribute("Referer",Referer);
 		map.addAttribute("order", order);
+		map.addAttribute("num",item.getNum());
 		map.addAttribute("su", serviceUnit);
 		map.addAttribute("page_current_page", page_current_page);
 		map.addAttribute("pay_order_id", pay_order_id);

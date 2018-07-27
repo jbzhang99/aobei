@@ -269,6 +269,12 @@
                   	<span th:text="*{pay_order_id}"></span>
                   </td>
                 </tr>
+				<tr>
+					<td colspan="2" >下单件数</td>
+					<td colspan="2">
+						<span th:text="${num}"></span>件
+					</td>
+				</tr>
                 <tr>
                   <td colspan="2">订单状态</td>
                   <td colspan="2" th:switch="*{status_active}">
