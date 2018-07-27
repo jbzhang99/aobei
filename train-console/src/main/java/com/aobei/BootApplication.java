@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 @EnableScheduling
 @EnableCaching
 public class BootApplication {
+
 	public static void main(String[] args) {
 		SpringApplication.run(BootApplication.class, args);
 	}
