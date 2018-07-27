@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.liyiorg.mbg.bean.Page;
 import custom.bean.*;
 import custom.bean.ons.RefundOrderMessage;
+import custom.util.DistanceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -372,9 +373,15 @@ public class OrderController {
 			List<ServiceunitPerson> persons_done = serviceunitPersonService.selectByExample(example);
 			map.addAttribute("persons",persons_done);
 		}
+
+		OrderItemExample orderItemExample = new OrderItemExample();
+		orderItemExample.or().andPay_order_idEqualTo(pay_order_id);
+		OrderItem item = singleResult(orderItemService.selectByExample(orderItemExample));
+
 		String Referer = request.getHeader("Referer");
 		map.addAttribute("Referer",Referer);
 		map.addAttribute("order", order);
+		map.addAttribute("num",item.getNum());
 		map.addAttribute("su", serviceUnit);
 		map.addAttribute("page_current_page", page_current_page);
 		map.addAttribute("pay_order_id", pay_order_id);
@@ -1851,10 +1858,17 @@ public class OrderController {
 			StationExample stationExample = new StationExample();
 			StationExample.Criteria or = stationExample.or();
 			or.andPartner_idIn(partner_ids);
+			or.andOnlinedEqualTo(1);
+			or.andDeletedEqualTo(Status.DeleteStatus.no.value);
 			if (customerAddress.getCity() != null){
 				or.andCityEqualTo(customerAddress.getCity());
 			}
-			stationList = stationService.selectByExample(stationExample);
+			List<Station> stations = stationService.selectByExample(stationExample);
+			stationList = stations.stream().filter(t -> DistanceUtil.GetDistance(
+					new Double(t.getLbs_lat() == null ? "0" : t.getLbs_lat()),
+					new Double(t.getLbs_lng() == null ? "0" : t.getLbs_lng()),
+					new Double(customerAddress.getLbs_lat()),
+					new Double(customerAddress.getLbs_lng())) <= integer).collect(Collectors.toList());
 		} else {//未绑定的
 			stationList = stationService.findNearbyStation(customerAddress, integer);
 			stationList = stationService.filterByProduct(product, stationList);
@@ -1871,10 +1885,12 @@ public class OrderController {
 		}).collect(Collectors.toList());
 
 		listTime.sort( (a, b) -> b.size() - a.size());
-
-		List<TimeScopeStore> scopeStores = listTime.get(0);
+		List<TimeScopeStore> scopeStores = new ArrayList<>();
+		if (listTime.size() > 0){
+			scopeStores  = listTime.get(0);
+		}
 		if (scopeStores.size() <= 0){
-			map.put("msg","该站点下服务人员数量不足！");
+			map.put("msg","无可供选择的服务时间段！");
 		}else{
 			map.put("scopeStores",scopeStores);
 		}

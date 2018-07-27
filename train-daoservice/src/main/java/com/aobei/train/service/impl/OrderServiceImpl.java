@@ -12,6 +12,7 @@ import com.github.liyiorg.mbg.bean.Page;
 import com.github.liyiorg.mbg.support.service.MbgServiceSupport;
 import com.github.liyiorg.mbg.template.factory.MbgMapperTemplateFactory;
 import custom.bean.*;
+import custom.util.DistanceUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
@@ -1332,7 +1333,12 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
             if (customerAddress.getCity() != null){
                 criteria.andCityEqualTo(customerAddress.getCity());
             }
-            stations = stationService.selectByExample(stationExample);
+            List<Station> stationList = stationService.selectByExample(stationExample);
+            stations = stationList.stream().filter(t -> DistanceUtil.GetDistance(
+                    new Double(t.getLbs_lat() == null ? "0" : t.getLbs_lat()),
+                    new Double(t.getLbs_lng() == null ? "0" : t.getLbs_lng()),
+                    new Double(customerAddress.getLbs_lat()),
+                    new Double(customerAddress.getLbs_lng())) <= integer).collect(Collectors.toList());
         } else {// 未绑定合伙人的产品
             stations = stationService.findNearbyStation(customerAddress, integer);
             stations = stationService.filterByProduct(product, stations);
