@@ -545,7 +545,7 @@ public class CouponController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-d HH:mm");
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
 		model.addAttribute("coupon", coupon);
 		model.addAttribute("start_time1",format.format(coupon.getUse_start_datetime()));
@@ -701,7 +701,7 @@ public class CouponController {
 			if (coupon.getNum_limit() == 1) {//有总数量
 
 				//coupon.setNum_able(resultSingle.getNum_able());
-
+				coupon.setNum_able(coupon.getNum_total());
 				if(Status.CouponType.exchange_type.value==coupon.getType()){
 					coupon.setNum_able(0);
 				}
@@ -710,11 +710,10 @@ public class CouponController {
 			coupon.setCondition(condition);
 			coupon.setProgramme(programme);
 			coupon.setExclusive(1);//默认排他
-			//coupon.setNum_able(resultSingle.getNum_able());
 			coupon.setUse_start_datetime(t_start);
 			coupon.setUse_end_datetime(t_end);
-			coupon.setReceive_start_datetime(resultSingle.getUse_start_datetime());
-			coupon.setReceive_end_datetime(resultSingle.getReceive_end_datetime());
+			//coupon.setReceive_start_datetime(resultSingle.getUse_start_datetime());
+			//coupon.setReceive_end_datetime(resultSingle.getReceive_end_datetime());
 			/*if(StringUtils.isEmpty(resultSingle.getExchange_code()) & coupon.getType()==Status.CouponType.exchange_type.value){
 				String code = ValidCode();
 				coupon.setExchange_code(code);
