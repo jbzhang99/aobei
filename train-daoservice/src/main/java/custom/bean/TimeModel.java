@@ -12,6 +12,10 @@ public class TimeModel implements Serializable{
     boolean active;
     Set<Model> models;
 
+    public void setModels(Set<Model> models) {
+        this.models = models;
+    }
+
     public Date getDate() {
         return date;
     }

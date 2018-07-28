@@ -255,7 +255,7 @@
             var time = $("input[name='time']:checked").val();
             /*var partner = $("#partner").val();
             var station = $("#station").val();*/
-            var select_date = $("#select_date").val();
+            var select_date = $("#server_date").val();
             var pay_order_id = $("#form3_pay_order_id").val();
             var address = $("#address").val();
 
@@ -543,152 +543,101 @@
 	}
 
 	function assign_order_pre(pay_order_id,cus_address) {
-        /*var timeArray=['00:00','00:30','01:00','01:30','02:00','02:30','03:00','03:30',
-            '04:00','04:30','05:00','05:30','06:00','06:30','07:00','07:30',
-            '08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
-            '12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
-            '16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30',
-            '20:00','20:30','21:00','21:30','22:00','22:30','23:00','23:30'
-        ];*/
+        $("#address").val('');
+        $("#timeModels").val('');
+        $("#server_date").html("<option value=''>请选择</option>");
+        $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
+
         $("#form3_pay_order_id").val(pay_order_id);
         $("#jd_address").val(cus_address);
-        /*$.ajax({
-            url:"/ordermanager/assign_order_pre",
-            type : 'post',
-            data :{
-                pay_order_id:pay_order_id
-            },
-            success:function(data){
-				var timesList = data.timesList;
-                var html = [];
-                $.each(timesList,function (i,skuTime) {
-                    var s = skuTime.s;
-                    var e = skuTime.e;
-                    var inputStr = "<input type='radio' class='input timeScope' value='{\"s\":"+s+",\"e\":"+e+"}' name='time'/>";
-                    $.each(timeArray,function (i, n) {
-                        if(i == s){
-                            inputStr += n + ' - ';
-                        }
-                    });
-                    $.each(timeArray,function (i, n) {
-                        if(i == e){
-                            inputStr += n +"&nbsp;&nbsp;&nbsp;";
-                        }
-                    });
-                    html.push(inputStr);
-                });
-                $("#time_scope").html(html.join(''));
-            }
-        });*/
-        $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
-        $("#assign_order").modal('show');
-    }
-
-    /*function select_partner(partner_id) {
-        var stations = $.parseJSON($("#stations").val());
-        var html = [];
-        html.push("<option value=''>请选择</option>");
-        $.each(stations, function(i, ele) {
-            if(ele.partner_id == partner_id){
-                html.push("<option value="+ele.station_id+">" + ele.address + "</option>");
-            }
-        });
-        $("#station").html(html.join(''));
-    }*/
-    
-    function server_date(server_date) {
-        var timeArray=['00:00','00:30','01:00','01:30','02:00','02:30','03:00','03:30',
-            '04:00','04:30','05:00','05:30','06:00','06:30','07:00','07:30',
-            '08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
-            '12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
-            '16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30',
-            '20:00','20:30','21:00','21:30','22:00','22:30','23:00','23:30'
-        ];
-
-		//var station_id = $("#station").val();
-		var pay_order_id = $("#form3_pay_order_id").val();
-		/*var num = $("#num").val();
-		if(station_id == '' || pay_order_id == '' || num == ''){
-		    alertify.alert("请先选择出站点信息和填入需要的服务人员数！");
-		    return false;
-		}*/
-        /*var province = $("select[name='userProvinceId']").val();
-        var city = $("select[name='userCityId']").val();
-        var area = $("select[name='userDistrictId']").val();
-
-        if(province == "请选择省"){
-			province = "";
-		}
-        if(city == "请选择市"){
-			city = "";
-        }
-        if(area == "请选择区"){
-			area = "";
-        }*/
-		var address = $("#address").val();
-
-		if(server_date == ''){
-            $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
-            return false;
-		}
 
         $.ajax({
             url:"/ordermanager/get_has_store_time_scope",
             type : 'post',
             data :{
                 pay_order_id:pay_order_id,
-				//station_id:station_id,
-				server_date:server_date,
-				address:address
-                /*province:province,
-                city:city,
-                area:area*/
-				//num:num
+				address:""
             },
             success:function(data){
                 var html = [];
+                html.push("<option value=''>请选择</option>");
                 if (data.msg != null) {
                     reset();
                     alertify.alert(data.msg);
-                    html.push("<span style='color: red'>无可供选择的服务时间段！<span>");
                 }else{
-					var scopeStores = data.scopeStores;
-                    $.each(scopeStores, function(i, ele) {
-                        var s = ele.skuTime.s;
-                        var e = ele.skuTime.e;
-                        var inputStr = "";
-                        if(i != 0 && (i+1)%2 != 0){
-                            inputStr += "</br>";
-                        }
-                        inputStr += "<input type='radio' class='input timeScope' value='{\"s\":"+s+",\"e\":"+e+"}' name='time'/>";
-                        $.each(timeArray,function (i, n) {
-							if(i == s){
-								inputStr += n + ' - ';
-							}
-                        });
-                        $.each(timeArray,function (i, n) {
-                            if(i == e){
-                                inputStr += n +"&nbsp;&nbsp;&nbsp;";
-                            }
-                        });
-                        html.push(inputStr);
+                    var timeModels = data.timeModels;
+					$("#timeModels").val(JSON.stringify(timeModels));
+                    $.each(timeModels, function(i, ele) {
+                        html.push("<option value='"+ele.dateTime+"'>"+ele.dateTime+"</option>");
                     });
-				}
-                $("#time_scope").html(html.join(''));
+                }
+                $("#server_date").html(html.join(''));
+                $("#assign_order").modal('show');
             }
         });
+    }
 
-        /*$("select[name='userProvinceId']").attr("disabled",true);
-		$("select[name='userCityId']").attr("disabled",true);
-        $("select[name='userDistrictId']").attr("disabled",true);
-        $("#address").attr("disabled",true);*/
+    function select_date() {
+        $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
+        var timeModels = $("#timeModels").val();
+        var times = JSON.parse(timeModels);
+        var html = [];
+        $.each(times, function(i, ele) {
+            if(ele.dateTime == $("#server_date").val()){
+                var models = ele.models;
+                $.each(models, function(j, e) {
+					var start = e.start;
+					var end = e.end;
+					var end_s = '';
+					if(typeof(end) == "undefined"){
+						end_s = "untime";
+					}else{
+						end_s = end;
+					}
+
+					var inputStr = "";
+					if(j != 0 && (j+1)%2 != 0){
+						inputStr += "</br>";
+					}
+					inputStr += "<input type='radio' class='input timeScope' value='"+start+","+end_s+"' name='time'/>";
+					inputStr += start + " - " + end_s + "&nbsp;&nbsp;&nbsp;";
+					html.push(inputStr);
+				});
+            }
+        });
+        $("#time_scope").html(html.join(''));
     }
 
     function change_address() {
-		var service_date = $("#select_date").val();
-		if(service_date != ''){
-            $("#select_date").val('');
-		}
+        var pay_order_id = $("#form3_pay_order_id").val();
+        $("#timeModels").val('');
+        $("#server_date").val('');
+        var address = $("#address").val();
+        if(address != ''){
+            $.ajax({
+                url:"/ordermanager/get_has_store_time_scope",
+                type : 'post',
+                data :{
+                    pay_order_id:pay_order_id,
+                    address:address
+                },
+                success:function(data){
+                    var html = [];
+                    html.push("<option value=''>请选择</option>");
+                    if (data.msg != null) {
+                        reset();
+                        alertify.alert(data.msg);
+                    }else{
+                        var timeModels = data.timeModels;
+                        $("#timeModels").val(JSON.stringify(timeModels));
+                        $.each(timeModels, function(i, ele) {
+                            html.push("<option value='"+ele.dateTime+"'>"+ele.dateTime+"</option>");
+                        });
+                    }
+                    $("#server_date").html(html.join(''));
+                }
+            });
+        }
         $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
     }
 </script>
@@ -1019,25 +968,7 @@
 					<form id="form3">
 						<div class="modal-body " style="margin-left: 155px">
 							<input type="hidden" name="pay_order_id" id="form3_pay_order_id"/>
-							<!--<div class="form-group" >
-								<label>合伙人：</label>
-								<select class="form-control input-sm" id="partner" name="partner_id" onchange="select_partner(this.value)" style="width: 250px">
-
-								</select>
-							</div>
-							<br/>
-							<div class="form-group">
-								<label>服务站点：</label>
-								<input id="stations" type="hidden">
-								<select class="form-control station_id input-sm" id="station" name="partner_id" style="width: 250px">
-
-								</select>
-							</div>
-							<div class="form-group">
-								<label>服务人数：</label>
-								<input type="number" id="num" class="form-control input-sm" name="num" min="1" max="10" style="width: 250px"/>
-							</div>
-							<br/>-->
+							<input type="hidden" id="timeModels"/>
 							<div class="form-group">
 								<label>京东收货地址：</label>
 								<textarea class="form-control input-sm" id="jd_address" style="width: 250px;height: 50px" disabled></textarea>
@@ -1051,12 +982,9 @@
 							</div>
 							<div class="form-group">
 								<label>服务日期：</label>
-								<div class="input-group date datetimepicker1">
-									<input class="form-control input-sm" type="text" id="select_date" style="width: 200px;" onchange="server_date(this.value)"/>
-									<span class="input-group-addon" style="width: 50px; height: 30px;">
-										<span class="glyphicon glyphicon-calendar"></span>
-									</span>
-								</div>
+								<select class="form-control server_date input-sm" name="server_date" id="server_date" style="width: 250px;" onchange="select_date()">
+									<option value=''>请选择</option>
+								</select>
 							</div>
 							<br/>
 							<div class="form-group">

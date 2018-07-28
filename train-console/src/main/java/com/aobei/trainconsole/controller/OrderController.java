@@ -52,6 +52,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletionService;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.springframework.dao.support.DataAccessUtils.singleResult;
 
@@ -1755,53 +1756,12 @@ public class OrderController {
 	/**
 	 * 派单前查看选择日期是否又库存，且订单
 	 * @param pay_order_id
-	 * @param server_date
 	 * @param address
 	 * @return
 	 */
 	@ResponseBody
 	@RequestMapping("/get_has_store_time_scope")
-	public Object get_has_store_time_scope(String pay_order_id,
-										   String server_date,
-										   String address/*,
-										   Integer province,
-										   Integer city,
-										   Integer area*/){
-		/*Order original_order = orderService.selectByPrimaryKey(pay_order_id);
-		if (province != null && city != null && area != null && !"".equals(address) && address != null){
-			Order upOrder = new Order();
-			upOrder.setPay_order_id(pay_order_id);
-			upOrder.setCus_address(address);
-			upOrder.setCus_province(province);
-			upOrder.setCus_city(city);
-			upOrder.setCus_area(area);
-			String lat = "";
-			String lng = "";
-			try {
-				Map<String, String> addressMap = HttpAddressUtil.coordinate_GaoDe(address, "");
-				if(addressMap!=null){
-					//经度
-					lng = addressMap.get("lng_b");
-					//纬度
-					lat = addressMap.get("lat_b");
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			upOrder.setLbs_lat(lat);
-			upOrder.setLbs_lng(lng);
-			orderService.updateByPrimaryKeySelective(upOrder);
-			CustomerAddress customerAddress = customerAddressService.selectByPrimaryKey(original_order.getCustomer_address_id());
-			CustomerAddress upCustomerAddress = new CustomerAddress();
-			upCustomerAddress.setCustomer_address_id(customerAddress.getCustomer_address_id());
-			upCustomerAddress.setAddress(address);
-			upCustomerAddress.setProvince(province);
-			upCustomerAddress.setCity(city);
-			upCustomerAddress.setArea(area);
-			upCustomerAddress.setLbs_lat(lat);
-			upCustomerAddress.setLbs_lng(lng);
-			customerAddressService.updateByPrimaryKeySelective(upCustomerAddress);
-		}*/
+	public Object get_has_store_time_scope(String pay_order_id,String address){
 		Order order = orderService.selectByPrimaryKey(pay_order_id);
 
 		OrderItemExample orderItemExample = new OrderItemExample();
@@ -1874,25 +1834,19 @@ public class OrderController {
 			stationList = stationService.filterByProduct(product, stationList);
 		}
 
-		List<List<TimeScopeStore>> listTime = stationList.stream().map(n -> {
-			StudentExample studentExample = new StudentExample();
-			studentExample.or().andStation_idEqualTo(n.getStation_id());
-			List<Student> students = studentService.selectByExample(studentExample);
-			OneDayStore oneDayStore = getStudentsStroe(timesList, students, server_date);
-			List<TimeScopeStore> scopeStores = oneDayStore.getScopeStores();
-			scopeStores = scopeStores.stream().filter(t -> t.getStore() >= (proSku.getBuy_multiple_o2o() == 1 ? orderItem.getNum() : 1)).collect(Collectors.toList());
-			return scopeStores;
-		}).collect(Collectors.toList());
+		List<TimeModel> timeModels = storeService.stationsTimeModel(stationList, 15, proSku,
+				proSku.getBuy_multiple_o2o() == 1 ? orderItem.getNum() : 1);
 
-		listTime.sort( (a, b) -> b.size() - a.size());
-		List<TimeScopeStore> scopeStores = new ArrayList<>();
-		if (listTime.size() > 0){
-			scopeStores  = listTime.get(0);
-		}
-		if (scopeStores.size() <= 0){
+		timeModels = timeModels.stream().filter(n -> n.isActive() == true).collect(Collectors.toList());
+		timeModels = timeModels.stream().map(n ->{
+			Set<TimeModel.Model> models = n.getModels().stream().filter(m -> m.isActive() == true).collect(Collectors.toSet());
+			n.setModels(models);
+			return n;
+		}).collect(Collectors.toList());
+		if (timeModels.size() <= 0){
 			map.put("msg","无可供选择的服务时间段！");
 		}else{
-			map.put("scopeStores",scopeStores);
+			map.put("timeModels",timeModels);
 		}
 		return map;
 	}
@@ -1980,28 +1934,17 @@ public class OrderController {
 		}
 		//更新服务时间到服务单上
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-		SkuTime skuTime = null;
+		String[] split = null;
 		if (!"".equals(time) && time != null){
-			try {
-				skuTime =JacksonUtil.json_to_object(time,SkuTime.class);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			split = time.split(",");
 		}
-		int s = skuTime.getS();
-		int e = skuTime.getE();
+		String s = split[0];
+		String e = split[1];
 		String begin = null;
 		String end = null;
-		Map<String, Integer> timeUnisMap = Constant.timeUnisMap;
-		Iterator<Map.Entry<String, Integer>> iterator = timeUnisMap.entrySet().iterator();
-		while (iterator.hasNext()){
-			Map.Entry<String, Integer> entry = iterator.next();
-			if (entry.getValue().equals(s)){
-				begin = select_date + " " + entry.getKey();
-			}
-			if (entry.getValue().equals(e)){
-				end = select_date + " " + entry.getKey();
-			}
+		begin = select_date + " " + s;
+		if (!"untime".equals(e)){
+			end = select_date + " " + e;
 		}
 		ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
 		Criteria criteria = serviceUnitExample.or();
@@ -2009,7 +1952,9 @@ public class OrderController {
 		ServiceUnit upUnit = new ServiceUnit();
 		try {
 			upUnit.setC_begin_datetime(sdf.parse(begin));
-			upUnit.setC_end_datetime(sdf.parse(end));
+			if (end != null){
+				upUnit.setC_end_datetime(sdf.parse(end));
+			}
 			serviceUnitService.updateByExampleSelective(upUnit,serviceUnitExample);
 		} catch (ParseException e1) {
 			e1.printStackTrace();
