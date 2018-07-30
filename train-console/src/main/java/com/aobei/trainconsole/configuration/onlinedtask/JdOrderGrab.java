@@ -103,7 +103,7 @@ public class JdOrderGrab {
     /**
      * 定时抓取订单数据
      */
-    //@Scheduled(cron = "0 0/10 * * * ?")
+    //@Scheduled(cron = "0 0/5 * * * ?")
     //@Scheduled(initialDelay = 2000, fixedDelay = 24*60*60*100)
     private void getJdOrder() {
         //保证单实例运行
@@ -121,12 +121,12 @@ public class JdOrderGrab {
             PopOrderSearchRequest request=new PopOrderSearchRequest();
             Calendar now = Calendar.getInstance();
             Date nowTime = now.getTime();
-            now.add(Calendar.MINUTE,-10);
+            now.add(Calendar.MINUTE,-5);
             Date before10m = now.getTime();
             String endDate = sdf.format(nowTime) + ":00";
             String startDate = sdf.format(before10m) + ":00";
-//            request.setStartDate(startDate);
-//            request.setEndDate(endDate);
+            request.setStartDate(startDate);
+            request.setEndDate(endDate);
             request.setOrderState( "WAIT_SELLER_STOCK_OUT,FINISHED_L");
             request.setOptionalFields( "orderId," +  //	订单id
                     "venderId" +   //	商家id
