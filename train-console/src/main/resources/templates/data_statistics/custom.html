@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"> -->
+<head>
+    <meta charset="UTF-8"></meta>
+    <title>顾客数据统计</title>
+    <link th:href="@{/js/jquery-date-range-picker/daterangepicker.min.css}" rel="stylesheet"/>
+    <style type="text/css">
+        .inputDate{
+            width: 453px;
+            display: none;
+        }
+
+        #btnGroups .active{
+            background-color: #3b97d7;
+            color: white;
+        }
+
+        #inputGroups{
+            margin: 10px;
+            margin-left: 0px;
+        }
+
+        #inputGroups .btn{
+            margin-left: 80px;
+        }
+
+        #inputGroups .active{
+            display: inline-block;
+        }
+
+        #monthInputs select{
+            width: 80px;
+            margin-right: 5px;
+            display: inline-block;
+        }
+
+        .main_charts{
+            padding: 5px;
+        }
+
+        .main_charts .panel{}
+
+        .main_charts .panel .panel-heading i{
+            cursor: pointer;
+        }
+    </style>
+    <script TYPE="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+    <script TYPE="text/javascript" th:src="@{/js/jquery-date-range-picker/jquery.daterangepicker.min.js}"></script>
+    <script TYPE="text/javascript" th:src="@{/js/echarts.min.js}"></script>
+    <script type="text/javascript" th:inline="javascript">
+        $(function(){
+            // 按日
+            $('#inputDay').dateRangePicker({
+                autoClose: true,
+                showShortcuts: false,
+                startOfWeek: 'monday',
+                separator:'  至  ',
+                language: 'cn',
+                setValue: function(s){
+                    if(!$(this).is(':disabled') && s != $(this).val()){
+                        $(this).val(s);
+                    }
+                },
+                startDate: '2018-01-01',
+                endDate: moment().format('YYYY-MM-DD')
+            });
+
+            // 按周
+            $('#inputWeek').dateRangePicker({
+                format: 'ww周(YYYY-MM-DD)',
+                autoClose: true,
+                batchMode: 'week-range',
+                showShortcuts: false,
+                startOfWeek: 'monday',
+                showWeekNumbers: true,
+                separator:'  至  ',
+                language: 'cn',
+                setValue: function(s){
+                    if(!$(this).is(':disabled') && s != $(this).val()){
+                        $(this).val(s);
+                    }
+                },
+                startDate: '2018-01-01',
+                endDate: moment().add(7 - moment().day(),'days').format('YYYY-MM-DD')
+            });
+
+
+
+            // 按钮条切换
+            $('#btnGroups .btn').click(function(){
+                var index = $(this).index();
+                $('#btnGroups .btn').removeClass('active');
+                $(this).addClass('active');
+                $('#inputGroups .inputDate').removeClass('active');
+                $('#inputGroups .inputDate').eq(index).addClass('active');
+            });
+
+            // 图表收起/展开
+            $('.up_and_down').click(function () {
+                $(this).toggleClass('fa-caret-down fa-caret-up');
+                $(this).closest('.panel').find('.panel-body').slideToggle('snow');
+            });
+
+            // 查询点击操作
+            $('#btnDataSearch').click(function() {
+                var data = getInputDateValue();
+                if(!data.startDate || !data.endDate){
+                    alertify.alert('请选择日期范围');
+                    return;
+                }
+                if(data.startDate > data.endDate){
+                    alertify.alert('开始日期不能大于结束日期');
+                    return;
+                }
+                doCharts(data);
+            });
+
+            // 初始化月方式下拉组件
+            function initMonthSelect() {
+                var startYear = 2018;
+                var endYear = moment().year();
+                var options = [];
+                for(var i = startYear; i >= endYear; i--) {
+                    options.push('<option value="' + i +'">' + i + '</option>');
+                }
+                $('#monthInputs select:eq(0),#monthInputs select:eq(2)').html(options.join(''));
+
+                options = [];
+                for(var i = 1; i <= 12; i++) {
+                    var mi = i;
+                    if(mi < 10){
+                        mi = '0' + mi;
+                    }
+                    options.push('<option value="' + mi +'">' + mi + '月</option>');
+                }
+                $('#monthInputs select:eq(1),#monthInputs select:eq(3)').html(options.join(''));
+
+                var current_month = moment().month();
+                $('#monthInputs select:eq(3)').find('option:eq(' +current_month+')').prop('selected','selected');
+            }
+
+            // 初始化页面加载
+            (function init(){
+                // 初始化值
+                $('#inputGroups input').eq(0).val([
+                    moment().format('YYYY-MM-01'),
+                    '  至  ',
+                    moment().format('YYYY-MM-DD')].join('')
+                );
+                initMonthSelect();
+                initCharts();
+                $('#btnDataSearch').trigger('click');
+            })();
+        });
+
+        /**
+         * 获取 表单值
+         */
+        function getInputDateValue(){
+            var type = $('#btnGroups .active').index() + 1;
+            var startDate;
+            var endDate;
+            if(type == 1){
+                var dateStr = $('#inputGroups .active').val().split('  至  ');
+                startDate = dateStr[0];
+                endDate = dateStr[1];
+            }else if(type == 2){
+                if($('#inputGroups .active').val()){
+                    var dateStr = $('#inputGroups .active').val().split('  至  ');
+                    startDate = dateStr[0].replace(/(\d+周\()(\d+\-\d+\-\d+)(\))/,'$2');
+                    endDate = dateStr[1].replace(/(\d+周\()(\d+\-\d+\-\d+)(\))/,'$2');
+                }
+            }else if (type == 3){
+                startDate = [$('#monthInputs select:eq(0)').val(),
+                    '-',
+                    $('#monthInputs select:eq(1)').val(),
+                    '-01'].join('');
+                endDate = moment([
+                    $('#monthInputs select:eq(2)').val(),
+                    '-',
+                    $('#monthInputs select:eq(3)').val(),
+                    '-01'].join('')
+                ).add(1,'months').add(-1,'days').format('YYYY-MM-DD');
+            }
+            return {type:type,startDate:startDate,endDate:endDate};
+        }
+
+        /**
+         * 初始化图表
+         */
+        function initCharts(){
+            window.CHARTS  = {
+                customDayChart : echarts.init(document.getElementById('customDaySumChart'))
+            };
+        }
+
+        /**
+         * 执行操作
+         * @param data
+         * type 类型 1 按天 2 按周 3 按月
+         * startDate 开始日期
+         * endDate 结束日期
+         */
+        function doCharts(data){
+            alert(JSON.stringify(data));
+
+            // TODO 自定义加载图表数据
+
+            // 加载数据示例 可删后 自定义
+            customUserDaySum(data);
+        }
+
+        /**
+         *  顾客每日用户总量
+         */
+        function customUserDaySum(data) {
+            CHARTS.customDayChart.showLoading();
+            var option = {
+                title: {
+                    text: '按日/周/月统计顾客数'
+                },
+                tooltip: {},
+                legend: {
+                    data:['销量']
+                },
+                xAxis: {
+                    data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"]
+                },
+                yAxis: {},
+                series: [{
+                    name: '销量',
+                    type: 'bar',
+                    data: [5, 20, 36, 10, 10, 20]
+                }]
+
+            };
+
+            CHARTS.customDayChart.hideLoading();
+            // 使用刚指定的配置项和数据显示图表。
+            CHARTS.customDayChart.setOption(option);
+        }
+
+    </script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+
+    <!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+    <div class="page_content_bar form-inline">
+
+        <!--/* 面包屑  */-->
+        <ol class="breadcrumb clearfix">
+            <li class="active">顾客数据统计</li>
+        </ol>
+    </div>
+
+    <!--/* 页面部分二              页面主内容  */-->
+    <div class="page_content_main" data-sidea="side_63">
+        <!-- 日期选择控件  -->
+        <div style="padding: 0px 10px 10px 10px;">
+            <div class="btn-group" role="group" aria-label="..." style="margin-right: 80px" id="btnGroups">
+                <button  type="button" class="btn btn-default active">按日分析</button>
+                <button  type="button" class="btn btn-default">按周分析</button>
+                <button  type="button" class="btn btn-default">按月分析</button>
+            </div>
+            <div id="inputGroups">
+                <input type="text" id="inputDay" placeholder="请选择日期" readonly class="form-control input-sm inputDate active">
+                <input type="text" id="inputWeek" placeholder="请选择日期" readonly class="form-control input-sm inputDate">
+                <div id="monthInputs" class="inputDate">
+                    <select class="form-control input-sm"></select>
+                    <select class="form-control input-sm"></select>
+                    &nbsp;至&nbsp;
+                    <select class="form-control input-sm"></select>
+                    <select class="form-control input-sm"></select>
+                </div>
+                <button class="btn btn-default" id="btnDataSearch">查找</button>
+            </div>
+        </div>
+
+        <!--  图表数据  -->
+        <div class="main_charts">
+            <!-- 顾客相关数据图表 -->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    顾客相关数据图表（点击此栏可收起/展开图表）
+                    <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true" style="margin-left: 20px"></i>
+                    <i class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+                </div>
+                <div class="panel-body">
+                    <div id="customDaySumChart" style="height:400px;"></div>
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+</body>
+</html>
