@@ -81,6 +81,8 @@ type Mutation {
 	customer_exchange_code_to_coupon(exchange_code:String!):MutationResult
 	#推送，绑定设备和推送账户
 	mutation_push_bind(push_client_id:String):MutationResult
+	#推送,解绑
+	mutation_push_unbind(push_client_id:String):MutationResult
 	#顾客解绑
 	customer_remove_the_bind:MutationResult
 

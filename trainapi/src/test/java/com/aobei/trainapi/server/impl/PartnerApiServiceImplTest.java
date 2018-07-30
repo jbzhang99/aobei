@@ -33,9 +33,10 @@ import com.aobei.trainapi.util.JacksonUtil;
 
 import custom.bean.Constant;
 import custom.bean.OrderInfo;
+import org.springframework.transaction.annotation.Transactional;
 
 @RunWith(SpringRunner.class)
-//@Transactional
+@Transactional
 @SpringBootTest
 public class PartnerApiServiceImplTest {
 
@@ -432,17 +433,17 @@ public class PartnerApiServiceImplTest {
 		msg.setId(IdGenerator.generateId());
 		msg.setType(2);
 		msg.setBis_type(1);
-		msg.setUser_id(1059952139373158400l);
+		msg.setUser_id(1163365587586228224l);
 		msg.setUid(1067677206111346688l);
 		msg.setMsg_title("测试学员消息");
 		// 服务人员修改
 		MessageContent.ContentMsg content = new MessageContent.ContentMsg();
 		content.setMsgtype("native");
-		content.setContent("这个是测试学员消息的哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈");
+		content.setContent("这个是测试学员消息的哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵");
 		/*Map<String,String> param = new HashMap<>();
 		param.put("orderStatus","waitService");
-		param.put("pay_order_id","1531986036_1");
-		TransmissionContent tContent = new TransmissionContent(TransmissionContent.PARTNER,TransmissionContent.ORDER_DETAIL,param);
+		param.put("pay_order_id","1524481533");
+		TransmissionContent tContent = new TransmissionContent(TransmissionContent.STUDENT,TransmissionContent.ORDER_DETAIL,param);
 		content.setHref(tContent.getHrefNotEncode());*/
 		content.setTitle("测试学员消息");
 		content.setTypes(1);
@@ -459,7 +460,7 @@ public class PartnerApiServiceImplTest {
 		msg.setMsg_content(object_to_json);
 		msg.setCreate_datetime(new Date());
 		msg.setNotify_datetime(new Date());
-		msg.setGroup_id("1531986036_1");
+		msg.setGroup_id("1524481533");
 		msg.setApp_type(1);
 		msg.setSend_type(1);
 		msg.setApp_platform(0);
@@ -497,5 +498,16 @@ public class PartnerApiServiceImplTest {
 		app.setDescr_version("你升级呀,升级呀,升级呀升级呀,升级呀");
 		appGrowthService.insertSelective(app);
 	}
+
+	@Test
+	public void robbingDetail(){
+		String pay_order_id = "1527602394_1";
+		Partner partner = partnerService.selectByPrimaryKey(1067670088150966272l);
+		OrderInfo orderInfo = partnerApiService.partnerRobbingDetail(partner, pay_order_id);
+		Assert.assertNotNull(orderInfo);
+		Assert.assertEquals(orderInfo.getOrderStatus(),"waitRobbing");
+	}
+
+
 
 }
