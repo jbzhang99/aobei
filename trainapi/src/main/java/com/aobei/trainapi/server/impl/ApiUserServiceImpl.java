@@ -140,16 +140,14 @@ public class ApiUserServiceImpl implements ApiUserService {
                             //减优惠券数量
                             Coupon coupon = couponService.selectByPrimaryKey(couponandCouponEnv.getCoupon_id());
                             String key = Constant.getCouponKey(coupon.getCoupon_id());
-                            if (!redisTemplate.hasKey(key)) {
-                                if(coupon.getNum_able()>0){
-                                    redisTemplate.opsForValue().set(key,coupon.getNum_able()+"");
+                            if (coupon.getNum_limit() == 1){
+                                int num = Integer.parseInt(String.valueOf(redisTemplate.opsForValue().get(key)));
+                                if (num == 0){
+                                    redisTemplate.delete(key);
+                                }else {
+                                    coupon.setNum_able(Integer.parseInt(redisTemplate.opsForValue().increment(key,-1L)+""));
                                 }
-                            }else  if(Integer.parseInt(String.valueOf(redisTemplate.opsForValue().get(key)))==0){
-                                response.setErrors(Errors._41009);
-                                redisTemplate.delete(key);
-                                return response;
                             }
-                            coupon.setNum_able(Integer.parseInt(redisTemplate.opsForValue().increment(key,-1L)+""));
                             couponService.updateByPrimaryKeySelective(coupon);
                             //为用户添加使用记录
                             CouponReceive couponReceive = new CouponReceive();
