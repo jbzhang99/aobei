@@ -6,6 +6,7 @@ import com.aobei.common.boot.event.IGtPushEvent;
 import com.aobei.train.Roles;
 import com.aobei.train.model.Customer;
 import com.aobei.train.model.Order;
+import com.aobei.train.service.OrderService;
 import com.aobei.trainapi.server.handler.PushHandler;
 import custom.bean.OrderInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ public class RestUtilController {
     PushHandler pushHandler;
     @Autowired
     EventPublisher publisher;
+    @Autowired
+    OrderService orderService;
 
     @RequestMapping("/push")
     public Map<String, String> push(@RequestParam String clientId,
@@ -37,16 +40,14 @@ public class RestUtilController {
         data.setType(IGtPushData.BIND);
         Order order = new Order();
         order.setName("这是一个订单");
-        if(orderId==null){
-            map.put("msg","请输入一个想要跳转orderId");
+        if (orderId == null) {
+            map.put("msg", "请输入一个想要跳转orderId");
             return map;
         }
 
         order.setPay_order_id(orderId);
 
-        OrderInfo info = new OrderInfo(Roles.STUDENT);
-        info.setOrder(order);
-
+        OrderInfo info = orderService.orderInfoDetail(Roles.STUDENT,order);
 
         try {
             switch (client) {
@@ -67,21 +68,25 @@ public class RestUtilController {
                         publisher.publish(new IGtPushEvent(this, data));
                         Thread.sleep(500);
                     }
-                    if(target==null){
+                    if (target == null) {
                         pushHandler.pushOrderMessageToPartner(order, "testuser" + phonetype);
-                    }else if("homepage".equals(target)){
+                    } else if ("homepage".equals(target)) {
                         pushHandler.pushRobbingMessageToPartner("testuser" + phonetype);
-                    }else {
-                        map.put("msg","如果想要发起模拟抢单的推送，target参数请输入 homepage");
+                    } else {
+                        map.put("msg", "如果想要发起模拟抢单的推送，target参数请输入 homepage");
                         return map;
                     }
 
                     break;
-//          case "student":
-//              data.setClient(IGtPushData.Client.student);
-//              data.setAlia("testuser");
-//              pushHandler.pushOrderMessageBeforServiceToStudent(info,"testuser");
-//              break;
+                case "student":
+                    if (bind) {
+                        data.setClient(IGtPushData.Client.student);
+                        data.setAlia("testuser" + phonetype);
+                        publisher.publish(new IGtPushEvent(this, data));
+                        Thread.sleep(500);
+                    }
+                    pushHandler.pushOrderMessageBeforServiceToStudent(info, "testuser"+phonetype);
+                    break;
             }
             map.put("code", "success");
 
