@@ -97,18 +97,31 @@ public class CouponEnvController {
 			@RequestParam(value="s_date",required=false)@DateTimeFormat(pattern="yyyy-MM-dd HH:ss:mm")String s_date,
 			@RequestParam(value="e_date",required=false)@DateTimeFormat(pattern="yyyy-MM-dd HH:ss:mm")String e_date,
 								Authentication authentication,
-								Long[] coupon_ids){
+								Long[] coupon_ids,
+								Integer coupon_number){
 		HashMap<String,String> map = new HashMap<String,String>();
 		Users users = usersService.xSelectUserByUsername(authentication.getName());
-		CouponEnvExample couponEnvExample = new CouponEnvExample();
-		couponEnvExample.or()
-				.andCoupon_env_typeEqualTo(1)
-				.andTypeEqualTo(1)
-				.andStatusEqualTo(1);
-		List<CouponEnv> couponEnvs = couponEnvService.selectByExample(couponEnvExample);
-		if(couponEnvs.size()>0){
-			map.put("message", "添加失败,派券类型 新注册用户只能有一个！");
-			return map;
+		if(couponEnv.getCoupon_env_type()==1){
+			CouponEnvExample couponEnvExample = new CouponEnvExample();
+			couponEnvExample.or()
+					.andCoupon_env_typeEqualTo(1)
+					.andTypeEqualTo(1)
+					.andStatusEqualTo(1);
+			List<CouponEnv> couponEnvs = couponEnvService.selectByExample(couponEnvExample);
+			if(couponEnvs.size()>=1){
+				map.put("message", "1");
+				return map;
+			}
+		}
+		if(couponEnv.getCoupon_env_type()==1){
+			if(coupon_ids==null){
+				map.put("message", "优惠券为空，修改失败!");
+				return map;
+			}
+			if(coupon_ids.length>10){
+				map.put("message", "3");
+				return map;
+			}
 		}
 		int i = 0;
 		try {
@@ -152,10 +165,15 @@ public class CouponEnvController {
 					}
 				}
 				Coupon coupon = couponService.selectByPrimaryKey(coupon_id_list);
-				if(coupon.getNum_limit()==1){
-					if(couponEnv.getCoupon_number()>coupon.getNum_able()){
-						map.put("message", "优惠券数量不能大于优惠券可用数量,添加失败！");
-						return map;
+				if(coupon!=null){
+					if(coupon.getNum_limit()==1){
+						if(coupon.getNum_able()!=null){
+							if(coupon_number>coupon.getNum_able()){
+								map.put("message", "2");
+								map.put("val",coupon.getNum_able()+"");
+								return map;
+							}
+						}
 					}
 				}
 				couponAndCouponEnvService.batchInsertSelective(list_couponAndCoupon.toArray(new CouponAndCouponEnv[list_couponAndCoupon.size()]));
@@ -223,9 +241,32 @@ public class CouponEnvController {
 			@RequestParam(value="s_date",required=false)@DateTimeFormat(pattern="yyyy-MM-dd HH:ss:mm")String s_date,
 			@RequestParam(value="e_date",required=false)@DateTimeFormat(pattern="yyyy-MM-dd HH:ss:mm")String e_date,
 								 Authentication authentication,
-								 Long[] coupon_ids){
+								 Long[] coupon_ids,
+								 Integer coupon_number){
 		HashMap<String,String> map = new HashMap<String,String>();
 		Users users = usersService.xSelectUserByUsername(authentication.getName());
+		if(couponEnv.getCoupon_env_type()==1){
+			CouponEnvExample couponEnvExample = new CouponEnvExample();
+			couponEnvExample.or()
+					.andCoupon_env_typeEqualTo(1)
+					.andTypeEqualTo(1)
+					.andStatusEqualTo(1);
+			List<CouponEnv> couponEnvs = couponEnvService.selectByExample(couponEnvExample);
+			if(couponEnvs.size()>1){
+				map.put("message", "1");
+				return map;
+			}
+		}
+		if(couponEnv.getCoupon_env_type()==1){
+			if(coupon_ids==null){
+				map.put("message", "优惠券为空，修改失败!");
+				return map;
+			}
+			if(coupon_ids.length>10){
+				map.put("message", "3");
+				return map;
+			}
+		}
 		int i = 0;
 		try {
 			CouponEnvDate couponEnvDate = new CouponEnvDate();
@@ -243,10 +284,6 @@ public class CouponEnvController {
 				List<Integer> list_number = new ArrayList<>();
 				TreeMap<Integer, Long> treeMap = new TreeMap<>();
 				List<CouponAndCouponEnv> list_couponAndCoupon = new ArrayList<>();
-				if(coupon_ids==null){
-					map.put("message", "优惠券为空，修改失败!");
-					return map;
-				}
 				for (Long coupon_id : coupon_ids) {
 					CouponAndCouponEnv couponAndCouponEnv = new CouponAndCouponEnv();
 					couponAndCouponEnv.setCoupon_env_id(couponEnv.getCoupon_env_id());
@@ -270,10 +307,15 @@ public class CouponEnvController {
 					}
 				}
 				Coupon coupon = couponService.selectByPrimaryKey(coupon_id_list);
-				if(coupon.getNum_limit()==1){
-					if(couponEnv.getCoupon_number()>coupon.getNum_able()){
-						map.put("message", "优惠券数量不能大于优惠券可用数量,添加失败！");
-						return map;
+				if(coupon!=null){
+					if(coupon.getNum_limit()==1){
+						if(coupon.getNum_able()!=null){
+							if(coupon_number>coupon.getNum_able()){
+								map.put("message", "2");
+								map.put("val",coupon.getNum_able()+"");
+								return map;
+							}
+						}
 					}
 				}
 				CouponAndCouponEnvExample couponAndCouponEnvExample = new CouponAndCouponEnvExample();
@@ -295,15 +337,20 @@ public class CouponEnvController {
 	 */
 	@ResponseBody
 	@RequestMapping("/queryNumber")
-	public Object queryNumber(Long[] coupon_ids,Long coupon_env_id,
+	public Object queryNumber(Long[] coupon_ids,
 							  @RequestParam(value = "type",required = false)Integer type,
-							  @RequestParam(value = "coupon_id",required = false)Long coupon_id_single){
+							  @RequestParam(value = "coupon_id",required = false)Long coupon_id_single,
+							  Integer number){
 		HashMap<String,Object> map = new HashMap<String,Object>();
 		TreeMap<Integer, Long> treeMap = new TreeMap<>();
 		if(2==type && coupon_id_single!=null){
 			Coupon coupon = couponService.selectByPrimaryKey(coupon_id_single);//首单立减
-			map.put("message", coupon);
-			return map;
+			if(coupon.getNum_limit()==0){
+				if(coupon.getNum_able()>number){
+					map.put("message", coupon);
+					return map;
+				}
+			}
 		}
 		if(type==1 && coupon_ids!=null){
 			for (Long coupon_id : coupon_ids) {
@@ -324,10 +371,10 @@ public class CouponEnvController {
 				}
 			}
 			Coupon coupon = couponService.selectByPrimaryKey(coupon_id_list);
-			CouponEnv couponEnv = couponEnvService.selectByPrimaryKey(coupon_env_id);
+			//CouponEnv couponEnv = couponEnvService.selectByPrimaryKey(coupon_env_id);
 			if(coupon.getNum_limit()==1){
-				if(couponEnv.getCoupon_number()>coupon.getNum_able()){
-					map.put("message", "优惠券数量不能大于优惠券可用数量,添加失败！");
+				if(number>coupon.getNum_able()){
+					map.put("message", coupon);
 					return map;
 				}
 			}
@@ -342,17 +389,18 @@ public class CouponEnvController {
 		CouponEnv couponEnv = couponEnvService.selectByPrimaryKey(couponEnv_id);
 		OperateLog operateLog = new OperateLog();
 		Users users = usersService.xSelectUserByUsername(authentication.getName());
-		CouponEnvExample couponEnvExample = new CouponEnvExample();
-		couponEnvExample.or()
-				.andCoupon_env_typeEqualTo(1)
-				.andTypeEqualTo(1)
-				.andStatusEqualTo(1);
-		List<CouponEnv> couponEnvs = couponEnvService.selectByExample(couponEnvExample);
-		if(couponEnvs.size()>0){
-			map.put("message", "生效失败,派券类型 新注册用户只能有一个，请先失效原策略！");
-			return map;
-		}
 		if(couponEnv.getStatus()==0){
+			CouponEnvExample couponEnvExample = new CouponEnvExample();
+			couponEnvExample.or()
+					.andCoupon_env_typeEqualTo(1)
+					.andTypeEqualTo(1)
+					.andStatusEqualTo(1);
+			List<CouponEnv> couponEnvs = couponEnvService.selectByExample(couponEnvExample);
+			if(couponEnvs.size()>=1){
+				map.put("message", "change_status");
+				return map;
+			}
+
 			couponEnv.setStatus(1);//改为生效
 			int i = couponEnvService.updateByPrimaryKeySelective(couponEnv);
 			map.put("message", String.format("生效%s",i>0?"成功":"失败"));
@@ -368,11 +416,11 @@ public class CouponEnvController {
 			logger.info("M[couponEnv] F[change_status] U[{}]; param[couponEnv:{}]; result:{}",
 					users.getUser_id(),couponEnv,String.format("修改优惠策略%s", i > 0 ? "成功":"失败"));
 
-			operateLog.setOperate_log_id(IdGenerator.generateId());
+			/*operateLog.setOperate_log_id(IdGenerator.generateId());
 			operateLog.setOperate("M[couponEnv] F[change_status] U["+users.getUsername()+"] D[couponEnv_id:"+couponEnv.getCoupon_env_id()+"] ");
 			operateLog.setUser_id(users.getUser_id());
 			operateLog.setCreate_datetime(new Date());
-			operateLogService.insertSelective(operateLog);
+			operateLogService.insertSelective(operateLog);*/
 			return map;
 		}
 	}
