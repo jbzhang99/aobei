@@ -123,6 +123,7 @@ public class QimoOrderController {
                                      @RequestParam(required = false) String qe_pay_time
                                      ){
         logger.info("qimo tab query:{}", request.getQueryString());
+        logger.info("[receiveQimoRequest getOrders] Agent is {}",Agent);
         if ("".equals(originCallNo) || originCallNo == null){
             originCallNo = "15313882039";
         }
@@ -310,6 +311,7 @@ public class QimoOrderController {
     @ResponseBody
     @RequestMapping(value = {"/generateWorkOrder"} , method = RequestMethod.POST)
     public Object generateWorkOrder(String pay_order_id,String customer_phone,String agent,HttpServletResponse servletResponse){
+        logger.info("[generateWorkOrder generateWorkOrder] Agent is {}",agent);
         QimoGenerateRequestBody requestBody = new QimoGenerateRequestBody();
         requestBody.set_id("");
         requestBody.setCustomerId("");
