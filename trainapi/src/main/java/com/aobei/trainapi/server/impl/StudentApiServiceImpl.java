@@ -15,6 +15,7 @@ import com.aobei.trainapi.schema.Errors;
 import com.aobei.trainapi.schema.TokenUtil;
 import com.aobei.trainapi.schema.input.StudentOrderInput;
 import com.aobei.trainapi.schema.type.MutationResult;
+import com.aobei.trainapi.server.CustomerApiService;
 import com.aobei.trainapi.server.StudentApiService;
 import com.aobei.trainapi.server.bean.*;
 import com.aobei.trainapi.server.bean.Img;
@@ -96,6 +97,8 @@ public class StudentApiServiceImpl implements StudentApiService
 	TokenUtil TOKEN;
 	@Autowired
 	VideoContentService videoContentService;
+	@Autowired
+	CustomerApiService customerApiService;
 	Logger logger = LoggerFactory.getLogger(StudentApiServiceImpl.class);
 
 	/**
@@ -352,6 +355,29 @@ public class StudentApiServiceImpl implements StudentApiService
 		orderInfo.setWhetherCanContinue(1);
 		if (skuNum == 0){
 			orderInfo.setWhetherCanContinue(0);
+		}
+		//是否支持取消订单（true支持,false不支持）
+		switch (orderInfo.getOrder().getStatus_active()){
+			case 1:
+				orderInfo.setAllowedToCancel(true);
+				break;
+			case 2:
+			case 3:
+				if ("JD-001".equals(orderInfo.getOrder().getChannel())){
+					orderInfo.setAllowedToCancel(false);
+				}else {
+					CancleStrategyMethod cancleStrategyMethod = customerApiService.cancleStrategyMethod(orderInfo.getCustomer(), pay_order_id).getT();
+					if (cancleStrategyMethod == null) {
+						orderInfo.setAllowedToCancel(false);
+					} else {
+						orderInfo.setAllowedToCancel(true);
+					}
+				}
+				break;
+			case 4:
+			case 5:
+				orderInfo.setAllowedToCancel(false);
+				break;
 		}
 		logger.info("api-method:selectStuShowTaskdetail:process orderInfo:{}", orderInfo);
 		return orderInfo;
@@ -920,7 +946,7 @@ public class StudentApiServiceImpl implements StudentApiService
 	/**
 	 * 服务人员取消订单
 	 */
-	@Transactional(timeout = 2)
+	@Transactional(timeout = 3)
 	@Override
 	public ApiResponse cancelOrder(Student student, String pay_order_id) {
 		logger.info("api-method:cancelOrder:params student:{},pay_order_id:{}", student, pay_order_id);

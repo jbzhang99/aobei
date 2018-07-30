@@ -92,22 +92,23 @@
             }
         })
 
-		$("#coupon_number").blur(function(){
+		/*$("#coupon_number").blur(function(){
 			var sv = $("#coupon_id option:selected").val();
 			var env = $("#couponEnv_id").val();
 			var num = $("#coupon_number").val();
 			var type = $("#coupon_env_type").val();
 			if(type==1){
 				if(num!=0){
-					$.post('/couponEnv/queryNumber',{coupon_ids:sv,coupon_env_id:env, type: type},function(data){
+					$.post('/couponEnv/queryNumber',{coupon_ids:sv,coupon_env_id:env, type: type,number:num},function(data){
 						if(data.message!=null){
-							alertify.alert("最小优惠券数量为" + data.message.num_limit+"优惠券数量不能大于此数！");
+                            $("#coupon_number").val('');
+							alertify.alert("最小优惠券数量为[" + data.message.num_able+"]优惠券数量不能大于此数！");
 							return false;
 						}
 					})
 				}
 			}
-		})
+		})*/
 
         $("#coupon_env_type").change(function () {
             var val = $(this).val();
@@ -132,8 +133,18 @@
 			var select_coupon = $("#coupon_id option:selected").val()
 			var select_type = $("#type option:selected").val();
 			var select_couponenv_type = $("#couponenv_type").val();
+            var regex_name = /^[a-zA-Z0-9\u4e00-\u9fa5]+$/;
 
-
+            if(!regex_name.test(cname)){
+                reset();
+                alertify.alert("优惠策略名称只能为中文，数字或字母！")
+                return false;
+            }
+            if(cname.length>20){
+                reset();
+                alertify.alert("优惠策略名称不能超过20个字！")
+                return false;
+            }
 			if(coupon_number!=""){
 				var regex = /^[0-9]*$/;
 				var data = $("#coupon_number").val();
@@ -143,6 +154,11 @@
 					return false;
 				}
 			}
+            if(Number(coupon_number)>10000){
+                reset();
+                alertify.alert("优惠券最多添加10000张！")
+                return false;
+            }
 			if($("#type option:selected").val()==1){
 				if(sdate==""){
 					reset();
@@ -206,6 +222,24 @@
 					data:$("#form1").serializeArray(),
 					success:function(data){
 						var current = [[${current}]]
+                        var mgs = data.message;
+						if(mgs!=undefined){
+                            if(mgs.indexOf("1")!=-1){
+                                reset();
+                                alertify.alert("派券类型的新注册用户只能有一个！")
+                                return false;
+                            }
+                            if(mgs.indexOf("2")!=-1){
+                                reset();
+                                alertify.alert("优惠券数量不能大于优惠券可用数量【"+data.val+"】,添加失败！")
+                                return false;
+                            }
+                            if(mgs.indexOf("3")!=-1){
+                                reset();
+                                alertify.alert("优惠券不能超过十张，添加失败!")
+                                return false;
+                            }
+						}
 						reset();
 						alertify.success(data.message);
 						setTimeout(function(){							

@@ -54,7 +54,7 @@ $(function(){
 
 							<td th:text="${env.name}"></td>
 							<td th:switch="${env.coupon_env_type}">
-								<p th:case="1">注册派单</p>
+								<p th:case="1">注册派券</p>
 								<p th:case="2">首单立减</p>
 							</td>
 							<td th:text="${#dates.format(env.create_datetime,'yyyy-MM-dd HH:mm:ss')}"></td>
