@@ -2585,6 +2585,9 @@ public class OrderController {
 		if (end > 45) {
 			restUnit = 0;
 		}
+		if (end > 42) {
+			end = 42;
+		}
 		//连续时间：如果不可使用，就代表不能提供服务；
 		for (int i = begin - (restUnit-1); i < end + restUnit; i++) {
 			if (arr[i] != 1) {
