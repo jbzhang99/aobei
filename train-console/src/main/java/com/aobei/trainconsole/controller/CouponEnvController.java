@@ -1,5 +1,6 @@
 package com.aobei.trainconsole.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.aobei.train.IdGenerator;
 import com.aobei.train.model.*;
 import com.aobei.train.service.*;
@@ -115,7 +116,7 @@ public class CouponEnvController {
 		}
 		if(couponEnv.getCoupon_env_type()==1){
 			if(coupon_ids==null){
-				map.put("message", "优惠券为空，修改失败!");
+				map.put("message", "4");
 				return map;
 			}
 			if(coupon_ids.length>10){
@@ -223,7 +224,12 @@ public class CouponEnvController {
 		model.addAttribute("list_coupon", list_coupon);
 		model.addAttribute("current", current);
 		model.addAttribute("env", env);
-		model.addAttribute("courponsTeam", couponAndCouponEnvs);
+		try {
+			model.addAttribute("courponsTeam", JacksonUtil.object_to_json(couponAndCouponEnvs));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return "couponEnv/couponEnv_edit";
 	}
 	/**
@@ -259,7 +265,7 @@ public class CouponEnvController {
 		}
 		if(couponEnv.getCoupon_env_type()==1){
 			if(coupon_ids==null){
-				map.put("message", "优惠券为空，修改失败!");
+				map.put("message", "4");
 				return map;
 			}
 			if(coupon_ids.length>10){
@@ -328,7 +334,7 @@ public class CouponEnvController {
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}
-		map.put("message", String.format("修改优惠策略%s", i > 0 ? "成功":"失败"));
+		map.put("message", String.format("修改优惠策略%s!", i > 0 ? "成功":"失败"));
 		return map;
 	}
 	/**
@@ -336,51 +342,76 @@ public class CouponEnvController {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping("/queryNumber")
-	public Object queryNumber(Long[] coupon_ids,
-							  @RequestParam(value = "type",required = false)Integer type,
-							  @RequestParam(value = "coupon_id",required = false)Long coupon_id_single,
-							  Integer number){
-		HashMap<String,Object> map = new HashMap<String,Object>();
-		TreeMap<Integer, Long> treeMap = new TreeMap<>();
-		if(2==type && coupon_id_single!=null){
-			Coupon coupon = couponService.selectByPrimaryKey(coupon_id_single);//首单立减
-			if(coupon.getNum_limit()==0){
-				if(coupon.getNum_able()>number){
-					map.put("message", coupon);
-					return map;
-				}
+	@RequestMapping("/check")
+	public Object queryNumber(CouponEnv couponEnv,
+							  Long[] coupon_ids,
+							  Integer coupon_number){
+		HashMap<String,String> map = new HashMap<String,String>();
+		if(couponEnv.getCoupon_env_type()==1){
+			CouponEnvExample couponEnvExample = new CouponEnvExample();
+			couponEnvExample.or()
+					.andCoupon_env_typeEqualTo(1)
+					.andTypeEqualTo(1)
+					.andStatusEqualTo(1);
+			List<CouponEnv> couponEnvs = couponEnvService.selectByExample(couponEnvExample);
+			if(couponEnvs.size()>1){
+				map.put("message", "1");
+				return map;
 			}
 		}
-		if(type==1 && coupon_ids!=null){
+		if(couponEnv.getCoupon_env_type()==1){
+			if(coupon_ids==null){
+				map.put("message", "优惠券为空，修改失败!");
+				return map;
+			}
+			if(coupon_ids.length>10){
+				map.put("message", "3");
+				return map;
+			}
+		}
+
+		if(couponEnv.getCoupon_env_type()==1) {
+			List<Integer> list_number = new ArrayList<>();
+			TreeMap<Integer, Long> treeMap = new TreeMap<>();
+			List<CouponAndCouponEnv> list_couponAndCoupon = new ArrayList<>();
 			for (Long coupon_id : coupon_ids) {
+				CouponAndCouponEnv couponAndCouponEnv = new CouponAndCouponEnv();
+				couponAndCouponEnv.setCoupon_env_id(couponEnv.getCoupon_env_id());
+				couponAndCouponEnv.setCoupon_id(coupon_id);
+				list_couponAndCoupon.add(couponAndCouponEnv);
 				Coupon coupon = couponService.selectByPrimaryKey(coupon_id);
-				if(coupon!=null){
-					if(coupon.getNum_limit()==1){
+				if (coupon != null) {
+					if (coupon.getNum_limit() == 1) {
 						Integer num_able = coupon.getNum_able();
 						treeMap.put(num_able, coupon_id);
 					}
 				}
+				list_number.add(coupon.getNum_able());
 			}
 			Long coupon_id_list = null;
 			for (Map.Entry<Integer, Long> entry : treeMap.entrySet()) {
 				Long value = entry.getValue();
-				if(value!=null){
+				if (value != null) {
 					coupon_id_list = value;
 					break;
 				}
 			}
 			Coupon coupon = couponService.selectByPrimaryKey(coupon_id_list);
-			//CouponEnv couponEnv = couponEnvService.selectByPrimaryKey(coupon_env_id);
-			if(coupon.getNum_limit()==1){
-				if(number>coupon.getNum_able()){
-					map.put("message", coupon);
-					return map;
+			if (coupon != null) {
+				if (coupon.getNum_limit() == 1) {
+					if (coupon.getNum_able() != null) {
+						if (coupon_number > coupon.getNum_able()) {
+							map.put("message", "2");
+							map.put("val", coupon.getNum_able() + "");
+							return map;
+						}
+					}
 				}
 			}
 		}
 		return null;
 	}
+
 
 	@ResponseBody
 	@RequestMapping("/change_status")
