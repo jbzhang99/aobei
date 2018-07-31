@@ -1,6 +1,7 @@
 package com.aobei.trainconsole.qimo;
 
 import com.alibaba.fastjson.JSONObject;
+import com.aobei.trainconsole.qimo.qimobean.QimoReceiveRequestBody;
 import com.aobei.trainconsole.util.QimoServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public class QimoWorkOrderController {
             // 请求签名校验
             if (QimoServer.sigValidate(authorization, sig)) {
                 JSONObject jsonObject = JSONObject.parseObject(workOrdersJson);
+                QimoReceiveRequestBody receivedWorkOrder = jsonObject.toJavaObject(QimoReceiveRequestBody.class);
 
                 returnCode = "200";
             }
