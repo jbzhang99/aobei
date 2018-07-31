@@ -70,7 +70,7 @@ public class ApiUserServiceImpl implements ApiUserService {
      * @return
      */
     @Override
-    @Transactional(timeout = 5000)
+    @Transactional(timeout = 5)
     public ApiResponse<Customer> bindUser(Long user_id, String phone, String channelCode) {
         ApiResponse<Customer> response = new ApiResponse<>();
         try{
