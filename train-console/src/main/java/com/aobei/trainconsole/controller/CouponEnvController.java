@@ -136,9 +136,6 @@ public class CouponEnvController {
 			if(couponEnv.getCoupon_env_type()==2){
 				couponEnv.setCoupon_id(0l);
 			}
-			i = couponEnvService.insertSelective(couponEnv);
-			logger.info("M[couponEnv] F[add_couponEnv] U[{}]; param[couponEnv:{}]; other[begin_date:{},end_date:{}]; result:{}",
-					users.getUser_id(),couponEnv,s_date,e_date,String.format("添加优惠策略%s", i > 0 ? "成功":"失败"));
 			if(couponEnv.getCoupon_env_type()==1){
 				List<Integer> list_number = new ArrayList<>();
 				TreeMap<Integer, Long> treeMap = new TreeMap<>();
@@ -180,6 +177,9 @@ public class CouponEnvController {
 				couponAndCouponEnvService.batchInsertSelective(list_couponAndCoupon.toArray(new CouponAndCouponEnv[list_couponAndCoupon.size()]));
 				logger.info("M[couponEnv] F[add_couponEnv] U[{}]; param[couponEnv:{}]; CouponAndCouponEnv_list:size{}",users.getUser_id(),couponEnv,list_couponAndCoupon.size());
 			}
+			i = couponEnvService.insertSelective(couponEnv);
+			logger.info("M[couponEnv] F[add_couponEnv] U[{}]; param[couponEnv:{}]; other[begin_date:{},end_date:{}]; result:{}",
+					users.getUser_id(),couponEnv,s_date,e_date,String.format("添加优惠策略%s", i > 0 ? "成功":"失败"));
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}
@@ -283,9 +283,7 @@ public class CouponEnvController {
 			if(couponEnv.getCoupon_env_type()==2){
 				couponEnv.setCoupon_id(0l);
 			}
-			i = couponEnvService.updateByPrimaryKeySelective(couponEnv);
-			logger.info("M[couponEnv] F[update_couponEnv] U[{}]; param[couponEnv:{}]; other[begin_date:{},end_date:{}]; result:{}",
-					users.getUser_id(),couponEnv,s_date,e_date,String.format("修改优惠策略%s", i > 0 ? "成功":"失败"));
+
 			if(couponEnv.getCoupon_env_type()==1){
 				List<Integer> list_number = new ArrayList<>();
 				TreeMap<Integer, Long> treeMap = new TreeMap<>();
@@ -331,6 +329,9 @@ public class CouponEnvController {
 				couponAndCouponEnvService.batchInsertSelective(list_couponAndCoupon.toArray(new CouponAndCouponEnv[list_couponAndCoupon.size()]));
 				logger.info("M[couponEnv] F[add_couponEnv] U[{}]; param[couponEnv:{}]; CouponAndCouponEnv_list:size{}",users.getUser_id(),couponEnv,list_couponAndCoupon.size());
 			}
+			i = couponEnvService.updateByPrimaryKeySelective(couponEnv);
+			logger.info("M[couponEnv] F[update_couponEnv] U[{}]; param[couponEnv:{}]; other[begin_date:{},end_date:{}]; result:{}",
+					users.getUser_id(),couponEnv,s_date,e_date,String.format("修改优惠策略%s", i > 0 ? "成功":"失败"));
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}
@@ -361,7 +362,7 @@ public class CouponEnvController {
 		}
 		if(couponEnv.getCoupon_env_type()==1){
 			if(coupon_ids==null){
-				map.put("message", "优惠券为空，修改失败!");
+				map.put("message", "4");
 				return map;
 			}
 			if(coupon_ids.length>10){
