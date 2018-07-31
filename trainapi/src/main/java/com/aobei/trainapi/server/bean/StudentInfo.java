@@ -18,6 +18,16 @@ public class StudentInfo extends Student{
 
 	private String gradeDesc;
 
+	private int whetherWXlogin;
+
+	public int getWhetherWXlogin() {
+		return whetherWXlogin;
+	}
+
+	public void setWhetherWXlogin(int whetherWXlogin) {
+		this.whetherWXlogin = whetherWXlogin;
+	}
+
 	public String getGradeDesc() {
 		return gradeDesc;
 	}

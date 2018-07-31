@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Stream;
@@ -69,7 +70,7 @@ public class ApiUserServiceImpl implements ApiUserService {
      * @return
      */
     @Override
-    @Transactional(timeout = 5)
+    @Transactional(timeout = 5000)
     public ApiResponse<Customer> bindUser(Long user_id, String phone, String channelCode) {
         ApiResponse<Customer> response = new ApiResponse<>();
         try{
@@ -80,6 +81,32 @@ public class ApiUserServiceImpl implements ApiUserService {
                 customer = new Customer();
                 customer.setCustomer_id(IdGenerator.generateId());
                 customer.setCreate_datetime(new Date());
+                Map<Object, Object> hashMap = (Map<Object, Object>) couponMethod(customer);
+                Boolean bool = (Boolean) hashMap.get("boolean");
+                if (bool){
+                    List<CouponAndCouponEnv> couponList =(List<CouponAndCouponEnv>) hashMap.get("couponList");
+                    for (CouponAndCouponEnv couponandCouponEnv: couponList) {
+                        Coupon coupon = couponService.selectByPrimaryKey(couponandCouponEnv.getCoupon_id());
+                        String key = Constant.getCouponKey(coupon.getCoupon_id());
+                        coupon.setNum_able(Integer.parseInt(redisTemplate.opsForValue().increment(key,-1L)+""));
+                        couponService.updateByPrimaryKeySelective(coupon);
+                        //为用户添加使用记录
+                        CouponReceive couponReceive = new CouponReceive();
+                        couponReceive.setCoupon_receive_id(IdGenerator.generateId());
+                        couponReceive.setUid(customer.getCustomer_id());
+                        couponReceive.setCoupon_id(couponandCouponEnv.getCoupon_id());
+                        couponReceive.setReceive_datetime(new Date());
+                        couponReceive.setStatus(2);//待使用状态
+                        couponReceive.setVerification(0);//未核销
+                        couponReceive.setDeleted(Status.DeleteStatus.no.value);
+                        couponReceive.setCoupon_env_id(couponandCouponEnv.getCoupon_env_id());
+                        couponReceive.setCreate_datetime(new Date());
+                        couponReceiveService.insert(couponReceive);
+                        //每次清除对应顾客优惠券缓存信息
+                        cacheReloadHandler.couponListReload(customer.getCustomer_id());
+                        cacheReloadHandler.userCouponListReload(customer.getCustomer_id());
+                    }
+                }
             }
             customer.setUser_id(user_id);
             customer.setPhone(phone);
@@ -113,119 +140,128 @@ public class ApiUserServiceImpl implements ApiUserService {
             int count = customerService.upsertSelective(customer);
             if (count > 0) {
                 userAddRole(user_id, Roles.CUSTOMER.roleName());
-                //插入新注册用户优惠券
-                CouponEnvExample couponEnvExample = new CouponEnvExample();
-                CouponEnvExample.Criteria or = couponEnvExample.or();
-                or.andTypeEqualTo(1)
-                  .andStatusEqualTo(1)
-                  .andCoupon_env_typeEqualTo(1)
-                  .andEnd_datetimeGreaterThanOrEqualTo(new Date());
-                CouponEnv couponEnv = singleResult(couponEnvService.selectByExample(couponEnvExample));
-                if (!StringUtils.isEmpty(couponEnv)){
-                    String condition_env = couponEnv.getCondition_env();
-                    Map<String,String> envMap = new HashMap<>();
-                    Map map = JSON.parseObject(condition_env, envMap.getClass());
-                    String sdate = (String) map.get("sdate");
-                    String edate = (String) map.get("edate");
-                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                    Date startdate = format.parse(sdate);
-                    Date endDate = format.parse(edate);
-                    Date cusCreateDate = customer.getCreate_datetime();
-                    //顾客注册时间是否在策略之内
-                    if (cusCreateDate.before(endDate) && cusCreateDate.after(startdate)){
-                        CouponAndCouponEnvExample couponAndCouponEnvExample = new CouponAndCouponEnvExample();
-                        couponAndCouponEnvExample.or().andCoupon_env_idEqualTo(couponEnv.getCoupon_env_id());
-                        List<CouponAndCouponEnv> couponAndCouponEnvs = couponAndCouponEnvService.selectByExample(couponAndCouponEnvExample);
-                        for (CouponAndCouponEnv couponandCouponEnv: couponAndCouponEnvs) {
-                            //减优惠券数量
-                            Coupon coupon = couponService.selectByPrimaryKey(couponandCouponEnv.getCoupon_id());
-                            String key = Constant.getCouponKey(coupon.getCoupon_id());
-                            if (coupon.getNum_limit() == 1){
-                                int num = Integer.parseInt(String.valueOf(redisTemplate.opsForValue().get(key)));
-                                if (num == 0){
-                                    redisTemplate.delete(key);
-                                }else {
-                                    coupon.setNum_able(Integer.parseInt(redisTemplate.opsForValue().increment(key,-1L)+""));
-                                }
-                            }
-                            couponService.updateByPrimaryKeySelective(coupon);
-                            //为用户添加使用记录
-                            CouponReceive couponReceive = new CouponReceive();
-                            couponReceive.setCoupon_receive_id(IdGenerator.generateId());
-                            couponReceive.setUid(customer.getCustomer_id());
-                            couponReceive.setCoupon_id(couponandCouponEnv.getCoupon_id());
-                            couponReceive.setReceive_datetime(new Date());
-                            couponReceive.setStatus(2);//待使用状态
-                            couponReceive.setVerification(0);//未核销
-                            couponReceive.setDeleted(Status.DeleteStatus.no.value);
-                            couponReceive.setCoupon_env_id(couponandCouponEnv.getCoupon_env_id());
-                            couponReceive.setCreate_datetime(new Date());
-                            couponReceiveService.insert(couponReceive);
-                            //每次清除对应顾客优惠券缓存信息
-                            cacheReloadHandler.couponListReload(customer.getCustomer_id());
-                            cacheReloadHandler.userCouponListReload(customer.getCustomer_id());
+                response.setMutationResult(new MutationResult());
+                return response;
+            }
+            response.setErrors(Errors._41001);
+        }catch (Exception e ){
+            logger.error("ERROR binduser" ,e);
+        }
+        return response;
+    }
 
+
+    //私有方法(用来校验优惠策略)
+    private Object couponMethod(Customer customer) {
+        Map<Object, Object> hashMap = new HashMap<>();
+        //插入新注册用户优惠券
+        CouponEnvExample couponEnvExample = new CouponEnvExample();
+        CouponEnvExample.Criteria or = couponEnvExample.or();
+        or.andTypeEqualTo(1)
+                .andStatusEqualTo(1)
+                .andCoupon_env_typeEqualTo(1)
+                .andEnd_datetimeGreaterThanOrEqualTo(new Date());
+        CouponEnv couponEnv = singleResult(couponEnvService.selectByExample(couponEnvExample));
+        if (!StringUtils.isEmpty(couponEnv)) {
+            String condition_env = couponEnv.getCondition_env();
+            Map<String, String> envMap = new HashMap<>();
+            Map map = JSON.parseObject(condition_env, envMap.getClass());
+            String sdate = (String) map.get("sdate");
+            String edate = (String) map.get("edate");
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            Date startdate = null;
+            Date endDate = null;
+            try {
+                startdate = format.parse(sdate);
+                endDate = format.parse(edate);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            Date cusCreateDate = customer.getCreate_datetime();
+            //顾客注册时间是否在策略之内
+            if (cusCreateDate.before(endDate) && cusCreateDate.after(startdate)) {
+                CouponAndCouponEnvExample couponAndCouponEnvExample = new CouponAndCouponEnvExample();
+                couponAndCouponEnvExample.or().andCoupon_env_idEqualTo(couponEnv.getCoupon_env_id());
+                List<CouponAndCouponEnv> couponAndCouponEnvs = couponAndCouponEnvService.selectByExample(couponAndCouponEnvExample);
+                hashMap.put("couponList", couponAndCouponEnvs);
+                for (CouponAndCouponEnv couponandCouponEnv : couponAndCouponEnvs) {
+                    //减优惠券数量
+                    Coupon coupon = couponService.selectByPrimaryKey(couponandCouponEnv.getCoupon_id());
+                    if (coupon.getValid() != 1 || coupon.getReceive_end_datetime().before(new Date())) {
+                        hashMap.put("boolean", false);
+                        return hashMap;
+                    }
+                    String key = Constant.getCouponKey(coupon.getCoupon_id());
+                    if (coupon.getNum_limit() == 1) {
+                        if (!StringUtils.isEmpty(key)) {
+                            String keyValue = redisTemplate.opsForValue().get(key);
+                            if (StringUtils.isEmpty(keyValue)) {
+                                hashMap.put("boolean", false);
+                                return hashMap;
+                            }
+                            int num = Integer.parseInt(keyValue);
+                            if (num == 0) {
+                                redisTemplate.delete(key);
+                                hashMap.put("boolean", false);
+                                return hashMap;
+                            }
                         }
                     }
                 }
-                response.setMutationResult(new MutationResult());
-                return response;
             }
-            response.setErrors(Errors._41001);
-        }catch (Exception e ){
-            logger.error("ERROR binduser" ,e);
         }
-        return response;
+        hashMap.put("boolean", true);
+        return hashMap;
     }
 
-    /**
-     * 服务人员端绑定
-     * @param user_id
-     * @param phone
-     * @param channelCode
-     * @return
-     */
-    public ApiResponse<Student> bindUserStudent(Long user_id, String phone, String channelCode) {
-        ApiResponse<Student> response = new ApiResponse<>();
-        try{
-            StudentExample studentExample = new StudentExample();
-            studentExample.or().andPhoneEqualTo(phone);
-            Student student = singleResult(studentService.selectByExample(studentExample));
-            if (student == null){
-                response.setErrors(Errors._40101);
-                return response;
-            }
-            student.setUser_id(user_id);
-            Users users  = usersService.selectByPrimaryKey(user_id);
-            String wx_id  = users.getWx_id();
-            //如果用户绑定微信的第三方登录。查看微信的一些基本信息作为顾客的基本信息
-            if(wx_id!=null){
-                UsersWxInfo  info = wxInfoService.selectByPrimaryKey(wx_id);
-                if(info!=null){
-                    if(student.getName() == null) {
-                        student.setName(info.getNickName());
-                    }
-                    if(student.getLogo_img() == null){
-                        Img img = new Img();
-                        img.setId(0l);
-                        img.setUrl(info.getAvatarUrl());
-                        student.setLogo_img(JSON.toJSONString(img));
+        /**
+         * 服务人员端绑定
+         * @param user_id
+         * @param phone
+         * @param channelCode
+         * @return
+         */
+        public ApiResponse<Student> bindUserStudent (Long user_id, String phone, String channelCode){
+            ApiResponse<Student> response = new ApiResponse<>();
+            try {
+                StudentExample studentExample = new StudentExample();
+                studentExample.or().andPhoneEqualTo(phone);
+                Student student = singleResult(studentService.selectByExample(studentExample));
+                if (student == null) {
+                    response.setErrors(Errors._40101);
+                    return response;
+                }
+                student.setUser_id(user_id);
+                Users users = usersService.selectByPrimaryKey(user_id);
+                String wx_id = users.getWx_id();
+                //如果用户绑定微信的第三方登录。查看微信的一些基本信息作为顾客的基本信息
+                if (wx_id != null) {
+                    UsersWxInfo info = wxInfoService.selectByPrimaryKey(wx_id);
+                    if (info != null) {
+                        if (student.getName() == null) {
+                            student.setName(info.getNickName());
+                        }
+                        if (student.getLogo_img() == null) {
+                            Img img = new Img();
+                            img.setId(0l);
+                            img.setUrl(info.getAvatarUrl());
+                            student.setLogo_img(JSON.toJSONString(img));
+                        }
                     }
                 }
+                //插入或更新服务人员信息。
+                int count = studentService.updateByPrimaryKeySelective(student);
+                if (count > 0) {
+                    userAddRole(user_id, Roles.STUDENT.roleName());
+                    response.setMutationResult(new MutationResult());
+                    return response;
+                }
+                response.setErrors(Errors._41001);
+            } catch (Exception e) {
+                logger.error("ERROR binduser", e);
             }
-            //插入或更新服务人员信息。
-            int count = studentService.updateByPrimaryKeySelective(student);
-            if (count > 0) {
-                userAddRole(user_id, Roles.STUDENT.roleName());
-                response.setMutationResult(new MutationResult());
-                return response;
-            }
-            response.setErrors(Errors._41001);
-        }catch (Exception e ){
-            logger.error("ERROR binduser" ,e);
+            return response;
         }
-        return response;
-    }
 
 /********************************************
  * 我是分割线，下面是本类中的私有方法
