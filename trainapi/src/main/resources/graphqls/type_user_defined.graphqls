@@ -291,6 +291,8 @@ type StudentInfo{
 	imgUrl:[StudentImgInfo]
 	#等级描述
 	gradeDesc:String
+	#是否微信登录过
+	whetherWXlogin:Int
 }
 type StudentType{
 	#学生

@@ -196,6 +196,12 @@ public class ApiServiceImpl implements ApiService {
 					case 3:info.setGradeDesc("初级");break;
 				}
 			}
+			Users users = usersService.selectByPrimaryKey(user_id);
+			if (StringUtils.isEmpty(users.getWx_id())){
+				info.setWhetherWXlogin(0);
+			}else {
+				info.setWhetherWXlogin(1);
+			}
 
 		}
 		return info;
