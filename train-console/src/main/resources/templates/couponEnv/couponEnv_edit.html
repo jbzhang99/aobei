@@ -248,6 +248,13 @@ $(function(){
                     var current = [[${current}]]
 					var mgs = data.message;
                     if(mgs!=undefined){
+                        if(mgs.indexOf("成功")!=-1){
+                            reset();
+                            alertify.success(data.message);
+                            setTimeout(function(){
+                                window.location.href="/couponEnv/couponEnv_list?p="+current
+                            },1500)
+                        }
                         if(mgs.indexOf("1")!=-1){
                             reset();
                             alertify.error("派券类型的新注册用户只能有一个！")
@@ -276,13 +283,6 @@ $(function(){
                                 window.location.href="/couponEnv/couponEnv_list?p="+current
                             },2000)
                         }
-                        if(mgs.indexOf("成功")!=-1){
-                            reset();
-                            alertify.success(data.message);
-                            setTimeout(function(){
-                                window.location.href="/couponEnv/couponEnv_list?p="+current
-                            },1500)
-						}
                     }
                 }
             })
