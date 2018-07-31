@@ -760,6 +760,7 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
                 rejectRecord.setPay_order_id(n.getPay_order_id());
                 rejectRecord.setServiceunit_id(n.getServiceunit_id());
                 rejectRecord.setCreate_datetime(new Date());
+                rejectRecord.setServer_name(order.getName());
                 rejectRecord.setCus_username(order.getCus_username());
                 rejectRecord.setCus_phone(order.getCus_phone());
                 rejectRecord.setCus_address(order.getCus_address());
@@ -824,7 +825,7 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
             name = year + "-" + mouth + "-" + day + " 扣款结算单列表下载";
         }else if(clazz.isInstance(new FallintoFineMoneyExample())){
             name = year + "-" + mouth + "-" + day + " 罚款结算单列表下载";
-        }else if(clazz.isInstance(new ServiceUnitExample())){
+        }else if(clazz.isInstance(new RejectRecordExample())){
             name = year + "-" + mouth + "-" + day + " 拒单列表下载";
         }
         dataDownload.setName(name);
@@ -1195,28 +1196,16 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
         }else if(clazz.isInstance(new FallintoFineMoneyExample())) {
             FallintoFineMoneyExample fallintoFineMoneyExample = new FallintoFineMoneyExample();
             return (T)fallintoFineMoneyExample;
-        }else if(clazz.isInstance(new ServiceUnitExample())) {
+        }else if(clazz.isInstance(new RejectRecordExample())) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String qs_create = (String)map.get("qs_create_time");
             String qe_create = (String)map.get("qe_create_time");
             Date qs_create_time = null;
             Date qe_create_time = null;
-            String qs_pay = (String)map.get("qs_pay_time");
-            String qe_pay = (String)map.get("qe_pay_time");
             if (!("".equals(qs_create)) && !("".equals(qe_create))){
                 try {
                     qs_create_time = sdf.parse(qs_create + " 00:00:00");
                     qe_create_time = sdf.parse(qe_create + " 23:59:59");
-                }catch (ParseException e) {
-                    e.printStackTrace();
-                }
-            }
-            Date qs_pay_time = null;
-            Date qe_pay_time = null;
-            if (!("".equals(qs_pay)) && !("".equals(qe_pay))){
-                try {
-                    qs_pay_time = sdf.parse(qs_pay  + " 00:00:00");
-                    qe_pay_time = sdf.parse(qe_pay  + " 23:59:59");
                 }catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -1226,28 +1215,17 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
             if (!("".equals(par_id))) {
                 partner_id = Long.valueOf(par_id);
             }
-            OrderExample orderExample = new OrderExample();
-            OrderExample.Criteria or = orderExample.or();
-            if (!("".equals(qe_create_time)) && qe_create_time != null) {
-                or.andCreate_datetimeBetween(qs_create_time,qe_create_time);
-            }
-            if (!("".equals(qe_pay_time)) && qe_pay_time != null) {
-                or.andPay_datetimeBetween(qs_pay_time,qe_pay_time);
-            }
-            ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
-            ServiceUnitExample.Criteria criteria = serviceUnitExample.or();
-            criteria.andStatus_activeEqualTo(6).andPidNotEqualTo(0l).andActiveEqualTo(0);
-            if (or.getCriteria().size() > 0){
-                List<Order> orders = orderService.selectByExample(orderExample);
-                List<String> orderids = orders.stream().map(n -> n.getPay_order_id()).collect(Collectors.toList());
-                if (orderids.size() > 0){
-                    criteria.andPay_order_idIn(orderids);
-                }
+            RejectRecordExample recordExample = new RejectRecordExample();
+            recordExample.setOrderByClause(RejectRecordExample.C.create_datetime + " desc");
+            RejectRecordExample.Criteria criteria = recordExample.or();
+            if (qe_create_time != null) {
+                criteria.andCreate_datetimeBetween(qs_create_time,qe_create_time);
+
             }
             if (partner_id != null) {
                 criteria.andPartner_idEqualTo(partner_id);
             }
-            return (T)serviceUnitExample;
+            return (T)recordExample;
         }else {
             return null;
         }
