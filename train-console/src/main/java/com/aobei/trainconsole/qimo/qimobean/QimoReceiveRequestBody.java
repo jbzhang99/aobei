@@ -39,7 +39,7 @@ public class QimoReceiveRequestBody implements Serializable{
     /**
      * 当前的步骤界面信息
      */
-    private String stepFileds;
+    private List<QimoFiled> stepFileds = new ArrayList<>();
     /**
      * 执行的动作名称
      */
@@ -106,11 +106,11 @@ public class QimoReceiveRequestBody implements Serializable{
         this.flowInfo = flowInfo;
     }
 
-    public String getStepFileds() {
+    public List<QimoFiled> getStepFileds() {
         return stepFileds;
     }
 
-    public void setStepFileds(String stepFileds) {
+    public void setStepFileds(List<QimoFiled> stepFileds) {
         this.stepFileds = stepFileds;
     }
 
