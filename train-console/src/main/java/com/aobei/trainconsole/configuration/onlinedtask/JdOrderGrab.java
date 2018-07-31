@@ -103,8 +103,8 @@ public class JdOrderGrab {
     /**
      * 定时抓取订单数据
      */
-    //@Scheduled(cron = "0 0/5 * * * ?")
-    //@Scheduled(initialDelay = 2000, fixedDelay = 24*60*60*100)
+    @Scheduled(cron = "0 0/10 * * * ?")
+//    @Scheduled(initialDelay = 2000, fixedDelay = 24*60*60*100)
     private void getJdOrder() {
         //保证单实例运行
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -121,10 +121,11 @@ public class JdOrderGrab {
             PopOrderSearchRequest request=new PopOrderSearchRequest();
             Calendar now = Calendar.getInstance();
             Date nowTime = now.getTime();
-            now.add(Calendar.MINUTE,-5);
+            now.add(Calendar.MINUTE,-10);
             Date before10m = now.getTime();
             String endDate = sdf.format(nowTime) + ":00";
             String startDate = sdf.format(before10m) + ":00";
+            logger.info("[OrderGrab] query time scope startDate is {},endDate is {}",startDate,endDate);
             request.setStartDate(startDate);
             request.setEndDate(endDate);
             request.setOrderState( "WAIT_SELLER_STOCK_OUT,FINISHED_L");
@@ -209,6 +210,7 @@ public class JdOrderGrab {
                                         if (!jdOrder.getModified().equals(queryLocal.getModified())){
                                             //完成单，标记订单已完成和服务单已完成
                                             if (jdOrder.getOrderState().equals("FINISHED_L")){
+                                                logger.info("[OrderGrab] update order to finished");
                                                 List<Order> orders = orderService.selectByExample(orderExample);
                                                 orders.stream().forEach(m ->{
                                                     Order upOrder = new Order();
@@ -348,6 +350,9 @@ public class JdOrderGrab {
                     pay_order_id = pay_order_id + "_2";
                 }
                 order.setPay_order_id(pay_order_id);
+
+                logger.info("[OrderGrab initOrderByJdOrder] the local pay_order_id is {},out_order_id is {}",pay_order_id,orderSearchInfo.getOrderId());
+
                 order.setName(product.getName()+proSku.getName());
                 order.setUid(customer.getCustomer_id());
                 order.setChannel("JD-001");
