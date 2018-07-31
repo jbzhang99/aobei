@@ -123,6 +123,8 @@ public class PartnerApiServiceImpl implements PartnerApiService {
     ApiOrderService apiOrderService;
     @Autowired
     ProSkuService proSkuService;
+    @Autowired
+    RejectRecordService rejectRecordService;
 	Logger logger = LoggerFactory.getLogger(PartnerApiServiceImpl.class);
 
 
@@ -715,12 +717,32 @@ public class PartnerApiServiceImpl implements PartnerApiService {
 				orderLogService.xInsert(pname, partner.getUser_id(), pay_order_id,
 						"合伙人【" + pname + "】拒绝了该订单，拒单原因：" + orderStr);
 
+                Order order = orderService.selectByPrimaryKey(pay_order_id);
+                ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
+                serviceUnitExample.or().andPay_order_idEqualTo(pay_order_id)
+                        .andPidEqualTo(0l);
+                ServiceUnit serviceUnit = singleResult(serviceUnitService.selectByExample(serviceUnitExample));
+                RejectRecord rejectRecord = new RejectRecord();
+                rejectRecord.setReject_record_id(IdGenerator.generateId());
+                rejectRecord.setPay_order_id(pay_order_id);
+                rejectRecord.setServiceunit_id(serviceUnit.getServiceunit_id());
+                rejectRecord.setCreate_datetime(new Date());
+                rejectRecord.setCus_username(order.getCus_username());
+                rejectRecord.setCus_phone(order.getCus_phone());
+                rejectRecord.setCus_address(order.getCus_address());
+                rejectRecord.setPrice_total(order.getPrice_total());
+                rejectRecord.setPrice_pay(order.getPrice_pay());
+                rejectRecord.setReject_type(1);
+                rejectRecord.setReject_info(serviceUnit.getP_reject_remark() == null ? "":serviceUnit.getP_reject_remark());
+                rejectRecord.setPartner_id(serviceUnit.getPartner_id());
+                rejectRecord.setServer_datetime(serviceUnit.getC_begin_datetime());
+                rejectRecordService.insert(rejectRecord);
+
 				ProductSoleExample soleExample = new ProductSoleExample();
 				soleExample.or().andProduct_idEqualTo(orderInfo.getProduct_id())
 						.andPartner_idEqualTo(partner.getPartner_id());
 				ProductSole sole = singleResult(productSoleService.selectByExample(soleExample));
-				// 订单信息（如果为代下单或抢单,不发起抢单）
-				Order order = orderService.selectByPrimaryKey(pay_order_id);
+                // 订单信息（如果为代下单或抢单,不发起抢单）
 				if (order.getProxyed() != 1 && sole == null
 						&& (orderInfo.getServiceUnit().getRobbing() == null
 						|| new Integer(0).equals(orderInfo.getServiceUnit().getRobbing()))) {
