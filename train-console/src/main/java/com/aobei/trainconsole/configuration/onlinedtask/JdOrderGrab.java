@@ -105,7 +105,7 @@ public class JdOrderGrab {
      * 定时抓取订单数据
      */
     //@Scheduled(cron = "0 0/10 * * * ?")
-    @Scheduled(initialDelay = 2000, fixedDelay = 24*60*60*100)
+    //@Scheduled(initialDelay = 2000, fixedDelay = 24*60*60*100)
     private void getJdOrder() {
         //保证单实例运行
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
