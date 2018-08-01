@@ -119,7 +119,8 @@ public class StudentApiServiceImpl implements StudentApiService
 		serviceUnitExample.or().andServiceunit_idIn(unitIds)
 				.andStatus_activeEqualTo(Status.ServiceStatus.assign_worker.value)// 订单状态为已指派
 				.andPidEqualTo(0L)// 父单
-				.andActiveEqualTo(Status.PayStatus.payed.value);// 有效的
+				.andActiveEqualTo(Status.PayStatus.payed.value)
+				.andWork_statusNotEqualTo(4);
 		orderInfoList = orderService.orderInfoList(Roles.STUDENT, serviceUnitExample, page_index, count).getList();
 		logger.info("api-method:selectStuUndoneOrder:process orderInfoList:{}", orderInfoList.size());
 		return orderInfoList;
@@ -1067,17 +1068,20 @@ public class StudentApiServiceImpl implements StudentApiService
 			}
 			if(status_active==3){
 				or.andStatus_activeEqualTo(status_active)
-				  .andWork_statusEqualTo(2);
+				 .andWork_statusNotEqualTo(4);
 			}
 			or.andStudent_idEqualTo(student_id);
 			List<ServiceunitPerson> serviceUnitPersons = serviceunitPersonService.selectByExample(serviceunitPersonExample);
+			if(serviceUnitPersons.size()==0){
+				return 0;
+			}
 			set = new HashSet<Long>();
 			for (ServiceunitPerson snp:serviceUnitPersons) {
 				if(snp!=null)
 					set.add(snp.getServiceunit_id());
 			}
 			if(work_status==0 && !is_day){
-				return set.size();
+				return serviceUnitPersons.size();
 			}
 			Calendar instance = Calendar.getInstance();
 			for (Long serviceunit_id:set) {

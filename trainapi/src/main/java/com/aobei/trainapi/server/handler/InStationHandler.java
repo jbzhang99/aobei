@@ -64,7 +64,7 @@ public class InStationHandler {
         mes.setId(IdGenerator.generateId());
         mes.setType(2);
         mes.setBis_type(1);
-        mes.setUser_id(student.getUser_id());
+        mes.setUser_id(student.getUser_id()==null ? 0l : student.getUser_id());
         mes.setUid(order.getUid());
         mes.setMsg_title("新订单通知");
         MessageContent.ContentMsg contentMsg = new MessageContent.ContentMsg();
@@ -110,7 +110,7 @@ public class InStationHandler {
         mes.setId(IdGenerator.generateId());
         mes.setType(2);
         mes.setBis_type(3);//合伙人端
-        mes.setUser_id(partner.getUser_id());
+        mes.setUser_id(partner.getUser_id()==null ? 0l : partner.getUser_id());
         mes.setUid(partner.getPartner_id());
         mes.setMsg_title("订单取消通知");
         MessageContent.ContentMsg contentMsg = new MessageContent.ContentMsg();
@@ -158,7 +158,7 @@ public class InStationHandler {
         mes.setId(IdGenerator.generateId());
         mes.setType(2);
         mes.setBis_type(1);//学员端
-        mes.setUser_id(student.getStudent_id());
+        mes.setUser_id(student.getUser_id()==null ? 0l : student.getUser_id());
         mes.setUid(student.getStudent_id());
         mes.setMsg_title("订单取消通知");
         MessageContent.ContentMsg contentMsg = new MessageContent.ContentMsg();
@@ -206,7 +206,7 @@ public class InStationHandler {
         mes.setId(IdGenerator.generateId());
         mes.setType(1);//系统消息
         mes.setBis_type(1);//学员端
-        mes.setUser_id(student.getStudent_id());
+        mes.setUser_id(student.getUser_id()==null ? 0l : student.getUser_id());
         mes.setUid(student.getStudent_id());
         mes.setMsg_title("服务时间提醒");
         MessageContent.ContentMsg contentMsg = new MessageContent.ContentMsg();
@@ -345,7 +345,7 @@ public class InStationHandler {
         mes.setId(IdGenerator.generateId());
         mes.setType(2);
         mes.setBis_type(1);//学员端
-        mes.setUser_id(student.getStudent_id());
+        mes.setUser_id(student.getUser_id()==null ? 0l : student.getUser_id());
         mes.setUid(student.getStudent_id());
         mes.setMsg_title("服务变更通知");
         MessageContent.ContentMsg contentMsg = new MessageContent.ContentMsg();
