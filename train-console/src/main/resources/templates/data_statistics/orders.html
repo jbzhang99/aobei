@@ -220,7 +220,7 @@
             $('#pageBtns button:eq(0)').attr('disabled', tablePage.p == 1);
             $('#pageBtns button:eq(1)').attr('disabled', tablePage.p * tablePage.psize >= tablePage.total);
 
-            $('#customTableBox table').each(function (i, n) {
+            $('#ordersTableBox table').each(function (i, n) {
                 $(n).find('.trData').hide();
                 for (var x = (tablePage.p - 1) * tablePage.psize; x < tablePage.p * tablePage.psize; x++) {
                     $(n).find('.trData').eq(x).show();
@@ -233,7 +233,7 @@
          */
         function initCharts(){
             window.CHARTS  = {
-                ordersChart : echarts.init(document.getElementById('customDaySumChart'))
+                ordersChart : echarts.init(document.getElementById('orderDaySumChart'))
             };
         }
 
@@ -246,7 +246,7 @@
          */
         function doCharts(data){
             ordersDataSum(data);
-
+            loadOrdersTableData(data);
         }
 
         /**
@@ -324,6 +324,68 @@
             });
         }
 
+
+        /**
+         *  加载 中间表格数据
+         */
+        function loadOrdersTableData(requestData) {
+            $('#ordersTableBox table tbody').empty();
+            $.getJSON([[@{/data_statistics/orders/getDataSetTable}]], requestData, function (data) {
+                var html_1 = [];
+                var html_2 = [];
+                var total = [0, 0, 0, 0, 0, 0, 0, 0,0];
+                $.each(data, function (i, n) {
+                    html_1.push('<tr class="trData">');
+                    html_1.push('<td>' + n.dateStr + '</td>');
+                    html_1.push('<td>' + n.gmv + '</td>');
+                    html_1.push('</tr>');
+
+                    html_2.push('<tr class="trData">');
+                    html_2.push('<td>' + n.clientNumMap['wx_m_custom'] + '</td>');
+                    html_2.push('<td>' + n.clientNumMap['a_custom'] + '</td>');
+                    html_2.push('<td>' + n.clientNumMap['i_custom'] + '</td>');
+                    html_2.push('<td>' + n.clientNumMap['h5_custom'] + '</td>');
+                    html_2.push('<td>' + n.clientNumMap['eb_custom'] + '</td>');
+                    html_2.push('<td>' + n.num + '</td>');
+                    html_2.push('<td>' + n.completeNum + '</td>');
+                    html_2.push('<td>' + n.waitServiceNum + '</td>');
+                    html_2.push('</tr>');
+
+                    total = [
+                        total[0] + parseInt(n.gmv),
+                        total[1] + parseInt(n.clientNumMap['wx_m_custom']),
+                        total[2] + parseInt(n.clientNumMap['a_custom']),
+                        total[3] + parseInt(n.clientNumMap['i_custom']),
+                        total[4] + parseInt(n.clientNumMap['h5_custom']),
+                        total[5] + parseInt(n.clientNumMap['eb_custom']),
+                        total[6] + parseInt(n.num),
+                        total[7] + parseInt(n.completeNum),
+                        total[8] + parseInt(n.waitServiceNum)];
+
+
+                });
+                html_1.push('<tr class="trTotalValue">');
+                html_1.push('<td>合计</td>');
+                html_1.push('<td class="red">' + total[0] + '</td>');
+                html_1.push('</tr>');
+
+                html_2.push('<tr class="trTotalValue">');
+                html_2.push('<td>' + total[1] + '</td>');
+                html_2.push('<td>' + total[2] + '</td>');
+                html_2.push('<td>' + total[3] + '</td>');
+                html_2.push('<td>' + total[4] + '</td>');
+                html_2.push('<td>' + total[5] + '</td>');
+                html_2.push('<td class="red">' + total[6] + '</td>');
+                html_2.push('<td>' + total[7] + '</td>');
+                html_2.push('<td>' + total[8] + '</td>');
+                html_2.push('</tr>');
+                $('#ordersTableBox table:eq(0) tbody').html(html_1.join(''));
+                $('#ordersTableBox table:eq(1) tbody').html(html_2.join(''));
+                window.TABLEPAGE.p = 1;
+                window.TABLEPAGE.total = data.length;
+                tablePageData(window.TABLEPAGE);
+            });
+        }
     </script>
 </head>
 <body>
@@ -372,7 +434,7 @@
                     <i class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
                 </div>
                 <div class="panel-body">
-                    <div id="customDaySumChart" style="height:400px;"></div>
+                    <div id="orderDaySumChart" style="height:400px;"></div>
                 </div>
             </div>
         </div>
@@ -386,12 +448,12 @@
                 <i id="customTableDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
             </div>
             <div class="panel-body">
-                <div id="customTableBox" style="height:300px;overflow-y: auto">
+                <div id="ordersTableBox" style="height:300px;overflow-y: auto">
                     <div class="col-sm-4 col-xs-12">
                         <table class="table table-bordered table-striped text-center">
                             <thead>
-                                <th class="text-center">日期</th>
-                                <th class="text-center">GMV</th>
+                                <th class="text-center" style="vertical-align: middle" height="58px">日期</th>
+                                <th class="text-center" style="vertical-align: middle" height="58px">GMV</th>
                             </thead>
                             <tbody>
                             </tbody>

@@ -50,6 +50,22 @@ public class DataStatisticsOrdersController {
         }
     }
 
+    @ResponseBody
+    @RequestMapping("/getDataSetTable")
+    public Object getDataSetTable(int type,
+                             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+                             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){
+        endDate = endDateBoundary(endDate);
+        switch (type) {
+            case 3:
+                return ordersDataStatisticsService.getOrdersTableDataMonth(startDate,endDate);
+            case 2:
+                return ordersDataStatisticsService.getOrdersTableDataWeek(startDate,endDate);
+            default:
+                return ordersDataStatisticsService.getOrdersTableDataDay(startDate,endDate);
+        }
+    }
+
     /**
      * 处理日期范围向后的边界值
      *
