@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aobei.train.mapper.DataStatisticsPartnerMapper">
+    <resultMap id="BaseResultMap" type="com.aobei.train.model.DataStatisticsCustomData">
+        <result column="date_str" jdbcType="VARCHAR" property="dateStr"/>
+        <result column="num" jdbcType="INTEGER" property="num"/>
+    </resultMap>
+
+    <select id="regStatisticsWithDay" resultMap="BaseResultMap">
+    SELECT date_format(t.cdate,'%Y-%m-%d') AS date_str, COUNT(*) AS num
+    FROM partner t
+    WHERE
+      t.cdate BETWEEN #{startDate} AND #{endDate}
+    GROUP BY date_str
+    ORDER BY date_str
+  </select>
+
+    <select id="regStatisticsWithWeek" resultMap="BaseResultMap">
+    SELECT concat(DATE_FORMAT(t.cdate,'%Y'),'/', LPAD(WEEKOFYEAR(t.cdate),2,0),'周') AS date_str, COUNT(*) AS num
+    FROM partner t
+    WHERE
+      t.cdate BETWEEN #{startDate} AND #{endDate}
+    GROUP BY date_str
+    ORDER BY date_str
+  </select>
+
+    <select id="regStatisticsWithMonth" resultMap="BaseResultMap">
+    SELECT DATE_FORMAT(t.cdate,'%Y-%m') AS date_str, COUNT(*) AS num
+    FROM partner t
+    WHERE
+      t.cdate BETWEEN #{startDate} AND #{endDate}
+    GROUP BY date_str
+    ORDER BY date_str
+  </select>
+
+    <select id="regClientStatisticsWithDay" resultMap="BaseResultMap">
+        SELECT CONCAT(n.date_str,' ',n.client_id) date_str,num
+        FROM(
+        SELECT DATE_FORMAT(t.create_datetime,'%Y-%m-%d') AS date_str, t.client_id, COUNT(*) AS num
+        FROM customer t
+        WHERE
+        t.create_datetime BETWEEN #{startDate} AND #{endDate}
+        GROUP BY date_str,t.client_id
+        ORDER BY date_str
+        )n
+    </select>
+
+    <select id="regClientStatisticsWithWeek" resultMap="BaseResultMap">
+        SELECT CONCAT(n.date_str,' ',n.client_id) date_str,num
+        FROM(
+        SELECT concat(DATE_FORMAT(t.create_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.create_datetime),2,0),'周') AS date_str, COUNT(*) AS num, t.client_id
+        FROM customer t
+        WHERE
+        t.create_datetime BETWEEN #{startDate} AND #{endDate}
+        GROUP BY date_str,t.client_id
+        ORDER BY date_str
+        )n
+    </select>
+
+    <select id="regClientStatisticsWithMonth" resultMap="BaseResultMap">
+    SELECT CONCAT(n.date_str,' ',n.client_id) date_str,num
+    FROM(
+    SELECT DATE_FORMAT(t.create_datetime,'%Y-%m') AS date_str, t.client_id, COUNT(*) AS num
+    FROM customer t
+    WHERE
+    t.create_datetime BETWEEN #{startDate} AND #{endDate}
+    GROUP BY date_str,t.client_id
+    ORDER BY date_str
+    )n
+    </select>
+
+    <select id="regClientStatistics" resultMap="BaseResultMap">
+    SELECT t.client_id as date_str, COUNT(*) AS num
+    FROM customer t
+    WHERE
+    t.create_datetime &lt; #{endDate}
+    GROUP BY t.client_id
+    </select>
+
+    <select id="purchaseCustomStatisticsWithDay" resultMap="BaseResultMap">
+    SELECT n.date_str, COUNT(*) as num
+    FROM(
+      SELECT DATE_FORMAT(t.pay_datetime,'%Y-%m-%d') AS date_str, t.uid, COUNT(t.uid) AS num
+      FROM pay_order t
+      WHERE
+      t.status_active = 5 AND t.pay_datetime IS NOT NULL AND t.pay_datetime BETWEEN #{startDate} AND #{endDate}
+      GROUP BY date_str,t.uid
+      ORDER BY date_str)
+    n
+    GROUP BY n.date_str
+  </select>
+    <select id="purchaseCustomStatisticsWithWeek" resultMap="BaseResultMap">
+    SELECT n.date_str, COUNT(*) as num
+    FROM(
+      SELECT CONCAT(DATE_FORMAT(t.create_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.create_datetime),2,0),'周') AS date_str, t.uid, COUNT(t.uid) AS num
+      FROM pay_order t
+      WHERE
+      t.status_active = 5 AND t.pay_datetime IS NOT NULL AND t.pay_datetime BETWEEN #{startDate} AND #{endDate}
+      GROUP BY date_str,t.uid
+      ORDER BY date_str)
+    n
+    GROUP BY n.date_str
+  </select>
+    <select id="purchaseCustomStatisticsWithMonth" resultMap="BaseResultMap">
+    SELECT n.date_str, COUNT(*) as num
+    FROM(
+      SELECT DATE_FORMAT(t.pay_datetime,'%Y-%m') AS date_str, t.uid, COUNT(t.uid) AS num
+      FROM pay_order t
+      WHERE
+      t.status_active = 5 AND t.pay_datetime IS NOT NULL AND t.pay_datetime BETWEEN #{startDate} AND #{endDate}
+      GROUP BY date_str,t.uid
+      ORDER BY date_str)
+    n
+    GROUP BY n.date_str
+  </select>
+    <select id="rePurchaseCustomStatisticsWithDay" resultMap="BaseResultMap">
+    SELECT n.date_str, COUNT(*) as num
+    FROM(
+      SELECT DATE_FORMAT(t.pay_datetime,'%Y-%m-%d') AS date_str, t.uid, COUNT(t.uid) AS num
+      FROM pay_order t
+      WHERE
+      t.status_active = 5 AND t.pay_datetime IS NOT NULL AND t.pay_datetime BETWEEN #{startDate} AND #{endDate}
+      GROUP BY date_str,t.uid
+      ORDER BY date_str)
+    n
+    WHERE n.num &gt; 1
+    GROUP BY n.date_str
+  </select>
+    <select id="rePurchaseCustomStatisticsWithWeek" resultMap="BaseResultMap">
+    SELECT n.date_str, COUNT(*) as num
+    FROM(
+      SELECT CONCAT(DATE_FORMAT(t.create_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.create_datetime),2,0),'周') AS date_str, t.uid, COUNT(t.uid) AS num
+      FROM pay_order t
+      WHERE
+      t.status_active = 5 AND t.pay_datetime IS NOT NULL AND t.pay_datetime BETWEEN #{startDate} AND #{endDate}
+      GROUP BY date_str,t.uid
+      ORDER BY date_str)
+    n
+    WHERE n.num &gt; 1
+    GROUP BY n.date_str
+  </select>
+    <select id="rePurchaseCustomStatisticsWithMonth" resultMap="BaseResultMap">
+    SELECT n.date_str, COUNT(*) as num
+    FROM(
+      SELECT DATE_FORMAT(t.pay_datetime,'%Y-%m') AS date_str, t.uid, COUNT(t.uid) AS num
+      FROM pay_order t
+      WHERE
+      t.status_active = 5 AND t.pay_datetime IS NOT NULL AND t.pay_datetime BETWEEN #{startDate} AND #{endDate}
+      GROUP BY date_str,t.uid
+      ORDER BY date_str)
+    n
+    WHERE n.num &gt; 1
+    GROUP BY n.date_str
+  </select>
+
+    <select id="countPurchaseCustomStatistics" resultType="Long">
+        SELECT COUNT(*) as num
+        FROM(
+        SELECT t.uid, COUNT(t.uid) AS num
+        FROM pay_order t
+        WHERE
+        t.status_active = 5 AND t.pay_datetime IS NOT NULL AND t.pay_datetime &lt; #{endDate}
+        GROUP BY t.uid
+        )
+        n
+    </select>
+
+    <select id="countRePurchaseCustomStatistics" resultType="Long">
+        SELECT COUNT(*) as num
+        FROM(
+        SELECT t.uid, COUNT(t.uid) AS num
+        FROM pay_order t
+        WHERE
+        t.status_active = 5 AND t.pay_datetime IS NOT NULL AND t.pay_datetime &lt; #{endDate}
+        GROUP BY t.uid
+        )
+        n
+        WHERE n.num &gt; 1
+    </select>
+
+
+    <!--按日派单数-->
+    <select id="sendOrdersPartnerStatisticsWithDay" resultMap="BaseResultMap">
+        SELECT date_format(t.p2s_assign_datetime,'%Y-%m-%d') AS date_str, COUNT(*) AS num
+        FROM serviceunit t
+        WHERE
+        t.pid=0 AND
+        t.p2s_assign_datetime BETWEEN #{startDate} AND #{endDate}
+        GROUP BY date_str
+        ORDER BY date_str
+    </select>
+
+    <!--按日拒单数-->
+    <select id="singleOrdersPartnerStatisticsWithDay" resultMap="BaseResultMap">
+        SELECT date_format(t.p_reject_datetime,'%Y-%m-%d') AS date_str, COUNT(*) AS num
+        FROM serviceunit t
+        WHERE
+        t.pid=0 AND
+        t.p_reject_datetime BETWEEN #{startDate} AND #{endDate}
+        GROUP BY date_str
+        ORDER BY date_str
+    </select>
+
+    <!--按周 派单数-->
+    <select id="sendOrdersPartnerStatisticsWithWeek" resultMap="BaseResultMap">
+        SELECT concat(DATE_FORMAT(t.p2s_assign_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.p2s_assign_datetime),2,0),'周') AS date_str, COUNT(*) AS num
+        FROM serviceunit t
+        WHERE
+        t.pid=0 AND
+        t.p2s_assign_datetime BETWEEN #{startDate} AND #{endDate}
+        GROUP BY date_str
+        ORDER BY date_str
+    </select>
+
+    <!--按周 拒单数-->
+    <select id="singleOrdersPartnerStatisticsWithWeek" resultMap="BaseResultMap">
+        SELECT concat(DATE_FORMAT(t.p_reject_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.p_reject_datetime),2,0),'周') AS date_str, COUNT(*) AS num
+        FROM serviceunit t
+        WHERE
+          t.pid=0 AND
+          t.p_reject_datetime BETWEEN #{startDate} AND #{endDate}
+        GROUP BY date_str
+        ORDER BY date_str
+    </select>
+
+    <!--按月 派单数-->
+    <select id="sendOrdersPartnerStatisticsWithMonth" resultMap="BaseResultMap">
+        SELECT DATE_FORMAT(t.p2s_assign_datetime,'%Y-%m') AS date_str, COUNT(*) AS num
+        FROM serviceunit t
+        WHERE
+         t.pid=0 AND
+         t.p2s_assign_datetime BETWEEN #{startDate} AND #{endDate}
+        GROUP BY date_str
+        ORDER BY date_str
+    </select>
+
+    <!--按月 拒单数-->
+    <select id="singleOrdersPartnerStatisticsWithMonth" resultMap="BaseResultMap">
+    SELECT DATE_FORMAT(t.p_reject_datetime,'%Y-%m') AS date_str, COUNT(*) AS num
+    FROM serviceunit t
+    WHERE
+    t.p_reject_datetime BETWEEN #{startDate} AND #{endDate}
+    GROUP BY date_str
+    ORDER BY date_str
+    </select>
+
+    <!--按日 单个合伙人派单数-->
+    <select id="oneSendOrdersPartnerStatisticsWithDay" resultMap="BaseResultMap">
+        select a.date_str,a.num from (SELECT DATE_FORMAT(t.p2s_assign_datetime,'%Y-%m-%d') AS date_str,t.partner_id,COUNT(*) AS num
+        FROM serviceunit t
+        where t.pid=0 and t.p2s_assign_datetime BETWEEN #{startDate} AND #{endDate}
+        GROUP BY date_str,#{partner_id}
+        ORDER BY date_str
+    </select>
+
+
+    <!--按日 单个合伙人拒单数-->
+    <select id="oneSingleOrdersPartnerStatisticsWithDay" resultMap="BaseResultMap">
+        select a.date_str,a.num from (SELECT DATE_FORMAT(t.p_reject_datetime,'%Y-%m-%d') AS date_str,t.partner_id,COUNT(*) AS num
+        FROM serviceunit t
+        where t.pid=0 and t.p_reject_datetime BETWEEN #{startDate} AND #{endDate}
+        GROUP BY date_str,#{partner_id}
+        ORDER BY date_str
+    </select>
+</mapper>
