@@ -246,20 +246,20 @@
 
     <!--按日 单个合伙人派单数-->
     <select id="oneSendOrdersPartnerStatisticsWithDay" resultMap="BaseResultMap">
-        select a.date_str,a.num from (SELECT DATE_FORMAT(t.p2s_assign_datetime,'%Y-%m-%d') AS date_str,t.partner_id,COUNT(*) AS num
+        select a.date_str,a.num AS sendNum,p.partner_id AS id,p.name from (SELECT DATE_FORMAT(t.p2s_assign_datetime,'%Y-%m-%d') AS date_str,t.partner_id,COUNT(*) AS num
         FROM serviceunit t
         where t.pid=0 and t.p2s_assign_datetime BETWEEN #{startDate} AND #{endDate}
-        GROUP BY date_str,#{partner_id}
-        ORDER BY date_str
+        GROUP BY date_str,t.partner_id
+        ORDER BY date_str) a,partner p where a.partner_id=p.partner_id
     </select>
 
 
     <!--按日 单个合伙人拒单数-->
     <select id="oneSingleOrdersPartnerStatisticsWithDay" resultMap="BaseResultMap">
-        select a.date_str,a.num from (SELECT DATE_FORMAT(t.p_reject_datetime,'%Y-%m-%d') AS date_str,t.partner_id,COUNT(*) AS num
+        select a.date_str,a.num AS singleNum,p.partner_id AS id,p.name from (SELECT DATE_FORMAT(t.p_reject_datetime,'%Y-%m-%d') AS date_str,t.partner_id,COUNT(*) AS num
         FROM serviceunit t
         where t.pid=0 and t.p_reject_datetime BETWEEN #{startDate} AND #{endDate}
-        GROUP BY date_str,#{partner_id}
-        ORDER BY date_str
+        GROUP BY date_str,t.partner_id
+        ORDER BY date_str) a,partner p where a.partner_id=p.partner_id
     </select>
 </mapper>

@@ -125,18 +125,11 @@ public class DataStatisticsPartnerServiceImpl implements DataStatisticsPartnerSe
         List<DataStatisticsCustomData> listData1 = dataStatisticsPartnerMapper.sendOrdersPartnerStatisticsWithDay(startDate, endDate);
         //合伙人拒单数
         List<DataStatisticsCustomData> listData2 = dataStatisticsPartnerMapper.singleOrdersPartnerStatisticsWithDay(startDate, endDate);
-        //找到所有合伙人
-        List<Partner> partners = this.partnerMapper.selectByExample(new PartnerExample());
-       /* if(!partners.isEmpty()){
-            partners.stream().forEach(partner -> {
-                //每个合伙人的派单数
-                List<DataStatisticsCustomData> sendList = dataStatisticsPartnerMapper.oneSendOrdersPartnerStatisticsWithDay(startDate, endDate,partner.getPartner_id());
-                //每个合伙人的拒单数
-                List<DataStatisticsCustomData> singleList = dataStatisticsPartnerMapper.oneSingleOrdersPartnerStatisticsWithDay(startDate, endDate,partner.getPartner_id());
 
-            });
-        }*/
-
+        //每个合伙人的派单数
+        List<DataStatisticsSinglePartnerData> sendList = dataStatisticsPartnerMapper.oneSendOrdersPartnerStatisticsWithDay(startDate, endDate);
+        //每个合伙人的拒单数
+        List<DataStatisticsSinglePartnerData> singleList = dataStatisticsPartnerMapper.oneSingleOrdersPartnerStatisticsWithDay(startDate, endDate);
 
         Map<String, Long> map1 = listData1.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
         Map<String, Long> map2 = listData2.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
@@ -158,12 +151,8 @@ public class DataStatisticsPartnerServiceImpl implements DataStatisticsPartnerSe
                 String purchasePercent = String.valueOf(Math.round((stepDate1 * 1.00) / (stepDate1 +stepDate2) * 100)).replaceAll("\\.0+$", "");
                 pcsdObj.setOrderRate(purchasePercent);
             }
-            /*Map<String, Long> clientNumMap = new LinkedHashMap<>();
-            for (String client : CUSTOM_CLIENTS) {
-                String key = pcsdObj.getDateStr() + " " + client;
-                clientNumMap.put(client, map3.containsKey(key) ? map3.get(key) : 0L);
-            }
-            pcsdObj.setClientNumMap(clientNumMap);*/
+
+
             list.add(pcsdObj);
         }
         return list;

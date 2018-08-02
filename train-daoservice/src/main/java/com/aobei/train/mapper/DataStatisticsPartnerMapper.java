@@ -161,9 +161,9 @@ public interface DataStatisticsPartnerMapper {
     List<DataStatisticsCustomData> singleOrdersPartnerStatisticsWithMonth(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     //按日   单个合伙人派单数
-    List<DataStatisticsCustomData> oneSendOrdersPartnerStatisticsWithDay(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("partner_id") Long partner_id);
+    List<DataStatisticsSinglePartnerData> oneSendOrdersPartnerStatisticsWithDay(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     //按日   单个合伙人拒单数
-    List<DataStatisticsCustomData> oneSingleOrdersPartnerStatisticsWithDay(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("partner_id") Long partner_id);
+    List<DataStatisticsSinglePartnerData> oneSingleOrdersPartnerStatisticsWithDay(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
 }
