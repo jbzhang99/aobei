@@ -1093,6 +1093,9 @@ public class StudentApiServiceImpl implements StudentApiService
 			}
 			or.andStudent_idEqualTo(student_id);
 			List<ServiceunitPerson> serviceUnitPersons = serviceunitPersonService.selectByExample(serviceunitPersonExample);
+			if(status_active==3){
+				serviceUnitPersons.addAll(serviceunitPeople1);
+			}
 			if(serviceUnitPersons.size()==0){
 				return 0;
 			}
@@ -1102,9 +1105,6 @@ public class StudentApiServiceImpl implements StudentApiService
 					set.add(snp.getServiceunit_id());
 			}
 			if(work_status==0 && !is_day){
-				if(serviceunitPeople1.size()!=0){
-					return serviceUnitPersons.size()+serviceunitPeople1.size();
-				}
 				return serviceUnitPersons.size();
 			}
 			Calendar instance = Calendar.getInstance();
