@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import com.aliyun.openservices.ons.api.SendResult;
 import com.aobei.common.bean.SmsData;
@@ -36,7 +37,7 @@ import custom.bean.OrderInfo;
 import org.springframework.transaction.annotation.Transactional;
 
 @RunWith(SpringRunner.class)
-@Transactional
+//@Transactional
 @SpringBootTest
 public class PartnerApiServiceImplTest {
 
@@ -66,6 +67,8 @@ public class PartnerApiServiceImplTest {
 	 AppGrowthService appGrowthService;
 	 @Autowired
 	 PartnerService partnerService;
+	 @Autowired
+	StringRedisTemplate stringRedisTemplate;
 	 
 
 	@Test
@@ -440,11 +443,11 @@ public class PartnerApiServiceImplTest {
 		MessageContent.ContentMsg content = new MessageContent.ContentMsg();
 		content.setMsgtype("native");
 		content.setContent("这个是测试学员消息的哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵");
-		/*Map<String,String> param = new HashMap<>();
+		Map<String,String> param = new HashMap<>();
 		param.put("orderStatus","waitService");
 		param.put("pay_order_id","1524481533");
 		TransmissionContent tContent = new TransmissionContent(TransmissionContent.STUDENT,TransmissionContent.ORDER_DETAIL,param);
-		content.setHref(tContent.getHrefNotEncode());*/
+		content.setHref(tContent.getHrefNotEncode());
 		content.setTitle("测试学员消息");
 		content.setTypes(1);
 		content.setNoticeTypes(2);
@@ -508,6 +511,11 @@ public class PartnerApiServiceImplTest {
 		Assert.assertEquals(orderInfo.getOrderStatus(),"waitRobbing");
 	}
 
-
+	@Test
+	public void redisTest(){
+		final String REDIS_KEY_COUPONDIS = "couponList"+1;
+		//stringRedisTemplate.opsForSet().add(REDIS_KEY_COUPONDIS,"123");
+		stringRedisTemplate.opsForList().leftPush(REDIS_KEY_COUPONDIS,"789");
+	}
 
 }

@@ -1958,6 +1958,16 @@ public class ServiceUnitExample extends MbgExample<Criteria> implements Paginati
         protected Criteria() {
             super();
         }
+
+        /**
+         * 订单服务状态为null或者为2
+         * @param value
+         * @return
+         */
+        public Criteria andWork_status_more(int value) {
+            addCriterion(String.format("(work_status = %d or work_status is null)",value));
+            return (Criteria) this;
+        }
     }
 
     /**

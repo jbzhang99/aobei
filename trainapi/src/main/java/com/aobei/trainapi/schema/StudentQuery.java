@@ -64,9 +64,6 @@ public class StudentQuery implements GraphQLQueryResolver {
 		Student student = student_info();
 		// 根据绑定学员找到合伙人已指派的服务单
 		List<OrderInfo> list = this.studentApiService.selectStuUndoneOrder(student.getStudent_id(), page_index, count);
-		if (list.size() == 0) {
-			return null;
-		}
 		return list;
 	}
 

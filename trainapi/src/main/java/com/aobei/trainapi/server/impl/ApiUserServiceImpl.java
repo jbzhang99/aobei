@@ -253,7 +253,9 @@ public class ApiUserServiceImpl implements ApiUserService {
                 int count = studentService.updateByPrimaryKeySelective(student);
                 if (count > 0) {
                     userAddRole(user_id, Roles.STUDENT.roleName());
-                    response.setMutationResult(new MutationResult());
+                    MutationResult mutationResult = new MutationResult();
+                    mutationResult.setExtra("200");
+                    response.setMutationResult(mutationResult);
                     return response;
                 }
                 response.setErrors(Errors._41001);

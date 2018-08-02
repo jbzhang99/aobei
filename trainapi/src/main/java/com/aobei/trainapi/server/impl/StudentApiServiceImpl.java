@@ -122,17 +122,8 @@ public class StudentApiServiceImpl implements StudentApiService
 				.andStatus_activeEqualTo(Status.ServiceStatus.assign_worker.value)// 订单状态为已指派
 				.andPidEqualTo(0L)// 父单
 				.andActiveEqualTo(Status.ServiceUnitActive.active.value)
-				.andWork_statusEqualTo(2);
-		List<OrderInfo> orderInfoList1 = orderService.orderInfoList(Roles.STUDENT, serviceUnitExample, page_index, count).getList();
-		ServiceUnitExample example = new ServiceUnitExample();
-		Criteria or = example.or();
-		or.andServiceunit_idIn(unitIds)
-				.andStatus_activeEqualTo(Status.ServiceStatus.assign_worker.value)// 订单状态为已指派
-				.andPidEqualTo(0L)// 父单
-				.andActiveEqualTo(Status.ServiceUnitActive.active.value)
-				.andWork_statusIsNull();
-		orderInfoList = orderService.orderInfoList(Roles.STUDENT, example, page_index, count).getList();
-		orderInfoList.addAll(orderInfoList1);
+				.andWork_status_more(2);
+		orderInfoList = orderService.orderInfoList(Roles.STUDENT, serviceUnitExample, page_index, count).getList();
 		logger.info("api-method:selectStuUndoneOrder:process orderInfoList:{}", orderInfoList.size());
 		return orderInfoList;
 	}
