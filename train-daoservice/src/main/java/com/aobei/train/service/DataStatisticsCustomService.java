@@ -1,7 +1,7 @@
 package com.aobei.train.service;
 
-import com.aobei.train.model.DataStatisticsCustomData;
-import com.aobei.train.service.bean.PurchaseCustomStatisticsData;
+import custom.bean.DataStatisticsCustomData;
+import custom.bean.PurchaseCustomStatisticsData;
 
 import java.util.Date;
 import java.util.List;
@@ -9,28 +9,28 @@ import java.util.List;
 public interface DataStatisticsCustomService  {
 
     /**
-     * 递增 用户注册数据  日
+     * 用户注册数据  日
      * @param startDate
      * @param endDate
      * @return
      */
-    List<DataStatisticsCustomData> incrementingRegStatisticsWithDay(Date startDate, Date endDate);
+    List<DataStatisticsCustomData> regStatisticsWithDay(Date startDate, Date endDate);
 
     /**
-     * 递增 用户注册数据  周
+     * 用户注册数据  周
      * @param startDate
      * @param endDate
      * @return
      */
-    List<DataStatisticsCustomData> incrementingRegStatisticsWithWeek(Date startDate, Date endDate);
+    List<DataStatisticsCustomData> regStatisticsWithWeek(Date startDate, Date endDate);
 
     /**
-     * 递增 用户注册数据  月
+     * 用户注册数据  月
      * @param startDate
      * @param endDate
      * @return
      */
-    List<DataStatisticsCustomData> incrementingRegStatisticsWithMonth(Date startDate, Date endDate);
+    List<DataStatisticsCustomData> regStatisticsWithMonth(Date startDate, Date endDate);
 
 
     /**

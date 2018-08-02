@@ -1,8 +1,8 @@
 package com.aobei.trainconsole.controller.datastatistics;
 
-import com.aobei.train.model.DataStatisticsCustomData;
 import com.aobei.train.service.DataStatisticsCustomService;
-import com.aobei.train.service.bean.PurchaseCustomStatisticsData;
+import custom.bean.DataStatisticsCustomData;
+import custom.bean.PurchaseCustomStatisticsData;
 import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -83,11 +83,11 @@ public class DataStatisticsCustomController {
         endDate = endDateBoundary(endDate);
         switch (type) {
             case 3:
-                return dataStatisticsCustomService.incrementingRegStatisticsWithMonth(startDate, endDate);
+                return dataStatisticsCustomService.regStatisticsWithMonth(startDate, endDate);
             case 2:
-                return dataStatisticsCustomService.incrementingRegStatisticsWithWeek(startDate, endDate);
+                return dataStatisticsCustomService.regStatisticsWithWeek(startDate, endDate);
             default:
-                return dataStatisticsCustomService.incrementingRegStatisticsWithDay(startDate, endDate);
+                return dataStatisticsCustomService.regStatisticsWithDay(startDate, endDate);
         }
     }
 
@@ -114,21 +114,21 @@ public class DataStatisticsCustomController {
                         "按月%s至%s",
                         LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")),
                         LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")));
-                list = dataStatisticsCustomService.incrementingRegStatisticsWithMonth(startDate, endDate);
+                list = dataStatisticsCustomService.regStatisticsWithMonth(startDate, endDate);
                 break;
             case 2:
                 subTitle = String.format(
                         "按周%s至%s",
                         LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-ww周")),
                         LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-ww周")));
-                list = dataStatisticsCustomService.incrementingRegStatisticsWithWeek(startDate, endDate);
+                list = dataStatisticsCustomService.regStatisticsWithWeek(startDate, endDate);
                 break;
             default:
                 subTitle = String.format(
                         "按日%s至%s",
                         LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                         LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                list = dataStatisticsCustomService.incrementingRegStatisticsWithDay(startDate, endDate);
+                list = dataStatisticsCustomService.regStatisticsWithDay(startDate, endDate);
                 break;
         }
 
@@ -291,7 +291,7 @@ public class DataStatisticsCustomController {
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
         endDate = endDateBoundary(endDate);
         // 暂定用户注册数据都为北京
-        List<DataStatisticsCustomData> list = dataStatisticsCustomService.incrementingRegStatisticsWithMonth(startDate, endDate);
+        List<DataStatisticsCustomData> list = dataStatisticsCustomService.regStatisticsWithMonth(startDate, endDate);
         long sum = list.stream().mapToLong(n -> n.getNum()).sum();
         DataStatisticsCustomData beijin = new DataStatisticsCustomData();
         beijin.setDateStr("北京");
@@ -318,7 +318,7 @@ public class DataStatisticsCustomController {
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) throws IOException {
         endDate = endDateBoundary(endDate);
         // 暂定用户注册数据都为北京
-        List<DataStatisticsCustomData> list = dataStatisticsCustomService.incrementingRegStatisticsWithMonth(startDate, endDate);
+        List<DataStatisticsCustomData> list = dataStatisticsCustomService.regStatisticsWithMonth(startDate, endDate);
         long sum = list.stream().mapToLong(n -> n.getNum()).sum();
         Map<String, Long> map = new LinkedHashMap<>();
         map.put("北京", sum);
