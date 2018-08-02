@@ -1,10 +1,9 @@
 package com.aobei.trainconsole.controller.datastatistics;
 
-import com.aobei.train.model.DataStatisticsCustomData;
 import com.aobei.train.service.DataStatisticsCustomService;
 import com.aobei.train.service.DataStatisticsStudentService;
-import com.aobei.train.service.bean.PurchaseCustomStatisticsData;
 import com.aobei.train.service.bean.PurchaseStudentStatisticsData;
+import custom.bean.DataStatisticsCustomData;
 import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;

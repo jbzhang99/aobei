@@ -1,10 +1,10 @@
 package com.aobei.train.service.impl;
 
 import com.aobei.train.mapper.DataStatisticsStudentMapper;
-import com.aobei.train.model.DataStatisticsCustomData;
 import com.aobei.train.model.StudentExample;
 import com.aobei.train.service.DataStatisticsStudentService;
 import com.aobei.train.service.bean.PurchaseStudentStatisticsData;
+import custom.bean.DataStatisticsCustomData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -2,10 +2,9 @@ package com.aobei.train.service.impl;
 
 import com.aobei.train.mapper.*;
 import com.aobei.train.model.*;
-import com.aobei.train.service.DataStatisticsCustomService;
 import com.aobei.train.service.DataStatisticsPartnerService;
-import com.aobei.train.service.bean.PurchaseCustomStatisticsData;
 import com.aobei.train.service.bean.PurchasePartnerStatisticsData;
+import custom.bean.DataStatisticsCustomData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

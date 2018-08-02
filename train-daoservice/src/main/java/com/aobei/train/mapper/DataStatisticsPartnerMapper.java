@@ -1,7 +1,7 @@
 package com.aobei.train.mapper;
 
-import com.aobei.train.model.DataStatisticsCustomData;
 import com.aobei.train.model.DataStatisticsSinglePartnerData;
+import custom.bean.DataStatisticsCustomData;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

@@ -1,17 +1,8 @@
 package com.aobei.trainconsole.controller.datastatistics;
 
-import com.aobei.train.model.DataStatisticsCustomData;
-import com.aobei.train.service.DataStatisticsCustomService;
 import com.aobei.train.service.DataStatisticsPartnerService;
-import com.aobei.train.service.bean.PurchaseCustomStatisticsData;
 import com.aobei.train.service.bean.PurchasePartnerStatisticsData;
-import org.apache.poi.hpsf.DocumentSummaryInformation;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.CellReference;
-import org.apache.poi.hssf.util.HSSFCellUtil;
+import custom.bean.DataStatisticsCustomData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -19,16 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 数据统计 <br>

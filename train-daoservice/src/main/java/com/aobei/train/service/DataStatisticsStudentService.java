@@ -1,8 +1,7 @@
 package com.aobei.train.service;
 
-import com.aobei.train.model.DataStatisticsCustomData;
-import com.aobei.train.service.bean.PurchaseCustomStatisticsData;
 import com.aobei.train.service.bean.PurchaseStudentStatisticsData;
+import custom.bean.DataStatisticsCustomData;
 
 import java.util.Date;
 import java.util.List;
