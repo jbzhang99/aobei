@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<head>
+    <meta charset="UTF-8"></meta>
+    <title>顾客数据统计</title>
+    <link th:href="@{/js/jquery-date-range-picker/daterangepicker.min.css}" rel="stylesheet"/>
+    <style type="text/css">
+        .inputDate {
+            width: 453px;
+            display: none;
+        }
+
+        #btnGroups .active {
+            background-color: #3b97d7;
+            color: white;
+        }
+
+        #inputGroups {
+            margin: 10px;
+            margin-left: 0px;
+        }
+
+        #inputGroups .btn {
+            margin-left: 80px;
+        }
+
+        #inputGroups .active {
+            display: inline-block;
+        }
+
+        #monthInputs select {
+            width: 80px;
+            margin-right: 5px;
+            display: inline-block;
+        }
+
+        .main_charts {
+            padding: 5px;
+        }
+
+        .main_charts .panel {
+        }
+
+        .main_charts .panel .panel-heading i {
+            cursor: pointer;
+        }
+
+        .trTotalValue {
+            background-color: #00CC99 !important;
+            color: white;
+        }
+
+        .trTotalValue .red {
+            background-color: #FF0000;
+        }
+
+        #customMapBox thead{
+            background-color: #00D0FF;
+        }
+    </style>
+    <script TYPE="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+    <script TYPE="text/javascript" th:src="@{/js/jquery-date-range-picker/jquery.daterangepicker.min.js}"></script>
+    <script TYPE="text/javascript" th:src="@{/js/echarts.min.js}"></script>
+    <script TYPE="text/javascript" th:src="@{/js/echart_map/china.js}"></script>
+    <script type="text/javascript" th:inline="javascript">
+        $(function () {
+            // 按日
+            $('#inputDay').dateRangePicker({
+                autoClose: true,
+                showShortcuts: false,
+                startOfWeek: 'monday',
+                separator: '  至  ',
+                language: 'cn',
+                setValue: function (s) {
+                    if (!$(this).is(':disabled') && s != $(this).val()) {
+                        $(this).val(s);
+                    }
+                },
+                startDate: '2018-01-01',
+                endDate: moment().format('YYYY-MM-DD')
+            });
+
+            // 按周
+            $('#inputWeek').dateRangePicker({
+                format: 'ww周(YYYY-MM-DD)',
+                autoClose: true,
+                batchMode: 'week-range',
+                showShortcuts: false,
+                startOfWeek: 'monday',
+                showWeekNumbers: true,
+                separator: '  至  ',
+                language: 'cn',
+                setValue: function (s) {
+                    if (!$(this).is(':disabled') && s != $(this).val()) {
+                        $(this).val(s);
+                    }
+                },
+                startDate: '2018-01-01',
+                endDate: moment().add(7 - moment().day(), 'days').format('YYYY-MM-DD')
+            });
+
+            // 按钮条切换
+            $('#btnGroups .btn').click(function () {
+                var index = $(this).index();
+                $('#btnGroups .btn').removeClass('active');
+                $(this).addClass('active');
+                $('#inputGroups .inputDate').removeClass('active');
+                $('#inputGroups .inputDate').eq(index).addClass('active');
+            });
+
+            // 图表收起/展开
+            $('.up_and_down').click(function () {
+                $(this).toggleClass('fa-caret-down fa-caret-up');
+                $(this).closest('.panel').find('.panel-body').slideToggle('snow');
+                $(this).closest('.panel').find('.panel-footer').toggle();
+            });
+
+            // 查询点击操作
+            $('#btnDataSearch').click(function () {
+                var data = getInputDateValue();
+                if (!data.startDate || !data.endDate) {
+                    alertify.alert('请选择日期范围');
+                    return;
+                }
+                if (data.startDate > data.endDate) {
+                    alertify.alert('开始日期不能大于结束日期');
+                    return;
+                }
+                window.CURRENT_SEARCH_DATA = data;
+                doCharts(data);
+            });
+
+            // 初始化月方式下拉组件
+            function initMonthSelect() {
+                var startYear = 2018;
+                var endYear = moment().year();
+                var options = [];
+                for (var i = startYear; i >= endYear; i--) {
+                    options.push('<option value="' + i + '">' + i + '</option>');
+                }
+                $('#monthInputs select:eq(0),#monthInputs select:eq(2)').html(options.join(''));
+
+                options = [];
+                for (var i = 1; i <= 12; i++) {
+                    var mi = i;
+                    if (mi < 10) {
+                        mi = '0' + mi;
+                    }
+                    options.push('<option value="' + mi + '">' + mi + '月</option>');
+                }
+                $('#monthInputs select:eq(1),#monthInputs select:eq(3)').html(options.join(''));
+
+                var current_month = moment().month();
+                $('#monthInputs select:eq(3)').find('option:eq(' + current_month + ')').prop('selected', 'selected');
+            }
+
+            // 翻页操作
+            $('#pageBtns button').click(function () {
+                window.TABLEPAGE.p += $(this).index() == 0 ? -1 : 1;
+                tablePageData(window.TABLEPAGE);
+            });
+
+            // 改变页码
+            $('#pageSizeSelect').change(function () {
+                window.TABLEPAGE.p = 1;
+                window.TABLEPAGE.psize = parseInt($(this).val());
+                tablePageData(window.TABLEPAGE);
+            });
+
+            // 初始化页面加载
+            (function init() {
+                // 初始化值
+                $('#inputGroups input').eq(0).val([
+                    moment().format('YYYY-MM-01'),
+                    '  至  ',
+                    moment().format('YYYY-MM-DD')].join('')
+                );
+                initMonthSelect();
+                initCharts();
+                window.TABLEPAGE = {p: 1, psize: 10};
+                $('#btnDataSearch').trigger('click');
+            })();
+        });
+
+        /**
+         * 获取 表单值
+         */
+        function getInputDateValue() {
+            var type = $('#btnGroups .active').index() + 1;
+            var startDate;
+            var endDate;
+            if (type == 1) {
+                var dateStr = $('#inputGroups .active').val().split('  至  ');
+                startDate = dateStr[0];
+                endDate = dateStr[1];
+            } else if (type == 2) {
+                if ($('#inputGroups .active').val()) {
+                    var dateStr = $('#inputGroups .active').val().split('  至  ');
+                    startDate = dateStr[0].replace(/(\d+周\()(\d+\-\d+\-\d+)(\))/, '$2');
+                    endDate = dateStr[1].replace(/(\d+周\()(\d+\-\d+\-\d+)(\))/, '$2');
+                }
+            } else if (type == 3) {
+                startDate = [$('#monthInputs select:eq(0)').val(),
+                    '-',
+                    $('#monthInputs select:eq(1)').val(),
+                    '-01'].join('');
+                endDate = moment([
+                    $('#monthInputs select:eq(2)').val(),
+                    '-',
+                    $('#monthInputs select:eq(3)').val(),
+                    '-01'].join('')
+                ).add(1, 'months').add(-1, 'days').format('YYYY-MM-DD');
+            }
+            return {type: type, startDate: startDate, endDate: endDate};
+        }
+
+        /**
+         * 中间表格数据 分页加载
+         * @param tablePage
+         */
+        function tablePageData(tablePage) {
+            $('#pageBtns button:eq(0)').attr('disabled', tablePage.p == 1);
+            $('#pageBtns button:eq(1)').attr('disabled', tablePage.p * tablePage.psize >= tablePage.total);
+
+            $('#customTableBox table').each(function (i, n) {
+                $(n).find('.trData').hide();
+                for (var x = (tablePage.p - 1) * tablePage.psize; x < tablePage.p * tablePage.psize; x++) {
+                    $(n).find('.trData').eq(x).show();
+                }
+            });
+        }
+
+        /**
+         * 初始化图表
+         */
+        function initCharts() {
+            window.CHARTS = {
+                customDayChart: echarts.init(document.getElementById('customDaySumChart')),
+                mapChart : echarts.init(document.getElementById('mapChart'))
+            };
+        }
+
+        //------------------------------------------------------------------------------------
+
+        $(function () {
+            // 下载柱状图用户数据
+            /*$('#customDataDownload').click(function () {
+                var downUrl = [[@{/data_statistics/custom/downCustomRegData}]];
+                window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
+            });*/
+
+            // 下载中间表格数据
+           /* $('#customTableDataDownload').click(function () {
+                var downUrl = [[@{/data_statistics/custom/downCustomTableData}]];
+                window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
+            });*/
+
+            // 下载地图数据
+           /* $('#customMapDataDownload').click(function () {
+                var downUrl = [[@{/data_statistics/custom/downCustomMapData}]];
+                window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
+            });*/
+
+        });
+
+        /**
+         * 执行操作
+         * @param data
+         * type 类型 1 按天 2 按周 3 按月
+         * startDate 开始日期
+         * endDate 结束日期
+         */
+        function doCharts(data) {
+            // TODO 自定义加载图表数据
+
+            // 加载用户柱状图数据
+            customUserDaySum(data);
+            // 加载用户中间表格数据
+            loadCustomTableData(data);
+            // 加载地图数据
+            loadCustomMapData(data);
+        }
+
+        /**
+         *  合伙人每日用户总量
+         */
+        function customUserDaySum(requestData) {
+            CHARTS.customDayChart.showLoading();
+            var typeText;
+            switch (requestData.type) {
+                case 1:
+                    typeText = '日';
+                    break;
+                case 2:
+                    typeText = '周';
+                    break;
+                case 3:
+                    typeText = '月';
+                    break;
+            }
+            var option = {
+                title: {
+
+                    text: '按' + typeText + '统计合伙人数'
+                },
+                color: ['#3398DB'],
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+                        type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        data: [],
+                        axisTick: {
+                            alignWithLabel: true
+                        }
+                    }
+                ],
+                yAxis: [
+                    {
+                        type: 'value'
+                    }
+                ],
+                series: [
+                    {
+                        name: '合伙人数',
+                        type: 'bar',
+                        barWidth: '60%',
+                        data: []
+                    }
+                ]
+
+            };
+
+            $.getJSON([[@{/data_statistics/partner/loadCustomRegData}]],requestData, function (data) {
+                var xAxis_data = [];
+                var series_data = [];
+                $.each(data, function (i, n) {
+                    xAxis_data.push(n.dateStr);
+                    series_data.push(n.num);
+                });
+                option.xAxis[0].data = xAxis_data;
+                option.series[0].data = series_data;
+
+                CHARTS.customDayChart.hideLoading();
+                // 使用刚指定的配置项和数据显示图表。
+                CHARTS.customDayChart.setOption(option);
+            });
+        }
+
+        /**
+         *  加载 中间表格数据
+         */
+        function loadCustomTableData(requestData) {
+            $('#customTableBox table tbody').empty();
+            $.getJSON([[@{/data_statistics/partner/loadCustomTableData}]], requestData, function (data) {
+                var html_1 = [];
+                //var html_2 = [];
+                var total = [0, 0, 0, 0, 0];
+                $.each(data, function (i, n) {
+                    html_1.push('<tr class="trData">');
+                    html_1.push('<td>' + n.dateStr + '</td>');
+                    html_1.push('<td>' + n.totalCustomNum + '</td>');
+                    html_1.push('<td>' + n.sendOrdersTotalNum + '</td>');
+                    html_1.push('<td>' + n.singleOrdersTotalNum + '</td>');
+                    html_1.push('<td>' + n.orderRate + '%</td>');
+                    html_1.push('</tr>');
+
+                    /*html_2.push('<tr class="trData">');
+                    html_2.push('<td>' + n.clientNumMap['wx_m_custom'] + '</td>');
+                    html_2.push('<td>' + n.clientNumMap['a_custom'] + '</td>');
+                    html_2.push('<td>' + n.clientNumMap['i_custom'] + '</td>');
+                    html_2.push('<td>' + n.clientNumMap['h5_custom'] + '</td>');
+                    html_1.push('</tr>');*/
+
+                    total = [
+                        total[0] + parseInt(n.totalCustomNum),
+                        total[1] + parseInt(n.sendOrdersTotalNum),
+                        total[2] + parseInt(n.singleOrdersTotalNum),
+                        total[3] + parseInt(n.orderRate),
+                        /*total[4] + parseInt(n.clientNumMap['wx_m_custom']),
+                        total[5] + parseInt(n.clientNumMap['a_custom']),
+                        total[6] + parseInt(n.clientNumMap['i_custom']),
+                        total[7] + parseInt(n.clientNumMap['h5_custom'])*/];
+
+
+                });
+                html_1.push('<tr class="trTotalValue">');
+                html_1.push('<td>合计</td>');
+                html_1.push('<td class="red">' + total[0] + '</td>');
+                html_1.push('<td class="red">' + total[1] + '</td>');
+                html_1.push('<td class="red">' + total[2] + '</td>');
+                if (total[2] > 0) {
+                    html_1.push('<td class="red">' + (total[2] / (total[2]+total[1]) * 100).toFixed(0) + '%</td>');
+                } else {
+                    html_1.push('<td class="red">0%</td>');
+                }
+                html_1.push('</tr>');
+
+               /* html_2.push('<tr class="trTotalValue">');
+                html_2.push('<td>' + total[4] + '</td>');
+                html_2.push('<td>' + total[5] + '</td>');
+                html_2.push('<td>' + total[6] + '</td>');
+                html_2.push('<td>' + total[7] + '</td>');
+                html_2.push('</tr>');*/
+                $('#customTableBox table:eq(0) tbody').html(html_1.join(''));
+                //$('#customTableBox table:eq(1) tbody').html(html_2.join(''));
+                window.TABLEPAGE.p = 1;
+                window.TABLEPAGE.total = data.length;
+                tablePageData(window.TABLEPAGE);
+            });
+        }
+
+
+        /**
+         *  加载地图数据
+         */
+        function loadCustomMapData(requestData) {
+            CHARTS.mapChart.showLoading();
+            // 指定图表的配置项和数据
+            var option = {
+
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}<br/>{c}'
+                },
+                visualMap: {
+                    text:['High','Low'],
+                    realtime: false,
+                    calculable: true,
+                    inRange: {
+                        color: ['lightskyblue','yellow', 'orangered']
+                    },
+                    right:0,
+                    top:0
+
+                },
+                series: [{
+                    type: 'map',
+                    map: 'china',  //根据不同的省份切换脚本
+                    selectedMode: 'single',
+                    label: {
+                        normal: {
+                            show: true,
+                            textStyle:{color:"#b6a38a"}
+                        },
+                        emphasis: {
+                            show: true,
+                            textStyle:{color:"#800080"}
+                        }
+                    },
+                    itemStyle: {
+                        normal: {
+                            borderWidth: 0,
+                            areaColor:"#9cd3f5"
+                        },
+                        emphasis: {
+                            areaColor:"#f9df33",
+                            borderWidth: 0
+                        }
+                    },
+                    data:[
+                        {name:'安徽',value:'200'},
+                        {name:'合肥市',value:'200'},
+                        {name:'安庆市',value:'100'},
+                        {name:'黄山市',value:'50'}
+                    ]
+                }]
+            };
+            $.getJSON([[@{/data_statistics/partner/loadCustomMapData}]],requestData, function (data) {
+                var html = [];
+                var mapData = [];
+                var max = 0;
+                $.each(data,function(i,n){
+                    mapData.push({name:n.dateStr,value:n.num});
+                    html.push('<tr>');
+                    html.push('<td>'+n.dateStr+'</td>');
+                    html.push('<td>'+n.num+'</td>');
+                    html.push('</tr>');
+                    if(n.num>max){
+                        max = n.num;
+                    }
+                });
+                option.series[0].data = mapData;
+                option.visualMap.max = max;
+                $('#customMapBox tbody').html(html.join(''));
+                CHARTS.mapChart.hideLoading();
+                CHARTS.mapChart.setOption(option);
+            });
+
+        }
+
+
+    </script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+
+    <!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+    <div class="page_content_bar form-inline">
+
+        <!--/* 面包屑  */-->
+        <ol class="breadcrumb clearfix">
+            <li class="active">合伙人数据统计</li>
+        </ol>
+    </div>
+
+    <!--/* 页面部分二              页面主内容  */-->
+    <div class="page_content_main" data-sidea="side_63">
+        <!-- 日期选择控件  -->
+        <div style="padding: 0px 10px 10px 10px;">
+            <div class="btn-group" role="group" aria-label="..." style="margin-right: 80px" id="btnGroups">
+                <button type="button" class="btn btn-default active">按日分析</button>
+                <button type="button" class="btn btn-default">按周分析</button>
+                <button type="button" class="btn btn-default">按月分析</button>
+            </div>
+            <div id="inputGroups">
+                <input type="text" id="inputDay" placeholder="请选择日期" readonly
+                       class="form-control input-sm inputDate active">
+                <input type="text" id="inputWeek" placeholder="请选择日期" readonly class="form-control input-sm inputDate">
+                <div id="monthInputs" class="inputDate">
+                    <select class="form-control input-sm"></select>
+                    <select class="form-control input-sm"></select>
+                    &nbsp;至&nbsp;
+                    <select class="form-control input-sm"></select>
+                    <select class="form-control input-sm"></select>
+                </div>
+                <button class="btn btn-default" id="btnDataSearch">查找</button>
+            </div>
+        </div>
+
+        <!--  图表数据  -->
+        <div class="main_charts">
+
+          <!--  &lt;!&ndash; 合伙人相关数据图表 &ndash;&gt;-->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    合伙人相关数据图表
+                    <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
+                       style="margin-left: 20px"></i>
+                    <i id="customDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+                </div>
+                <div class="panel-body">
+                    <div id="customDaySumChart" style="height:400px;"></div>
+                </div>
+            </div>
+
+             <!--&lt;!&ndash; 合伙人表格数据 &ndash;&gt;-->
+             <div class="panel panel-default">
+                 <div class="panel-heading">
+                     合伙人相关数据表格
+                     <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
+                        style="margin-left: 20px"></i>
+                     <i id="customTableDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+                 </div>
+                 <div class="panel-body">
+                     <div id="customTableBox" style="height:300px;overflow-y: auto">
+                         <div class="col-sm-7 col-xs-12">
+                             <table class="table table-bordered table-striped text-center">
+                                 <thead>
+                                 <th class="text-center">日期</th>
+                                 <th class="text-center">合伙人总数</th>
+                                 <th class="text-center">派单总数</th>
+                                 <th class="text-center">拒单总数</th>
+                                 <th class="text-center">接单率</th>
+                                 </thead>
+                                 <tbody>
+                                 </tbody>
+                             </table>
+
+                         </div>
+                         <!--<div class="col-sm-5 col-xs-12">
+                             <table class="table table-bordered table-striped text-center">
+                                 <thead>
+                                 <tr>
+                                     <th colspan="4" class="text-center" style="padding:4px">各端顾客数</th>
+                                 </tr>
+                                 <tr>
+                                     <th class="text-center" style="padding:3px">小程序</th>
+                                     <th class="text-center" style="padding:3px">安卓</th>
+                                     <th class="text-center" style="padding:3px">IOS</th>
+                                     <th class="text-center" style="padding:3px">H5</th>
+                                 </tr>
+                                 </thead>
+                                 <tbody>
+                                 </tbody>
+                             </table>
+
+                         </div>-->
+                     </div>
+                 </div>
+                 <div class="panel-footer clearfix" style="padding: 5px">
+                     <div class="pull-right" style="width: 120px;padding-left: 50px" id="pageBtns">
+                         <button class="btn btn-default btn-sm"><i class="fa fa-caret-left" aria-hidden="true"></i>
+                         </button>
+                         &nbsp;
+                         <button class="btn btn-default btn-sm"><i class="fa fa-caret-right" aria-hidden="true"></i>
+                         </button>
+                     </div>
+                     <select class="form-control input-sm pull-right" id="pageSizeSelect" style="width: 60px;">
+                         <option value="5">5</option>
+                         <option value="10" selected>10</option>
+                         <option value="20">20</option>
+                     </select>
+                     <span class="pull-right" style="line-height: 30px;margin-right: 10px">每页显示条数</span>
+                 </div>
+             </div>
+
+            <!-- &lt;!&ndash; 地图相关数据图表 &ndash;&gt;-->
+             <div class="panel panel-default">
+                 <div class="panel-heading">
+                     数据地图
+                     <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
+                        style="margin-left: 20px"></i>
+                     <i id="customMapDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+                 </div>
+                 <div class="panel-body">
+                     <div id="customMapBox">
+                         <div class="col-sm-3 col-xs-12" style="overflow-y: auto;">
+                             <table class="table table-bordered table-striped text-center">
+                                 <thead>
+                                 <th class="text-center">区域</th>
+                                 <th class="text-center">合伙人数</th>
+                                 </thead>
+                                 <tbody>
+                                 </tbody>
+                             </table>
+
+                         </div>
+                         <div class="col-sm-9 col-xs-12">
+                             <div id="mapChart" style="height:600px;"></div>
+                         </div>
+                     </div>
+
+                 </div>
+             </div>
+
+        </div>
+    </div>
+</div>
+
+</div>
+</body>
+</html>

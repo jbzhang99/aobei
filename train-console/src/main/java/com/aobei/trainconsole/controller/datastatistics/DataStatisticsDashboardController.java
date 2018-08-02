@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * 数据统计 <br>
- * 顾客数据统计
+ * dashboard概况
  *
  */
 @Controller

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aobei.train.mapper.OrdersDataStatisticsMapper">
+  <!-- 按日月周查询订单销售额 -->
+  <select id="getOrdersDataDay" resultType="custom.bean.DataResultSet">
+    SELECT DATE_FORMAT(t.finish_datetime,'%Y-%m-%d') AS dateStr, COUNT(price_total) AS num
+    FROM v_order_unit t WHERE finish_datetime BETWEEN #{startDateTime} AND #{endDateTime}
+      AND o_status_active = '5' OR r_status = '3'
+    GROUP BY dateStr
+    ORDER BY dateStr;
+  </select>
+
+  <select id="getOrdersDataWeek" resultType="custom.bean.DataResultSet">
+    SELECT CONCAT(DATE_FORMAT(t.finish_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.create_datetime),2,0),'周') AS dateStr, COUNT(price_total) AS num
+    FROM v_order_unit t WHERE finish_datetime BETWEEN #{startDateTime} AND #{endDateTime}
+      AND o_status_active = '5' OR r_status = '3'
+    GROUP BY dateStr
+    ORDER BY dateStr;
+  </select>
+
+  <select id="getOrdersDataMonth" resultType="custom.bean.DataResultSet">
+    SELECT DATE_FORMAT(t.finish_datetime,'%Y-%m') AS dateStr, COUNT(price_total) AS num
+    FROM v_order_unit t WHERE finish_datetime BETWEEN #{startDateTime} AND #{endDateTime}
+      AND o_status_active = '5' OR r_status = '3'
+    GROUP BY dateStr
+    ORDER BY dateStr;
+  </select>
+
+  <!-- 按日月周查询订单下单量 -->
+  <select id="getOrdersNumDay" resultType="custom.bean.DataResultSet">
+    SELECT DATE_FORMAT(t.create_datetime,'%Y-%m-%d') AS dateStr, COUNT(*) AS num
+    FROM pay_order t WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
+    GROUP BY dateStr
+    ORDER BY dateStr;
+  </select>
+
+  <select id="getOrdersNumWeek" resultType="custom.bean.DataResultSet">
+    SELECT CONCAT(DATE_FORMAT(t.create_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.create_datetime),2,0),'周') AS dateStr, COUNT(*) AS num
+    FROM pay_order t WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
+    GROUP BY dateStr
+    ORDER BY dateStr;
+  </select>
+
+  <select id="getOrdersNumMonth" resultType="custom.bean.DataResultSet">
+    SELECT DATE_FORMAT(t.create_datetime,'%Y-%m') AS dateStr, COUNT(*) AS num
+    FROM pay_order t WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
+    GROUP BY dateStr
+    ORDER BY dateStr;
+  </select>
+
+  <!-- 按日月周查询各顾客端订单下单量 -->
+  <select id="getOrdersNumClientDay" resultType="custom.bean.DataResultSet">
+    SELECT CONCAT(n.dateStr,' ',n.client_id) dateStr,num
+    FROM(
+      SELECT DATE_FORMAT(t.create_datetime,'%Y-%m-%d') AS dateStr,t.client_id, COUNT(*) AS num
+      FROM pay_order t WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime} AND t.client_id IS NOT NULL
+      GROUP BY dateStr,t.client_id
+      ORDER BY dateStr)n
+  </select>
+
+  <select id="getOrdersNumClientWeek" resultType="custom.bean.DataResultSet">
+    SELECT CONCAT(n.dateStr,' ',n.client_id) dateStr,num
+    FROM(
+      SELECT CONCAT(DATE_FORMAT(t.create_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.create_datetime),2,0),'周') AS dateStr,t.client_id, COUNT(*) AS num
+      FROM pay_order t WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime} AND t.client_id IS NOT NULL
+      GROUP BY dateStr,t.client_id
+      ORDER BY dateStr)n
+  </select>
+
+  <select id="getOrdersNumClientMonth" resultType="custom.bean.DataResultSet">
+    SELECT CONCAT(n.dateStr,' ',n.client_id) dateStr,num
+    FROM(
+      SELECT DATE_FORMAT(t.create_datetime,'%Y-%m') AS dateStr,t.client_id, COUNT(*) AS num
+      FROM pay_order t WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime} AND t.client_id IS NOT NULL
+      GROUP BY dateStr,t.client_id
+      ORDER BY dateStr)n
+  </select>
+
+  <!-- 按日月周查询订单中某状态下的订单数量 -->
+  <select id="getOrdersNumByStatusDay" resultType="custom.bean.DataResultSet">
+    SELECT DATE_FORMAT(t.create_datetime,'%Y-%m-%d') AS dateStr, COUNT(*) AS num
+    FROM pay_order t
+      WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
+      AND status_active = #{status}
+    GROUP BY dateStr
+    ORDER BY dateStr;
+  </select>
+
+  <select id="getOrdersNumByStatusWeek" resultType="custom.bean.DataResultSet">
+    SELECT CONCAT(DATE_FORMAT(t.create_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.create_datetime),2,0),'周') AS dateStr, COUNT(*) AS num
+    FROM pay_order t
+      WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
+      AND status_active = #{status}
+    GROUP BY dateStr
+    ORDER BY dateStr;
+  </select>
+
+  <select id="getOrdersNumByStatusMonth" resultType="custom.bean.DataResultSet">
+    SELECT DATE_FORMAT(t.create_datetime,'%Y-%m') AS dateStr, COUNT(*) AS num
+    FROM pay_order t
+      WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
+      AND status_active = #{status}
+    GROUP BY dateStr
+    ORDER BY dateStr;
+  </select>
+</mapper>
