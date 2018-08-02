@@ -29,6 +29,7 @@ import custom.bean.OrderInfo.OrderStatus;
 import custom.bean.OrderInfo.ServiceStatus;
 import custom.util.DistanceUtil;
 import custom.util.ParamsCheck;
+import org.apache.ibatis.jdbc.Null;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -116,12 +117,22 @@ public class StudentApiServiceImpl implements StudentApiService
 			return orderInfoList;
 		}
 		ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
-		serviceUnitExample.or().andServiceunit_idIn(unitIds)
+		Criteria criteria = serviceUnitExample.or();
+		criteria.andServiceunit_idIn(unitIds)
 				.andStatus_activeEqualTo(Status.ServiceStatus.assign_worker.value)// 订单状态为已指派
 				.andPidEqualTo(0L)// 父单
-				.andActiveEqualTo(Status.PayStatus.payed.value)
-				.andWork_statusNotEqualTo(4);
-		orderInfoList = orderService.orderInfoList(Roles.STUDENT, serviceUnitExample, page_index, count).getList();
+				.andActiveEqualTo(Status.ServiceUnitActive.active.value)
+				.andWork_statusEqualTo(2);
+		List<OrderInfo> orderInfoList1 = orderService.orderInfoList(Roles.STUDENT, serviceUnitExample, page_index, count).getList();
+		ServiceUnitExample example = new ServiceUnitExample();
+		Criteria or = example.or();
+		or.andServiceunit_idIn(unitIds)
+				.andStatus_activeEqualTo(Status.ServiceStatus.assign_worker.value)// 订单状态为已指派
+				.andPidEqualTo(0L)// 父单
+				.andActiveEqualTo(Status.ServiceUnitActive.active.value)
+				.andWork_statusIsNull();
+		orderInfoList = orderService.orderInfoList(Roles.STUDENT, example, page_index, count).getList();
+		orderInfoList.addAll(orderInfoList1);
 		logger.info("api-method:selectStuUndoneOrder:process orderInfoList:{}", orderInfoList.size());
 		return orderInfoList;
 	}
@@ -364,6 +375,10 @@ public class StudentApiServiceImpl implements StudentApiService
 				break;
 			case 2:
 			case 3:
+				if (StringUtils.isEmpty(serviceUnit.getC_end_datetime())){
+					orderInfo.setAllowedToCancel(false);
+					break;
+				}
 				if ("JD-001".equals(orderInfo.getOrder().getChannel())){
 					orderInfo.setAllowedToCancel(false);
 				}else {
@@ -1058,6 +1073,9 @@ public class StudentApiServiceImpl implements StudentApiService
 			serviceUnits = new ArrayList<ServiceUnit>();
 			ServiceunitPersonExample serviceunitPersonExample = new ServiceunitPersonExample();
 			ServiceunitPersonExample.Criteria or = serviceunitPersonExample.or();
+			ServiceunitPersonExample serviceunitPersonExample1 = new ServiceunitPersonExample();
+			ServiceunitPersonExample.Criteria or1 = serviceunitPersonExample1.or();
+			List<ServiceunitPerson> serviceunitPeople1 = new ArrayList<>();
 			if(work_status==2){
 				int[] status = {2,4};
 				or.andWork_statusIn(Arrays.asList(status.length));
@@ -1067,8 +1085,9 @@ public class StudentApiServiceImpl implements StudentApiService
 				  .andWork_statusEqualTo(work_status);
 			}
 			if(status_active==3){
-				or.andStatus_activeEqualTo(status_active)
-				 .andWork_statusNotEqualTo(4);
+				or.andStatus_activeEqualTo(status_active);
+				or1.andWork_statusIsNull();
+				serviceunitPeople1 = serviceunitPersonService.selectByExample(serviceunitPersonExample1);
 			}
 			or.andStudent_idEqualTo(student_id);
 			List<ServiceunitPerson> serviceUnitPersons = serviceunitPersonService.selectByExample(serviceunitPersonExample);
@@ -1081,6 +1100,9 @@ public class StudentApiServiceImpl implements StudentApiService
 					set.add(snp.getServiceunit_id());
 			}
 			if(work_status==0 && !is_day){
+				if(serviceunitPeople1.size()!=0){
+					return serviceUnitPersons.size()+serviceunitPeople1.size();
+				}
 				return serviceUnitPersons.size();
 			}
 			Calendar instance = Calendar.getInstance();
