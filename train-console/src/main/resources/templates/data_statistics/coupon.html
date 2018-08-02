@@ -2,7 +2,7 @@
 <html layout:decorate="~{base_layout}">
 <head>
     <meta charset="UTF-8"></meta>
-    <title>顾客数据统计</title>
+    <title>优惠卷统计</title>
     <link th:href="@{/js/jquery-date-range-picker/daterangepicker.min.css}" rel="stylesheet"/>
     <style type="text/css">
         .inputDate {
@@ -243,21 +243,21 @@
         //------------------------------------------------------------------------------------
 
         $(function () {
-            // 下载柱状图用户数据
+            // 下载柱状图数据
             $('#customDataDownload').click(function () {
-                var downUrl = [[@{/data_statistics/custom/downCustomRegData}]];
+                var downUrl = [[@{/data_statistics/coupon/downCouponData}]];
                 window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
             });
 
             // 下载中间表格数据
             $('#customTableDataDownload').click(function () {
-                var downUrl = [[@{/data_statistics/custom/downCustomTableData}]];
+                var downUrl = [[@{/data_statistics/coupon/downCustomTableData}]];
                 window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
             });
 
             // 下载地图数据
             $('#customMapDataDownload').click(function () {
-                var downUrl = [[@{/data_statistics/custom/downCustomMapData}]];
+                var downUrl = [[@{/data_statistics/coupon/downCustomMapData}]];
                 window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
             });
 
@@ -301,9 +301,9 @@
             var option = {
                 title: {
                     left: 'center',
-                    text: '按' + typeText + '统计顾客数'
+                    text: '按' + typeText + '优惠卷使用情况'
                 },
-                color: ['#3398DB'],
+                color: ['#FF7100','#FFCE25'],
                 tooltip: {
                     trigger: 'axis',
                     axisPointer: {            // 坐标轴指示器，坐标轴触发有效
@@ -312,7 +312,7 @@
                 },
                 legend:{
                     left: 'left',
-                    data: ['顾客数']
+                    data: ['使用卷总额','优惠卷总额']
                 },
                 grid: {
                     left: '3%',
@@ -336,8 +336,16 @@
                 ],
                 series: [
                     {
-                        name: '顾客数',
+                        name: '使用卷总额',
                         type: 'bar',
+                        stack: '总量',
+                        barWidth: '60%',
+                        data: []
+                    },
+                    {
+                        name: '优惠卷总额',
+                        type: 'bar',
+                        stack: '总量',
                         barWidth: '60%',
                         data: []
                     }
@@ -345,15 +353,18 @@
 
             };
 
-            $.getJSON([[@{/data_statistics/custom/loadCustomRegData}]],requestData, function (data) {
+            $.getJSON([[@{/data_statistics/coupon/loadCouponData}]],requestData, function (data) {
                 var xAxis_data = [];
-                var series_data = [];
+                var series_data1 = [];
+                var series_data2 = [];
                 $.each(data, function (i, n) {
                     xAxis_data.push(n.dateStr);
-                    series_data.push(n.num);
+                    series_data1.push(n.totalUsedMoney / 100);
+                    series_data2.push(n.totalPlanMoney / 100);
                 });
                 option.xAxis[0].data = xAxis_data;
-                option.series[0].data = series_data;
+                option.series[0].data = series_data1;
+                option.series[1].data = series_data2;
 
                 CHARTS.customDayChart.hideLoading();
                 // 使用刚指定的配置项和数据显示图表。
@@ -515,12 +526,14 @@
 
         <!--/* 面包屑  */-->
         <ol class="breadcrumb clearfix">
-            <li class="active">顾客数据统计</li>
+            <li class="active">
+                优惠券数据统计
+            </li>
         </ol>
     </div>
 
     <!--/* 页面部分二              页面主内容  */-->
-    <div class="page_content_main" data-sidea="side_63">
+    <div class="page_content_main" data-sidea="side_66">
         <!-- 日期选择控件  -->
         <div style="padding: 0px 10px 10px 10px;">
             <div class="btn-group" role="group" aria-label="..." style="margin-right: 80px" id="btnGroups">
@@ -546,10 +559,10 @@
         <!--  图表数据  -->
         <div class="main_charts">
 
-            <!-- 顾客相关数据图表 -->
+            <!-- 优惠券相关数据图表 -->
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    顾客相关数据图表
+                    优惠券相关数据图表
                     <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
                        style="margin-left: 20px"></i>
                     <i id="customDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>

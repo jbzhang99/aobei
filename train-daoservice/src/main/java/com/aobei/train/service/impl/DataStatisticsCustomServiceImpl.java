@@ -3,10 +3,9 @@ package com.aobei.train.service.impl;
 import com.aobei.train.mapper.CustomerMapper;
 import com.aobei.train.mapper.DataStatisticsCustomMapper;
 import com.aobei.train.mapper.OrderMapper;
-import com.aobei.train.model.CustomerExample;
-import com.aobei.train.model.DataStatisticsCustomData;
 import com.aobei.train.service.DataStatisticsCustomService;
-import com.aobei.train.service.bean.PurchaseCustomStatisticsData;
+import custom.bean.DataStatisticsCustomData;
+import custom.bean.PurchaseCustomStatisticsData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,9 +30,7 @@ public class DataStatisticsCustomServiceImpl implements DataStatisticsCustomServ
     private static final String[] CUSTOM_CLIENTS = {"wx_m_custom", "a_custom", "i_custom", "h5_custom"};
 
     @Override
-    public List<DataStatisticsCustomData> incrementingRegStatisticsWithDay(Date startDate, Date endDate) {
-        CustomerExample customerExample = new CustomerExample();
-        customerExample.or().andCreate_datetimeLessThan(startDate);
+    public List<DataStatisticsCustomData> regStatisticsWithDay(Date startDate, Date endDate) {
         List<DataStatisticsCustomData> list = dataStatisticsCustomMapper.regStatisticsWithDay(startDate, endDate);
         LocalDateTime startLocalDateTime = LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault());
         LocalDateTime endLocalDateTime = LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault());
@@ -56,9 +53,7 @@ public class DataStatisticsCustomServiceImpl implements DataStatisticsCustomServ
     }
 
     @Override
-    public List<DataStatisticsCustomData> incrementingRegStatisticsWithWeek(Date startDate, Date endDate) {
-        CustomerExample customerExample = new CustomerExample();
-        customerExample.or().andCreate_datetimeLessThan(startDate);
+    public List<DataStatisticsCustomData> regStatisticsWithWeek(Date startDate, Date endDate) {
         List<DataStatisticsCustomData> list = dataStatisticsCustomMapper.regStatisticsWithWeek(startDate, endDate);
         LocalDateTime startLocalDateTime = LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault());
         LocalDateTime endLocalDateTime = LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault());
@@ -80,9 +75,7 @@ public class DataStatisticsCustomServiceImpl implements DataStatisticsCustomServ
     }
 
     @Override
-    public List<DataStatisticsCustomData> incrementingRegStatisticsWithMonth(Date startDate, Date endDate) {
-        CustomerExample customerExample = new CustomerExample();
-        customerExample.or().andCreate_datetimeLessThan(startDate);
+    public List<DataStatisticsCustomData> regStatisticsWithMonth(Date startDate, Date endDate) {
         List<DataStatisticsCustomData> list = dataStatisticsCustomMapper.regStatisticsWithMonth(startDate, endDate);
         LocalDateTime startLocalDateTime = LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault());
         LocalDateTime endLocalDateTime = LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault());
@@ -105,7 +98,7 @@ public class DataStatisticsCustomServiceImpl implements DataStatisticsCustomServ
 
     @Override
     public List<PurchaseCustomStatisticsData> purchaseCustomStatisticsDataWithDay(Date startDate, Date endDate) {
-        List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithDay(startDate, endDate);
+        List<DataStatisticsCustomData> listData0 = regStatisticsWithDay(startDate, endDate);
 
         List<DataStatisticsCustomData> listData1 = dataStatisticsCustomMapper.purchaseCustomStatisticsWithDay(startDate, endDate);
         List<DataStatisticsCustomData> listData2 = dataStatisticsCustomMapper.rePurchaseCustomStatisticsWithDay(startDate, endDate);
@@ -143,7 +136,7 @@ public class DataStatisticsCustomServiceImpl implements DataStatisticsCustomServ
 
     @Override
     public List<PurchaseCustomStatisticsData> purchaseCustomStatisticsDataWithWeek(Date startDate, Date endDate) {
-        List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithWeek(startDate, endDate);
+        List<DataStatisticsCustomData> listData0 = regStatisticsWithWeek(startDate, endDate);
 
         List<DataStatisticsCustomData> listData1 = dataStatisticsCustomMapper.purchaseCustomStatisticsWithWeek(startDate, endDate);
         List<DataStatisticsCustomData> listData2 = dataStatisticsCustomMapper.rePurchaseCustomStatisticsWithWeek(startDate, endDate);
@@ -181,7 +174,7 @@ public class DataStatisticsCustomServiceImpl implements DataStatisticsCustomServ
 
     @Override
     public List<PurchaseCustomStatisticsData> purchaseCustomStatisticsDataWithMonth(Date startDate, Date endDate) {
-        List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithMonth(startDate, endDate);
+        List<DataStatisticsCustomData> listData0 = regStatisticsWithMonth(startDate, endDate);
 
         List<DataStatisticsCustomData> listData1 = dataStatisticsCustomMapper.purchaseCustomStatisticsWithMonth(startDate, endDate);
         List<DataStatisticsCustomData> listData2 = dataStatisticsCustomMapper.rePurchaseCustomStatisticsWithMonth(startDate, endDate);

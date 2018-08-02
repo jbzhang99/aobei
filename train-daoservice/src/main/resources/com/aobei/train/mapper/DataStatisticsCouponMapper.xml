@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aobei.train.mapper.DataStatisticsCouponMapper">
+    <resultMap id="BaseResultMap" type="custom.bean.DataStatisticsCustomData">
+        <result column="date_str" jdbcType="VARCHAR" property="dateStr"/>
+        <result column="num" jdbcType="INTEGER" property="num"/>
+    </resultMap>
+
+    <select id="planMoneyStatisticsWithDay" resultMap="BaseResultMap">
+    SELECT DATE_FORMAT(t.create_time,'%Y-%m-%d') AS date_str, SUM(t.plan_money) AS num
+    FROM coupon t
+    where t.verify = 2 and t.plan_money is not null AND t.create_time BETWEEN #{startDate} AND #{endDate}
+    GROUP BY date_str
+    ORDER BY date_str
+  </select>
+
+    <select id="planMoneyStatisticsWithWeek" resultMap="BaseResultMap">
+    SELECT concat(DATE_FORMAT(t.create_time,'%Y'),'/', LPAD(WEEKOFYEAR(t.create_time),2,0),'周') AS date_str, SUM(t.plan_money) AS num
+    FROM coupon t
+    where t.verify = 2 and t.plan_money is not null AND t.create_time BETWEEN #{startDate} AND #{endDate}
+    GROUP BY date_str
+    ORDER BY date_str
+  </select>
+
+    <select id="planMoneyStatisticsWithMonth" resultMap="BaseResultMap">
+    SELECT DATE_FORMAT(t.create_time,'%Y-%m') AS date_str, SUM(t.plan_money) AS num
+    FROM coupon t
+    where t.verify = 2 and t.plan_money is not null AND t.create_time BETWEEN #{startDate} AND #{endDate}
+    GROUP BY date_str
+    ORDER BY date_str
+  </select>
+
+
+    <select id="usedMoneyStatisticsWithDay" resultMap="BaseResultMap">
+    SELECT DATE_FORMAT(o.create_datetime,'%Y-%m-%d') AS date_str, SUM(o.price_discount) AS num
+    FROM coupon_receive t
+    left join pay_order o
+    on (t.pay_order_id = o.pay_order_id)
+    where t.status=4 AND o.status_active=5 AND o.create_datetime BETWEEN #{startDate} AND #{endDate}
+    GROUP BY date_str
+    ORDER BY date_str
+    </select>
+
+    <select id="usedMoneyStatisticsWithWeek" resultMap="BaseResultMap">
+    SELECT concat(DATE_FORMAT(o.create_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.create_datetime),2,0),'周') AS date_str, SUM(o.price_discount) AS num
+    FROM coupon_receive t
+    left join pay_order o
+    on (t.pay_order_id = o.pay_order_id)
+    where t.status=4 AND o.status_active=5 AND o.create_datetime BETWEEN #{startDate} AND #{endDate}
+    GROUP BY date_str
+    ORDER BY date_str
+    </select>
+
+    <select id="usedMoneyStatisticsWithMonth" resultMap="BaseResultMap">
+    SELECT DATE_FORMAT(o.create_datetime,'%Y-%m') AS date_str, SUM(o.price_discount) AS num
+    FROM coupon_receive t
+    left join pay_order o
+    on (t.pay_order_id = o.pay_order_id)
+    where t.status=4 AND o.status_active=5 AND o.create_datetime BETWEEN #{startDate} AND #{endDate}
+    GROUP BY date_str
+    ORDER BY date_str
+    </select>
+
+    <!-- 优惠卷产生订单消费总额 -->
+    <select id="couponPayedOrderMoney" resultMap="BaseResultMap">
+    SELECT t.coupon_id AS date_str, SUM(o.price_pay) AS num
+    FROM coupon_receive t
+    LEFT JOIN pay_order o ON (t.pay_order_id = o.pay_order_id)
+    WHERE t.status=4 AND o.status_active=5 AND o.create_datetime BETWEEN #{startDate} AND #{endDate}
+    GROUP BY t.coupon_id
+    </select>
+
+    <!--拉新用户数量   根据注册送卷策略  已使用过的卷分组 统计 -->
+    <select id="couponRegUserCount" resultMap="BaseResultMap">
+    SELECT c.coupon_id, COUNT(t.uid)
+    FROM coupon_receive t
+    LEFT JOIN coupon_env ev ON(t.coupon_env_id = ev.coupon_env_id)
+    LEFT JOIN coupon c ON(t.coupon_id=c.coupon_id)
+    WHERE ev.type = 1 AND t.`status` = 4 AND t.create_datetime BETWEEN #{startDate} AND #{endDate}
+    GROUP BY c.coupon_id
+    </select>
+
+    <!--优惠卷产生订单优惠总额 -->
+    <select id="couponUsedOrderMoney" resultMap="BaseResultMap">
+    SELECT t.coupon_id AS date_str, SUM(o.price_discount) AS num
+    FROM coupon_receive t
+    LEFT JOIN pay_order o ON (t.pay_order_id = o.pay_order_id)
+    WHERE t.status=4 AND o.status_active=5 AND o.create_datetime BETWEEN #{startDate} AND #{endDate}
+    GROUP BY t.coupon_id
+    </select>
+
+</mapper>

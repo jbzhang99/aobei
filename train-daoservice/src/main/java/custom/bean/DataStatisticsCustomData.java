@@ -1,4 +1,4 @@
-package com.aobei.train.model;
+package custom.bean;
 
 import java.io.Serializable;
 

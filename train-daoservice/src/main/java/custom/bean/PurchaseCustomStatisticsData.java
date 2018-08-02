@@ -1,4 +1,4 @@
-package com.aobei.train.service.bean;
+package custom.bean;
 
 import java.io.Serializable;
 import java.util.Map;
