@@ -1085,7 +1085,9 @@ public class StudentApiServiceImpl implements StudentApiService
 			}
 			if(status_active==3){
 				or.andStatus_activeEqualTo(status_active);
-				or1.andWork_statusIsNull();
+				or1.andWork_statusIsNull()
+						.andStatus_activeEqualTo(status_active)
+						.andStudent_idEqualTo(student_id);
 				serviceunitPeople1 = serviceunitPersonService.selectByExample(serviceunitPersonExample1);
 			}
 			or.andStudent_idEqualTo(student_id);
