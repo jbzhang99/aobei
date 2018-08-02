@@ -176,7 +176,7 @@ public class PartnerController {
         PartnerServiceitemExample partnerServiceitemExample = new PartnerServiceitemExample();
         partnerServiceitemExample.or().andPartner_idEqualTo(partner_id);
         List<PartnerServiceitem> partnerServiceitems = this.partnerServiceitemService.selectByExample(partnerServiceitemExample);
-        if(!partnerFallintos.isEmpty() && !partnerServiceitems.isEmpty()){
+        if(/*!partnerFallintos.isEmpty() && */!partnerServiceitems.isEmpty()){
             //根据id 找对对应的类
             Partner partner = this.partnerService.selectByPrimaryKey(partner_id);
             StudentExample studentExample = new StudentExample();
@@ -199,7 +199,7 @@ public class PartnerController {
             int num = this.partnerService.updateByPrimaryKey(partner);
             map.put("msg", String.format("合伙人信息上线%s!", num> 0 ? "成功" : "失败"));
         }else{
-            map.put("msg", String.format("上线失败，请将合伙人对应的分成策略|合作项目信息填写完整！"));
+            map.put("msg", String.format("上线失败，请将合伙人对应的合作项目信息填写完整！"));
         }
         return map;
     }
