@@ -55,13 +55,14 @@
             background-color: #FF0000;
         }
 
-        #customMapBox thead{
+        #ordersMapBox thead{
             background-color: #00D0FF;
         }
     </style>
     <script TYPE="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
     <script TYPE="text/javascript" th:src="@{/js/jquery-date-range-picker/jquery.daterangepicker.min.js}"></script>
     <script TYPE="text/javascript" th:src="@{/js/echarts.min.js}"></script>
+    <script TYPE="text/javascript" th:src="@{/js/echart_map/china.js}"></script>
     <script type="text/javascript" th:inline="javascript">
         $(function(){
             // 按日
@@ -149,6 +150,7 @@
                     alertify.alert('开始日期不能大于结束日期');
                     return;
                 }
+                window.CURRENT_SEARCH_DATA = data;
                 doCharts(data);
             });
 
@@ -233,7 +235,8 @@
          */
         function initCharts(){
             window.CHARTS  = {
-                ordersChart : echarts.init(document.getElementById('orderDaySumChart'))
+                ordersChart : echarts.init(document.getElementById('orderDaySumChart')),
+                mapChart : echarts.init(document.getElementById('mapChart'))
             };
         }
 
@@ -247,6 +250,7 @@
         function doCharts(data){
             ordersDataSum(data);
             loadOrdersTableData(data);
+            loadOrdersMapData(data);
         }
 
         /**
@@ -386,6 +390,113 @@
                 tablePageData(window.TABLEPAGE);
             });
         }
+
+        /**
+         *  加载地图数据
+         */
+        function loadOrdersMapData(requestData) {
+            //CHARTS.mapChart.showLoading();
+            // 指定图表的配置项和数据
+            var option = {
+
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}<br/>{c}'
+                },
+                visualMap: {
+                    text:['High','Low'],
+                    realtime: false,
+                    calculable: true,
+                    inRange: {
+                        color: ['lightskyblue','yellow', 'orangered']
+                    },
+                    right:0,
+                    top:0
+//                    show : true,
+//                    x: 'left',
+//                    y: 'center',
+//                    splitList: [
+//                        {start: 500, end:600},{start: 400, end: 500},
+//                        {start: 300, end: 400},{start: 200, end: 300},
+//                        {start: 100, end: 200},{start: 0, end: 100},
+//                    ],
+//                    color: ['#5475f5', '#9feaa5', '#85daef','#74e2ca', '#e6ac53', '#9fb5ea']
+                },
+                series: [{
+                    type: 'map',
+                    map: 'china',  //根据不同的省份切换脚本
+                    selectedMode: 'single',
+                    label: {
+                        normal: {
+                            show: true,
+                            textStyle:{color:"#b6a38a"}
+                        },
+                        emphasis: {
+                            show: true,
+                            textStyle:{color:"#800080"}
+                        }
+                    },
+                    itemStyle: {
+                        normal: {
+                            borderWidth: 0,
+                            areaColor:"#9cd3f5"
+                        },
+                        emphasis: {
+                            areaColor:"#f9df33",
+                            borderWidth: 0
+                        }
+                    },
+                    data:[
+                        {name:'安徽',value:'200'},
+                        {name:'合肥市',value:'200'},
+                        {name:'安庆市',value:'100'},
+                        {name:'黄山市',value:'50'}
+                    ]
+                }]
+            };
+            $.getJSON([[@{/data_statistics/orders/getDataSetMap}]],requestData, function (data) {
+                var html = [];
+                var mapData = [];
+                var max = 0;
+                $.each(data,function(i,n){
+                    mapData.push({name:n.dateStr,value:n.num});
+                    html.push('<tr>');
+                    html.push('<td>'+n.dateStr+'</td>');
+                    html.push('<td>'+n.num+'</td>');
+                    html.push('</tr>');
+                    if(n.num>max){
+                        max = n.num;
+                    }
+                });
+                option.series[0].data = mapData;
+                option.visualMap.max = max;
+                $('#ordersMapBox tbody').html(html.join(''));
+                CHARTS.mapChart.hideLoading();
+                CHARTS.mapChart.setOption(option);
+            });
+        }
+
+
+        $(function () {
+            // 下载柱状图订单数据
+            $('#ordersDataDownload').click(function () {
+                var downUrl = [[@{/data_statistics/orders/downOrdersGmvData}]];
+                window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
+            });
+
+            // 下载中间表格数据
+            $('#ordersTableDataDownload').click(function () {
+                var downUrl = [[@{/data_statistics/orders/downOrdersTableData}]];
+                window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
+            });
+
+            // 下载地图数据
+            $('#ordersMapDataDownload').click(function () {
+                var downUrl = [[@{/data_statistics/orders/downOrdersMapData}]];
+                window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
+            });
+
+        });
     </script>
 </head>
 <body>
@@ -431,7 +542,7 @@
                 <div class="panel-heading">
                     订单相关数据图表（点击此栏可收起/展开图表）
                     <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true" style="margin-left: 20px"></i>
-                    <i class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+                    <i id="ordersDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
                 </div>
                 <div class="panel-body">
                     <div id="orderDaySumChart" style="height:400px;"></div>
@@ -445,7 +556,7 @@
                 订单相关数据表格
                 <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
                    style="margin-left: 20px"></i>
-                <i id="customTableDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+                <i id="ordersTableDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
             </div>
             <div class="panel-body">
                 <div id="ordersTableBox" style="height:300px;overflow-y: auto">
@@ -499,6 +610,34 @@
                     <option value="20">20</option>
                 </select>
                 <span class="pull-right" style="line-height: 30px;margin-right: 10px">每页显示条数</span>
+            </div>
+        </div>
+
+        <!-- 地图相关数据图表 -->
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                数据地图
+                <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
+                   style="margin-left: 20px"></i>
+                <i id="ordersMapDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+            </div>
+            <div class="panel-body">
+                <div id="ordersMapBox">
+                    <div class="col-sm-3 col-xs-12" style="overflow-y: auto;">
+                        <table class="table table-bordered table-striped text-center">
+                            <thead>
+                            <th class="text-center">区域</th>
+                            <th class="text-center">订单数</th>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+
+                    </div>
+                    <div class="col-sm-9 col-xs-12">
+                        <div id="mapChart" style="height:600px;"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

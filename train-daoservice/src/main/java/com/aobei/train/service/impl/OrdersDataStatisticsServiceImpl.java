@@ -193,6 +193,11 @@ public class OrdersDataStatisticsServiceImpl implements OrdersDataStatisticsServ
         return dataPackaging(gmvMap,ordersNumMap,ordersNumClientMap,ordersNumCompleteMap,ordersNumWaitServiceMap);
     }
 
+    @Override
+    public List<DataResultSet> getOrdersNumMap(Date startDateTime, Date endDateTime) {
+        return ordersDataStatisticsMapper.getOrdersNumMap(startDateTime,endDateTime);
+    }
+
     public List<OrdersStatisticsData> dataPackaging(Map<String, Long> gmvMap,
                                                     Map<String, Long> ordersNumMap,
                                                     Map<String, Long> ordersNumClientMap,

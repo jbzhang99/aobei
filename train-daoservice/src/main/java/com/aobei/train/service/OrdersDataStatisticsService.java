@@ -59,4 +59,12 @@ public interface OrdersDataStatisticsService {
      * @return
      */
     List<OrdersStatisticsData> getOrdersTableDataMonth(Date startDateTime, Date endDateTime);
+
+    /**
+     * 查询指定时间范围内各省订单数量
+     * @param startDateTime
+     * @param endDateTime
+     * @return
+     */
+    List<DataResultSet> getOrdersNumMap(Date startDateTime, Date endDateTime);
 }
