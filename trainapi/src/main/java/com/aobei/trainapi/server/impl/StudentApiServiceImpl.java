@@ -1106,9 +1106,9 @@ public class StudentApiServiceImpl implements StudentApiService {
                 SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM");
                 SimpleDateFormat sdh = new SimpleDateFormat("yyyy-MM-dd");
                 if (serviceUnit != null) {
-                    if (serviceUnit.getC_begin_datetime() != null) {
+                    if (serviceUnit.getWork_2_datetime() != null) {
                         if (is_day) {
-                            String c_begin_time_sdh = sdh.format(serviceUnit.getC_begin_datetime());
+                            String c_begin_time_sdh = sdh.format(serviceUnit.getWork_2_datetime());
                             String local_date_sdh = sdh.format(new Date());
                             if (c_begin_time_sdh.equals(local_date_sdh)) {
                                 instance.setTime(sd.parse(local_date_sdh));
@@ -1119,7 +1119,7 @@ public class StudentApiServiceImpl implements StudentApiService {
                                     serviceUnits.add(serviceUnit);
                             }
                         } else {
-                            String c_begin_time = sd.format(serviceUnit.getC_begin_datetime());
+                            String c_begin_time = sd.format(serviceUnit.getWork_2_datetime());
                             String local_date = sd.format(new Date());
                             if (local_date.equals(c_begin_time)) {
                                 instance.setTime(sd.parse(local_date));
