@@ -91,7 +91,7 @@ public class OrdersDataStatisticsServiceImpl implements OrdersDataStatisticsServ
             dataSet.put(n.getDateStr(),n.getNum());
         });
         while (startLocalDateTime.isBefore(endLocalDateTime)) {
-            String key = startLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            String key = startLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM月"));
             if (!dataSet.containsKey(key)) {
                 dataSet.put(key,0l);
             }
