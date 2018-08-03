@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -28,6 +29,9 @@ public class UserRepositoryImpl implements UserRepository {
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
+	@Autowired
+	StringRedisTemplate stringRedisTemplate;
+
 
 	private RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
 	private RowMapper<UserWx> userWxRowMapper = new BeanPropertyRowMapper<UserWx>(UserWx.class);
@@ -209,6 +213,8 @@ public class UserRepositoryImpl implements UserRepository {
 		case 4:
 			if(createUid){
 				count += jdbcTemplate.update("insert into customer(customer_id,phone,user_id,create_datetime,channel_id) select ?,?,?,?,? from dual where not exists (select 1 from customer where phone=?)",IdGenerator.generateId(),phone,userid,new Date(),channel,phone);
+				final String REDIS_KEY_COUPONDIS = "couponDistributedAuth";
+				stringRedisTemplate.opsForList().leftPush(REDIS_KEY_COUPONDIS,String.valueOf(userid));
 			}else{
 				count += jdbcTemplate.update("update customer set user_id=? where phone=?",userid,phone);
 			}
