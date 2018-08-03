@@ -355,8 +355,10 @@ public class StudentApiServiceImpl implements StudentApiService
 		ProSkuExample skuExample = new ProSkuExample();
 		skuExample.or().andProduct_idEqualTo(serviceUnit.getProduct_id()).andDispalyEqualTo(1);
 		long skuNum = proSkuService.countByExample(skuExample);
+		Integer work_status = serviceUnit.getWork_status();
+		Integer status_active = serviceUnit.getStatus_active();
 		orderInfo.setWhetherCanContinue(1);
-		if (skuNum == 0){
+		if (skuNum == 0 || status_active != 4 || work_status == 4 || work_status == null){
 			orderInfo.setWhetherCanContinue(0);
 		}
 		//是否支持取消订单（true支持,false不支持）
