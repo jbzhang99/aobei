@@ -67,8 +67,6 @@ public class PayServiceImplTest {
         Order order = orderService.selectByPrimaryKey(pay_order_id);
         try {
             String  body  = payService.aliWapPayBody(order,"2018052960271202");
-            System.out.println(body);
-
         } catch (AlipayApiException e) {
             e.printStackTrace();
         }
