@@ -265,10 +265,12 @@ public class StudentApiServiceImpl implements StudentApiService {
 				content.setMsgtype("native");
 				content.setV("1");
 				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				String beginString = format.format(serviceUnit.getC_begin_datetime());
+				String beginString = "";
+				if (serviceUnit.getC_begin_datetime() != null){
+					beginString = format.format(serviceUnit.getC_begin_datetime());
+				}
 				String studentName  = serviceUnit.getStudent_name()==null?"":serviceUnit.getStudent_name();
 				studentName = studentName.endsWith(",")?studentName.substring(0,serviceUnit.getStudent_name().length()-1):studentName;
-
 				content.setContent("服务人员" + studentName+","+ beginString + "在"
 						+ order.getCus_address() + "为您进行的服务已完成，请您确认，满意请给我们点亮五颗星星哦。");
 				Map<String,String> param = new HashMap<>();
