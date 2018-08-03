@@ -266,12 +266,10 @@ public class DataStatisticsPartnerController {
             rows.createCell(2).setCellValue(dscd.getSendOrdersTotalNum());
             rows.createCell(3).setCellValue(dscd.getSingleOrdersTotalNum());
             rows.createCell(4).setCellValue(dscd.getOrderRate() + "%");
-
             int num=0;
-
             for(int i=0;i<dscdList.size()*3;i+=3){
                 longList.set(i,(Integer.parseInt(longList.get(i))+(int)(long)dscdList.get(num).getSendNum())+"");
-                longList.set(i+1,(Integer.parseInt(longList.get(i+1))+(int)(long)dscdList.get(num).getSendNum())+"");
+                longList.set(i+1,(Integer.parseInt(longList.get(i+1))+(int)(long)dscdList.get(num).getSingleNum())+"");
                 rows.createCell(4+i+1).setCellValue(dscdList.get(num).getSendNum()+"");
                 rows.createCell(4+(i+1)+1).setCellValue(dscdList.get(num).getSingleNum()+"");
                 rows.createCell(4+(i+2)+1).setCellValue(dscdList.get(num).getOrderRate()+"%");
@@ -299,7 +297,7 @@ public class DataStatisticsPartnerController {
                     //for (int j = 0; j < longList.size(); j+=3) {
 
                         rowLast.getCell(i).setCellValue(longList.get(colNum));
-                        rowLast.createCell(i+1).setCellValue(longList.get(colNum));
+                        rowLast.createCell(i+1).setCellValue(longList.get(colNum+1));
                         if(Integer.parseInt(longList.get(colNum))==0){
                             rowLast.createCell(i+2).setCellValue("0%");
                         }else{
