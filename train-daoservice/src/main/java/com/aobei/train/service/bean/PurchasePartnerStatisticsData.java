@@ -22,7 +22,7 @@ public class PurchasePartnerStatisticsData implements Serializable {
 
     private String orderRate;  //接单率
 
-    private List<DataStatisticsSinglePartnerData> list;
+    private List<DataStatisticsSinglePartnerData> list;  //对应合伙人
 
     public String getDateStr() {
         return dateStr;
