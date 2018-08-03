@@ -340,6 +340,17 @@ public class StudentApiServiceImpl implements StudentApiService {
 		ServiceUnit serviceUnit = singleResult(selectByExample);
 		logger.info("api-method:selectStuShowTaskdetail:process serviceUnit:{}", serviceUnit);
 		OrderInfo orderInfo = orderService.orderInfoDetail(Roles.STUDENT, serviceUnit);
+		//服务人员是否可以续单
+		ProSkuExample skuExample = new ProSkuExample();
+		skuExample.or().andProduct_idEqualTo(serviceUnit.getProduct_id()).andDispalyEqualTo(1);
+		long skuNum = proSkuService.countByExample(skuExample);
+		Integer work_status = serviceUnit.getWork_status();
+		Integer status_active = serviceUnit.getStatus_active();
+		orderInfo.setWhetherCanContinue(1);
+		if (work_status == null || skuNum == 0 || status_active != 4 || work_status == 4 || work_status == 5){
+			orderInfo.setWhetherCanContinue(0);
+		}
+
 		if ("waitService".equals(orderInfo.getOrderStatus())) {
 			if (serviceUnit.getWork_status() == null) {
 				serviceUnit.setWork_status(2);
@@ -350,16 +361,6 @@ public class StudentApiServiceImpl implements StudentApiService {
 			}
 		}
 		orderInfo.setServiceUnit(serviceUnit);
-		//服务人员是否可以续单
-		ProSkuExample skuExample = new ProSkuExample();
-		skuExample.or().andProduct_idEqualTo(serviceUnit.getProduct_id()).andDispalyEqualTo(1);
-		long skuNum = proSkuService.countByExample(skuExample);
-		Integer work_status = serviceUnit.getWork_status();
-		Integer status_active = serviceUnit.getStatus_active();
-		orderInfo.setWhetherCanContinue(1);
-		if (skuNum == 0 || status_active != 4 || work_status == 4 || work_status == null){
-			orderInfo.setWhetherCanContinue(0);
-		}
 		//是否支持取消订单（true支持,false不支持）
 		switch (orderInfo.getOrder().getStatus_active()){
 			case 1:
