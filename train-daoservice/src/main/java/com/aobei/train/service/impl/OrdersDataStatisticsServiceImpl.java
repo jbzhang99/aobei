@@ -198,6 +198,11 @@ public class OrdersDataStatisticsServiceImpl implements OrdersDataStatisticsServ
         return ordersDataStatisticsMapper.getOrdersNumMap(startDateTime,endDateTime);
     }
 
+    @Override
+    public Long getOrdersGmvByClient(Date startDateTime, Date endDateTime, String client) {
+        return ordersDataStatisticsMapper.getOrdersGmvByClient(startDateTime,endDateTime,client);
+    }
+
     public List<OrdersStatisticsData> dataPackaging(Map<String, Long> gmvMap,
                                                     Map<String, Long> ordersNumMap,
                                                     Map<String, Long> ordersNumClientMap,

@@ -67,4 +67,13 @@ public interface OrdersDataStatisticsService {
      * @return
      */
     List<DataResultSet> getOrdersNumMap(Date startDateTime, Date endDateTime);
+
+    /**
+     * 根据客户端查询一定时间范围内的订单GMV
+     * @param startDateTime
+     * @param endDateTime
+     * @param client
+     * @return
+     */
+    Long getOrdersGmvByClient(Date startDateTime, Date endDateTime,String client);
 }
