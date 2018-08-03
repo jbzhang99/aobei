@@ -1,5 +1,6 @@
 package com.aobei.trainapi.server.impl;
 
+import com.alipay.api.AlipayApiException;
 import com.aobei.train.model.*;
 import com.aobei.train.service.CustomerService;
 import com.aobei.train.service.OrderService;
@@ -57,6 +58,20 @@ public class PayServiceImplTest {
         Customer customer = customerService.selectByPrimaryKey(uid);
         Order order = orderService.selectByPrimaryKey(pay_order_id);
         MchOrderInfoResult mchOrderInfoResult = payService.wxPayOrderquery(customer, order,wxApp,wxMch);
+
+    }
+    @Test
+    public void  aliWapPay(){
+
+        String pay_order_id = "1525949654";
+        Order order = orderService.selectByPrimaryKey(pay_order_id);
+        try {
+            String  body  = payService.aliWapPayBody(order,"2018052960271202");
+            System.out.println(body);
+
+        } catch (AlipayApiException e) {
+            e.printStackTrace();
+        }
 
     }
 }

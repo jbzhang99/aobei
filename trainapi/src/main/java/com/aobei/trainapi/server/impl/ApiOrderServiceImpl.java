@@ -565,8 +565,35 @@ public class ApiOrderServiceImpl implements ApiOrderService {
             return response;
         }
         try {
+
            String body =  payService.aliPaymentBody(order,appId);
            response.setT(body);
+        } catch (AlipayApiException e) {
+            response.setErrors(Errors._41023);
+            logger.error("api-method:error code:{},msg:{}",e.getErrCode(),e.getErrMsg());
+        }
+        return response;
+    }
+
+    @Override
+    public ApiResponse<String> wapAliPrePay(Customer customer, String pay_order_id, String appId) {
+        ApiResponse<String> response = new ApiResponse<>();
+        Order order = orderService.selectByPrimaryKey(pay_order_id);
+        if (order == null) {
+            response.setErrors(Errors._41007);
+            return response;
+        }
+        if (order.getExpire_datetime().before(new Date()) || order.getStatus_active() == 4) {
+            response.setErrors(Errors._41018);
+            return response;
+        }
+        if (Status.PayStatus.payed.value.equals(order.getPay_status())) {
+            response.setErrors(Errors._41043);
+            return response;
+        }
+        try {
+            String body =  payService.aliWapPayBody(order,appId);
+            response.setT(body);
         } catch (AlipayApiException e) {
             response.setErrors(Errors._41023);
             logger.error("api-method:error code:{},msg:{}",e.getErrCode(),e.getErrMsg());
