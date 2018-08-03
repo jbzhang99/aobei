@@ -513,9 +513,15 @@ public class PartnerApiServiceImplTest {
 
 	@Test
 	public void redisTest(){
-		final String REDIS_KEY_COUPONDIS = "couponList"+1;
+		/*final String REDIS_KEY_COUPONDIS = "couponList"+3;
 		//stringRedisTemplate.opsForSet().add(REDIS_KEY_COUPONDIS,"123");
-		stringRedisTemplate.opsForList().leftPush(REDIS_KEY_COUPONDIS,"789");
+		stringRedisTemplate.opsForList().leftPush(REDIS_KEY_COUPONDIS,"987");
+		stringRedisTemplate.opsForList().leftPush(REDIS_KEY_COUPONDIS,String.valueOf(32423423));*/
+		final String REDIS_KEY_COUPONDIS = "couponDistributed_userId";
+		Long user_id = 1169135518328332288l;
+		Long lo = stringRedisTemplate.opsForList().leftPush(REDIS_KEY_COUPONDIS, String.valueOf(user_id));
+		System.out.println(lo);
+
 	}
 
 }
