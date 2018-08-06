@@ -112,6 +112,13 @@
     ORDER BY cus_province)n ,train_city c WHERE n.cus_province = c.id
   </select>
 
+  <select id="getOrdersNumMapUp" resultType="custom.bean.DataResultSet">
+    SELECT COUNT(*) as num,CONCAT(cus_province,' ',cus_city,' ',cus_area) AS dateStr FROM pay_order
+    WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
+    GROUP BY dateStr
+    ORDER BY dateStr
+  </select>
+
   <select id="getOrdersGmvByClient" resultType="Long">
     SELECT COUNT(t.price_total) FROM
       (select o.price_total as price_total,s.finish_datetime,o.client_id,o.status_active,o.r_status

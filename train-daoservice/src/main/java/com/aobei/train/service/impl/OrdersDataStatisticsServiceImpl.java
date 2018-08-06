@@ -1,8 +1,12 @@
 package com.aobei.train.service.impl;
 
 import com.aobei.train.mapper.OrdersDataStatisticsMapper;
+import com.aobei.train.mapper.TrainCityMapper;
+import com.aobei.train.model.TrainCity;
+import com.aobei.train.model.TrainCityExample;
 import com.aobei.train.service.OrdersDataStatisticsService;
 import com.aobei.train.service.bean.OrdersStatisticsData;
+import custom.bean.AreaData;
 import custom.bean.DataResultSet;
 import custom.bean.Status;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +16,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -23,7 +28,10 @@ public class OrdersDataStatisticsServiceImpl implements OrdersDataStatisticsServ
     @Autowired
     private OrdersDataStatisticsMapper ordersDataStatisticsMapper;
 
-    private static final String[] CUSTOM_CLIENTS = {"wx_m_custom", "a_custom", "i_custom", "h5_custom","eb_custom"};
+    @Autowired
+    private TrainCityMapper trainCityMapper;
+
+   private static final String[] CUSTOM_CLIENTS = {"wx_m_custom", "a_custom", "i_custom", "h5_custom","eb_custom"};
 
     /**
      * 按日查询GMV
@@ -198,6 +206,61 @@ public class OrdersDataStatisticsServiceImpl implements OrdersDataStatisticsServ
         return ordersDataStatisticsMapper.getOrdersNumMap(startDateTime,endDateTime);
     }
 
+    // 全部地区数据
+    private Map<String, TrainCity> cityMap;
+
+    @Override
+    public List<AreaData<Long>> getOrdersNumMapUp(Date startDateTime, Date endDateTime) {
+        if (cityMap == null) {
+            cityMap = trainCityMapper.selectByExample(new TrainCityExample())
+                    .stream()
+                    .collect(Collectors.toMap(TrainCity::getId, Function.identity()));
+        }
+        List<DataResultSet> areaDataList = ordersDataStatisticsMapper.getOrdersNumMapUp(startDateTime, endDateTime);
+        // 三级数据转为二级数据
+        areaDataListChange(areaDataList);
+        Map<String, AreaData<Long>> map = new LinkedHashMap<>();
+        for (DataResultSet areaData : areaDataList) {
+            String[] areas = areaData.getDateStr().split(" ");
+            AreaData<Long> item;
+            boolean hasData = false;
+            if (map.containsKey(areas[0])) {
+                hasData = true;
+                item = map.get(areas[0]);
+            } else {
+                item = new AreaData<>();
+                item.setName(cityMap.get(areas[0]).getName());
+                item.setId(areas[0]);
+                item.setItems(new ArrayList<>());
+                map.put(areas[0], item);
+            }
+            AreaData<Long> subItem = new AreaData<>();
+            subItem.setName(cityMap.get(areas[1]).getName());
+            subItem.setId(areas[1]);
+            subItem.setValue(areaData.getNum());
+            if (hasData) {
+                Map<String, AreaData<Long>> tempMap = item.getItems().stream().collect(Collectors.toMap(AreaData::getId, Function.identity()));
+                AreaData<Long> tempItem = tempMap.get(areas[1]);
+                // 二级数据累加
+                if (tempItem == null) {
+                    item.getItems().add(subItem);
+                } else {
+                    tempItem.setValue(tempItem.getValue() + subItem.getValue());
+                }
+            } else {
+                item.getItems().add(subItem);
+            }
+        }
+        return map.values().stream().peek(item -> {
+            long sum = 0;
+            for (AreaData<Long> subItem : item.getItems()) {
+                sum += subItem.getValue();
+            }
+            // 设置一级地区总值
+            item.setValue(sum);
+        }).collect(Collectors.toList());
+    }
+
     @Override
     public Long getOrdersGmvByClient(Date startDateTime, Date endDateTime, String client) {
         return ordersDataStatisticsMapper.getOrdersGmvByClient(startDateTime,endDateTime,client);
@@ -231,5 +294,37 @@ public class OrdersDataStatisticsServiceImpl implements OrdersDataStatisticsServ
             list.add(data);
         }
         return list;
+    }
+
+    /**
+     * 将三级数据 转为二级数据
+     *
+     * @param areaDataList
+     * @return
+     */
+    private void areaDataListChange(List<DataResultSet> areaDataList) {
+        for (DataResultSet areaData : areaDataList) {
+            String[] areas = areaData.getDateStr().split(" ");
+            int count = 0;
+            boolean hasXian = false;
+            for (TrainCity item : cityMap.values()) {
+                if (item.getP_id().equals(areas[0])) {
+                    count++;
+                    if ("县".equals(item.getName())) {
+                        hasXian = true;
+                    }
+                    if (count > 2) {
+                        break;
+                    }
+                }
+            }
+
+            if (hasXian && count <= 2 || count == 1) {
+                // 省数据下仅有一个市级
+                areaData.setDateStr(areas[0] + " " + areas[2]);
+            } else {
+                areaData.setDateStr(areas[0] + " " + areas[1]);
+            }
+        }
     }
 }

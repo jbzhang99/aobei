@@ -58,12 +58,36 @@
         #ordersMapBox thead{
             background-color: #00D0FF;
         }
+
+        #mapDiv{
+            position: relative;
+        }
+
+        #mapBack{
+            position: absolute;
+            z-index: 3;
+            top:10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 12px;
+            box-shadow: 0px 0px 20px #3b97d7;
+            display: none;
+        }
     </style>
     <script TYPE="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
     <script TYPE="text/javascript" th:src="@{/js/jquery-date-range-picker/jquery.daterangepicker.min.js}"></script>
     <script TYPE="text/javascript" th:src="@{/js/echarts.min.js}"></script>
     <script TYPE="text/javascript" th:src="@{/js/echart_map/china.js}"></script>
     <script type="text/javascript" th:inline="javascript">
+        (function () {
+            // 载入所有省级地图JS
+            var echart_map_js = 'anhui,aomen,beijing,chongqing,fujian,gansu,guangdong,guangxi,guizhou,hainan,hebei,heilongjiang,henan,hubei,hunan,jiangsu,jiangxi,jilin,liaoning,neimenggu,ningxia,qinghai,shandong,shanghai,shanxi,shanxi1,sichuan,taiwan,tianjin,xianggang,xinjiang,xizang,yunnan,zhejiang';
+            $.each(echart_map_js.split(','),function(i,n){
+                $.getScript([[@{/js/echart_map/province/}]] + n + '.js');
+            });
+        })();
         $(function(){
             // 按日
             $('#inputDay').dateRangePicker({
@@ -426,6 +450,7 @@
                     type: 'map',
                     map: 'china',  //根据不同的省份切换脚本
                     selectedMode: 'single',
+                    roam: false,
                     label: {
                         normal: {
                             show: true,
@@ -459,20 +484,55 @@
                 var mapData = [];
                 var max = 0;
                 $.each(data,function(i,n){
-                    mapData.push({name:n.dateStr,value:n.num});
+                    mapData.push({name:n.name,value:n.value});
                     html.push('<tr>');
-                    html.push('<td>'+n.dateStr+'</td>');
-                    html.push('<td>'+n.num+'</td>');
+                    html.push('<td>'+n.name+'</td>');
+                    html.push('<td>'+n.value+'</td>');
                     html.push('</tr>');
-                    if(n.num>max){
-                        max = n.num;
+                    if(n.value>max){
+                        max = n.value;
                     }
                 });
                 option.series[0].data = mapData;
-                option.visualMap.max = max;
+                option.visualMap.max = max
                 $('#ordersMapBox tbody').html(html.join(''));
                 CHARTS.mapChart.hideLoading();
                 CHARTS.mapChart.setOption(option);
+                CHARTS.mapChart.on('click', function (chinaParam) {
+                    if(chinaParam.name){
+                        var option = CHARTS.mapChart.getOption();
+                        option.series[0].map = chinaParam.name;
+                        $.each(data,function(i,n){
+                            if(n.name == chinaParam.name){
+                                option.series[0].data = n.items;
+                                //option.series[0].roam = 'scale';
+                                var max = 0;
+                                var html = [];
+                                $.each(n.items,function(ni,nn){
+                                    html.push('<tr>');
+                                    html.push('<td>'+nn.name+'</td>');
+                                    html.push('<td>'+nn.value+'</td>');
+                                    html.push('</tr>');
+                                    if(Number(nn.value)>max){
+                                        max = nn.value;
+                                    }
+                                });
+                                $('#ordersMapBox tbody').html(html.join(''));
+                                option.visualMap = {max : max};
+                                CHARTS.mapChart.setOption(option);
+                                $('#mapBack').show();
+                                // 地图缩小事件
+                                /*CHARTS.mapChart.on('georoam',function (dataZoom) {
+                                 if(dataZoom.zoom < 1){
+                                 loadCustomMapData(window.CURRENT_SEARCH_DATA);
+                                 CHARTS.mapChart.resize();
+                                 }
+                                 });*/
+                                return false;
+                            }
+                        });
+                    }
+                })
             });
         }
 
@@ -496,6 +556,11 @@
                 window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
             });
 
+            // 地图 返回按钮事件
+            $('#mapBack').click(function(){
+                loadOrdersMapData(window.CURRENT_SEARCH_DATA);
+                $(this).hide();
+            });
         });
     </script>
 </head>
@@ -634,8 +699,9 @@
                         </table>
 
                     </div>
-                    <div class="col-sm-9 col-xs-12">
+                    <div class="col-sm-9 col-xs-12" id="mapDiv">
                         <div id="mapChart" style="height:600px;"></div>
+                        <button id="mapBack" class="btn btn-success">返回</button>
                     </div>
                 </div>
             </div>

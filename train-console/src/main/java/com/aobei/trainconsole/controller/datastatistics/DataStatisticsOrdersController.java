@@ -2,6 +2,7 @@ package com.aobei.trainconsole.controller.datastatistics;
 
 import com.aobei.train.service.OrdersDataStatisticsService;
 import com.aobei.train.service.bean.OrdersStatisticsData;
+import custom.bean.AreaData;
 import custom.bean.DataResultSet;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -109,8 +110,8 @@ public class DataStatisticsOrdersController {
                                   @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                   @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){
         endDate = endDateBoundary(endDate);
-        return ordersDataStatisticsService.getOrdersNumMap(startDate,endDate);
-
+        List<AreaData<Long>> list = ordersDataStatisticsService.getOrdersNumMapUp(startDate, endDate);
+        return list;
     }
 
     /**

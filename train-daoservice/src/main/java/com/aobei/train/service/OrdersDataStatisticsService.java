@@ -1,6 +1,7 @@
 package com.aobei.train.service;
 
 import com.aobei.train.service.bean.OrdersStatisticsData;
+import custom.bean.AreaData;
 import custom.bean.DataResultSet;
 
 import java.util.Date;
@@ -67,6 +68,14 @@ public interface OrdersDataStatisticsService {
      * @return
      */
     List<DataResultSet> getOrdersNumMap(Date startDateTime, Date endDateTime);
+
+    /**
+     * 查询指定时间范围内数据地图订单数量
+     * @param startDateTime
+     * @param endDateTime
+     * @return
+     */
+    List<AreaData<Long>> getOrdersNumMapUp(Date startDateTime, Date endDateTime);
 
     /**
      * 根据客户端查询一定时间范围内的订单GMV

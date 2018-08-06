@@ -39,5 +39,7 @@ public interface OrdersDataStatisticsMapper {
 
     List<DataResultSet> getOrdersNumMap(@Param("startDateTime") Date startDateTime, @Param("endDateTime") Date endDateTime);
 
+    List<DataResultSet> getOrdersNumMapUp(@Param("startDateTime") Date startDateTime, @Param("endDateTime") Date endDateTime);
+
     Long getOrdersGmvByClient(@Param("startDateTime") Date startDateTime, @Param("endDateTime") Date endDateTime,@Param("client") String client);
 }
