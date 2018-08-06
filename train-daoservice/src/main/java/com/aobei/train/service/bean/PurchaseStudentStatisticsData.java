@@ -16,6 +16,10 @@ public class PurchaseStudentStatisticsData implements Serializable {
 
     private Long serviceunitTotalNum; // 服务单总数
 
+    private Long onJobNum;
+    private Long noJobNum;
+    private String runoffNum;
+
     public String getDateStr() {
         return dateStr;
     }
@@ -38,5 +42,29 @@ public class PurchaseStudentStatisticsData implements Serializable {
 
     public void setServiceunitTotalNum(Long serviceunitTotalNum) {
         this.serviceunitTotalNum = serviceunitTotalNum;
+    }
+
+    public Long getOnJobNum() {
+        return onJobNum;
+    }
+
+    public void setOnJobNum(Long onJobNum) {
+        this.onJobNum = onJobNum;
+    }
+
+    public Long getNoJobNum() {
+        return noJobNum;
+    }
+
+    public void setNoJobNum(Long noJobNum) {
+        this.noJobNum = noJobNum;
+    }
+
+    public String getRunoffNum() {
+        return runoffNum;
+    }
+
+    public void setRunoffNum(String runoffNum) {
+        this.runoffNum = runoffNum;
     }
 }
