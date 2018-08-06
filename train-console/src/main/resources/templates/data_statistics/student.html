@@ -370,8 +370,10 @@
                     html_1.push('<td>' + n.dateStr + '</td>');
                     html_1.push('<td>' + n.totalCustomNum + '</td>');
                     html_1.push('<td>' + n.onJobNum + '</td>');
-                    html_1.push('<td>' + n.noJobNum + '</td>');
-                    html_1.push('<td>' + n.runoffNum + '%</td>');
+                    /*html_1.push('<td>' + n.noJobNum + '</td>');
+                    html_1.push('<td>' + n.runoffNum + '%</td>');*/
+                    html_1.push('<td></td>');
+                    html_1.push('<td></td>');
                     html_1.push('<td>' + n.serviceunitTotalNum + '</td>');
                     html_1.push('</tr>');
 
@@ -387,12 +389,14 @@
                 html_1.push('<td>合计</td>');
                 html_1.push('<td class="red">' + total[0] + '</td>');
                 html_1.push('<td class="red">' + total[1] + '</td>');
-                html_1.push('<td class="red">' + total[2] + '</td>');
-                if (total[2] > 0) {
+                //html_1.push('<td class="red">' + total[2] + '</td>');
+                html_1.push('<td class="red"></td>');
+                html_1.push('<td class="red"></td>');
+                /*if (total[2] > 0) {
                     html_1.push('<td class="red">' + (total[2] / total[0] * 100).toFixed(0) + '%</td>');
                 } else {
                     html_1.push('<td class="red">0%</td>');
-                }
+                }*/
 
                 html_1.push('<td class="red">' + total[4] + '</td>');
                 html_1.push('</tr>');
@@ -452,7 +456,8 @@
                             borderWidth: 0
                         }
                     },
-                    data:{
+                    data:[],
+                    nameMap: {
                         '密云区':'密云县',
                         '延庆区':'延庆县'
                     }
@@ -477,6 +482,8 @@
                 $('#customMapBox tbody').html(html.join(''));
                 CHARTS.mapChart.hideLoading();
                 CHARTS.mapChart.setOption(option);
+
+
             });
 
         }

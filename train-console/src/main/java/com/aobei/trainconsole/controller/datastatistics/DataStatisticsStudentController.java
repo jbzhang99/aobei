@@ -142,7 +142,7 @@ public class DataStatisticsStudentController {
         HSSFCellUtil.createCell(row0, 0, "日期");
 
         HSSFRow row1 = HSSFCellUtil.getRow(1, sheet);
-        HSSFCellUtil.createCell(row1, 0, "服务人员数数");
+        HSSFCellUtil.createCell(row1, 0, "服务人员数");
 
         int i = 1;
         for (DataStatisticsCustomData dscd : list) {
@@ -240,8 +240,10 @@ public class DataStatisticsStudentController {
             HSSFCellUtil.createCell(row, 0, dscd.getDateStr());
             HSSFCellUtil.getCell(row, 1).setCellValue(dscd.getTotalCustomNum());
             HSSFCellUtil.getCell(row, 2).setCellValue(dscd.getOnJobNum());
-            HSSFCellUtil.getCell(row, 3).setCellValue(dscd.getNoJobNum());
-            HSSFCellUtil.getCell(row, 4).setCellValue(dscd.getRunoffNum()+"%");
+            /*HSSFCellUtil.getCell(row, 3).setCellValue(dscd.getNoJobNum());
+            HSSFCellUtil.getCell(row, 4).setCellValue(dscd.getRunoffNum()+"%");*/
+            HSSFCellUtil.getCell(row, 3).setCellValue("");
+            HSSFCellUtil.getCell(row, 4).setCellValue("");
             HSSFCellUtil.getCell(row, 5).setCellValue(dscd.getServiceunitTotalNum());
             studentNum += dscd.getTotalCustomNum();
             noJobNum += dscd.getNoJobNum();
@@ -254,12 +256,15 @@ public class DataStatisticsStudentController {
                 HSSFCell cell = HSSFCellUtil.getCell(rowLast, i);
                 if (i == 0) {
                     cell.setCellValue("合计");
-                } else if (i == 4) { // 复购率
-                    if (noJobNum > 0) {
+                }else if (i == 3){
+                    cell.setCellValue("");
+                }else if (i == 4) { // 复购率
+                    cell.setCellValue("");
+                    /*if (noJobNum > 0) {
                         cell.setCellValue(Math.round((noJobNum * 1.00 / studentNum * 1.00) * 100) + "%");
                     } else {
                         cell.setCellValue("0%");
-                    }
+                    }*/
                 }  else {
                     String colString = CellReference.convertNumToColString(i);
                     cell.setCellFormula(String.format("SUM(%s%d:%s%d)", colString, 2, colString, n));
