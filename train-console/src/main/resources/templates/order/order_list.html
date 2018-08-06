@@ -71,10 +71,15 @@
 			var qe_create_time = $(".qe_create_time").val();
 			var qs_pay_time = $(".qs_pay_time").val();
 			var qe_pay_time = $(".qe_pay_time").val();
+			var assign_state = $(".assign_state").val();
 
 			var url = "/ordermanager/goto_order_list?channel_code="+channel_code+"&uname="+uname+"&pay_order_id="+pay_order_id+
 				"&cuname="+cuname+"&uphone="+uphone+"&student_name="+student_name+
 				"&partner_id="+partner_id+"&statu="+statu;
+
+			if(assign_state != '' && assign_state != null){
+			    url = url + "&assign_state="+assign_state;
+			}
 
 			if(c_begin_datetime != '' && c_end_datetime != ''){
 				if(c_end_datetime < c_begin_datetime){
@@ -427,10 +432,11 @@
                 var qs_pay_time = $(".qs_pay_time").val();
                 var qe_pay_time = $(".qe_pay_time").val();
                 var channel_code = $(".channel_code").val();
+                var assign_state = $(".assign_state").val();
 
                 var json = {"channel_code":channel_code,"uname":uname,"pay_order_id":pay_order_id,"c_begin_datetime":c_begin_datetime,"c_end_datetime":c_end_datetime,
                     "cuname":cuname,"uphone":uphone,"student_name":student_name,"partner_id":partner_id,"statu":statu,
-                    "qs_create_time":qs_create_time,"qe_create_time":qe_create_time,"qs_pay_time":qs_pay_time,"qe_pay_time":qe_pay_time,"mts":mts};
+                    "qs_create_time":qs_create_time,"qe_create_time":qe_create_time,"qs_pay_time":qs_pay_time,"qe_pay_time":qe_pay_time,"mts":mts,"assign_state":assign_state};
 
                 reset = function () {
                     $("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
@@ -668,6 +674,14 @@
 							<option  th:value="${channel.code}" th:text="${channel.channel_name}" th:selected="${channel_code eq channel.code}"></option>
 						</th:block>
 					</select>
+					<th:block th:if="${channel_code eq 'JD-001'}">
+						<label>派单状态：</label>
+						<select class="form-control assign_state input-sm" name="assign_state"  style="margin-right: 20px">
+							<option value=''>请选择</option>
+							<option th:selected="${assign_state eq 0}" value='0'>未派单</option>
+							<option th:selected="${assign_state eq 1}" value='1'>已派单</option>
+						</select>
+					</th:block>
 				</div>
 				<br/>
 				<div class="form-inline">
@@ -792,7 +806,7 @@
 					<th width="100px">服务名称</th>
 					<th width="100px">用户姓名</th>
 					<th width="100px">收货人电话</th>
-					<th width="100px">顾客电话</th>
+					<th width="100px">下单人电话</th>
 					<th width="100px">服务地址</th>
 					<th width="100px">服务价格</th>
 					<th width="100px">实付金额</th>
@@ -865,7 +879,7 @@
 				</tbody>
 			</table>
 		</div>
-		<div th:include="~{tags/pagination::p1(@{/ordermanager/goto_order_list(channel_code=${channel_code},uname=${uname},pay_order_id=${pay_order_id},c_begin_datetime=${#dates.format(c_begin_datetime,'yyyy-MM-dd')},c_end_datetime=${#dates.format(c_end_datetime,'yyyy-MM-dd')},
+		<div th:include="~{tags/pagination::p1(@{/ordermanager/goto_order_list(channel_code=${channel_code},assign_state=${assign_state},uname=${uname},pay_order_id=${pay_order_id},c_begin_datetime=${#dates.format(c_begin_datetime,'yyyy-MM-dd')},c_end_datetime=${#dates.format(c_end_datetime,'yyyy-MM-dd')},
 			cuname=${cuname},uphone=${uphone},student_name=${student_name},partner_id=${partner_id},statu=${statu},qs_create_time=${#dates.format(qs_create_time,'yyyy-MM-dd')},qe_create_time=${#dates.format(qe_create_time,'yyyy-MM-dd')},qs_pay_time=${#dates.format(qs_pay_time,'yyyy-MM-dd')},
 			qe_pay_time=${#dates.format(qe_pay_time,'yyyy-MM-dd')})},${page.total}
 					,${page.pageSize},${page.pageNo},${page.totalPage},right,p)}">

@@ -219,7 +219,8 @@ public class OrderController {
 							 @RequestParam(required = false) Long partner_id, @RequestParam(required = false) Integer statu,
 							 @RequestParam(required = false) String qs_create_time,@RequestParam(required = false) String qe_create_time,
 							 @RequestParam(required = false) String qs_pay_time,@RequestParam(required = false) String qe_pay_time,
-							 @RequestParam(required = false,defaultValue = "") String channel_code) {
+							 @RequestParam(required = false,defaultValue = "") String channel_code,
+							 @RequestParam(required = false) Integer assign_state) {
 		VOrderUnitExample orderUnitExample = new VOrderUnitExample();
 		orderUnitExample.setOrderByClause(VOrderUnitExample.C.create_datetime + " desc");
 		//查询条件的对象
@@ -318,6 +319,15 @@ public class OrderController {
 				e.printStackTrace();
 			}
 		}
+		if (assign_state != null){
+			if (assign_state == 0){
+				or.andPartner_idIsNull();
+			}
+			if (assign_state == 1){
+				or.andPartner_idIsNotNull();
+			}
+			map.addAttribute("assign_state",assign_state);
+		}
 
 		Page<VOrderUnit> page = vOrderUnitService.selectByExample(orderUnitExample, p, ps);
 		List<VOrderUnit> list = page.getList();
@@ -327,7 +337,7 @@ public class OrderController {
         List<Channel> channels = channelService.selectByExample(channelExample);
 
 		PartnerExample partnerExample = new PartnerExample();
-		partnerExample.or().andDeletedEqualTo(Status.DeleteStatus.no.value).andStateEqualTo(1);
+		//partnerExample.or().andDeletedEqualTo(Status.DeleteStatus.no.value).andStateEqualTo(1);  08/06 update 合伙人条件无需根据上、下线状态过滤
 		List<Partner> partners = partnerService.selectByExample(partnerExample);
 		map.addAttribute("list", list);
 		map.addAttribute("page", page);

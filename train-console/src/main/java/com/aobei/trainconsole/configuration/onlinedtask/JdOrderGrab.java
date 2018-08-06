@@ -128,7 +128,7 @@ public class JdOrderGrab {
             logger.info("[OrderGrab] query time scope startDate is {},endDate is {}",startDate,endDate);
             request.setStartDate(startDate);
             request.setEndDate(endDate);
-            request.setOrderState( "WAIT_SELLER_STOCK_OUT,FINISHED_L");
+            request.setOrderState( "WAIT_SELLER_STOCK_OUT");
             request.setOptionalFields( "orderId," +  //	订单id
                     "venderId" +   //	商家id
                     "payType," +  //	支付方式（1货到付款, 2邮局汇款, 3自提, 4在线支付, 5公司转账, 6银行卡转账）
@@ -356,7 +356,7 @@ public class JdOrderGrab {
                 order.setName(product.getName()+proSku.getName());
                 order.setUid(customer.getCustomer_id());
                 order.setChannel("JD-001");
-                //order.setClient_id();
+                order.setClient_id("eb_custom");
                 order.setPrice_total((int)(Double.valueOf(jdPrice)*100*(Integer.valueOf(nItemTotal))));
                 order.setPrice_discount(0);
                 order.setPrice_pay((int)(Double.valueOf(jdPrice)*100*(Integer.valueOf(nItemTotal))));

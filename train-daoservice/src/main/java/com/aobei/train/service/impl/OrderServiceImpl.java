@@ -878,6 +878,11 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
             if (!("".equals(sta))) {
                 statu = Integer.valueOf(sta);
             }
+            String assign_states = (String)map.get("assign_state");
+            Integer assign_state = null;
+            if (!"".equals(assign_states) && assign_states != null){
+                assign_state = Integer.valueOf(assign_states);
+            }
 
             VOrderUnitExample orderUnitExample = new VOrderUnitExample();
             orderUnitExample.setOrderByClause(VOrderUnitExample.C.create_datetime + " desc");
@@ -943,6 +948,14 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
             }
             if (qs_pay_time != null && qe_pay_time != null){
                 or.andPay_datetimeBetween(qs_pay_time,qe_pay_time);
+            }
+            if (assign_state != null){
+                if (assign_state == 0){
+                    or.andPartner_idIsNull();
+                }
+                if (assign_state == 1){
+                    or.andPartner_idIsNotNull();
+                }
             }
             return (T) orderUnitExample;
         } else if (clazz.isInstance(new RefundExample())) {
