@@ -112,8 +112,8 @@ public class DataStatisticsCustomController {
             case 3:
                 subTitle = String.format(
                         "按月%s至%s",
-                        LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")),
-                        LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")));
+                        LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM月")),
+                        LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM月")));
                 list = dataStatisticsCustomService.regStatisticsWithMonth(startDate, endDate);
                 break;
             case 2:
@@ -200,8 +200,8 @@ public class DataStatisticsCustomController {
             case 3:
                 subTitle = String.format(
                         "按月%s至%s",
-                        LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")),
-                        LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")));
+                        LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM月")),
+                        LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM月")));
                 list = dataStatisticsCustomService.purchaseCustomStatisticsDataWithMonth(startDate, endDate);
                 break;
             case 2:

@@ -57,12 +57,36 @@
         #customMapBox thead{
             background-color: #00D0FF;
         }
+
+        #mapDiv{
+            position: relative;
+        }
+
+        #mapBack{
+            position: absolute;
+            z-index: 3;
+            top:10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 12px;
+            box-shadow: 0px 0px 20px #3b97d7;
+            display: none;
+        }
     </style>
     <script TYPE="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
     <script TYPE="text/javascript" th:src="@{/js/jquery-date-range-picker/jquery.daterangepicker.min.js}"></script>
     <script TYPE="text/javascript" th:src="@{/js/echarts.min.js}"></script>
     <script TYPE="text/javascript" th:src="@{/js/echart_map/china.js}"></script>
     <script type="text/javascript" th:inline="javascript">
+        (function () {
+            // 载入所有省级地图JS
+            var echart_map_js = 'anhui,aomen,beijing,chongqing,fujian,gansu,guangdong,guangxi,guizhou,hainan,hebei,heilongjiang,henan,hubei,hunan,jiangsu,jiangxi,jilin,liaoning,neimenggu,ningxia,qinghai,shandong,shanghai,shanxi,shanxi1,sichuan,taiwan,tianjin,xianggang,xinjiang,xizang,yunnan,zhejiang';
+            $.each(echart_map_js.split(','),function(i,n){
+                $.getScript([[@{/js/echart_map/province/}]] + n + '.js');
+            });
+        })();
         $(function () {
             // 按日
             $('#inputDay').dateRangePicker({
@@ -251,14 +275,28 @@
 
             // 下载中间表格数据
             $('#customTableDataDownload').click(function () {
-                var downUrl = [[@{/data_statistics/coupon/downCustomTableData}]];
+                var downUrl = [[@{/data_statistics/coupon/downCouponTableData}]];
                 window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
             });
 
             // 下载地图数据
             $('#customMapDataDownload').click(function () {
-                var downUrl = [[@{/data_statistics/coupon/downCustomMapData}]];
-                window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
+               var items = [];
+                $('#customMapBox tbody tr').each(function(i,n){
+                    items.push({
+                        'name': $(n).find('td').eq(0).text(),
+                        'value': $(n).find('td').eq(1).text()
+                    });
+                });
+                if(items.length == 0){
+                    alertify.alert('无地图数据可下载');
+                }
+            });
+
+            // 地图 返回按钮事件
+            $('#mapBack').click(function(){
+                loadCustomMapData(window.CURRENT_SEARCH_DATA);
+                $(this).hide();
             });
 
         });
@@ -271,8 +309,6 @@
          * endDate 结束日期
          */
         function doCharts(data) {
-            // TODO 自定义加载图表数据
-
             // 加载用户柱状图数据
             customUserDaySum(data);
             // 加载用户中间表格数据
@@ -377,58 +413,43 @@
          */
         function loadCustomTableData(requestData) {
             $('#customTableBox table tbody').empty();
-            $.getJSON([[@{/data_statistics/custom/loadCustomTableData}]], requestData, function (data) {
-                var html_1 = [];
-                var html_2 = [];
-                var total = [0, 0, 0, 0, 0, 0, 0, 0];
+            $.getJSON([[@{/data_statistics/coupon/loadCouponTableData}]], requestData, function (data) {
+                var html = [];
+                var total = [0, 0, 0, 0, 0, 0];
                 $.each(data, function (i, n) {
-                    html_1.push('<tr class="trData">');
-                    html_1.push('<td>' + n.dateStr + '</td>');
-                    html_1.push('<td>' + n.totalCustomNum + '</td>');
-                    html_1.push('<td>' + n.purchaseTotalCustomNum + '</td>');
-                    html_1.push('<td>' + n.rePurchaseTotalCustomNum + '</td>');
-                    html_1.push('<td>' + n.purchasePercent + '%</td>');
-                    html_1.push('</tr>');
+                    html.push('<tr class="trData">');
+                    html.push('<td>' + n.dateStr + '</td>');
+                    html.push('<td>' + n.planMoney/100 + '</td>');
+                    html.push('<td>' + n.numTotal + '</td>');
+                    html.push('<td>' + n.type + '</td>');
+                    html.push('<td>' + n.useStartDatetime + ' - ' + n.useEndDatetime + '</td>');
 
-                    html_2.push('<tr class="trData">');
-                    html_2.push('<td>' + n.clientNumMap['wx_m_custom'] + '</td>');
-                    html_2.push('<td>' + n.clientNumMap['a_custom'] + '</td>');
-                    html_2.push('<td>' + n.clientNumMap['i_custom'] + '</td>');
-                    html_2.push('<td>' + n.clientNumMap['h5_custom'] + '</td>');
-                    html_1.push('</tr>');
+                    html.push('<td>' + n.gmv + '</td>');
+                    html.push('<td>' + n.regUserCount + '</td>');
+                    html.push('<td>' + n.numUsed + '</td>');
+                    html.push('<td>' + n.totalUsedMoney/100 + '</td>');
+                    html.push('</tr>');
 
                     total = [
-                        total[0] + parseInt(n.totalCustomNum),
-                        total[1] + parseInt(n.purchaseTotalCustomNum),
-                        total[2] + parseInt(n.rePurchaseTotalCustomNum),
-                        total[3] + parseInt(n.purchasePercent),
-                        total[4] + parseInt(n.clientNumMap['wx_m_custom']),
-                        total[5] + parseInt(n.clientNumMap['a_custom']),
-                        total[6] + parseInt(n.clientNumMap['i_custom']),
-                        total[7] + parseInt(n.clientNumMap['h5_custom'])];
-
-
+                        total[0] + parseInt(n.planMoney),
+                        total[1] + parseInt(n.numTotal),
+                        total[2] + parseInt(n.gmv),
+                        total[3] + parseInt(n.regUserCount),
+                        total[4] + parseInt(n.numUsed),
+                        total[5] + parseInt(n.totalUsedMoney)];
                 });
-                html_1.push('<tr class="trTotalValue">');
-                html_1.push('<td>合计</td>');
-                html_1.push('<td class="red">' + total[0] + '</td>');
-                html_1.push('<td class="red">' + total[1] + '</td>');
-                html_1.push('<td class="red">' + total[2] + '</td>');
-                if (total[2] > 0) {
-                    html_1.push('<td class="red">' + (total[2] / total[1] * 100).toFixed(0) + '%</td>');
-                } else {
-                    html_1.push('<td class="red">0%</td>');
-                }
-                html_1.push('</tr>');
-
-                html_2.push('<tr class="trTotalValue">');
-                html_2.push('<td>' + total[4] + '</td>');
-                html_2.push('<td>' + total[5] + '</td>');
-                html_2.push('<td>' + total[6] + '</td>');
-                html_2.push('<td>' + total[7] + '</td>');
-                html_2.push('</tr>');
-                $('#customTableBox table:eq(0) tbody').html(html_1.join(''));
-                $('#customTableBox table:eq(1) tbody').html(html_2.join(''));
+                html.push('<tr class="trTotalValue">');
+                html.push('<td>合计</td>');
+                html.push('<td class="red">' + total[0]/100 + '</td>');
+                html.push('<td>' + total[1] + '</td>');
+                html.push('<td></td>');
+                html.push('<td></td>');
+                html.push('<td class="red">' + total[2] + '</td>');
+                html.push('<td class="red">' + total[3] + '</td>');
+                html.push('<td>' + total[4] + '</td>');
+                html.push('<td>' + total[5]/100 + '</td>');
+                html.push('</tr>');
+                $('#customTableBox tbody').html(html.join(''));
                 window.TABLEPAGE.p = 1;
                 window.TABLEPAGE.total = data.length;
                 tablePageData(window.TABLEPAGE);
@@ -463,6 +484,7 @@
                     type: 'map',
                     map: 'china',  //根据不同的省份切换脚本
                     selectedMode: 'single',
+                    roam: false,
                     label: {
                         normal: {
                             show: true,
@@ -483,33 +505,67 @@
                             borderWidth: 0
                         }
                     },
-                    data:[
-                        {name:'安徽',value:'200'},
-                        {name:'合肥市',value:'200'},
-                        {name:'安庆市',value:'100'},
-                        {name:'黄山市',value:'50'}
-                    ]
+                    data:[],
+                    nameMap: {
+                        '密云区':'密云县',
+                        '延庆区':'延庆县'
+                    }
                 }]
             };
-            $.getJSON([[@{/data_statistics/custom/loadCustomMapData}]],requestData, function (data) {
+            $.getJSON([[@{/data_statistics/coupon/loadCouponMapData}]],requestData, function (data) {
                 var html = [];
                 var mapData = [];
                 var max = 0;
                 $.each(data,function(i,n){
-                    mapData.push({name:n.dateStr,value:n.num});
+                    mapData.push({name:n.name,value:n.value});
                     html.push('<tr>');
-                    html.push('<td>'+n.dateStr+'</td>');
-                    html.push('<td>'+n.num+'</td>');
+                    html.push('<td>'+n.name+'</td>');
+                    html.push('<td>'+n.value+'</td>');
                     html.push('</tr>');
-                    if(n.num>max){
-                        max = n.num;
+                    if(n.value>max){
+                        max = n.value;
                     }
                 });
                 option.series[0].data = mapData;
-                option.visualMap.max = max;
+                option.visualMap.max = max.toFixed(0);
                 $('#customMapBox tbody').html(html.join(''));
                 CHARTS.mapChart.hideLoading();
                 CHARTS.mapChart.setOption(option);
+                CHARTS.mapChart.on('click', function (chinaParam) {
+                    if(chinaParam.name){
+                        var option = CHARTS.mapChart.getOption();
+                        option.series[0].map = chinaParam.name;
+                        $.each(data,function(i,n){
+                            if(n.name == chinaParam.name){
+                                option.series[0].data = n.items;
+                                //option.series[0].roam = 'scale';
+                                var max = 0;
+                                var html = [];
+                                $.each(n.items,function(ni,nn){
+                                    html.push('<tr>');
+                                    html.push('<td>'+nn.name+'</td>');
+                                    html.push('<td>'+nn.value+'</td>');
+                                    html.push('</tr>');
+                                    if(nn.value>max){
+                                        max = nn.value;
+                                    }
+                                });
+                                $('#customMapBox tbody').html(html.join(''));
+                                option.visualMap = {max : max.toFixed(0)};
+                                CHARTS.mapChart.setOption(option);
+                                $('#mapBack').show();
+                                // 地图缩小事件
+                                /*CHARTS.mapChart.on('georoam',function (dataZoom) {
+                                    if(dataZoom.zoom < 1){
+                                        loadCustomMapData(window.CURRENT_SEARCH_DATA);
+                                        CHARTS.mapChart.resize();
+                                    }
+                                });*/
+                                return false;
+                            }
+                        });
+                    }
+                })
             });
 
         }
@@ -572,42 +628,28 @@
                 </div>
             </div>
 
-            <!-- 顾客消费表格数据 -->
+            <!-- 订单相关数据表格 -->
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    顾客相关数据表格
+                    订单相关数据表格
                     <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
                        style="margin-left: 20px"></i>
                     <i id="customTableDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
                 </div>
                 <div class="panel-body">
                     <div id="customTableBox" style="height:300px;overflow-y: auto">
-                        <div class="col-sm-7 col-xs-12">
+                        <div class="col-sm-12 col-xs-12">
                             <table class="table table-bordered table-striped text-center">
                                 <thead>
                                 <th class="text-center">日期</th>
-                                <th class="text-center">顾客总数</th>
-                                <th class="text-center">产生消费的<br>顾客总数</th>
-                                <th class="text-center">产生复购的<br>顾客总数</th>
-                                <th class="text-center">复购率</th>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-
-                        </div>
-                        <div class="col-sm-5 col-xs-12">
-                            <table class="table table-bordered table-striped text-center">
-                                <thead>
-                                <tr>
-                                    <th colspan="4" class="text-center" style="padding:4px">各端顾客数</th>
-                                </tr>
-                                <tr>
-                                    <th class="text-center" style="padding:3px">小程序</th>
-                                    <th class="text-center" style="padding:3px">安卓</th>
-                                    <th class="text-center" style="padding:3px">IOS</th>
-                                    <th class="text-center" style="padding:3px">H5</th>
-                                </tr>
+                                <th class="text-center">优惠券<br>总金额</th>
+                                <th class="text-center">优惠券<br>数量</th>
+                                <th class="text-center">优惠券<br>使用类别</th>
+                                <th class="text-center">优惠券<br>使用有效期</th>
+                                <th class="text-center">优惠券<br>产生GMV</th>
+                                <th class="text-center">优惠券<br>拉新用户数</th>
+                                <th class="text-center">优惠券<br>使用总张数</th>
+                                <th class="text-center">优惠券<br>使用总金额</th>
                                 </thead>
                                 <tbody>
                                 </tbody>
@@ -647,15 +689,16 @@
                             <table class="table table-bordered table-striped text-center">
                                 <thead>
                                 <th class="text-center">区域</th>
-                                <th class="text-center">顾客数</th>
+                                <th class="text-center">优惠券使用金额</th>
                                 </thead>
                                 <tbody>
                                 </tbody>
                             </table>
 
                         </div>
-                        <div class="col-sm-9 col-xs-12">
+                        <div class="col-sm-9 col-xs-12" id="mapDiv">
                             <div id="mapChart" style="height:600px;"></div>
+                            <button id="mapBack" class="btn btn-success">返回</button>
                         </div>
                     </div>
 

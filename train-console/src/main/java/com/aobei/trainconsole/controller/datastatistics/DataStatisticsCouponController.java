@@ -1,10 +1,14 @@
 package com.aobei.trainconsole.controller.datastatistics;
 
 import com.aobei.train.service.DataStatisticsCouponService;
-import custom.bean.PurchaseCouponStatisticsData;
+import custom.bean.AreaData;
+import custom.bean.CouponStatisticsData;
+import custom.bean.CouponTableStatisticsData;
+import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.hssf.util.HSSFCellUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -69,7 +73,7 @@ public class DataStatisticsCouponController {
      */
     @GetMapping("/loadCouponData")
     @ResponseBody
-    public List<PurchaseCouponStatisticsData> loadCouponData(
+    public List<CouponStatisticsData> loadCouponData(
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
@@ -99,14 +103,14 @@ public class DataStatisticsCouponController {
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) throws IOException {
         endDate = endDateBoundary(endDate);
-        List<PurchaseCouponStatisticsData> list;
+        List<CouponStatisticsData> list;
         String subTitle;
         switch (type) {
             case 3:
                 subTitle = String.format(
                         "按月%s至%s",
-                        LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")),
-                        LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")));
+                        LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy/MM月")),
+                        LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy/MM月")));
                 list = dataStatisticsCouponService.couponStatisticsWithMonth(startDate, endDate);
                 break;
             case 2:
@@ -138,7 +142,7 @@ public class DataStatisticsCouponController {
         HSSFCellUtil.createCell(row2, 0, "优惠卷使用总额");
 
         int i = 1;
-        for (PurchaseCouponStatisticsData dscd : list) {
+        for (CouponStatisticsData dscd : list) {
             HSSFCellUtil.createCell(row0, i, dscd.getDateStr());
             HSSFCellUtil.getCell(row1, i).setCellValue(dscd.getTotalPlanMoney() > 0 ? dscd.getTotalPlanMoney() * 0.01 : 0);
             HSSFCellUtil.getCell(row2, i).setCellValue(dscd.getTotalUsedMoney() > 0 ? dscd.getTotalUsedMoney() * 0.01 : 0);
@@ -149,6 +153,105 @@ public class DataStatisticsCouponController {
         response.setHeader("Content-Disposition", "attachment;fileName=" + URLEncoder.encode(fileName, "UTF-8"));
         workbook.write(response.getOutputStream());
 
+    }
+
+
+    /**
+     * 加载 用优惠卷数据
+     *
+     * @param type
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @GetMapping("/loadCouponTableData")
+    @ResponseBody
+    public List<CouponTableStatisticsData> loadCouponTableData(
+            int type,
+            @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
+        endDate = endDateBoundary(endDate);
+        return dataStatisticsCouponService.couponTableDatas(startDate, endDate);
+    }
+
+    /**
+     * 下载优惠卷表格数据
+     *
+     * @param response
+     * @param startDate
+     * @param endDate
+     * @throws IOException
+     */
+    @GetMapping(value = "/downCouponTableData", produces = "application/vnd.ms-excel; charset=utf-8")
+    public void downCouponTableData(
+            HttpServletResponse response,
+            @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) throws IOException {
+        endDate = endDateBoundary(endDate);
+        List<CouponTableStatisticsData> list = dataStatisticsCouponService.couponTableDatas(startDate, endDate);
+        String subTitle = String.format(
+                "%s至%s",
+                LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        HSSFWorkbook workbook = new HSSFWorkbook();
+        String[] columnTitles = {"日期", "优惠券总金额", "优惠券数量", "优惠券使用类别", "优惠券使用有效期", "优惠券产生GMV", "优惠券拉新用户数", "优惠券使用总张数", "优惠券使用总金额"};
+
+        HSSFSheet sheet = workbook.createSheet(subTitle);
+        HSSFRow row0 = HSSFCellUtil.getRow(0, sheet);
+        for (int i = 0; i < columnTitles.length; i++) {
+            HSSFCellUtil.createCell(row0, i, columnTitles[i]);
+        }
+
+        int n = 1;
+        for (CouponTableStatisticsData ctsd : list) {
+            HSSFRow row = HSSFCellUtil.getRow(n++, sheet);
+            HSSFCellUtil.createCell(row, 0, ctsd.getDateStr());
+            HSSFCellUtil.getCell(row, 1).setCellValue(ctsd.getPlanMoney() == null ? 0 : ctsd.getPlanMoney() * 0.01);
+            HSSFCellUtil.getCell(row, 2).setCellValue(ctsd.getNumTotal());
+            HSSFCellUtil.getCell(row, 3).setCellValue(ctsd.getType());
+            HSSFCellUtil.createCell(row, 4, String.format("%s - %s", ctsd.getUseStartDatetime(), ctsd.getUseEndDatetime()));
+            HSSFCellUtil.getCell(row, 5).setCellValue(ctsd.getGmv());
+            HSSFCellUtil.getCell(row, 6).setCellValue(ctsd.getRegUserCount());
+            HSSFCellUtil.getCell(row, 7).setCellValue(ctsd.getNumUsed());
+            HSSFCellUtil.getCell(row, 8).setCellValue(ctsd.getTotalUsedMoney() * 0.01);
+        }
+
+        // 最后一行数据
+        HSSFRow rowLast = HSSFCellUtil.getRow(n, sheet);
+        for (int i = 0; i < columnTitles.length; i++) {
+            if (n > 1) {
+                HSSFCell cell = HSSFCellUtil.getCell(rowLast, i);
+                if (i == 0) {
+                    cell.setCellValue("合计");
+                } else if (i == 3 || i == 4) {
+                    // no set
+                } else {
+                    String colString = CellReference.convertNumToColString(i);
+                    cell.setCellFormula(String.format("SUM(%s%d:%s%d)", colString, 2, colString, n));
+                }
+            }
+            sheet.autoSizeColumn(i);
+        }
+        String fileName = "优惠券相关数据图表" + subTitle + ".xls";
+        response.setHeader("Content-Disposition", "attachment;fileName=" + URLEncoder.encode(fileName, "UTF-8"));
+        workbook.write(response.getOutputStream());
+
+    }
+
+    /**
+     * 加载 优惠卷地图数据
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @GetMapping("/loadCouponMapData")
+    @ResponseBody
+    public List<AreaData<Double>> loadCouponTableData(
+            @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
+        endDate = endDateBoundary(endDate);
+        List<AreaData<Double>> list = dataStatisticsCouponService.couponUsedOrderMoneyAreaData(startDate, endDate);
+        return list;
     }
 
 }

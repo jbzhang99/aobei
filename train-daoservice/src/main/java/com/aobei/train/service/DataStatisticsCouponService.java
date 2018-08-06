@@ -1,7 +1,8 @@
 package com.aobei.train.service;
 
-import custom.bean.PurchaseCouponStatisticsData;
-import custom.bean.PurchaseCouponTableStatisticsData;
+import custom.bean.AreaData;
+import custom.bean.CouponStatisticsData;
+import custom.bean.CouponTableStatisticsData;
 
 import java.util.Date;
 import java.util.List;
@@ -14,23 +15,23 @@ public interface DataStatisticsCouponService {
      * @param endDate
      * @return
      */
-    List<PurchaseCouponStatisticsData> couponStatisticsWithDay(Date startDate, Date endDate);
+    List<CouponStatisticsData> couponStatisticsWithDay(Date startDate, Date endDate);
 
     /**
-     * 递增 用户注册数据  周
+     * 优惠卷 发放与使用 数据  周
      * @param startDate
      * @param endDate
      * @return
      */
-    List<PurchaseCouponStatisticsData> couponStatisticsWithWeek(Date startDate, Date endDate);
+    List<CouponStatisticsData> couponStatisticsWithWeek(Date startDate, Date endDate);
 
     /**
-     * 递增 用户注册数据  月
+     * 优惠卷 发放与使用 数据  月
      * @param startDate
      * @param endDate
      * @return
      */
-    List<PurchaseCouponStatisticsData> couponStatisticsWithMonth(Date startDate, Date endDate);
+    List<CouponStatisticsData> couponStatisticsWithMonth(Date startDate, Date endDate);
 
 
     /**
@@ -39,6 +40,14 @@ public interface DataStatisticsCouponService {
      * @param endDate
      * @return
      */
-    List<PurchaseCouponTableStatisticsData> couponTableDatas(Date startDate, Date endDate);
+    List<CouponTableStatisticsData> couponTableDatas(Date startDate, Date endDate);
+
+    /**
+     * 优惠卷使用 地区数据
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<AreaData<Double>> couponUsedOrderMoneyAreaData(Date startDate, Date endDate);
 }
 

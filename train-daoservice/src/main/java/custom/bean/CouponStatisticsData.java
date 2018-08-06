@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * 数据统计 优惠卷数据统计
  */
-public class PurchaseCouponStatisticsData implements Serializable {
+public class CouponStatisticsData implements Serializable {
 
 
     private static final long serialVersionUID = -5646983791067324311L;

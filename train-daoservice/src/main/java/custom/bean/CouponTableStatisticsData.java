@@ -1,26 +1,27 @@
 package custom.bean;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 数据统计 优惠卷表格数据
  */
-public class PurchaseCouponTableStatisticsData implements Serializable {
+public class CouponTableStatisticsData implements Serializable {
 
     private static final long serialVersionUID = 4816854928672741479L;
 
     private String dateStr;
 
+    private Long planMoney;      // 预算金额
+
     private Long numTotal;        // 优惠卷数量
 
     private Long numUsed;        // 优惠卷使用数量
 
-    private Long type;           // 类型
+    private String type;           // 类型
 
-    private Date useStartDatetime;  // 优惠卷开始时间
+    private String useStartDatetime;  // 优惠卷开始时间
 
-    private Date useEndDatetime;  // 优惠卷结束时间
+    private String useEndDatetime;  // 优惠卷结束时间
 
     private Long gmv;
 
@@ -52,27 +53,27 @@ public class PurchaseCouponTableStatisticsData implements Serializable {
         this.numUsed = numUsed;
     }
 
-    public Long getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(Long type) {
+    public void setType(String type) {
         this.type = type;
     }
 
-    public Date getUseStartDatetime() {
+    public String getUseStartDatetime() {
         return useStartDatetime;
     }
 
-    public void setUseStartDatetime(Date useStartDatetime) {
+    public void setUseStartDatetime(String useStartDatetime) {
         this.useStartDatetime = useStartDatetime;
     }
 
-    public Date getUseEndDatetime() {
+    public String getUseEndDatetime() {
         return useEndDatetime;
     }
 
-    public void setUseEndDatetime(Date useEndDatetime) {
+    public void setUseEndDatetime(String useEndDatetime) {
         this.useEndDatetime = useEndDatetime;
     }
 
@@ -98,5 +99,13 @@ public class PurchaseCouponTableStatisticsData implements Serializable {
 
     public void setTotalUsedMoney(Long totalUsedMoney) {
         this.totalUsedMoney = totalUsedMoney;
+    }
+
+    public Long getPlanMoney() {
+        return planMoney;
+    }
+
+    public void setPlanMoney(Long planMoney) {
+        this.planMoney = planMoney;
     }
 }

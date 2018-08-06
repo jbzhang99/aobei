@@ -88,4 +88,13 @@ public interface DataStatisticsCouponMapper {
     List<DataStatisticsCustomData> couponUsedOrderMoney(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
 
+    /**
+     * 地区 优惠卷使用量统计
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<DataStatisticsCustomData> couponUsedOrderMoneyGroupArea(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+
 }
