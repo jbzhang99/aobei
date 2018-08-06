@@ -70,4 +70,49 @@ public interface DataStatisticsStudentMapper {
     List<DataStatisticsCustomData> purchaseStudentStatisticsWithMonth(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
 
+    /**
+     * 按天  在职
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<DataStatisticsCustomData> studentOnJobNumWithDay(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    /**
+     * 按天  离职
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<DataStatisticsCustomData> studentDepartureNumWithDay(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+    /**
+     * 按天  在职
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<DataStatisticsCustomData> studentOnJobNumWithWeek(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    /**
+     * 按天  离职
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<DataStatisticsCustomData> studentDepartureNumWithWeek(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+    /**
+     * 按天  在职
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<DataStatisticsCustomData> studentOnJobNumWithMonth(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    /**
+     * 按天  离职
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<DataStatisticsCustomData> studentDepartureNumWithMonth(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 }

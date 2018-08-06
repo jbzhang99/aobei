@@ -58,4 +58,62 @@
       ORDER BY date_str
   </select>
 
+  <select id="studentOnJobNumWithDay" resultMap="BaseResultMap">
+    SELECT date_format(t.cdate,'%Y-%m-%d') AS date_str, COUNT(*) AS num
+    FROM student t
+    WHERE
+      t.cdate BETWEEN #{startDate} AND #{endDate}  and state=1
+    GROUP BY date_str
+    ORDER BY date_str
+  </select>
+
+  <select id="studentDepartureNumWithDay" resultMap="BaseResultMap">
+    SELECT date_format(t.cdate,'%Y-%m-%d') AS date_str, COUNT(*) AS num
+    FROM student t
+    WHERE
+      t.cdate BETWEEN #{startDate} AND #{endDate}  and state=0
+    GROUP BY date_str
+    ORDER BY date_str
+  </select>
+
+  <!--按周 在职-->
+  <select id="studentOnJobNumWithWeek" resultMap="BaseResultMap">
+    SELECT concat(DATE_FORMAT(t.cdate,'%Y'),'/', LPAD(WEEKOFYEAR(t.cdate),2,0),'周') AS date_str, COUNT(*) AS num
+    FROM student t
+    WHERE
+    t.cdate BETWEEN #{startDate} AND #{endDate}  and state=1
+    GROUP BY date_str
+    ORDER BY date_str
+  </select>
+
+  <!--按周  离职-->
+  <select id="studentDepartureNumWithWeek" resultMap="BaseResultMap">
+    SELECT concat(DATE_FORMAT(t.cdate,'%Y'),'/', LPAD(WEEKOFYEAR(t.cdate),2,0),'周') AS date_str, COUNT(*) AS num
+    FROM student t
+    WHERE
+    t.cdate BETWEEN #{startDate} AND #{endDate}  and state=0
+    GROUP BY date_str
+    ORDER BY date_str
+  </select>
+
+  <!--按月  在职-->
+  <select id="studentOnJobNumWithMonth" resultMap="BaseResultMap">
+    SELECT concat(DATE_FORMAT(t.cdate,'%Y/%m'),'月') AS date_str, COUNT(*) AS num
+    FROM student t
+    WHERE
+    t.cdate BETWEEN #{startDate} AND #{endDate}  and state=1
+    GROUP BY date_str
+    ORDER BY date_str
+  </select>
+
+  <!--按月  离职-->
+  <select id="studentDepartureNumWithMonth" resultMap="BaseResultMap">
+    SELECT concat(DATE_FORMAT(t.cdate,'%Y/%m'),'月') AS date_str, COUNT(*) AS num
+    FROM student t
+    WHERE
+    t.cdate BETWEEN #{startDate} AND #{endDate}  and state=0
+    GROUP BY date_str
+    ORDER BY date_str
+  </select>
+
 </mapper>
