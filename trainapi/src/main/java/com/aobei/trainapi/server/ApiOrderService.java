@@ -23,6 +23,7 @@ public interface ApiOrderService {
     PageResult customerOrderList(String status,Long customerId , String nextOrderId,String preOrderId,boolean forward);
 
     ApiResponse<String>  appAliPrePay(Customer customer,String pay_order_id,String appId);
+    ApiResponse<String>  wapAliPrePay(Customer customer,String pay_order_id,String appId);
 
     ApiResponse exchangeCodeToCoupon(Customer customer,String exchange_code);
 

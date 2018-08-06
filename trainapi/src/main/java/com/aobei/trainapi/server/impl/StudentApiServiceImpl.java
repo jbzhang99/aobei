@@ -29,6 +29,7 @@ import custom.bean.OrderInfo.OrderStatus;
 import custom.bean.OrderInfo.ServiceStatus;
 import custom.util.DistanceUtil;
 import custom.util.ParamsCheck;
+import org.apache.ibatis.jdbc.Null;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -51,55 +52,54 @@ import java.util.stream.Collectors;
 import static org.springframework.dao.support.DataAccessUtils.singleResult;
 
 @Service
-public class StudentApiServiceImpl implements StudentApiService
-{
-	@Autowired
-	ServiceUnitService serviceUnitService;
+public class StudentApiServiceImpl implements StudentApiService {
+    @Autowired
+    ServiceUnitService serviceUnitService;
 
-	@Autowired
-	OrderService orderService;
+    @Autowired
+    OrderService orderService;
 
-	@Autowired
-	StudentService studentService;
+    @Autowired
+    StudentService studentService;
 
-	@Autowired
-	ProductService productService;
+    @Autowired
+    ProductService productService;
 
-	@Autowired
-	ProSkuService proSkuService;
+    @Autowired
+    ProSkuService proSkuService;
 
-	@Autowired
-	CustomerService customerService;
+    @Autowired
+    CustomerService customerService;
 
-	@Autowired
-	MessageService messageService;
-	@Autowired
-	MetadataService metadataService;
-	@Autowired
-	OnsHandler onsHandler;
-	@Autowired
-	ServiceunitPersonService serviceunitPersonService;
-	@Autowired
-	OrderItemService orderItemService;
-	@Autowired
-	CustomerAddressService customerAddressService;
-	@Autowired
-	StoreService storeService;
-	@Autowired
-	RedisIdGenerator redisIdGenerator;
-	@Autowired
-	OrderLogService orderLogService;
-	@Autowired
+    @Autowired
+    MessageService messageService;
+    @Autowired
+    MetadataService metadataService;
+    @Autowired
+    OnsHandler onsHandler;
+    @Autowired
+    ServiceunitPersonService serviceunitPersonService;
+    @Autowired
+    OrderItemService orderItemService;
+    @Autowired
+    CustomerAddressService customerAddressService;
+    @Autowired
+    StoreService storeService;
+    @Autowired
+    RedisIdGenerator redisIdGenerator;
+    @Autowired
+    OrderLogService orderLogService;
+    @Autowired
     CacheReloadHandler cacheReloadHandler;
-	@Autowired
-	Environment env;
-	@Autowired
-	TokenUtil TOKEN;
-	@Autowired
-	VideoContentService videoContentService;
-	@Autowired
-	CustomerApiService customerApiService;
-	Logger logger = LoggerFactory.getLogger(StudentApiServiceImpl.class);
+    @Autowired
+    Environment env;
+    @Autowired
+    TokenUtil TOKEN;
+    @Autowired
+    VideoContentService videoContentService;
+    @Autowired
+    CustomerApiService customerApiService;
+    Logger logger = LoggerFactory.getLogger(StudentApiServiceImpl.class);
 
 	/**
 	 * 服务人员未完成订单
@@ -116,10 +116,12 @@ public class StudentApiServiceImpl implements StudentApiService
 			return orderInfoList;
 		}
 		ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
-		serviceUnitExample.or().andServiceunit_idIn(unitIds)
+		Criteria criteria = serviceUnitExample.or();
+		criteria.andServiceunit_idIn(unitIds)
 				.andStatus_activeEqualTo(Status.ServiceStatus.assign_worker.value)// 订单状态为已指派
 				.andPidEqualTo(0L)// 父单
-				.andActiveEqualTo(Status.PayStatus.payed.value);// 有效的
+				.andActiveEqualTo(Status.ServiceUnitActive.active.value)
+				.andWork_status_more(2);
 		orderInfoList = orderService.orderInfoList(Roles.STUDENT, serviceUnitExample, page_index, count).getList();
 		logger.info("api-method:selectStuUndoneOrder:process orderInfoList:{}", orderInfoList.size());
 		return orderInfoList;
@@ -263,10 +265,12 @@ public class StudentApiServiceImpl implements StudentApiService
 				content.setMsgtype("native");
 				content.setV("1");
 				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				String beginString = format.format(serviceUnit.getC_begin_datetime());
+				String beginString = "";
+				if (serviceUnit.getC_begin_datetime() != null){
+					beginString = format.format(serviceUnit.getC_begin_datetime());
+				}
 				String studentName  = serviceUnit.getStudent_name()==null?"":serviceUnit.getStudent_name();
 				studentName = studentName.endsWith(",")?studentName.substring(0,serviceUnit.getStudent_name().length()-1):studentName;
-
 				content.setContent("服务人员" + studentName+","+ beginString + "在"
 						+ order.getCus_address() + "为您进行的服务已完成，请您确认，满意请给我们点亮五颗星星哦。");
 				Map<String,String> param = new HashMap<>();
@@ -338,6 +342,17 @@ public class StudentApiServiceImpl implements StudentApiService
 		ServiceUnit serviceUnit = singleResult(selectByExample);
 		logger.info("api-method:selectStuShowTaskdetail:process serviceUnit:{}", serviceUnit);
 		OrderInfo orderInfo = orderService.orderInfoDetail(Roles.STUDENT, serviceUnit);
+		//服务人员是否可以续单
+		ProSkuExample skuExample = new ProSkuExample();
+		skuExample.or().andProduct_idEqualTo(serviceUnit.getProduct_id()).andDispalyEqualTo(1);
+		long skuNum = proSkuService.countByExample(skuExample);
+		Integer work_status = serviceUnit.getWork_status();
+		Integer status_active = serviceUnit.getStatus_active();
+		orderInfo.setWhetherCanContinue(1);
+		if (work_status == null || skuNum == 0 || status_active != 4 || work_status == 4 || work_status == 5){
+			orderInfo.setWhetherCanContinue(0);
+		}
+
 		if ("waitService".equals(orderInfo.getOrderStatus())) {
 			if (serviceUnit.getWork_status() == null) {
 				serviceUnit.setWork_status(2);
@@ -348,14 +363,6 @@ public class StudentApiServiceImpl implements StudentApiService
 			}
 		}
 		orderInfo.setServiceUnit(serviceUnit);
-		//服务人员是否可以续单
-		ProSkuExample skuExample = new ProSkuExample();
-		skuExample.or().andProduct_idEqualTo(serviceUnit.getProduct_id()).andDispalyEqualTo(1);
-		long skuNum = proSkuService.countByExample(skuExample);
-		orderInfo.setWhetherCanContinue(1);
-		if (skuNum == 0){
-			orderInfo.setWhetherCanContinue(0);
-		}
 		//是否支持取消订单（true支持,false不支持）
 		switch (orderInfo.getOrder().getStatus_active()){
 			case 1:
@@ -363,6 +370,10 @@ public class StudentApiServiceImpl implements StudentApiService
 				break;
 			case 2:
 			case 3:
+				if (StringUtils.isEmpty(serviceUnit.getC_end_datetime())){
+					orderInfo.setAllowedToCancel(false);
+					break;
+				}
 				if ("JD-001".equals(orderInfo.getOrder().getChannel())){
 					orderInfo.setAllowedToCancel(false);
 				}else {
@@ -1009,115 +1020,128 @@ public class StudentApiServiceImpl implements StudentApiService
 			}else {
 			    messageState.setState(0);
             }
-		}catch (Exception e){
-			logger.error("ERROR api-method:whetherHaveNewMessages",e);
-		}
-		return messageState;
-	}
+        } catch (Exception e) {
+            logger.error("ERROR api-method:whetherHaveNewMessages", e);
+        }
+        return messageState;
+    }
 
-	/**
-	 * 统计服务人员订单数
-	 * @return
-	 */
-	@Override
-	public StudentServiceOrderStatistics studentStatisticsOrder(StudentInfo studentInfo) {
-		try{
-			StudentServiceOrderStatistics studentServiceOrderStatistics = new StudentServiceOrderStatistics();
-			Long student_id = studentInfo.getStudent_id();
-			if(student_id!=null){
-				studentServiceOrderStatistics
-						.setServicedOrder(getServiceUnitPersons(2, student_id,0,false));//本月已服务订单数
-				studentServiceOrderStatistics
-						.setDoneOrder(getServiceUnitPersons(4, student_id,Status.ServiceStatus.done.value,false));//本月服务完成订单
-				studentServiceOrderStatistics
-						.setTodayWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value , true));//今日待服务订单
-				studentServiceOrderStatistics
-						.setAllWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value,false));//全部待服务订单
-				return studentServiceOrderStatistics;
-			}
-			logger.info("api-method studentStatisticsOrder");
-		}catch(Exception e){
-			logger.error("error api-method:studentStatisticsOrder",e);
-		}
-		return null;
-	}
+    /**
+     * 统计服务人员订单数
+     *
+     * @return
+     */
+    @Override
+    public StudentServiceOrderStatistics studentStatisticsOrder(StudentInfo studentInfo) {
+        try {
+            StudentServiceOrderStatistics studentServiceOrderStatistics = new StudentServiceOrderStatistics();
+            Long student_id = studentInfo.getStudent_id();
+            if (student_id != null) {
+                studentServiceOrderStatistics
+                        .setServicedOrder(getServiceUnitPersons(2, student_id, 0, false));//本月已服务订单数
+                studentServiceOrderStatistics
+                        .setDoneOrder(getServiceUnitPersons(4, student_id, Status.ServiceStatus.done.value, false));//本月服务完成订单
+                studentServiceOrderStatistics
+                        .setTodayWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value, true));//今日待服务订单
+                studentServiceOrderStatistics
+                        .setAllWaitServiceOrder(getServiceUnitPersons(0, student_id, Status.ServiceStatus.wait_assign_worker.value, false));//全部待服务订单
+                return studentServiceOrderStatistics;
+            }
+            logger.info("api-method studentStatisticsOrder");
+        } catch (Exception e) {
+            logger.error("error api-method:studentStatisticsOrder", e);
+        }
+        return null;
+    }
 
-	/**
-	 * 统计学员订单数
-	 * @param work_status
-	 * @param student_id
-	 * @param status_active
-	 * @param is_day
-	 * @return
-	 */
-	private Integer getServiceUnitPersons(int work_status,Long student_id,int status_active,boolean is_day){
-		Set<Long> set = null;
-		List<ServiceUnit> serviceUnits = null;
-		try{
-			serviceUnits = new ArrayList<ServiceUnit>();
-			ServiceunitPersonExample serviceunitPersonExample = new ServiceunitPersonExample();
-			ServiceunitPersonExample.Criteria or = serviceunitPersonExample.or();
-			if(work_status==2){
-				int[] status = {2,4};
-				or.andWork_statusIn(Arrays.asList(status.length));
-			}
-			if(work_status==4){
-				or.andStatus_activeEqualTo(status_active)
-				  .andWork_statusEqualTo(work_status);
-			}
-			if(status_active==3){
-				or.andStatus_activeEqualTo(status_active)
-				  .andWork_statusEqualTo(2);
-			}
-			or.andStudent_idEqualTo(student_id);
-			List<ServiceunitPerson> serviceUnitPersons = serviceunitPersonService.selectByExample(serviceunitPersonExample);
-			set = new HashSet<Long>();
-			for (ServiceunitPerson snp:serviceUnitPersons) {
-				if(snp!=null)
-					set.add(snp.getServiceunit_id());
-			}
-			if(work_status==0 && !is_day){
-				return set.size();
-			}
-			Calendar instance = Calendar.getInstance();
-			for (Long serviceunit_id:set) {
-				ServiceUnit serviceUnit = serviceUnitService.selectByPrimaryKey(serviceunit_id);
-				SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM");
-				SimpleDateFormat sdh = new SimpleDateFormat("yyyy-MM-dd");
-				if(serviceUnit!=null){
-					if(serviceUnit.getC_begin_datetime()!=null){
-						if(is_day) {
-							String c_begin_time_sdh = sdh.format(serviceUnit.getC_begin_datetime());
-							String local_date_sdh = sdh.format(new Date());
-							if (c_begin_time_sdh.equals(local_date_sdh)) {
-								instance.setTime(sd.parse(local_date_sdh));
-								int day_local = instance.get(Calendar.DAY_OF_MONTH) + 1;//当前时间 /天
-								instance.setTime(sd.parse(c_begin_time_sdh));
-								int day_service = instance.get(Calendar.DAY_OF_MONTH) + 1;//服务时间 /天
-								if (day_local == day_service)
-									serviceUnits.add(serviceUnit);
-							}
-						}else{
-							String c_begin_time = sd.format(serviceUnit.getC_begin_datetime());
-							String local_date = sd.format(new Date());
-							if(local_date.equals(c_begin_time)){
-								instance.setTime(sd.parse(local_date));
-								int month_local = instance.get(Calendar.MONTH) + 1;//当前时间 /月
-								instance.setTime(sd.parse(c_begin_time));
-								int month_service = instance.get(Calendar.MONTH)+1;//服务时间 /月
-								if(month_local==month_service){
-									serviceUnits.add(serviceUnit);
-								}
-							}
-						}
-					}
-				}
-			}
-		}catch(Exception e){
-			logger.error("error api-method : getServiceUnitPersons",e);
-		}
-		return serviceUnits.size();
-	}
+    /**
+     * 统计学员订单数
+     *
+     * @param work_status
+     * @param student_id
+     * @param status_active
+     * @param is_day
+     * @return
+     */
+    private Integer getServiceUnitPersons(int work_status, Long student_id, int status_active, boolean is_day) {
+        Set<Long> set = null;
+        List<ServiceUnit> serviceUnits = null;
+        try {
+            serviceUnits = new ArrayList<ServiceUnit>();
+            ServiceunitPersonExample serviceunitPersonExample = new ServiceunitPersonExample();
+            ServiceunitPersonExample.Criteria or = serviceunitPersonExample.or();
+            ServiceunitPersonExample serviceunitPersonExample1 = new ServiceunitPersonExample();
+            ServiceunitPersonExample.Criteria or1 = serviceunitPersonExample1.or();
+            List<ServiceunitPerson> serviceunitPeople1 = new ArrayList<>();
+            if (work_status == 2) {
+                or.andWork_statusIn(Arrays.asList(2,4));
+            }
+            if (work_status == 4) {
+                or.andStatus_activeEqualTo(status_active);
+            }
+            if (status_active == 3) {
+                or.andStatus_activeEqualTo(status_active)
+                        .andWork_statusEqualTo(2);
+                or1.andWork_statusIsNull()
+                        .andStatus_activeEqualTo(status_active)
+                        .andStudent_idEqualTo(student_id);
+                serviceunitPeople1 = serviceunitPersonService.selectByExample(serviceunitPersonExample1);
+            }
+            or.andStudent_idEqualTo(student_id);
+            List<ServiceunitPerson> serviceUnitPersons = serviceunitPersonService.selectByExample(serviceunitPersonExample);
+            if (status_active == 3) {
+                serviceUnitPersons.addAll(serviceunitPeople1);
+            }
+            if (serviceUnitPersons.size() == 0) {
+                return 0;
+            }
+            set = new HashSet<Long>();
+            for (ServiceunitPerson snp : serviceUnitPersons) {
+                if (snp != null)
+                    set.add(snp.getServiceunit_id());
+            }
+            if (work_status == 0 && !is_day) {
+                return serviceUnitPersons.size();
+            }
+            Calendar instance = Calendar.getInstance();
+            for (Long serviceunit_id : set) {
+                ServiceUnit serviceUnit = serviceUnitService.selectByPrimaryKey(serviceunit_id);
+                SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM");
+                SimpleDateFormat sdh = new SimpleDateFormat("yyyy-MM-dd");
+                if (serviceUnit != null) {
+                    if (serviceUnit.getWork_2_datetime() != null) {
+                        if (is_day) {
+                            String c_begin_time_sdh = sdh.format(serviceUnit.getWork_2_datetime());
+                            String local_date_sdh = sdh.format(new Date());
+                            if (c_begin_time_sdh.equals(local_date_sdh)) {
+                                instance.setTime(sd.parse(local_date_sdh));
+                                int day_local = instance.get(Calendar.DAY_OF_MONTH) + 1;//当前时间 /天
+                                instance.setTime(sd.parse(c_begin_time_sdh));
+                                int day_service = instance.get(Calendar.DAY_OF_MONTH) + 1;//服务时间 /天
+                                if (day_local == day_service)
+                                    serviceUnits.add(serviceUnit);
+                            }
+                        } else {
+                            String c_begin_time = sd.format(serviceUnit.getWork_2_datetime());
+                            String local_date = sd.format(new Date());
+                            if (local_date.equals(c_begin_time)) {
+                                instance.setTime(sd.parse(local_date));
+                                int month_local = instance.get(Calendar.MONTH) + 1;//当前时间 /月
+                                instance.setTime(sd.parse(c_begin_time));
+                                int month_service = instance.get(Calendar.MONTH) + 1;//服务时间 /月
+                                if (month_local == month_service) {
+                                    serviceUnits.add(serviceUnit);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.error("error api-method : getServiceUnitPersons", e);
+        }
+        return serviceUnits.size();
+    }
 
 
 	/**
