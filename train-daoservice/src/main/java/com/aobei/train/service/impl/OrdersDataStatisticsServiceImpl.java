@@ -91,7 +91,7 @@ public class OrdersDataStatisticsServiceImpl implements OrdersDataStatisticsServ
             dataSet.put(n.getDateStr(),n.getNum());
         });
         while (startLocalDateTime.isBefore(endLocalDateTime)) {
-            String key = startLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            String key = startLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM月"));
             if (!dataSet.containsKey(key)) {
                 dataSet.put(key,0l);
             }
@@ -196,6 +196,11 @@ public class OrdersDataStatisticsServiceImpl implements OrdersDataStatisticsServ
     @Override
     public List<DataResultSet> getOrdersNumMap(Date startDateTime, Date endDateTime) {
         return ordersDataStatisticsMapper.getOrdersNumMap(startDateTime,endDateTime);
+    }
+
+    @Override
+    public Long getOrdersGmvByClient(Date startDateTime, Date endDateTime, String client) {
+        return ordersDataStatisticsMapper.getOrdersGmvByClient(startDateTime,endDateTime,client);
     }
 
     public List<OrdersStatisticsData> dataPackaging(Map<String, Long> gmvMap,

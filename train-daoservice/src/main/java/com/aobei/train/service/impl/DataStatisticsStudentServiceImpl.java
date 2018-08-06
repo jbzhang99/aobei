@@ -97,7 +97,7 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
         Map<String, Long> map = list.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
         int i = 0;
         while (startLocalDateTime.isBefore(endLocalDateTime)) {
-            String key = startLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            String key = startLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM月"));
             if (!map.containsKey(key)) {
                 // 补充空位日期
                 DataStatisticsCustomData temp = new DataStatisticsCustomData();
@@ -118,7 +118,7 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
      * @return
      */
     @Override
-    public List<PurchaseStudentStatisticsData> purchaseCustomStatisticsDataWithDay(Date startDate, Date endDate) {
+    public List<PurchaseStudentStatisticsData> purchaseStudentStatisticsDataWithDay(Date startDate, Date endDate) {
         //服务人员总数
         List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithDay(startDate, endDate);
 
@@ -147,7 +147,7 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
      * @return
      */
     @Override
-    public List<PurchaseStudentStatisticsData> purchaseCustomStatisticsDataWithWeek(Date startDate, Date endDate) {
+    public List<PurchaseStudentStatisticsData> purchaseStudentStatisticsDataWithWeek(Date startDate, Date endDate) {
         //服务人员总数
         List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithWeek(startDate, endDate);
         //服务单总数
@@ -170,7 +170,7 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
      * 按月 数据表格数据  每一列数据进行封装
      */
     @Override
-    public List<PurchaseStudentStatisticsData> purchaseCustomStatisticsDataWithMonth(Date startDate, Date endDate) {
+    public List<PurchaseStudentStatisticsData> purchaseStudentStatisticsDataWithMonth(Date startDate, Date endDate) {
         //服务人员总数
         List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithMonth(startDate, endDate);
         //服务单总数

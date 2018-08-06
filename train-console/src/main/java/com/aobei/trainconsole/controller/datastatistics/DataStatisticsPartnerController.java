@@ -1,7 +1,21 @@
 package com.aobei.trainconsole.controller.datastatistics;
 
+import com.aobei.train.model.DataStatisticsSinglePartnerData;
+import com.aobei.train.service.DataStatisticsCustomService;
 import com.aobei.train.service.DataStatisticsPartnerService;
 import com.aobei.train.service.bean.PurchasePartnerStatisticsData;
+import org.apache.poi.hpsf.DocumentSummaryInformation;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.CellReference;
+import org.apache.poi.hssf.util.HSSFCellUtil;
+import org.apache.poi.ss.util.CellUtil;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import custom.bean.DataStatisticsCustomData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -10,8 +24,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.Date;
 import java.util.List;
 
@@ -84,8 +103,8 @@ public class DataStatisticsPartnerController {
      * @param endDate
      * @return
      */
-   /* @GetMapping(value = "/downCustomRegData", produces = "application/vnd.ms-excel; charset=utf-8")
-    public void downCustomRegData(
+    @GetMapping(value = "/downPartnerRegData", produces = "application/vnd.ms-excel; charset=utf-8")
+    public void downPartnerRegData(
             HttpServletResponse response,
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
@@ -99,21 +118,21 @@ public class DataStatisticsPartnerController {
                         "按月%s至%s",
                         LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")),
                         LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")));
-                list = dataStatisticsCustomService.incrementingRegStatisticsWithMonth(startDate, endDate);
+                list = dataStatisticsPartnerService.incrementingRegStatisticsWithMonth(startDate, endDate);
                 break;
             case 2:
                 subTitle = String.format(
                         "按周%s至%s",
                         LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-ww周")),
                         LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-ww周")));
-                list = dataStatisticsCustomService.incrementingRegStatisticsWithWeek(startDate, endDate);
+                list = dataStatisticsPartnerService.incrementingRegStatisticsWithWeek(startDate, endDate);
                 break;
             default:
                 subTitle = String.format(
                         "按日%s至%s",
                         LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                         LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                list = dataStatisticsCustomService.incrementingRegStatisticsWithDay(startDate, endDate);
+                list = dataStatisticsPartnerService.incrementingRegStatisticsWithDay(startDate, endDate);
                 break;
         }
 
@@ -124,7 +143,7 @@ public class DataStatisticsPartnerController {
         HSSFCellUtil.createCell(row0, 0, "日期");
 
         HSSFRow row1 = HSSFCellUtil.getRow(1, sheet);
-        HSSFCellUtil.createCell(row1, 0, "顾客数");
+        HSSFCellUtil.createCell(row1, 0, "合伙人数");
 
         int i = 1;
         for (DataStatisticsCustomData dscd : list) {
@@ -133,11 +152,11 @@ public class DataStatisticsPartnerController {
             sheet.autoSizeColumn(i);
             i++;
         }
-        String fileName = "顾客相关数据导出" + subTitle + ".xls";
+        String fileName = "合伙人相关数据导出" + subTitle + ".xls";
         response.setHeader("Content-Disposition", "attachment;fileName=" + URLEncoder.encode(fileName, "UTF-8"));
         workbook.write(response.getOutputStream());
 
-    }*/
+    }
 
     /**
      * 加载 用户表格中数据
@@ -172,14 +191,14 @@ public class DataStatisticsPartnerController {
      * @param endDate
      * @return
      */
-   /* @GetMapping(value = "/downCustomTableData", produces = "application/vnd.ms-excel; charset=utf-8")
-    public void downCustomTableData(
+    @GetMapping(value = "/downPartnerTableData", produces = "application/vnd.ms-excel; charset=utf-8")
+    public void downPartnerTableData(
             HttpServletResponse response,
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) throws IOException {
         endDate = endDateBoundary(endDate);
-        List<PurchaseCustomStatisticsData> list;
+        List<PurchasePartnerStatisticsData> list;
         String subTitle;
         switch (type) {
             case 3:
@@ -187,78 +206,120 @@ public class DataStatisticsPartnerController {
                         "按月%s至%s",
                         LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")),
                         LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")));
-                list = dataStatisticsCustomService.purchaseCustomStatisticsDataWithMonth(startDate, endDate);
+                list = dataStatisticsPartnerService.purchasePartnerStatisticsDataWithMonth(startDate, endDate);
                 break;
             case 2:
                 subTitle = String.format(
                         "按周%s至%s",
                         LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-ww周")),
                         LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-ww周")));
-                list = dataStatisticsCustomService.purchaseCustomStatisticsDataWithWeek(startDate, endDate);
+                list = dataStatisticsPartnerService.purchasePartnerStatisticsDataWithWeek(startDate, endDate);
                 break;
             default:
                 subTitle = String.format(
                         "按日%s至%s",
                         LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                         LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                list = dataStatisticsCustomService.purchaseCustomStatisticsDataWithDay(startDate, endDate);
+                list = dataStatisticsPartnerService.purchasePartnerStatisticsDataWithDay(startDate, endDate);
                 break;
         }
 
-        HSSFWorkbook workbook = new HSSFWorkbook();
-        String[] columnTitles = {"日期", "顾客总数", "产生消费的\n顾客总数", "产生复购的\n顾客总数", "复购率", "各端顾客数(小程序)", "各端顾客数(安卓)", "各端顾客数(IOS)", "各端顾客数(H5)"};
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        List<String> columnTitles =new ArrayList<>();
+        columnTitles.add("日期");
+        columnTitles.add("合伙人总数");
+        columnTitles.add("派单总数");
+        columnTitles.add("拒单总数");
+        columnTitles.add("接单率");
+        int s=0;
+        List<String> longList=new ArrayList<>();
 
-        HSSFSheet sheet = workbook.createSheet(subTitle);
-        HSSFRow row0 = HSSFCellUtil.getRow(0, sheet);
-        for (int i = 0; i < columnTitles.length; i++) {
-            HSSFCellUtil.createCell(row0, i, columnTitles[i]);
+        for (PurchasePartnerStatisticsData dscd : list) {
+            List<DataStatisticsSinglePartnerData> dscdList = dscd.getList();
+            if(s==0){
+                dscdList.stream().forEach(dd ->{
+                    columnTitles.add(dd.getName()+"派单数");
+                    columnTitles.add(dd.getName()+"拒单数");
+                    columnTitles.add(dd.getName()+"接单率");
+                });
+            }
+            s++;
+        }
+        XSSFSheet sheet = workbook.createSheet(subTitle);
+        XSSFRow row = sheet.createRow(0);
+        for (int i = 0; i < columnTitles.size(); i++) {
+            row.createCell(i).setCellValue(columnTitles.get(i)+"");
+            if(i>4){
+                longList.add("0");
+            }
         }
 
         int n = 1;
         long sumPurchaseTotalCustomNum = 0;
         long sumRePurchaseTotalCustomNum = 0;
-        for (PurchaseCustomStatisticsData dscd : list) {
-            HSSFRow row = HSSFCellUtil.getRow(n++, sheet);
-            HSSFCellUtil.createCell(row, 0, dscd.getDateStr());
-            HSSFCellUtil.getCell(row, 1).setCellValue(dscd.getTotalCustomNum());
-            HSSFCellUtil.getCell(row, 2).setCellValue(dscd.getPurchaseTotalCustomNum());
-            HSSFCellUtil.getCell(row, 3).setCellValue(dscd.getRePurchaseTotalCustomNum());
-            HSSFCellUtil.createCell(row, 4, dscd.getPurchasePercent() + "%");
-            HSSFCellUtil.getCell(row, 5).setCellValue(dscd.getClientNumMap().get("wx_m_custom"));
-            HSSFCellUtil.getCell(row, 6).setCellValue(dscd.getClientNumMap().get("a_custom"));
-            HSSFCellUtil.getCell(row, 7).setCellValue(dscd.getClientNumMap().get("i_custom"));
-            HSSFCellUtil.getCell(row, 8).setCellValue(dscd.getClientNumMap().get("h5_custom"));
-            sumPurchaseTotalCustomNum += dscd.getPurchaseTotalCustomNum();
-            sumRePurchaseTotalCustomNum += dscd.getRePurchaseTotalCustomNum();
+        for (PurchasePartnerStatisticsData dscd : list) {
+            List<DataStatisticsSinglePartnerData> dscdList = dscd.getList();
+
+            XSSFRow rows = sheet.createRow(n++);
+            rows.createCell(0).setCellValue(dscd.getDateStr());
+            rows.createCell(1).setCellValue(dscd.getTotalCustomNum());
+            rows.createCell(2).setCellValue(dscd.getSendOrdersTotalNum());
+            rows.createCell(3).setCellValue(dscd.getSingleOrdersTotalNum());
+            rows.createCell(4).setCellValue(dscd.getOrderRate() + "%");
+            int num=0;
+            for(int i=0;i<dscdList.size()*3;i+=3){
+                longList.set(i,(Integer.parseInt(longList.get(i))+(int)(long)dscdList.get(num).getSendNum())+"");
+                longList.set(i+1,(Integer.parseInt(longList.get(i+1))+(int)(long)dscdList.get(num).getSingleNum())+"");
+                rows.createCell(4+i+1).setCellValue(dscdList.get(num).getSendNum()+"");
+                rows.createCell(4+(i+1)+1).setCellValue(dscdList.get(num).getSingleNum()+"");
+                rows.createCell(4+(i+2)+1).setCellValue(dscdList.get(num).getOrderRate()+"%");
+                num++;
+            }
+            sumPurchaseTotalCustomNum += dscd.getSendOrdersTotalNum();
+            sumRePurchaseTotalCustomNum += dscd.getSingleOrdersTotalNum();
         }
 
         // 最后一行数据
-        HSSFRow rowLast = HSSFCellUtil.getRow(n, sheet);
-        for (int i = 0; i < columnTitles.length; i++) {
-            if (n > 1) {
-                HSSFCell cell = HSSFCellUtil.getCell(rowLast, i);
-                if (i == 0) {
+        XSSFRow rowLast = sheet.createRow(n);
+        int colNum=0;
+        for (int i = 0; i < columnTitles.size(); i++) {
+            if(n>1){
+                XSSFCell cell = rowLast.createCell(i);
+                if(i==0) {
                     cell.setCellValue("合计");
-                } else if (i == 4) { // 复购率
+                }else  if (i == 4){//接单率
                     if (sumRePurchaseTotalCustomNum > 0) {
                         cell.setCellValue(Math.round((sumRePurchaseTotalCustomNum * 1.00 / sumPurchaseTotalCustomNum * 1.00) * 100) + "%");
                     } else {
                         cell.setCellValue("0%");
                     }
-                } else {
+                }else if(i>4){
+                    //for (int j = 0; j < longList.size(); j+=3) {
+
+                        rowLast.getCell(i).setCellValue(longList.get(colNum));
+                        rowLast.createCell(i+1).setCellValue(longList.get(colNum+1));
+                        if(Integer.parseInt(longList.get(colNum))==0){
+                            rowLast.createCell(i+2).setCellValue("0%");
+                        }else{
+                            rowLast.createCell(i+2).setCellValue(Math.round((Integer.parseInt(longList.get(colNum)) * 1.00 / (Integer.parseInt(longList.get(colNum))+Integer.parseInt(longList.get(colNum+1))) * 1.00) * 100) + "%");
+                        }
+                    //}
+                    i=i+2;
+                    colNum+=3;
+                } else{
                     String colString = CellReference.convertNumToColString(i);
                     cell.setCellFormula(String.format("SUM(%s%d:%s%d)", colString, 2, colString, n));
                 }
+
             }
-            sheet.autoSizeColumn(i);
         }
 
-        String fileName = "顾客相关数据表格导出" + subTitle + ".xls";
+
+        String fileName = "合伙人相关数据表格导出" + subTitle + ".xls";
         response.setHeader("Content-Disposition", "attachment;fileName=" + URLEncoder.encode(fileName, "UTF-8"));
         workbook.write(response.getOutputStream());
 
     }
-*/
 
     /**
      * 加载 用户地图数据
@@ -294,25 +355,25 @@ public class DataStatisticsPartnerController {
      * @param endDate
      * @return
      */
-   /* @GetMapping(value = "/downCustomMapData", produces = "application/vnd.ms-excel; charset=utf-8")
+    @GetMapping(value = "/downPartnerMapData", produces = "application/vnd.ms-excel; charset=utf-8")
     @ResponseBody
-    public void downCustomMapData(
+    public void downPartnerMapData(
             HttpServletResponse response,
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) throws IOException {
         endDate = endDateBoundary(endDate);
         // 暂定用户注册数据都为北京
-        List<DataStatisticsCustomData> list = dataStatisticsCustomService.incrementingRegStatisticsWithMonth(startDate, endDate);
+        List<DataStatisticsCustomData> list = dataStatisticsPartnerService.incrementingRegStatisticsWithMonth(startDate, endDate);
         long sum = list.stream().mapToLong(n -> n.getNum()).sum();
         Map<String, Long> map = new LinkedHashMap<>();
         map.put("北京", sum);
 
         HSSFWorkbook workbook = new HSSFWorkbook();
         DocumentSummaryInformation dsi = workbook.getDocumentSummaryInformation();
-        String[] columnTitles = {"区域", "顾客数"};
+        String[] columnTitles = {"区域", "合伙人数"};
 
-        HSSFSheet sheet = workbook.createSheet("区域顾客数");
+        HSSFSheet sheet = workbook.createSheet("区域合伙人数");
         HSSFRow row0 = HSSFCellUtil.getRow(0, sheet);
         for (int i = 0; i < columnTitles.length; i++) {
             HSSFCellUtil.createCell(row0, i, columnTitles[i]);
@@ -332,10 +393,9 @@ public class DataStatisticsPartnerController {
                 "%s至%s",
                 LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                 LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        String fileName = "地域顾客数导出" + subTitle + ".xls";
+        String fileName = "地域合伙人数导出" + subTitle + ".xls";
         response.setHeader("Content-Disposition", "attachment;fileName=" + URLEncoder.encode(fileName, "UTF-8"));
         workbook.write(response.getOutputStream());
     }
-*/
 
 }

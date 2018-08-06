@@ -2,7 +2,7 @@
 <html layout:decorate="~{base_layout}">
 <head>
     <meta charset="UTF-8"></meta>
-    <title>顾客数据统计</title>
+    <title>合伙人数据统计</title>
     <link th:href="@{/js/jquery-date-range-picker/daterangepicker.min.css}" rel="stylesheet"/>
     <style type="text/css">
         .inputDate {
@@ -244,22 +244,22 @@
 
         $(function () {
             // 下载柱状图用户数据
-            /*$('#customDataDownload').click(function () {
-                var downUrl = [[@{/data_statistics/custom/downCustomRegData}]];
+            $('#downPartnerRegData').click(function () {
+                var downUrl = [[@{/data_statistics/partner/downPartnerRegData}]];
                 window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
-            });*/
+            });
 
             // 下载中间表格数据
-           /* $('#customTableDataDownload').click(function () {
-                var downUrl = [[@{/data_statistics/custom/downCustomTableData}]];
-                window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
-            });*/
 
-            // 下载地图数据
-           /* $('#customMapDataDownload').click(function () {
-                var downUrl = [[@{/data_statistics/custom/downCustomMapData}]];
+            $('#downPartnerTableData').click(function () {
+                var downUrl = [[@{/data_statistics/partner/downPartnerTableData}]];
                 window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
-            });*/
+            });
+            // 下载地图数据
+            $('#downPartnerMapData').click(function () {
+                var downUrl = [[@{/data_statistics/partner/downPartnerMapData}]];
+                window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
+            });
 
         });
 
@@ -364,8 +364,13 @@
             $('#customTableBox table tbody').empty();
             $.getJSON([[@{/data_statistics/partner/loadCustomTableData}]], requestData, function (data) {
                 var html_1 = [];
-                //var html_2 = [];
+                var html_2 = [];
+                var html_3 = [];
+                var html_4 = [];
+                var html_5=[];
                 var total = [0, 0, 0, 0, 0];
+                html_4.push('<tr>');
+
                 $.each(data, function (i, n) {
                     html_1.push('<tr class="trData">');
                     html_1.push('<td>' + n.dateStr + '</td>');
@@ -375,25 +380,32 @@
                     html_1.push('<td>' + n.orderRate + '%</td>');
                     html_1.push('</tr>');
 
-                    /*html_2.push('<tr class="trData">');
-                    html_2.push('<td>' + n.clientNumMap['wx_m_custom'] + '</td>');
-                    html_2.push('<td>' + n.clientNumMap['a_custom'] + '</td>');
-                    html_2.push('<td>' + n.clientNumMap['i_custom'] + '</td>');
-                    html_2.push('<td>' + n.clientNumMap['h5_custom'] + '</td>');
-                    html_1.push('</tr>');*/
-
                     total = [
                         total[0] + parseInt(n.totalCustomNum),
                         total[1] + parseInt(n.sendOrdersTotalNum),
                         total[2] + parseInt(n.singleOrdersTotalNum),
-                        total[3] + parseInt(n.orderRate),
-                        /*total[4] + parseInt(n.clientNumMap['wx_m_custom']),
-                        total[5] + parseInt(n.clientNumMap['a_custom']),
-                        total[6] + parseInt(n.clientNumMap['i_custom']),
-                        total[7] + parseInt(n.clientNumMap['h5_custom'])*/];
+                        total[3] + parseInt(n.orderRate)]
+                    html_3.push('<tr class="trData">');
+                    n.list.forEach(function (p) {
+                        html_2.push('<th style="width: 300px;"colspan="3" class="text-center">' + p.name + '</th>');
+                        html_4.push('<td style="width: 100px;">派单数</td>');
+                        html_4.push('<td style="width: 100px;">拒单数</td>');
+                        html_4.push('<td style="width: 100px;">接单率</td>');
 
+                        html_3.push('<td style="width: 100px;">' + p.sendNum + '</td>');
+                        html_3.push('<td style="width: 100px;">' + p.singleNum + '</td>');
+                        html_3.push('<td style="width: 100px;">' + p.orderRate + '%</td>');
 
+                    })
+                    html_3.push('</tr>');
+                    if(i==0){
+                        $('#customTableBox table:eq(1) thead tr').html(html_2.join(' '));
+                        html_4.push('</tr>');
+                        $('#customTableBox table:eq(1) tbody').html(html_4.join(' '));
+
+                    }
                 });
+
                 html_1.push('<tr class="trTotalValue">');
                 html_1.push('<td>合计</td>');
                 html_1.push('<td class="red">' + total[0] + '</td>');
@@ -404,22 +416,49 @@
                 } else {
                     html_1.push('<td class="red">0%</td>');
                 }
-                html_1.push('</tr>');
 
-               /* html_2.push('<tr class="trTotalValue">');
-                html_2.push('<td>' + total[4] + '</td>');
-                html_2.push('<td>' + total[5] + '</td>');
-                html_2.push('<td>' + total[6] + '</td>');
-                html_2.push('<td>' + total[7] + '</td>');
-                html_2.push('</tr>');*/
-                $('#customTableBox table:eq(0) tbody').html(html_1.join(''));
-                //$('#customTableBox table:eq(1) tbody').html(html_2.join(''));
+                $('#customTableBox table:eq(0) tbody').html(html_1.join(' '));
+                $('#customTableBox table:eq(1) tbody').append(html_3.join(' '));
+                var summation=returnTdValue();
+                html_5.push("<tr class='trTotalValue'>");
+                for(var i=0;i<summation.length;i++){
+                    html_5.push('<td class="red">' +summation[i] + '</td>');
+                }
+                html_5.push("</tr>");
+                $('#customTableBox table:eq(1) tbody').append(html_5.join(' '));
                 window.TABLEPAGE.p = 1;
                 window.TABLEPAGE.total = data.length;
                 tablePageData(window.TABLEPAGE);
             });
         }
+        function getTdValue()
+        {
+            var lie = $("#tab tbody").find("tr:eq(0)").find("td").length;
+            var list=[];
+            for(var i=lie;i>0;i--){
+                list.push(0);
+            }
+            $("#tab tbody tr:gt(0)").each(function(x,n){
+                for(var j=0;j<lie;j++){
+                    var text = parseInt($(n).children("td:eq("+j+")").text());
+                    list[j]=list[j]+text;
+                }
+            })
 
+            return list;
+        }
+
+        function returnTdValue() {
+            var list=getTdValue();
+            for(var i=0;i<list.length;i+=3){
+                if((list[i]+list[i+1])==0){
+                    list[i+2]='0%';
+                }else{
+                    list[i+2]=(list[i]/(list[i]+list[i+1])* 100).toFixed(0) + '%';
+                }
+            }
+            return list;
+        }
 
         /**
          *  加载地图数据
@@ -516,7 +555,7 @@
     </div>
 
     <!--/* 页面部分二              页面主内容  */-->
-    <div class="page_content_main" data-sidea="side_63">
+    <div class="page_content_main" data-sidea="side_64">
         <!-- 日期选择控件  -->
         <div style="padding: 0px 10px 10px 10px;">
             <div class="btn-group" role="group" aria-label="..." style="margin-right: 80px" id="btnGroups">
@@ -548,7 +587,7 @@
                     合伙人相关数据图表
                     <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
                        style="margin-left: 20px"></i>
-                    <i id="customDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+                    <i id="downPartnerRegData" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
                 </div>
                 <div class="panel-body">
                     <div id="customDaySumChart" style="height:400px;"></div>
@@ -561,42 +600,35 @@
                      合伙人相关数据表格
                      <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
                         style="margin-left: 20px"></i>
-                     <i id="customTableDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+                     <i id="downPartnerTableData" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
                  </div>
                  <div class="panel-body">
                      <div id="customTableBox" style="height:300px;overflow-y: auto">
-                         <div class="col-sm-7 col-xs-12">
+                         <div class="col-sm-6 col-xs-12">
                              <table class="table table-bordered table-striped text-center">
-                                 <thead>
-                                 <th class="text-center">日期</th>
-                                 <th class="text-center">合伙人总数</th>
-                                 <th class="text-center">派单总数</th>
-                                 <th class="text-center">拒单总数</th>
-                                 <th class="text-center">接单率</th>
+                                 <thead >
+                                     <th style="height: 155px;" class="text-center">日期</th>
+                                     <th style="height: 155px;" class="text-center">合伙人总数</th>
+                                     <th style="height: 155px;" class="text-center">派单总数</th>
+                                     <th style="height: 155px;" class="text-center">拒单总数</th>
+                                     <th style="height: 155px;" class="text-center">接单率</th>
                                  </thead>
                                  <tbody>
                                  </tbody>
                              </table>
 
                          </div>
-                         <!--<div class="col-sm-5 col-xs-12">
-                             <table class="table table-bordered table-striped text-center">
+                         <div class="col-sm-6 col-xs-12" style="overflow-y: auto">
+                             <table class="table table-bordered table-striped text-center" id="tab">
                                  <thead>
-                                 <tr>
-                                     <th colspan="4" class="text-center" style="padding:4px">各端顾客数</th>
-                                 </tr>
-                                 <tr>
-                                     <th class="text-center" style="padding:3px">小程序</th>
-                                     <th class="text-center" style="padding:3px">安卓</th>
-                                     <th class="text-center" style="padding:3px">IOS</th>
-                                     <th class="text-center" style="padding:3px">H5</th>
-                                 </tr>
+                                    <tr></tr>
                                  </thead>
                                  <tbody>
+
                                  </tbody>
                              </table>
 
-                         </div>-->
+                         </div>
                      </div>
                  </div>
                  <div class="panel-footer clearfix" style="padding: 5px">
@@ -622,7 +654,7 @@
                      数据地图
                      <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
                         style="margin-left: 20px"></i>
-                     <i id="customMapDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+                     <i id="downPartnerMapData" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
                  </div>
                  <div class="panel-body">
                      <div id="customMapBox">

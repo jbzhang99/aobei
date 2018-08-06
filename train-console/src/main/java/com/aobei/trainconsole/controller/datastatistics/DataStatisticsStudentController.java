@@ -79,7 +79,7 @@ public class DataStatisticsStudentController {
      */
     @GetMapping("/loadStudentRegData")
     @ResponseBody
-    public List<DataStatisticsCustomData> loadCustomRegData(
+    public List<DataStatisticsCustomData> loadStudentRegData(
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
@@ -102,8 +102,8 @@ public class DataStatisticsStudentController {
      * @param endDate
      * @return
      */
-    @GetMapping(value = "/downCustomRegData", produces = "application/vnd.ms-excel; charset=utf-8")
-    public void downCustomRegData(
+    @GetMapping(value = "/downStudentRegData", produces = "application/vnd.ms-excel; charset=utf-8")
+    public void downStudentRegData(
             HttpServletResponse response,
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
@@ -165,20 +165,20 @@ public class DataStatisticsStudentController {
      * @param endDate
      * @return
      */
-    @GetMapping("/loadCustomTableData")
+    @GetMapping("/loadStudentTableData")
     @ResponseBody
-    public List<PurchaseStudentStatisticsData> loadCustomTableData(
+    public List<PurchaseStudentStatisticsData> loadStudentTableData(
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
         endDate = endDateBoundary(endDate);
         switch (type) {
             case 3:
-                return dataStatisticsStudentService.purchaseCustomStatisticsDataWithMonth(startDate, endDate);
+                return dataStatisticsStudentService.purchaseStudentStatisticsDataWithMonth(startDate, endDate);
             case 2:
-                return dataStatisticsStudentService.purchaseCustomStatisticsDataWithWeek(startDate, endDate);
+                return dataStatisticsStudentService.purchaseStudentStatisticsDataWithWeek(startDate, endDate);
             default:
-                return dataStatisticsStudentService.purchaseCustomStatisticsDataWithDay(startDate, endDate);
+                return dataStatisticsStudentService.purchaseStudentStatisticsDataWithDay(startDate, endDate);
         }
     }
 
@@ -190,8 +190,8 @@ public class DataStatisticsStudentController {
      * @param endDate
      * @return
      */
-    @GetMapping(value = "/downCustomTableData", produces = "application/vnd.ms-excel; charset=utf-8")
-    public void downCustomTableData(
+    @GetMapping(value = "/downStudentTableData", produces = "application/vnd.ms-excel; charset=utf-8")
+    public void downStudentTableData(
             HttpServletResponse response,
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
@@ -205,21 +205,21 @@ public class DataStatisticsStudentController {
                         "按月%s至%s",
                         LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")),
                         LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM")));
-                list = dataStatisticsStudentService.purchaseCustomStatisticsDataWithMonth(startDate, endDate);
+                list = dataStatisticsStudentService.purchaseStudentStatisticsDataWithMonth(startDate, endDate);
                 break;
             case 2:
                 subTitle = String.format(
                         "按周%s至%s",
                         LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-ww周")),
                         LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-ww周")));
-                list = dataStatisticsStudentService.purchaseCustomStatisticsDataWithWeek(startDate, endDate);
+                list = dataStatisticsStudentService.purchaseStudentStatisticsDataWithWeek(startDate, endDate);
                 break;
             default:
                 subTitle = String.format(
                         "按日%s至%s",
                         LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                         LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                list = dataStatisticsStudentService.purchaseCustomStatisticsDataWithDay(startDate, endDate);
+                list = dataStatisticsStudentService.purchaseStudentStatisticsDataWithDay(startDate, endDate);
                 break;
         }
 
@@ -274,9 +274,9 @@ public class DataStatisticsStudentController {
      * @param endDate
      * @return
      */
-    @GetMapping("/loadCustomMapData")
+    @GetMapping("/loadStudentMapData")
     @ResponseBody
-    public List<DataStatisticsCustomData> loadCustomMapData(
+    public List<DataStatisticsCustomData> loadStudentMapData(
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
@@ -300,9 +300,9 @@ public class DataStatisticsStudentController {
      * @param endDate
      * @return
      */
-    @GetMapping(value = "/downCustomMapData", produces = "application/vnd.ms-excel; charset=utf-8")
+    @GetMapping(value = "/downStudentMapData", produces = "application/vnd.ms-excel; charset=utf-8")
     @ResponseBody
-    public void downCustomMapData(
+    public void downStudentMapData(
             HttpServletResponse response,
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,

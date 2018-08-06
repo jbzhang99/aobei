@@ -18,30 +18,17 @@ import java.util.stream.Collectors;
 public class DataStatisticsPartnerServiceImpl implements DataStatisticsPartnerService {
 
     @Autowired
-    private DataStatisticsCustomMapper dataStatisticsCustomMapper;
-
-    @Autowired
     private DataStatisticsPartnerMapper dataStatisticsPartnerMapper;
-
-    @Autowired
-    private CustomerMapper customerMapper;
-
-    @Autowired
-    private OrderMapper orderMapper;
 
     @Autowired
     private PartnerMapper partnerMapper;
 
-    private static final String[] CUSTOM_CLIENTS = {"wx_m_custom", "a_custom", "i_custom", "h5_custom"};
 
     @Override
     public List<DataStatisticsCustomData> incrementingRegStatisticsWithDay(Date startDate, Date endDate) {
-        //CustomerExample customerExample = new CustomerExample();
-        //customerExample.or().andCreate_datetimeLessThan(startDate);
         PartnerExample partnerExample=new PartnerExample();
         partnerExample.or().andCdateLessThan(startDate);
         List<DataStatisticsCustomData> list=dataStatisticsPartnerMapper.regStatisticsWithDay(startDate, endDate);
-        //List<DataStatisticsCustomData> list = dataStatisticsCustomMapper.regStatisticsWithDay(startDate, endDate);
         LocalDateTime startLocalDateTime = LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault());
         LocalDateTime endLocalDateTime = LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault());
         Map<String, Long> map = list.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
@@ -102,7 +89,7 @@ public class DataStatisticsPartnerServiceImpl implements DataStatisticsPartnerSe
         Map<String, Long> map = list.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
         int i = 0;
         while (startLocalDateTime.isBefore(endLocalDateTime)) {
-            String key = startLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            String key = startLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM月"));
             if (!map.containsKey(key)) {
                 // 补充空位日期
                 DataStatisticsCustomData temp = new DataStatisticsCustomData();
@@ -125,21 +112,26 @@ public class DataStatisticsPartnerServiceImpl implements DataStatisticsPartnerSe
         //合伙人拒单数
         List<DataStatisticsCustomData> listData2 = dataStatisticsPartnerMapper.singleOrdersPartnerStatisticsWithDay(startDate, endDate);
 
+        //所有合伙人
+        List<Partner> partners = this.partnerMapper.selectByExample(new PartnerExample());
+
         //每个合伙人的派单数
-        List<DataStatisticsSinglePartnerData> sendList = dataStatisticsPartnerMapper.oneSendOrdersPartnerStatisticsWithDay(startDate, endDate);
+        List<DataStatisticsCustomData> sendList = dataStatisticsPartnerMapper.oneSendOrdersPartnerStatisticsWithDay(startDate, endDate);
         //每个合伙人的拒单数
-        List<DataStatisticsSinglePartnerData> singleList = dataStatisticsPartnerMapper.oneSingleOrdersPartnerStatisticsWithDay(startDate, endDate);
+        List<DataStatisticsCustomData> singleList = dataStatisticsPartnerMapper.oneSingleOrdersPartnerStatisticsWithDay(startDate, endDate);
+
+        Map<String, Long> sendMap = sendList.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
+        Map<String, Long> singleMap = singleList.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
 
         Map<String, Long> map1 = listData1.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
         Map<String, Long> map2 = listData2.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
-        //Map<String, Long> map3 = listData3.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
 
         List<PurchasePartnerStatisticsData> list = new ArrayList<>();
         for (DataStatisticsCustomData item : listData0) {
             PurchasePartnerStatisticsData pcsdObj=new PurchasePartnerStatisticsData();
             pcsdObj.setDateStr(item.getDateStr());
             pcsdObj.setTotalCustomNum(item.getNum());
-
+            //封装左边数据
             long stepDate1 = map1.get(item.getDateStr()) == null ? 0L : map1.get(item.getDateStr());
             pcsdObj.setSendOrdersTotalNum(stepDate1);
             long stepDate2 = map2.get(item.getDateStr()) == null ? 0L : map2.get(item.getDateStr());
@@ -150,8 +142,36 @@ public class DataStatisticsPartnerServiceImpl implements DataStatisticsPartnerSe
                 String purchasePercent = String.valueOf(Math.round((stepDate1 * 1.00) / (stepDate1 +stepDate2) * 100)).replaceAll("\\.0+$", "");
                 pcsdObj.setOrderRate(purchasePercent);
             }
-
-
+            List<DataStatisticsSinglePartnerData> dpList=new ArrayList<>();
+            //封装右边数据
+            partners.stream().forEach(partner -> {
+                String dpKey=item.getDateStr()+" "+partner.getPartner_id();
+                DataStatisticsSinglePartnerData dp=new DataStatisticsSinglePartnerData();
+                dp.setDateStr(item.getDateStr());
+                dp.setId(partner.getPartner_id());
+                dp.setName(partner.getName());
+                //派单数
+                if(sendMap.containsKey(dpKey)){
+                    dp.setSendNum(sendMap.get(dpKey));
+                }else{
+                    dp.setSendNum(0L);
+                }
+                //拒单数
+                if(singleMap.containsKey(dpKey)){
+                    dp.setSingleNum(singleMap.get(dpKey));
+                }else{
+                    dp.setSingleNum(0L);
+                }
+                //接单率
+                if (dp.getSendNum()+dp.getSingleNum() == 0L) {
+                    dp.setOrderRate("0");
+                } else {
+                    String purchasePercent = String.valueOf(Math.round((dp.getSendNum() * 1.00) / (dp.getSendNum() + dp.getSingleNum()) * 100)).replaceAll("\\.0+$", "");
+                    dp.setOrderRate(purchasePercent);
+                }
+                dpList.add(dp);
+            });
+            pcsdObj.setList(dpList);
             list.add(pcsdObj);
         }
         return list;
@@ -159,82 +179,145 @@ public class DataStatisticsPartnerServiceImpl implements DataStatisticsPartnerSe
 
     @Override
     public List<PurchasePartnerStatisticsData> purchasePartnerStatisticsDataWithWeek(Date startDate, Date endDate) {
-       /* List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithWeek(startDate, endDate);
+        List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithWeek(startDate, endDate);
         //合伙人派单数
         List<DataStatisticsCustomData> listData1 = dataStatisticsPartnerMapper.sendOrdersPartnerStatisticsWithWeek(startDate, endDate);
         //合伙人拒单数
         List<DataStatisticsCustomData> listData2 = dataStatisticsPartnerMapper.singleOrdersPartnerStatisticsWithWeek(startDate, endDate);
+        //所有合伙人
+        List<Partner> partners = this.partnerMapper.selectByExample(new PartnerExample());
+        //每个合伙人的派单数
+        List<DataStatisticsCustomData> sendList = dataStatisticsPartnerMapper.oneSendOrdersPartnerStatisticsWithWeek(startDate, endDate);
+        //每个合伙人的拒单数
+        List<DataStatisticsCustomData> singleList = dataStatisticsPartnerMapper.oneSingleOrdersPartnerStatisticsWithWeek(startDate, endDate);
+
+        Map<String, Long> sendMap = sendList.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
+        Map<String, Long> singleMap = singleList.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
 
         Map<String, Long> map1 = listData1.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
         Map<String, Long> map2 = listData2.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
-        //<String, Long> map3 = listData3.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
 
-        List<PurchaseCustomStatisticsData> list = new ArrayList<>();
+        List<PurchasePartnerStatisticsData> list = new ArrayList<>();
         for (DataStatisticsCustomData item : listData0) {
-            PurchaseCustomStatisticsData pcsdObj = new PurchaseCustomStatisticsData();
+            PurchasePartnerStatisticsData pcsdObj=new PurchasePartnerStatisticsData();
             pcsdObj.setDateStr(item.getDateStr());
             pcsdObj.setTotalCustomNum(item.getNum());
+            //封装左边数据
             long stepDate1 = map1.get(item.getDateStr()) == null ? 0L : map1.get(item.getDateStr());
-            pcsdObj.setPurchaseTotalCustomNum(stepDate1);
+            pcsdObj.setSendOrdersTotalNum(stepDate1);
             long stepDate2 = map2.get(item.getDateStr()) == null ? 0L : map2.get(item.getDateStr());
-            pcsdObj.setRePurchaseTotalCustomNum(stepDate2);
+            pcsdObj.setSingleOrdersTotalNum(stepDate2);
             if (stepDate2 == 0L) {
-                pcsdObj.setPurchasePercent("0");
+                pcsdObj.setOrderRate("0");
             } else {
-                String purchasePercent = String.valueOf(Math.round((stepDate2 * 1.00) / (stepDate1 * 1.00) * 100)).replaceAll("\\.0+$", "");
-                pcsdObj.setPurchasePercent(purchasePercent);
+                String purchasePercent = String.valueOf(Math.round((stepDate1 * 1.00) / (stepDate1 +stepDate2) * 100)).replaceAll("\\.0+$", "");
+                pcsdObj.setOrderRate(purchasePercent);
             }
-           *//* Map<String, Long> clientNumMap = new LinkedHashMap<>();
-            for (String client : CUSTOM_CLIENTS) {
-                String key = pcsdObj.getDateStr() + " " + client;
-                clientNumMap.put(client, map3.containsKey(key) ? map3.get(key) : 0L);
-            }
-            pcsdObj.setClientNumMap(clientNumMap);*//*
+            List<DataStatisticsSinglePartnerData> dpList=new ArrayList<>();
+            //封装右边数据
+            partners.stream().forEach(partner -> {
+                String dpKey=item.getDateStr()+" "+partner.getPartner_id();
+                DataStatisticsSinglePartnerData dp=new DataStatisticsSinglePartnerData();
+                dp.setDateStr(item.getDateStr());
+                dp.setId(partner.getPartner_id());
+                dp.setName(partner.getName());
+                //派单数
+                if(sendMap.containsKey(dpKey)){
+                    dp.setSendNum(sendMap.get(dpKey));
+                }else{
+                    dp.setSendNum(0L);
+                }
+                //拒单数
+                if(singleMap.containsKey(dpKey)){
+                    dp.setSingleNum(singleMap.get(dpKey));
+                }else{
+                    dp.setSingleNum(0L);
+                }
+                //接单率
+                if (dp.getSendNum()+dp.getSingleNum() == 0L) {
+                    dp.setOrderRate("0");
+                } else {
+                    String purchasePercent = String.valueOf(Math.round((dp.getSendNum() * 1.00) / (dp.getSendNum() + dp.getSingleNum()) * 100)).replaceAll("\\.0+$", "");
+                    dp.setOrderRate(purchasePercent);
+                }
+                dpList.add(dp);
+            });
+            pcsdObj.setList(dpList);
             list.add(pcsdObj);
-        }*/
-        return null;
+        }
+        return list;
     }
 
     @Override
     public List<PurchasePartnerStatisticsData> purchasePartnerStatisticsDataWithMonth(Date startDate, Date endDate) {
-        /*List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithMonth(startDate, endDate);
+        List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithMonth(startDate, endDate);
 
         //合伙人派单数
         List<DataStatisticsCustomData> listData1 = dataStatisticsPartnerMapper.sendOrdersPartnerStatisticsWithMonth(startDate, endDate);
         //合伙人拒单数
         List<DataStatisticsCustomData> listData2 = dataStatisticsPartnerMapper.singleOrdersPartnerStatisticsWithMonth(startDate, endDate);
-        *//*List<DataStatisticsCustomData> listData1 = dataStatisticsCustomMapper.purchaseCustomStatisticsWithMonth(startDate, endDate);
-        List<DataStatisticsCustomData> listData2 = dataStatisticsCustomMapper.rePurchaseCustomStatisticsWithMonth(startDate, endDate);
-        List<DataStatisticsCustomData> listData3 = dataStatisticsCustomMapper.regClientStatisticsWithMonth(startDate, endDate);*//*
+        //所有合伙人
+        List<Partner> partners = this.partnerMapper.selectByExample(new PartnerExample());
+        //每个合伙人的派单数
+        List<DataStatisticsCustomData> sendList = dataStatisticsPartnerMapper.oneSendOrdersPartnerStatisticsWithMonth(startDate, endDate);
+        //每个合伙人的拒单数
+        List<DataStatisticsCustomData> singleList = dataStatisticsPartnerMapper.oneSingleOrdersPartnerStatisticsWithMonth(startDate, endDate);
+
+        Map<String, Long> sendMap = sendList.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
+        Map<String, Long> singleMap = singleList.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
 
         Map<String, Long> map1 = listData1.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
         Map<String, Long> map2 = listData2.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
-        //Map<String, Long> map3 = listData3.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
 
-        List<PurchaseCustomStatisticsData> list = new ArrayList<>();
+        List<PurchasePartnerStatisticsData> list = new ArrayList<>();
         for (DataStatisticsCustomData item : listData0) {
-            PurchaseCustomStatisticsData pcsdObj = new PurchaseCustomStatisticsData();
+            PurchasePartnerStatisticsData pcsdObj=new PurchasePartnerStatisticsData();
             pcsdObj.setDateStr(item.getDateStr());
             pcsdObj.setTotalCustomNum(item.getNum());
+            //封装左边数据
             long stepDate1 = map1.get(item.getDateStr()) == null ? 0L : map1.get(item.getDateStr());
-            pcsdObj.setPurchaseTotalCustomNum(stepDate1);
+            pcsdObj.setSendOrdersTotalNum(stepDate1);
             long stepDate2 = map2.get(item.getDateStr()) == null ? 0L : map2.get(item.getDateStr());
-            pcsdObj.setRePurchaseTotalCustomNum(stepDate2);
+            pcsdObj.setSingleOrdersTotalNum(stepDate2);
             if (stepDate2 == 0L) {
-                pcsdObj.setPurchasePercent("0");
+                pcsdObj.setOrderRate("0");
             } else {
-                String purchasePercent = String.valueOf(Math.round((stepDate2 * 1.00) / (stepDate1 * 1.00) * 100)).replaceAll("\\.0+$", "");
-                pcsdObj.setPurchasePercent(purchasePercent);
+                String purchasePercent = String.valueOf(Math.round((stepDate1 * 1.00) / (stepDate1 +stepDate2) * 100)).replaceAll("\\.0+$", "");
+                pcsdObj.setOrderRate(purchasePercent);
             }
-//            Map<String, Long> clientNumMap = new LinkedHashMap<>();
-//            for (String client : CUSTOM_CLIENTS) {
-//                String key = pcsdObj.getDateStr() + " " + client;
-//                clientNumMap.put(client, map3.containsKey(key) ? map3.get(key) : 0L);
-//            }
-//            pcsdObj.setClientNumMap(clientNumMap);
+            List<DataStatisticsSinglePartnerData> dpList=new ArrayList<>();
+            //封装右边数据
+            partners.stream().forEach(partner -> {
+                String dpKey=item.getDateStr()+" "+partner.getPartner_id();
+                DataStatisticsSinglePartnerData dp=new DataStatisticsSinglePartnerData();
+                dp.setDateStr(item.getDateStr());
+                dp.setId(partner.getPartner_id());
+                dp.setName(partner.getName());
+                //派单数
+                if(sendMap.containsKey(dpKey)){
+                    dp.setSendNum(sendMap.get(dpKey));
+                }else{
+                    dp.setSendNum(0L);
+                }
+                //拒单数
+                if(singleMap.containsKey(dpKey)){
+                    dp.setSingleNum(singleMap.get(dpKey));
+                }else{
+                    dp.setSingleNum(0L);
+                }
+                //接单率
+                if (dp.getSendNum()+dp.getSingleNum() == 0L) {
+                    dp.setOrderRate("0");
+                } else {
+                    String purchasePercent = String.valueOf(Math.round((dp.getSendNum() * 1.00) / (dp.getSendNum() + dp.getSingleNum()) * 100)).replaceAll("\\.0+$", "");
+                    dp.setOrderRate(purchasePercent);
+                }
+                dpList.add(dp);
+            });
+            pcsdObj.setList(dpList);
             list.add(pcsdObj);
-        }*/
-        return null;
+        }
+        return list;
     }
 
 }

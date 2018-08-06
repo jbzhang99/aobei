@@ -5,23 +5,23 @@
   <select id="getOrdersDataDay" resultType="custom.bean.DataResultSet">
     SELECT DATE_FORMAT(t.finish_datetime,'%Y-%m-%d') AS dateStr, COUNT(price_total) AS num
     FROM v_order_unit t WHERE finish_datetime BETWEEN #{startDateTime} AND #{endDateTime}
-      AND o_status_active = '5' OR r_status = '3'
+      AND (o_status_active = '5' OR r_status = '3')
     GROUP BY dateStr
     ORDER BY dateStr;
   </select>
 
   <select id="getOrdersDataWeek" resultType="custom.bean.DataResultSet">
-    SELECT CONCAT(DATE_FORMAT(t.finish_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.create_datetime),2,0),'周') AS dateStr, COUNT(price_total) AS num
+    SELECT CONCAT(DATE_FORMAT(t.finish_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.finish_datetime),2,0),'周') AS dateStr, COUNT(price_total) AS num
     FROM v_order_unit t WHERE finish_datetime BETWEEN #{startDateTime} AND #{endDateTime}
-      AND o_status_active = '5' OR r_status = '3'
+      AND (o_status_active = '5' OR r_status = '3')
     GROUP BY dateStr
     ORDER BY dateStr;
   </select>
 
   <select id="getOrdersDataMonth" resultType="custom.bean.DataResultSet">
-    SELECT DATE_FORMAT(t.finish_datetime,'%Y-%m') AS dateStr, COUNT(price_total) AS num
+    SELECT CONCAT(DATE_FORMAT(t.finish_datetime,'%Y/%m'),'月') AS dateStr, COUNT(price_total) AS num
     FROM v_order_unit t WHERE finish_datetime BETWEEN #{startDateTime} AND #{endDateTime}
-      AND o_status_active = '5' OR r_status = '3'
+      AND (o_status_active = '5' OR r_status = '3')
     GROUP BY dateStr
     ORDER BY dateStr;
   </select>
@@ -42,7 +42,7 @@
   </select>
 
   <select id="getOrdersNumMonth" resultType="custom.bean.DataResultSet">
-    SELECT DATE_FORMAT(t.create_datetime,'%Y-%m') AS dateStr, COUNT(*) AS num
+    SELECT CONCAT(DATE_FORMAT(t.create_datetime,'%Y/%m'),'月') AS dateStr, COUNT(*) AS num
     FROM pay_order t WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
     GROUP BY dateStr
     ORDER BY dateStr;
@@ -70,7 +70,7 @@
   <select id="getOrdersNumClientMonth" resultType="custom.bean.DataResultSet">
     SELECT CONCAT(n.dateStr,' ',n.client_id) dateStr,num
     FROM(
-      SELECT DATE_FORMAT(t.create_datetime,'%Y-%m') AS dateStr,t.client_id, COUNT(*) AS num
+      SELECT CONCAT(DATE_FORMAT(t.create_datetime,'%Y/%m'),'月') AS dateStr,t.client_id, COUNT(*) AS num
       FROM pay_order t WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime} AND t.client_id IS NOT NULL
       GROUP BY dateStr,t.client_id
       ORDER BY dateStr)n
@@ -96,7 +96,7 @@
   </select>
 
   <select id="getOrdersNumByStatusMonth" resultType="custom.bean.DataResultSet">
-    SELECT DATE_FORMAT(t.create_datetime,'%Y-%m') AS dateStr, COUNT(*) AS num
+    SELECT CONCAT(DATE_FORMAT(t.create_datetime,'%Y/%m'),'月') AS dateStr, COUNT(*) AS num
     FROM pay_order t
       WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
       AND status_active = #{status}
@@ -110,5 +110,15 @@
     WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
     GROUP BY cus_province
     ORDER BY cus_province)n ,train_city c WHERE n.cus_province = c.id
+  </select>
+
+  <select id="getOrdersGmvByClient" resultType="Long">
+    SELECT COUNT(t.price_total) FROM
+      (select o.price_total as price_total,s.finish_datetime,o.client_id,o.status_active,o.r_status
+      from pay_order o left join serviceunit s on (o.pay_order_id = s.pay_order_id and s.pid=0)
+      )t
+    WHERE t.finish_datetime BETWEEN #{startDateTime} AND #{endDateTime}
+	AND t.client_id = #{client}
+	AND (t.status_active = '5' OR t.r_status = '3')
   </select>
 </mapper>
