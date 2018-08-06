@@ -25,7 +25,7 @@
   </select>
 
     <select id="regStatisticsWithMonth" resultMap="BaseResultMap">
-    SELECT DATE_FORMAT(t.cdate,'%Y-%m') AS date_str, COUNT(*) AS num
+    SELECT concat(DATE_FORMAT(t.cdate,'%Y/%m'),'月') AS date_str, COUNT(*) AS num
     FROM partner t
     WHERE
       t.cdate BETWEEN #{startDate} AND #{endDate}
@@ -79,7 +79,7 @@
 
     <!--按月 派单数-->
     <select id="sendOrdersPartnerStatisticsWithMonth" resultMap="BaseResultMap">
-        SELECT DATE_FORMAT(t.p2s_assign_datetime,'%Y-%m') AS date_str, COUNT(*) AS num
+        SELECT  concat(DATE_FORMAT(t.p2s_assign_datetime,'%Y/%m'),'月') AS date_str, COUNT(*) AS num
         FROM serviceunit t
         WHERE
          t.pid=0 AND
@@ -90,7 +90,7 @@
 
     <!--按月 拒单数-->
     <select id="singleOrdersPartnerStatisticsWithMonth" resultMap="BaseResultMap">
-    SELECT DATE_FORMAT(t.p_reject_datetime,'%Y-%m') AS date_str, COUNT(*) AS num
+    SELECT concat(DATE_FORMAT(t.p_reject_datetime,'%Y/%m'),'月') AS date_str, COUNT(*) AS num
     FROM serviceunit t
     WHERE t.pid=0 AND
     t.p_reject_datetime BETWEEN #{startDate} AND #{endDate}
@@ -159,7 +159,7 @@
         FROM (
         SELECT a.date_str,a.num,p.partner_id AS id,p.name
         FROM (
-        SELECT  DATE_FORMAT(t.p2s_assign_datetime,'%Y-%m') AS date_str,t.partner_id, COUNT(*) AS num
+        SELECT  concat(DATE_FORMAT(t.p2s_assign_datetime,'%Y/%m'),'月') AS date_str,t.partner_id, COUNT(*) AS num
         FROM serviceunit t
         WHERE
          t.pid=0 AND
@@ -173,7 +173,7 @@
         FROM (
         SELECT a.date_str,a.num,p.partner_id AS id,p.name
         FROM (
-        SELECT  DATE_FORMAT(t.p_reject_datetime,'%Y-%m') AS date_str,t.partner_id, COUNT(*) AS num
+        SELECT  concat(DATE_FORMAT(t.p_reject_datetime,'%Y/%m'),'月') AS date_str,t.partner_id, COUNT(*) AS num
         FROM serviceunit t
         WHERE
          t.pid=0 AND

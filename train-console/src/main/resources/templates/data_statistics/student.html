@@ -235,7 +235,7 @@
          */
         function initCharts() {
             window.CHARTS = {
-                customDayChart: echarts.init(document.getElementById('customDaySumChart')),
+                studentDayChart: echarts.init(document.getElementById('studentDaySumChart')),
                mapChart : echarts.init(document.getElementById('mapChart'))
             };
         }
@@ -244,20 +244,20 @@
 
         $(function () {
             // 下载柱状图用户数据
-            $('#customDataDownload').click(function () {
-                var downUrl = [[@{/data_statistics/student/downCustomRegData}]];
+            $('#studentDataDownload').click(function () {
+                var downUrl = [[@{/data_statistics/student/downStudentRegData}]];
                 window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
             });
 
             // 下载中间表格数据
-            $('#customTableDataDownload').click(function () {
-                var downUrl = [[@{/data_statistics/student/downCustomTableData}]];
+            $('#studentTableDataDownload').click(function () {
+                var downUrl = [[@{/data_statistics/student/downStudentTableData}]];
                 window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
             });
 
             // 下载地图数据
-            $('#customMapDataDownload').click(function () {
-                var downUrl = [[@{/data_statistics/student/downCustomMapData}]];
+            $('#studentMapDataDownload').click(function () {
+                var downUrl = [[@{/data_statistics/student/downStudentMapData}]];
                 window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
             });
 
@@ -274,18 +274,18 @@
             // TODO 自定义加载图表数据
 
             // 加载用户柱状图数据
-            customUserDaySum(data);
+            studentUserDaySum(data);
             // 加载用户中间表格数据
-            loadCustomTableData(data);
+            loadStudentTableData(data);
             // 加载地图数据
-            loadCustomMapData(data);
+            loadStudentMapData(data);
         }
 
         /**
          *  顾客每日用户总量
          */
-        function customUserDaySum(requestData) {
-            CHARTS.customDayChart.showLoading();
+        function studentUserDaySum(requestData) {
+            CHARTS.studentDayChart.showLoading();
             var typeText;
             switch (requestData.type) {
                 case 1:
@@ -351,18 +351,18 @@
                 option.xAxis[0].data = xAxis_data;
                 option.series[0].data = series_data;
 
-                CHARTS.customDayChart.hideLoading();
+                CHARTS.studentDayChart.hideLoading();
                 // 使用刚指定的配置项和数据显示图表。
-                CHARTS.customDayChart.setOption(option);
+                CHARTS.studentDayChart.setOption(option);
             });
         }
 
         /**
          *  加载 中间表格数据
          */
-        function loadCustomTableData(requestData) {
+        function loadStudentTableData(requestData) {
             $('#customTableBox table tbody').empty();
-            $.getJSON([[@{/data_statistics/student/loadCustomTableData}]], requestData, function (data) {
+            $.getJSON([[@{/data_statistics/student/loadStudentTableData}]], requestData, function (data) {
                 var html_1 = [];
                 var total = [0, 0, 0];
                 $.each(data, function (i, n) {
@@ -394,7 +394,7 @@
         /**
          *  加载地图数据
          */
-        function loadCustomMapData(requestData) {
+        function loadStudentMapData(requestData) {
             CHARTS.mapChart.showLoading();
             // 指定图表的配置项和数据
             var option = {
@@ -446,7 +446,7 @@
                     ]
                 }]
             };
-            $.getJSON([[@{/data_statistics/student/loadCustomMapData}]],requestData, function (data) {
+            $.getJSON([[@{/data_statistics/student/loadStudentMapData}]],requestData, function (data) {
                 var html = [];
                 var mapData = [];
                 var max = 0;
@@ -518,10 +518,10 @@
                     服务人员相关数据图表
                     <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
                        style="margin-left: 20px"></i>
-                    <i id="customDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+                    <i id="studentDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
                 </div>
                 <div class="panel-body">
-                    <div id="customDaySumChart" style="height:400px;"></div>
+                    <div id="studentDaySumChart" style="height:400px;"></div>
                 </div>
             </div>
 
@@ -531,7 +531,7 @@
                     服务人员相关数据表格
                     <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
                        style="margin-left: 20px"></i>
-                    <i id="customTableDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+                    <i id="studentTableDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
                 </div>
                 <div class="panel-body">
                     <div id="customTableBox" style="height:300px;overflow-y: auto">
@@ -572,7 +572,7 @@
                     数据地图
                     <i class="fa fa-caret-down fa-lg pull-right up_and_down" aria-hidden="true"
                        style="margin-left: 20px"></i>
-                    <i id="customMapDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
+                    <i id="studentMapDataDownload" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
                 </div>
                 <div class="panel-body">
                     <div id="customMapBox">

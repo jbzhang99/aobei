@@ -89,7 +89,7 @@ public class DataStatisticsPartnerServiceImpl implements DataStatisticsPartnerSe
         Map<String, Long> map = list.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
         int i = 0;
         while (startLocalDateTime.isBefore(endLocalDateTime)) {
-            String key = startLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            String key = startLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM月"));
             if (!map.containsKey(key)) {
                 // 补充空位日期
                 DataStatisticsCustomData temp = new DataStatisticsCustomData();

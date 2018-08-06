@@ -369,7 +369,6 @@
                 var html_4 = [];
                 var html_5=[];
                 var total = [0, 0, 0, 0, 0];
-                /*html_2.push('<tr>');*/
                 html_4.push('<tr>');
 
                 $.each(data, function (i, n) {
@@ -399,11 +398,10 @@
 
                     })
                     html_3.push('</tr>');
-
                     if(i==0){
-                        $('#customTableBox table:eq(1) thead').html(html_2.join(''));
+                        $('#customTableBox table:eq(1) thead tr').html(html_2.join(' '));
                         html_4.push('</tr>');
-                        $('#customTableBox table:eq(1) tbody').html(html_4.join(''));
+                        $('#customTableBox table:eq(1) tbody').html(html_4.join(' '));
 
                     }
                 });
@@ -419,15 +417,15 @@
                     html_1.push('<td class="red">0%</td>');
                 }
 
-                $('#customTableBox table:eq(0) tbody').html(html_1.join(''));
-                $('#customTableBox table:eq(1) tbody').append(html_3.join(''));
+                $('#customTableBox table:eq(0) tbody').html(html_1.join(' '));
+                $('#customTableBox table:eq(1) tbody').append(html_3.join(' '));
                 var summation=returnTdValue();
                 html_5.push("<tr class='trTotalValue'>");
                 for(var i=0;i<summation.length;i++){
                     html_5.push('<td class="red">' +summation[i] + '</td>');
                 }
                 html_5.push("</tr>");
-                $('#customTableBox table:eq(1) tbody').append(html_5.join(''));
+                $('#customTableBox table:eq(1) tbody').append(html_5.join(' '));
                 window.TABLEPAGE.p = 1;
                 window.TABLEPAGE.total = data.length;
                 tablePageData(window.TABLEPAGE);
@@ -435,12 +433,12 @@
         }
         function getTdValue()
         {
-            var lie = $("#tab").find("tr:eq(0)").find("td").length;
+            var lie = $("#tab tbody").find("tr:eq(0)").find("td").length;
             var list=[];
             for(var i=lie;i>0;i--){
                 list.push(0);
             }
-            $("#tab tr:gt(0)").each(function(x,n){
+            $("#tab tbody tr:gt(0)").each(function(x,n){
                 for(var j=0;j<lie;j++){
                     var text = parseInt($(n).children("td:eq("+j+")").text());
                     list[j]=list[j]+text;
@@ -609,11 +607,11 @@
                          <div class="col-sm-6 col-xs-12">
                              <table class="table table-bordered table-striped text-center">
                                  <thead >
-                                     <th style="height: 140px;" class="text-center">日期</th>
-                                     <th style="height: 140px;" class="text-center">合伙人总数</th>
-                                     <th style="height: 140px;" class="text-center">派单总数</th>
-                                     <th style="height: 140px;" class="text-center">拒单总数</th>
-                                     <th style="height: 140px;" class="text-center">接单率</th>
+                                     <th style="height: 155px;" class="text-center">日期</th>
+                                     <th style="height: 155px;" class="text-center">合伙人总数</th>
+                                     <th style="height: 155px;" class="text-center">派单总数</th>
+                                     <th style="height: 155px;" class="text-center">拒单总数</th>
+                                     <th style="height: 155px;" class="text-center">接单率</th>
                                  </thead>
                                  <tbody>
                                  </tbody>
@@ -623,6 +621,7 @@
                          <div class="col-sm-6 col-xs-12" style="overflow-y: auto">
                              <table class="table table-bordered table-striped text-center" id="tab">
                                  <thead>
+                                    <tr></tr>
                                  </thead>
                                  <tbody>
 

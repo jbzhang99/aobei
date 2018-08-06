@@ -39,7 +39,7 @@ public interface DataStatisticsStudentService {
      * @param endDate
      * @return
      */
-    List<PurchaseStudentStatisticsData> purchaseCustomStatisticsDataWithDay(Date startDate, Date endDate);
+    List<PurchaseStudentStatisticsData> purchaseStudentStatisticsDataWithDay(Date startDate, Date endDate);
 
     /**
      * 用户购买消费数统计  周
@@ -47,7 +47,7 @@ public interface DataStatisticsStudentService {
      * @param endDate
      * @return
      */
-    List<PurchaseStudentStatisticsData> purchaseCustomStatisticsDataWithWeek(Date startDate, Date endDate);
+    List<PurchaseStudentStatisticsData> purchaseStudentStatisticsDataWithWeek(Date startDate, Date endDate);
 
     /**
      * 用户购买消费数统计  月
@@ -55,7 +55,7 @@ public interface DataStatisticsStudentService {
      * @param endDate
      * @return
      */
-    List<PurchaseStudentStatisticsData> purchaseCustomStatisticsDataWithMonth(Date startDate, Date endDate);
+    List<PurchaseStudentStatisticsData> purchaseStudentStatisticsDataWithMonth(Date startDate, Date endDate);
 
 }
 
