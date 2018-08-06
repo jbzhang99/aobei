@@ -364,23 +364,37 @@
             $('#customTableBox table tbody').empty();
             $.getJSON([[@{/data_statistics/student/loadStudentTableData}]], requestData, function (data) {
                 var html_1 = [];
-                var total = [0, 0, 0];
+                var total = [0, 0, 0,0,0];
                 $.each(data, function (i, n) {
                     html_1.push('<tr class="trData">');
                     html_1.push('<td>' + n.dateStr + '</td>');
                     html_1.push('<td>' + n.totalCustomNum + '</td>');
+                    html_1.push('<td>' + n.onJobNum + '</td>');
+                    html_1.push('<td>' + n.noJobNum + '</td>');
+                    html_1.push('<td>' + n.runoffNum + '%</td>');
                     html_1.push('<td>' + n.serviceunitTotalNum + '</td>');
                     html_1.push('</tr>');
 
                     total = [
                         total[0] + parseInt(n.totalCustomNum),
-                        total[1] + parseInt(n.serviceunitTotalNum)
+                        total[1] + parseInt(n.onJobNum),
+                        total[2] + parseInt(n.noJobNum),
+                        total[3] + parseInt(n.runoffNum),
+                        total[4] + parseInt(n.serviceunitTotalNum)
                     ]
                 });
                 html_1.push('<tr class="trTotalValue">');
                 html_1.push('<td>合计</td>');
                 html_1.push('<td class="red">' + total[0] + '</td>');
                 html_1.push('<td class="red">' + total[1] + '</td>');
+                html_1.push('<td class="red">' + total[2] + '</td>');
+                if (total[2] > 0) {
+                    html_1.push('<td class="red">' + (total[2] / total[0] * 100).toFixed(0) + '%</td>');
+                } else {
+                    html_1.push('<td class="red">0%</td>');
+                }
+
+                html_1.push('<td class="red">' + total[4] + '</td>');
                 html_1.push('</tr>');
 
                 $('#customTableBox table:eq(0) tbody').html(html_1.join(''));
@@ -438,12 +452,10 @@
                             borderWidth: 0
                         }
                     },
-                    data:[
-                        {name:'安徽',value:'200'},
-                        {name:'合肥市',value:'200'},
-                        {name:'安庆市',value:'100'},
-                        {name:'黄山市',value:'50'}
-                    ]
+                    data:{
+                        '密云区':'密云县',
+                        '延庆区':'延庆县'
+                    }
                 }]
             };
             $.getJSON([[@{/data_statistics/student/loadStudentMapData}]],requestData, function (data) {
@@ -540,6 +552,9 @@
                                 <thead>
                                 <th class="text-center">日期</th>
                                 <th class="text-center">服务人员总数</th>
+                                <th class="text-center">在职人数</th>
+                                <th class="text-center">离职人数</th>
+                                <th class="text-center">流失率</th>
                                 <th class="text-center">服务单数</th>
                                 </thead>
                                 <tbody>

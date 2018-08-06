@@ -290,6 +290,10 @@
                 });
                 if(items.length == 0){
                     alertify.alert('无地图数据可下载');
+                }else{
+                    var downUrl = [[@{/data_statistics/coupon/downCouponMapData}]];
+                    var params = $.extend({data:JSON.stringify(items)},window.CURRENT_SEARCH_DATA);
+                    window.location.href = downUrl + '?' + $.param(params);
                 }
             });
 
