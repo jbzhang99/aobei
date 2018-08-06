@@ -33,47 +33,29 @@
     ORDER BY date_str
   </select>
 
-    <select id="purchaseCustomStatisticsWithDay" resultMap="BaseResultMap">
-    SELECT n.date_str, COUNT(*) as num
-    FROM(
-      SELECT DATE_FORMAT(t.work_3_datetime,'%Y-%m-%d') AS date_str, t.student_id, COUNT(t.student_id) AS num
+    <select id="purchaseStudentStatisticsWithDay" resultMap="BaseResultMap">
+      SELECT DATE_FORMAT(t.work_3_datetime,'%Y-%m-%d') AS date_str, COUNT(*) AS num
       FROM serviceunit_person t
       WHERE
       t.work_status = 4 AND t.work_3_datetime IS NOT NULL AND t.work_3_datetime BETWEEN #{startDate} AND #{endDate}
-      GROUP BY date_str,t.student_id
-      ORDER BY date_str)
-    n
-    GROUP BY n.date_str
+      GROUP BY date_str
+      ORDER BY date_str
   </select>
-    <select id="purchaseCustomStatisticsWithWeek" resultMap="BaseResultMap">
-    SELECT n.date_str, COUNT(*) as num
-    FROM(
-      SELECT CONCAT(DATE_FORMAT(t.work_3_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.work_3_datetime),2,0),'周') AS date_str, t.student_id, COUNT(t.student_id) AS num
+    <select id="purchaseStudentStatisticsWithWeek" resultMap="BaseResultMap">
+      SELECT CONCAT(DATE_FORMAT(t.work_3_datetime,'%Y'),'/', LPAD(WEEKOFYEAR(t.work_3_datetime),2,0),'周') AS date_str, COUNT(*) AS num
       FROM serviceunit_person t
       WHERE
       t.work_status = 4 AND t.work_3_datetime IS NOT NULL AND t.work_3_datetime BETWEEN #{startDate} AND #{endDate}
-      GROUP BY date_str,t.student_id
-      ORDER BY date_str)
-    n
-    GROUP BY n.date_str
+      GROUP BY date_str
+      ORDER BY date_str
   </select>
-    <select id="purchaseCustomStatisticsWithMonth" resultMap="BaseResultMap">
-    SELECT n.date_str, COUNT(*) as num
-    FROM(
-      SELECT concat(DATE_FORMAT(t.work_3_datetime,'%Y/%m'),'月') AS date_str, t.student_id, COUNT(t.student_id) AS num
+    <select id="purchaseStudentStatisticsWithMonth" resultMap="BaseResultMap">
+      SELECT concat(DATE_FORMAT(t.work_3_datetime,'%Y/%m'),'月') AS date_str, COUNT(*) AS num
       FROM serviceunit_person t
       WHERE
       t.work_status = 4 AND t.work_3_datetime IS NOT NULL AND t.work_3_datetime BETWEEN #{startDate} AND #{endDate}
-      GROUP BY date_str,t.student_id
-      ORDER BY date_str)
-    n
-    GROUP BY n.date_str
+      GROUP BY date_str
+      ORDER BY date_str
   </select>
-
-
-
-
-
-
 
 </mapper>

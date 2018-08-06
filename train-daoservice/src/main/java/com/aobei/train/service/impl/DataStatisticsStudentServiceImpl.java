@@ -123,7 +123,7 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
         List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithDay(startDate, endDate);
 
         //服务单数
-        List<DataStatisticsCustomData> listData1 = dataStatisticsStudentMapper.purchaseCustomStatisticsWithDay(startDate, endDate);
+        List<DataStatisticsCustomData> listData1 = dataStatisticsStudentMapper.purchaseStudentStatisticsWithDay(startDate, endDate);
         //数据补全
         Map<String, Long> map1 = listData1.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
 
@@ -151,7 +151,7 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
         //服务人员总数
         List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithWeek(startDate, endDate);
         //服务单总数
-        List<DataStatisticsCustomData> listData1 = dataStatisticsStudentMapper.purchaseCustomStatisticsWithWeek(startDate, endDate);
+        List<DataStatisticsCustomData> listData1 = dataStatisticsStudentMapper.purchaseStudentStatisticsWithWeek(startDate, endDate);
         //数据补全
         Map<String, Long> map1 = listData1.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
         List<PurchaseStudentStatisticsData> list = new ArrayList<>();
@@ -174,7 +174,7 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
         //服务人员总数
         List<DataStatisticsCustomData> listData0 = incrementingRegStatisticsWithMonth(startDate, endDate);
         //服务单总数
-        List<DataStatisticsCustomData> listData1 = dataStatisticsStudentMapper.purchaseCustomStatisticsWithMonth(startDate, endDate);
+        List<DataStatisticsCustomData> listData1 = dataStatisticsStudentMapper.purchaseStudentStatisticsWithMonth(startDate, endDate);
         //数据补全
         Map<String, Long> map1 = listData1.stream().collect(Collectors.toMap(DataStatisticsCustomData::getDateStr, DataStatisticsCustomData::getNum));
 
