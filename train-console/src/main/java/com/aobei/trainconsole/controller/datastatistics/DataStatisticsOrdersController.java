@@ -1,5 +1,8 @@
 package com.aobei.trainconsole.controller.datastatistics;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.aobei.train.service.OrdersDataStatisticsService;
 import com.aobei.train.service.bean.OrdersStatisticsData;
 import custom.bean.AreaData;
@@ -10,6 +13,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.hssf.util.HSSFCellUtil;
+import org.apache.poi.ss.usermodel.Row;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -243,6 +247,7 @@ public class DataStatisticsOrdersController {
     public void downOrdersMapData(
             HttpServletResponse response,
             int type,
+            String data,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) throws IOException {
         endDate = endDateBoundary(endDate);
@@ -250,8 +255,7 @@ public class DataStatisticsOrdersController {
                 "%s至%s",
                 LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                 LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        List<DataResultSet> list = ordersDataStatisticsService.getOrdersNumMap(startDate, endDate);
-        Map<String, Long> map = list.stream().collect(Collectors.toMap(DataResultSet::getDateStr, DataResultSet::getNum));
+        JSONArray jsonArray = JSON.parseArray(data);
 
         HSSFWorkbook workbook = new HSSFWorkbook();
         String[] columnTitles = {"区域", "订单数"};
@@ -262,11 +266,11 @@ public class DataStatisticsOrdersController {
             HSSFCellUtil.createCell(row0, i, columnTitles[i]);
         }
 
-        int n = 1;
-        for (Map.Entry<String,Long> entry : map.entrySet()) {
-            HSSFRow row = HSSFCellUtil.getRow(n++, sheet);
-            HSSFCellUtil.createCell(row, 0, entry.getKey());
-            HSSFCellUtil.getCell(row, 1).setCellValue(entry.getValue());
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JSONObject obj = jsonArray.getJSONObject(i);
+            HSSFRow row = HSSFCellUtil.getRow(i+1, sheet);
+            HSSFCellUtil.createCell(row, 0, obj.getString("name"));
+            HSSFCellUtil.getCell(row, 1).setCellValue(obj.getLong("value"));
         }
 
         for (int i = 0; i < columnTitles.length; i++) {

@@ -552,8 +552,20 @@
 
             // 下载地图数据
             $('#ordersMapDataDownload').click(function () {
-                var downUrl = [[@{/data_statistics/orders/downOrdersMapData}]];
-                window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
+                var items = [];
+                $('#ordersMapBox tbody tr').each(function(i,n){
+                    items.push({
+                        'name': $(n).find('td').eq(0).text(),
+                        'value': $(n).find('td').eq(1).text()
+                    });
+                });
+                if(items.length == 0){
+                    alertify.alert('无地图数据可下载');
+                }else{
+                    var downUrl = [[@{/data_statistics/orders/downOrdersMapData}]];
+                    var params = $.extend({data:JSON.stringify(items)},window.CURRENT_SEARCH_DATA);
+                    window.location.href = downUrl + '?' + $.param(params);
+                }
             });
 
             // 地图 返回按钮事件
