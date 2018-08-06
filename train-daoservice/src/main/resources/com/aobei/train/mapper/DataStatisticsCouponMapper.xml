@@ -74,7 +74,7 @@
 
     <!--拉新用户数量   根据注册送卷策略  已使用过的卷分组 统计 -->
     <select id="couponRegUserCount" resultMap="BaseResultMap">
-    SELECT c.coupon_id, COUNT(t.uid)
+    SELECT c.coupon_id as date_str, COUNT(t.uid) as num
     FROM coupon_receive t
     LEFT JOIN coupon_env ev ON(t.coupon_env_id = ev.coupon_env_id)
     LEFT JOIN coupon c ON(t.coupon_id=c.coupon_id)

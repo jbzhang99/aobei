@@ -8,6 +8,7 @@ import com.aobei.train.model.CouponExample;
 import com.aobei.train.model.TrainCity;
 import com.aobei.train.model.TrainCityExample;
 import com.aobei.train.service.DataStatisticsCouponService;
+import com.gexin.fastjson.JSON;
 import custom.bean.AreaData;
 import custom.bean.DataStatisticsCustomData;
 import custom.bean.CouponStatisticsData;
@@ -112,7 +113,6 @@ public class DataStatisticsCouponServiceImpl implements DataStatisticsCouponServ
     public List<CouponTableStatisticsData> couponTableDatas(Date startDate, Date endDate) {
         CouponExample couponExample = new CouponExample();
         couponExample.or()
-                .andNum_limitEqualTo(1)             // 只查有数量限制的卷
                 .andCreate_timeBetween(startDate, endDate);
         couponExample.setOrderByClause(CouponExample.C.create_time.name());
 
@@ -133,15 +133,20 @@ public class DataStatisticsCouponServiceImpl implements DataStatisticsCouponServ
             String key = coupon.getCoupon_id().toString();
             CouponTableStatisticsData item = new CouponTableStatisticsData();
             item.setDateStr(LocalDateTime.ofInstant(coupon.getCreate_time().toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-            item.setNumTotal(coupon.getNum_total().longValue());
             item.setPlanMoney(coupon.getPlan_money() == null ? 0L : coupon.getPlan_money().longValue());
-            item.setNumUsed(coupon.getNum_total().longValue() - coupon.getNum_able());
+            if(coupon.getNum_limit() == 1){ // 有限数据的卷
+                item.setNumTotal(coupon.getNum_total().longValue());
+                item.setNumUsed(coupon.getNum_total().longValue() - coupon.getNum_able());
+            }else{
+                item.setNumTotal(0L);
+                item.setNumUsed(0L);
+            }
             item.setType(typeNameMap.get(coupon.getType()));
             item.setUseStartDatetime(LocalDateTime.ofInstant(coupon.getUse_start_datetime().toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy/MM/dd")));
             item.setUseEndDatetime(LocalDateTime.ofInstant(coupon.getUse_end_datetime().toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy/MM/dd")));
             item.setGmv(payedOrderMoneyMap.containsKey(key) ? payedOrderMoneyMap.get(key) : 0L);
-            item.setTotalUsedMoney(usedOrderMoneyMap.containsKey(key) ? payedOrderMoneyMap.get(key) : 0L);
-            item.setRegUserCount(regUserCountMap.containsKey(key) ? payedOrderMoneyMap.get(key) : 0L);
+            item.setTotalUsedMoney(usedOrderMoneyMap.containsKey(key) ? usedOrderMoneyMap.get(key) : 0L);
+            item.setRegUserCount(regUserCountMap.containsKey(key) ? regUserCountMap.get(key) : 0L);
             list.add(item);
         }
         return list;

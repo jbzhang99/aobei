@@ -3,13 +3,12 @@ package com.aobei.trainconsole.controller.datastatistics;
 import com.aobei.train.service.DataStatisticsCustomService;
 import custom.bean.DataStatisticsCustomData;
 import custom.bean.PurchaseCustomStatisticsData;
-import org.apache.poi.hpsf.DocumentSummaryInformation;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.CellReference;
-import org.apache.poi.hssf.util.HSSFCellUtil;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.ss.util.CellUtil;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -132,23 +131,23 @@ public class DataStatisticsCustomController {
                 break;
         }
 
-        HSSFWorkbook workbook = new HSSFWorkbook();
-        HSSFSheet sheet = workbook.createSheet(subTitle);
+        XSSFWorkbook workbook = new XSSFWorkbook();
+        XSSFSheet sheet = workbook.createSheet(subTitle);
 
-        HSSFRow row0 = HSSFCellUtil.getRow(0, sheet);
-        HSSFCellUtil.createCell(row0, 0, "日期");
+        Row row0 = CellUtil.getRow(0, sheet);
+        CellUtil.createCell(row0, 0, "日期");
 
-        HSSFRow row1 = HSSFCellUtil.getRow(1, sheet);
-        HSSFCellUtil.createCell(row1, 0, "顾客数");
+        Row row1 = CellUtil.getRow(1, sheet);
+        CellUtil.createCell(row1, 0, "顾客数");
 
         int i = 1;
         for (DataStatisticsCustomData dscd : list) {
-            HSSFCellUtil.createCell(row0, i, dscd.getDateStr());
-            HSSFCellUtil.getCell(row1, i).setCellValue(dscd.getNum());
+            CellUtil.createCell(row0, i, dscd.getDateStr());
+            CellUtil.getCell(row1, i).setCellValue(dscd.getNum());
             sheet.autoSizeColumn(i);
             i++;
         }
-        String fileName = "顾客相关数据导出" + subTitle + ".xls";
+        String fileName = "顾客相关数据导出" + subTitle + ".xlsx";
         response.setHeader("Content-Disposition", "attachment;fileName=" + URLEncoder.encode(fileName, "UTF-8"));
         workbook.write(response.getOutputStream());
 
@@ -220,38 +219,38 @@ public class DataStatisticsCustomController {
                 break;
         }
 
-        HSSFWorkbook workbook = new HSSFWorkbook();
+        XSSFWorkbook workbook = new XSSFWorkbook();
         String[] columnTitles = {"日期", "顾客总数", "产生消费的\n顾客总数", "产生复购的\n顾客总数", "复购率", "各端顾客数(小程序)", "各端顾客数(安卓)", "各端顾客数(IOS)", "各端顾客数(H5)"};
 
-        HSSFSheet sheet = workbook.createSheet(subTitle);
-        HSSFRow row0 = HSSFCellUtil.getRow(0, sheet);
+        XSSFSheet sheet = workbook.createSheet(subTitle);
+        Row row0 = CellUtil.getRow(0, sheet);
         for (int i = 0; i < columnTitles.length; i++) {
-            HSSFCellUtil.createCell(row0, i, columnTitles[i]);
+            CellUtil.createCell(row0, i, columnTitles[i]);
         }
 
         int n = 1;
         long sumPurchaseTotalCustomNum = 0;
         long sumRePurchaseTotalCustomNum = 0;
         for (PurchaseCustomStatisticsData dscd : list) {
-            HSSFRow row = HSSFCellUtil.getRow(n++, sheet);
-            HSSFCellUtil.createCell(row, 0, dscd.getDateStr());
-            HSSFCellUtil.getCell(row, 1).setCellValue(dscd.getTotalCustomNum());
-            HSSFCellUtil.getCell(row, 2).setCellValue(dscd.getPurchaseTotalCustomNum());
-            HSSFCellUtil.getCell(row, 3).setCellValue(dscd.getRePurchaseTotalCustomNum());
-            HSSFCellUtil.createCell(row, 4, dscd.getPurchasePercent() + "%");
-            HSSFCellUtil.getCell(row, 5).setCellValue(dscd.getClientNumMap().get("wx_m_custom"));
-            HSSFCellUtil.getCell(row, 6).setCellValue(dscd.getClientNumMap().get("a_custom"));
-            HSSFCellUtil.getCell(row, 7).setCellValue(dscd.getClientNumMap().get("i_custom"));
-            HSSFCellUtil.getCell(row, 8).setCellValue(dscd.getClientNumMap().get("h5_custom"));
+            Row row = CellUtil.getRow(n++, sheet);
+            CellUtil.createCell(row, 0, dscd.getDateStr());
+            CellUtil.getCell(row, 1).setCellValue(dscd.getTotalCustomNum());
+            CellUtil.getCell(row, 2).setCellValue(dscd.getPurchaseTotalCustomNum());
+            CellUtil.getCell(row, 3).setCellValue(dscd.getRePurchaseTotalCustomNum());
+            CellUtil.createCell(row, 4, dscd.getPurchasePercent() + "%");
+            CellUtil.getCell(row, 5).setCellValue(dscd.getClientNumMap().get("wx_m_custom"));
+            CellUtil.getCell(row, 6).setCellValue(dscd.getClientNumMap().get("a_custom"));
+            CellUtil.getCell(row, 7).setCellValue(dscd.getClientNumMap().get("i_custom"));
+            CellUtil.getCell(row, 8).setCellValue(dscd.getClientNumMap().get("h5_custom"));
             sumPurchaseTotalCustomNum += dscd.getPurchaseTotalCustomNum();
             sumRePurchaseTotalCustomNum += dscd.getRePurchaseTotalCustomNum();
         }
 
         // 最后一行数据
-        HSSFRow rowLast = HSSFCellUtil.getRow(n, sheet);
+        Row rowLast = CellUtil.getRow(n, sheet);
         for (int i = 0; i < columnTitles.length; i++) {
             if (n > 1) {
-                HSSFCell cell = HSSFCellUtil.getCell(rowLast, i);
+                Cell cell = CellUtil.getCell(rowLast, i);
                 if (i == 0) {
                     cell.setCellValue("合计");
                 } else if (i == 4) { // 复购率
@@ -268,7 +267,7 @@ public class DataStatisticsCustomController {
             sheet.autoSizeColumn(i);
         }
 
-        String fileName = "顾客相关数据表格导出" + subTitle + ".xls";
+        String fileName = "顾客相关数据表格导出" + subTitle + ".xlsx";
         response.setHeader("Content-Disposition", "attachment;fileName=" + URLEncoder.encode(fileName, "UTF-8"));
         workbook.write(response.getOutputStream());
 
@@ -323,21 +322,20 @@ public class DataStatisticsCustomController {
         Map<String, Long> map = new LinkedHashMap<>();
         map.put("北京", sum);
 
-        HSSFWorkbook workbook = new HSSFWorkbook();
-        DocumentSummaryInformation dsi = workbook.getDocumentSummaryInformation();
+        XSSFWorkbook workbook = new XSSFWorkbook();
         String[] columnTitles = {"区域", "顾客数"};
 
-        HSSFSheet sheet = workbook.createSheet("区域顾客数");
-        HSSFRow row0 = HSSFCellUtil.getRow(0, sheet);
+        XSSFSheet sheet = workbook.createSheet("区域顾客数");
+        Row row0 = CellUtil.getRow(0, sheet);
         for (int i = 0; i < columnTitles.length; i++) {
-            HSSFCellUtil.createCell(row0, i, columnTitles[i]);
+            CellUtil.createCell(row0, i, columnTitles[i]);
         }
 
         int n = 1;
-        for (Map.Entry<String,Long> entry : map.entrySet()) {
-            HSSFRow row = HSSFCellUtil.getRow(n++, sheet);
-            HSSFCellUtil.createCell(row, 0, entry.getKey());
-            HSSFCellUtil.getCell(row, 1).setCellValue(entry.getValue());
+        for (Map.Entry<String, Long> entry : map.entrySet()) {
+            Row row = CellUtil.getRow(n++, sheet);
+            CellUtil.createCell(row, 0, entry.getKey());
+            CellUtil.getCell(row, 1).setCellValue(entry.getValue());
         }
 
         for (int i = 0; i < columnTitles.length; i++) {
@@ -347,7 +345,7 @@ public class DataStatisticsCustomController {
                 "%s至%s",
                 LocalDateTime.ofInstant(startDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                 LocalDateTime.ofInstant(endDate.toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        String fileName = "地域顾客数导出" + subTitle + ".xls";
+        String fileName = "地域顾客数导出" + subTitle + ".xlsx";
         response.setHeader("Content-Disposition", "attachment;fileName=" + URLEncoder.encode(fileName, "UTF-8"));
         workbook.write(response.getOutputStream());
     }
