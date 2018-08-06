@@ -61,13 +61,6 @@ public interface OrdersDataStatisticsService {
      */
     List<OrdersStatisticsData> getOrdersTableDataMonth(Date startDateTime, Date endDateTime);
 
-    /**
-     * 查询指定时间范围内各省订单数量
-     * @param startDateTime
-     * @param endDateTime
-     * @return
-     */
-    List<DataResultSet> getOrdersNumMap(Date startDateTime, Date endDateTime);
 
     /**
      * 查询指定时间范围内数据地图订单数量
@@ -75,7 +68,7 @@ public interface OrdersDataStatisticsService {
      * @param endDateTime
      * @return
      */
-    List<AreaData<Long>> getOrdersNumMapUp(Date startDateTime, Date endDateTime);
+    List<AreaData<Long>> getOrdersNumMap(Date startDateTime, Date endDateTime);
 
     /**
      * 根据客户端查询一定时间范围内的订单GMV

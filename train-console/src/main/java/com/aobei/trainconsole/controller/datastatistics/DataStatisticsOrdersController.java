@@ -114,7 +114,7 @@ public class DataStatisticsOrdersController {
                                   @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                   @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){
         endDate = endDateBoundary(endDate);
-        List<AreaData<Long>> list = ordersDataStatisticsService.getOrdersNumMapUp(startDate, endDate);
+        List<AreaData<Long>> list = ordersDataStatisticsService.getOrdersNumMap(startDate, endDate);
         return list;
     }
 

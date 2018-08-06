@@ -201,22 +201,17 @@ public class OrdersDataStatisticsServiceImpl implements OrdersDataStatisticsServ
         return dataPackaging(gmvMap,ordersNumMap,ordersNumClientMap,ordersNumCompleteMap,ordersNumWaitServiceMap);
     }
 
-    @Override
-    public List<DataResultSet> getOrdersNumMap(Date startDateTime, Date endDateTime) {
-        return ordersDataStatisticsMapper.getOrdersNumMap(startDateTime,endDateTime);
-    }
-
     // 全部地区数据
     private Map<String, TrainCity> cityMap;
 
     @Override
-    public List<AreaData<Long>> getOrdersNumMapUp(Date startDateTime, Date endDateTime) {
+    public List<AreaData<Long>> getOrdersNumMap(Date startDateTime, Date endDateTime) {
         if (cityMap == null) {
             cityMap = trainCityMapper.selectByExample(new TrainCityExample())
                     .stream()
                     .collect(Collectors.toMap(TrainCity::getId, Function.identity()));
         }
-        List<DataResultSet> areaDataList = ordersDataStatisticsMapper.getOrdersNumMapUp(startDateTime, endDateTime);
+        List<DataResultSet> areaDataList = ordersDataStatisticsMapper.getOrdersNumMap(startDateTime, endDateTime);
         // 三级数据转为二级数据
         areaDataListChange(areaDataList);
         Map<String, AreaData<Long>> map = new LinkedHashMap<>();

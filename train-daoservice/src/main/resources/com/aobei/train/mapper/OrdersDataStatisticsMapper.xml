@@ -105,14 +105,6 @@
   </select>
 
   <select id="getOrdersNumMap" resultType="custom.bean.DataResultSet">
-    SELECT n.num ,c.name AS dateStr FROM
-    (SELECT COUNT(*) as num,cus_province FROM pay_order
-    WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
-    GROUP BY cus_province
-    ORDER BY cus_province)n ,train_city c WHERE n.cus_province = c.id
-  </select>
-
-  <select id="getOrdersNumMapUp" resultType="custom.bean.DataResultSet">
     SELECT COUNT(*) as num,CONCAT(cus_province,' ',cus_city,' ',cus_area) AS dateStr FROM pay_order
     WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
     GROUP BY dateStr
