@@ -78,9 +78,9 @@ public class DataStatisticsPartnerController {
      * @param endDate
      * @return
      */
-    @GetMapping("/loadCustomRegData")
+    @GetMapping("/loadPartnerRegData")
     @ResponseBody
-    public List<DataStatisticsCustomData> loadCustomRegData(
+    public List<DataStatisticsCustomData> loadPartnerRegData(
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
@@ -166,9 +166,9 @@ public class DataStatisticsPartnerController {
      * @param endDate
      * @return
      */
-    @GetMapping("/loadCustomTableData")
+    @GetMapping("/loadPartnerTableData")
     @ResponseBody
-    public List<PurchasePartnerStatisticsData> loadCustomTableData(
+    public List<PurchasePartnerStatisticsData> loadPartnerTableData(
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
@@ -329,9 +329,9 @@ public class DataStatisticsPartnerController {
      * @param endDate
      * @return
      */
-    @GetMapping("/loadCustomMapData")
+    @GetMapping("/loadPartnerMapData")
     @ResponseBody
-    public List<DataStatisticsCustomData> loadCustomMapData(
+    public List<DataStatisticsCustomData> loadPartnerMapData(
             int type,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {

@@ -57,6 +57,23 @@
         #customMapBox thead{
             background-color: #00D0FF;
         }
+
+        #mapDiv{
+            position: relative;
+        }
+
+        #mapBack{
+            position: absolute;
+            z-index: 3;
+            top:10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 12px;
+            box-shadow: 0px 0px 20px #3b97d7;
+            display: none;
+        }
     </style>
     <script TYPE="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
     <script TYPE="text/javascript" th:src="@{/js/jquery-date-range-picker/jquery.daterangepicker.min.js}"></script>
@@ -235,7 +252,7 @@
          */
         function initCharts() {
             window.CHARTS = {
-                customDayChart: echarts.init(document.getElementById('customDaySumChart')),
+                partnerDayChart: echarts.init(document.getElementById('partnerDaySumChart')),
                 mapChart : echarts.init(document.getElementById('mapChart'))
             };
         }
@@ -274,18 +291,18 @@
             // TODO 自定义加载图表数据
 
             // 加载用户柱状图数据
-            customUserDaySum(data);
+            partnerUserDaySum(data);
             // 加载用户中间表格数据
-            loadCustomTableData(data);
+            loadPartnerTableData(data);
             // 加载地图数据
-            loadCustomMapData(data);
+            loadPartnerMapData(data);
         }
 
         /**
          *  合伙人每日用户总量
          */
-        function customUserDaySum(requestData) {
-            CHARTS.customDayChart.showLoading();
+        function partnerUserDaySum(requestData) {
+            CHARTS.partnerDayChart.showLoading();
             var typeText;
             switch (requestData.type) {
                 case 1:
@@ -341,7 +358,7 @@
 
             };
 
-            $.getJSON([[@{/data_statistics/partner/loadCustomRegData}]],requestData, function (data) {
+            $.getJSON([[@{/data_statistics/partner/loadPartnerRegData}]],requestData, function (data) {
                 var xAxis_data = [];
                 var series_data = [];
                 $.each(data, function (i, n) {
@@ -351,18 +368,18 @@
                 option.xAxis[0].data = xAxis_data;
                 option.series[0].data = series_data;
 
-                CHARTS.customDayChart.hideLoading();
+                CHARTS.partnerDayChart.hideLoading();
                 // 使用刚指定的配置项和数据显示图表。
-                CHARTS.customDayChart.setOption(option);
+                CHARTS.partnerDayChart.setOption(option);
             });
         }
 
         /**
          *  加载 中间表格数据
          */
-        function loadCustomTableData(requestData) {
+        function loadPartnerTableData(requestData) {
             $('#customTableBox table tbody').empty();
-            $.getJSON([[@{/data_statistics/partner/loadCustomTableData}]], requestData, function (data) {
+            $.getJSON([[@{/data_statistics/partner/loadPartnerTableData}]], requestData, function (data) {
                 var html_1 = [];
                 var html_2 = [];
                 var html_3 = [];
@@ -463,7 +480,7 @@
         /**
          *  加载地图数据
          */
-        function loadCustomMapData(requestData) {
+        function loadPartnerMapData(requestData) {
             CHARTS.mapChart.showLoading();
             // 指定图表的配置项和数据
             var option = {
@@ -507,15 +524,14 @@
                             borderWidth: 0
                         }
                     },
-                    data:[
-                        {name:'安徽',value:'200'},
-                        {name:'合肥市',value:'200'},
-                        {name:'安庆市',value:'100'},
-                        {name:'黄山市',value:'50'}
-                    ]
+                    data:[],
+                    nameMap: {
+                        '密云区':'密云县',
+                        '延庆区':'延庆县'
+                    }
                 }]
             };
-            $.getJSON([[@{/data_statistics/partner/loadCustomMapData}]],requestData, function (data) {
+            $.getJSON([[@{/data_statistics/partner/loadPartnerMapData}]],requestData, function (data) {
                 var html = [];
                 var mapData = [];
                 var max = 0;
@@ -590,7 +606,7 @@
                     <i id="downPartnerRegData" class="fa fa-download fa-lg pull-right" aria-hidden="true"></i>
                 </div>
                 <div class="panel-body">
-                    <div id="customDaySumChart" style="height:400px;"></div>
+                    <div id="partnerDaySumChart" style="height:400px;"></div>
                 </div>
             </div>
 
@@ -669,8 +685,9 @@
                              </table>
 
                          </div>
-                         <div class="col-sm-9 col-xs-12">
+                         <div class="col-sm-9 col-xs-12" id="mapDiv">
                              <div id="mapChart" style="height:600px;"></div>
+                             <button id="mapBack" class="btn btn-success">返回</button>
                          </div>
                      </div>
 

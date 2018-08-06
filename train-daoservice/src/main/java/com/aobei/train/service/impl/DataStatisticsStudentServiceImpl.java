@@ -147,7 +147,9 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
                 pcsdObj.setOnJobNum(stepDate2);
             }
 
-            if(map3.isEmpty()){
+            pcsdObj.setNoJobNum(0L);
+            pcsdObj.setRunoffNum("0");
+            /*if(map3.isEmpty()){
                 pcsdObj.setNoJobNum(0L);
                 pcsdObj.setRunoffNum("0");
             }else{
@@ -159,7 +161,7 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
                     String purchasePercent = String.valueOf(Math.round((stepDate3 * 1.00) / (item.getNum() * 1.00) * 100)).replaceAll("\\.0+$", "");
                     pcsdObj.setRunoffNum(purchasePercent);
                 }
-            }
+            }*/
             pcsdObj.setServiceunitTotalNum(stepDate1);
             //pcsdObj.setOnJobNum(stepDate2);
             //pcsdObj.setNoJobNum(stepDate3);
@@ -203,10 +205,10 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
                 long stepDate2 = map2.get(item.getDateStr()) == null ? 0L : map2.get(item.getDateStr());
                 pcsdObj.setOnJobNum(stepDate2);
             }
+            pcsdObj.setNoJobNum(0L);
+            pcsdObj.setRunoffNum("0");
+            /*if(map3.isEmpty()){
 
-            if(map3.isEmpty()){
-                pcsdObj.setNoJobNum(0L);
-                pcsdObj.setRunoffNum("0");
             }else{
                 long stepDate3 = map3.get(item.getDateStr()) == null ? 0L : map3.get(item.getDateStr());
                 pcsdObj.setNoJobNum(stepDate3);
@@ -216,7 +218,7 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
                     String purchasePercent = String.valueOf(Math.round((stepDate3 * 1.00) / (item.getNum() * 1.00) * 100)).replaceAll("\\.0+$", "");
                     pcsdObj.setRunoffNum(purchasePercent);
                 }
-            }
+            }*/
             //long stepDate3 = map3.get(item.getDateStr()) == null ? 0L : map1.get(item.getDateStr());
             pcsdObj.setServiceunitTotalNum(stepDate1);
 
@@ -263,7 +265,9 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
                 long stepDate2 = map2.get(item.getDateStr()) == null ? 0L : map2.get(item.getDateStr());
                 pcsdObj.setOnJobNum(stepDate2);
             }
-            if(map3.isEmpty()){
+            pcsdObj.setNoJobNum(0L);
+            pcsdObj.setRunoffNum("0");
+            /*if(map3.isEmpty()){
                 pcsdObj.setNoJobNum(0L);
                 pcsdObj.setRunoffNum("0");
             }else{
@@ -275,7 +279,7 @@ public class DataStatisticsStudentServiceImpl implements DataStatisticsStudentSe
                     String purchasePercent = String.valueOf(Math.round(((stepDate3 * 1.00) / item.getNum()) * 100)).replaceAll("\\.0+$", "");
                     pcsdObj.setRunoffNum(purchasePercent);
                 }
-            }
+            }*/
             pcsdObj.setServiceunitTotalNum(stepDate1);
             /*pcsdObj.setOnJobNum(stepDate2);
             pcsdObj.setNoJobNum(stepDate3);
