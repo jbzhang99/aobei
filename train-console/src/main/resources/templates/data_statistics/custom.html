@@ -271,8 +271,6 @@
          * endDate 结束日期
          */
         function doCharts(data) {
-            // TODO 自定义加载图表数据
-
             // 加载用户柱状图数据
             customUserDaySum(data);
             // 加载用户中间表格数据
@@ -384,7 +382,7 @@
                     html_2.push('<td>' + n.clientNumMap['a_custom'] + '</td>');
                     html_2.push('<td>' + n.clientNumMap['i_custom'] + '</td>');
                     html_2.push('<td>' + n.clientNumMap['h5_custom'] + '</td>');
-                    html_1.push('</tr>');
+                    html_2.push('</tr>');
 
                     total = [
                         total[0] + parseInt(n.totalCustomNum),

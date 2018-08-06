@@ -25,7 +25,7 @@
   </select>
 
     <select id="regStatisticsWithMonth" resultMap="BaseResultMap">
-    SELECT DATE_FORMAT(t.create_datetime,'%Y-%m') AS date_str, COUNT(*) AS num
+    SELECT DATE_FORMAT(t.create_datetime,'%Y/%m月') AS date_str, COUNT(*) AS num
     FROM customer t
     WHERE
       t.create_datetime BETWEEN #{startDate} AND #{endDate}
@@ -60,7 +60,7 @@
     <select id="regClientStatisticsWithMonth" resultMap="BaseResultMap">
     SELECT CONCAT(n.date_str,' ',n.client_id) date_str,num
     FROM(
-    SELECT DATE_FORMAT(t.create_datetime,'%Y-%m') AS date_str, t.client_id, COUNT(*) AS num
+    SELECT DATE_FORMAT(t.create_datetime,'%Y/%m月') AS date_str, t.client_id, COUNT(*) AS num
     FROM customer t
     WHERE
     t.create_datetime BETWEEN #{startDate} AND #{endDate}
@@ -104,7 +104,7 @@
     <select id="purchaseCustomStatisticsWithMonth" resultMap="BaseResultMap">
     SELECT n.date_str, COUNT(*) as num
     FROM(
-      SELECT DATE_FORMAT(t.pay_datetime,'%Y-%m') AS date_str, t.uid, COUNT(t.uid) AS num
+      SELECT DATE_FORMAT(t.pay_datetime,'%Y/%m月') AS date_str, t.uid, COUNT(t.uid) AS num
       FROM pay_order t
       WHERE
       t.status_active = 5 AND t.pay_datetime IS NOT NULL AND t.pay_datetime BETWEEN #{startDate} AND #{endDate}
@@ -142,7 +142,7 @@
     <select id="rePurchaseCustomStatisticsWithMonth" resultMap="BaseResultMap">
     SELECT n.date_str, COUNT(*) as num
     FROM(
-      SELECT DATE_FORMAT(t.pay_datetime,'%Y-%m') AS date_str, t.uid, COUNT(t.uid) AS num
+      SELECT DATE_FORMAT(t.pay_datetime,'%Y/%m月') AS date_str, t.uid, COUNT(t.uid) AS num
       FROM pay_order t
       WHERE
       t.status_active = 5 AND t.pay_datetime IS NOT NULL AND t.pay_datetime BETWEEN #{startDate} AND #{endDate}
