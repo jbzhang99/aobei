@@ -387,7 +387,7 @@
 						</th:block>
 						<a class="btn btn-link btn-xs" th:if="${list.audit_state==4}"sec:authorize="hasRole('ROLE_PARTNER_AUDIT_EDIT')" th:onclick="|editPartnerCategory('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class="fas fa-edit"></i>合作项目</a>
 
-						<a class="btn btn-link btn-xs" th:if="${list.audit_state==4}"  sec:authorize="hasRole('ROLE_PARTNER_AUDIT_FALLINTO')"  th:onclick="|addFallinto('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='glyphicon glyphicon-align-justify'></i>分成策略</a>&nbsp;
+						<!--<a class="btn btn-link btn-xs" th:if="${list.audit_state==4}"  sec:authorize="hasRole('ROLE_PARTNER_AUDIT_FALLINTO')"  th:onclick="|addFallinto('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='glyphicon glyphicon-align-justify'></i>分成策略</a>&nbsp;-->
 						<a class="btn btn-link btn-xs" th:if="${list.audit_state==2}" sec:authorize="hasRole('ROLE_PARTNER_AUDIT_OPINION')" th:onclick="|okAuditPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;" data-toggle="modal" data-target="#auditPartnerModal"><i class='glyphicon glyphicon-ok'></i>通过</a>
 						<a class="btn btn-link btn-xs" th:if="${list.audit_state==2}" sec:authorize="hasRole('ROLE_PARTNER_AUDIT_OPINION')" th:onclick="|noAuditPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;" data-toggle="modal" data-target="#auditPartnerModal"><i class='glyphicon glyphicon-remove'></i>驳回</a>
 					</td>
@@ -396,7 +396,7 @@
 		</table>
 		</div>
 		
-		<div th:include="~{tags/pagination::p1(@{/partner/showPartner(auditState_selected=${auditState_selected},state_selected=${state_selected})},${page.total},${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+		<div th:include="~{tags/pagination::p1(@{/partner/showAuditPartner(auditState_selected=${auditState_selected},state_selected=${state_selected})},${page.total},${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
 	</div>
 
 	<!--分成策略模态框-->

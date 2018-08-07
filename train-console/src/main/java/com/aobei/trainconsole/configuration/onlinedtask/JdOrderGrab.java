@@ -412,7 +412,7 @@ public class JdOrderGrab {
                 serviceUnitService.insertSelective(subUnit);
 
                 orderLogService.xInsert("SYSTEM", 0l, pay_order_id,
-                        "用户[SYSTEM]为用户"+customer.getName()+"生成了京东订单["+orderSearchInfo.getOrderId()+"],本地订单号["+pay_order_id+"]。");
+                        "用户[SYSTEM]为用户"+customerAddress.getUsername()+"生成了京东订单["+orderSearchInfo.getOrderId()+"],本地订单号["+pay_order_id+"]。");
             }
         });
 
