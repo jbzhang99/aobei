@@ -26,7 +26,7 @@ public class ExportRejectUnitToOss implements Callable<Integer> {
 
     private Long data_download_id;
 
-    private ServiceUnitExample serviceUnitExample;
+    private RejectRecordExample rejectRecordExample;
 
     public Long getData_download_id() {
         return data_download_id;
@@ -36,16 +36,16 @@ public class ExportRejectUnitToOss implements Callable<Integer> {
         this.data_download_id = data_download_id;
     }
 
-    public ServiceUnitExample getServiceUnitExample() {
-        return serviceUnitExample;
+    public RejectRecordExample getRejectRecordExample() {
+        return rejectRecordExample;
     }
 
-    public void setServiceUnitExample(ServiceUnitExample serviceUnitExample) {
-        this.serviceUnitExample = serviceUnitExample;
+    public void setRejectRecordExample(RejectRecordExample rejectRecordExample) {
+        this.rejectRecordExample = rejectRecordExample;
     }
 
     @Autowired
-    private DeductMoneyService deductMoneyService;
+    private RejectRecordService rejectRecordService;
 
     @Autowired
     private MyFileHandleUtil myFileHandleUtil;
@@ -57,31 +57,38 @@ public class ExportRejectUnitToOss implements Callable<Integer> {
     private OssFileService ossFileService;
 
     @Autowired
-    private OrderService orderService;
-
-    @Autowired
-    private ServiceUnitService serviceUnitService;
-
-    @Autowired
-    private UsersService usersService;
-
-    @Autowired
     private PartnerService partnerService;
 
     @Override
     public Integer call() throws Exception {
         List<Partner> partners = partnerService.selectByExample(new PartnerExample());
         Map<Long, Partner> partnerMap = partners.stream().collect(Collectors.toMap(Partner::getPartner_id, Function.identity()));
-        List<OrderInfo> orderInfos = orderService.orderInfoListWithOutPage(Roles.TMANAGER, serviceUnitExample);
+        List<RejectRecord> records = rejectRecordService.selectByExample(rejectRecordExample);
 
         String[] rowsName = new String[]{"订单号", "服务名称","用户姓名","顾客电话","服务地址",
                                     "服务价格","实付金额","拒单类型","拒单原因","合伙人公司名","预约时间"};
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
-        List<Object[]> dataList = orderInfos.stream().map(n ->{
-            Object[] obj = {n.getPay_order_id(),n.getName(),n.getCus_username(),n.getCus_phone(),n.getCustomerAddress(),
-                            n.getPrice_total()/100d+"",n.getPrice_pay()/100d+"",n.getServiceUnit().getReject_type() == null ? "":(n.getServiceUnit().getReject_type() == 0 ? "超时拒单" : "主动拒单"),
-                            n.getP_reject_remark(),partnerMap.get(n.getPartner_id()).getName(),n.getC_begin_datetime() == null ? "" : sdf.format(n.getC_begin_datetime())};
+        List<Object[]> dataList = records.stream().map(n ->{
+            Integer reject_type = n.getReject_type();
+            String reject = "";
+            switch (reject_type){
+                case 0:
+                    reject = "被动拒单";
+                    break;
+                case 1:
+                    reject = "主动拒单";
+                    break;
+                case 2:
+                    reject = "订单改派拒单";
+                    break;
+                default:
+                    reject = "";
+                    break;
+            }
+            Object[] obj = {n.getPay_order_id(),n.getServer_name(),n.getCus_username(),n.getCus_phone(),n.getCus_address(),
+                            n.getPrice_total()/100d+"",n.getPrice_pay()/100d+"",reject,
+                            n.getReject_info(),partnerMap.get(n.getPartner_id()).getName(),n.getServer_datetime() == null ? "" : sdf.format(n.getServer_datetime())};
             return obj;
         }).collect(Collectors.toList());
 

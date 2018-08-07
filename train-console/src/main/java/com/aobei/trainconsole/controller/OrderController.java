@@ -175,6 +175,9 @@ public class OrderController {
 	@Autowired
 	private ChannelService channelService;
 
+	@Autowired
+	private RejectRecordService rejectRecordService;
+
 	/**
 	 * 跳转到订单列表页
 	 * @param map
@@ -863,8 +866,6 @@ public class OrderController {
 	 * @param partner_id
 	 * @param qs_create_time
 	 * @param qe_create_time
-	 * @param qs_pay_time
-	 * @param qe_pay_time
 	 * @return
 	 */
 	@RequestMapping("/reject_unit_list")
@@ -872,42 +873,27 @@ public class OrderController {
 								   @RequestParam(defaultValue = "1") Integer p,
 								   @RequestParam(defaultValue = "10") Integer ps,
 								   @RequestParam(required = false) Long partner_id,
-								   @RequestParam(required = false) String qs_create_time,@RequestParam(required = false) String qe_create_time,
-								   @RequestParam(required = false) String qs_pay_time,@RequestParam(required = false) String qe_pay_time){
+								   @RequestParam(required = false) String qs_create_time,@RequestParam(required = false) String qe_create_time){
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat sdfhms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		OrderExample orderExample = new OrderExample();
-		OrderExample.Criteria or = orderExample.or();
+		RejectRecordExample recordExample = new RejectRecordExample();
+		recordExample.setOrderByClause(RejectRecordExample.C.create_datetime + " desc");
+		RejectRecordExample.Criteria criteria = recordExample.or();
 		try {
 			if (!("".equals(qe_create_time)) && qe_create_time != null) {
-				or.andCreate_datetimeBetween(sdf.parse(qs_create_time),sdfhms.parse(qe_create_time + " 23:59:59"));
+				criteria.andCreate_datetimeBetween(sdf.parse(qs_create_time),sdfhms.parse(qe_create_time + " 23:59:59"));
 				map.addAttribute("qs_create_time",sdf.parse(qs_create_time));
 				map.addAttribute("qe_create_time",sdf.parse(qe_create_time));
 			}
-			if (!("".equals(qe_pay_time)) && qe_pay_time != null) {
-				or.andPay_datetimeBetween(sdf.parse(qs_pay_time),sdfhms.parse(qe_pay_time + " 23:59:59"));
-				map.addAttribute("qs_pay_time",sdf.parse(qs_pay_time));
-				map.addAttribute("qe_pay_time",sdf.parse(qe_pay_time));
-			}
 		} catch (ParseException e) {
 			e.printStackTrace();
-		}
-		ServiceUnitExample example = new ServiceUnitExample();
-		Criteria criteria = example.or();
-		criteria.andStatus_activeEqualTo(6).andPidNotEqualTo(0l).andActiveEqualTo(0);
-		if (or.getCriteria().size() > 0){
-			List<Order> orders = orderService.selectByExample(orderExample);
-			List<String> orderids = orders.stream().map(n -> n.getPay_order_id()).collect(Collectors.toList());
-			if (orderids.size() > 0){
-				criteria.andPay_order_idIn(orderids);
-			}
 		}
 		if (partner_id != null) {
 			criteria.andPartner_idEqualTo(partner_id);
 			map.addAttribute("partner_id", partner_id);
 		}
-		Page<OrderInfo> page = orderService.orderInfoList(Roles.TMANAGER, example, p, ps);
-		List<OrderInfo> list = page.getList();
+		Page<RejectRecord> page = rejectRecordService.selectByExample(recordExample, p, ps);
+		List<RejectRecord> list = page.getList();
 		List<Partner> partners = partnerService.selectByExample(new PartnerExample());
 		map.addAttribute("page",page);
 		map.addAttribute("partners",partners);
@@ -928,9 +914,9 @@ public class OrderController {
 		String str = request.getParameter("params");
 		String username = authentication.getName();
 		long id = IdGenerator.generateId();
-		ServiceUnitExample serviceUnitExample = orderService.generateDownloadTaskAndPottingParam(str, username, id, ServiceUnitExample.class);
+		RejectRecordExample rejectRecordExample = orderService.generateDownloadTaskAndPottingParam(str, username, id, RejectRecordExample.class);
 		exportRejectUnitToOss.setData_download_id(id);
-		exportRejectUnitToOss.setServiceUnitExample(serviceUnitExample);
+		exportRejectUnitToOss.setRejectRecordExample(rejectRecordExample);
 		// 生成excel并将之上传到阿里云OSS
 		completionService.submit(exportRejectUnitToOss);
 		Map<String, String> result = new HashMap<>();
