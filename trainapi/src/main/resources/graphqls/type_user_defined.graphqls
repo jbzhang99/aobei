@@ -164,6 +164,10 @@ type OrderInfo{
 	lbsLat:String
 	#坐标 经度
 	lbsLng:String
+	#商品名称
+	productName:String
+	#sku名称
+	skuName:String
 }
 
 type CouponResponse{

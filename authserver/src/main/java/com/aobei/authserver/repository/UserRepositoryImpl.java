@@ -213,8 +213,6 @@ public class UserRepositoryImpl implements UserRepository {
 		case 4:
 			if(createUid){
 				count += jdbcTemplate.update("insert into customer(customer_id,phone,user_id,create_datetime,channel_id) select ?,?,?,?,? from dual where not exists (select 1 from customer where phone=?)",IdGenerator.generateId(),phone,userid,new Date(),channel,phone);
-				final String REDIS_KEY_COUPONDIS = "couponDistributedAuth";
-				stringRedisTemplate.opsForList().leftPush(REDIS_KEY_COUPONDIS,String.valueOf(userid));
 			}else{
 				count += jdbcTemplate.update("update customer set user_id=? where phone=?",userid,phone);
 			}

@@ -277,6 +277,7 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
         orderInfo.setProSku(proSkuService.selectByPrimaryKey(serviceUnit.getPsku_id()));
         Order order = orderService.selectByPrimaryKey(serviceUnit.getPay_order_id());
         orderInfo.setOrder(order);
+        orderInfo.setCustomer(customerService.selectByPrimaryKey(order.getUid()));
         RobbingExample robbingExample = new RobbingExample();
         if (partner != null) {
             ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
