@@ -988,16 +988,17 @@ public class PartnerController {
 		if(auditState==3){
 			partner.setAudit_state(3);
 			resultMap.put("msg",String.format("已驳回"));
+            logger.info("M[partner] F[auditPartner] U[{}],execute result:{}",users.getUser_id(),String.format("已驳回"));
 		}else if(auditState==4){
 			partner.setAudit_state(4);
 			resultMap.put("msg",String.format("已通过"));
+            logger.info("M[partner] F[auditPartner] U[{}],execute result:{}",users.getUser_id(),String.format("已通过"));
 		}
 		partner.setAudit_opinion(auditOpinionValue);
 		partner.setAudit_name(users.getUsername());
 		int num = this.partnerService.updateByPrimaryKey(partner);
 
 
-		logger.info("M[partner] F[auditPartner] U[{}],execute result:{}",users.getUser_id(),String.format(partner.getAudit_state()==3?"已通过":"已驳回", num> 0 ? "成功":"失败"));
 		return resultMap;
 	}
 

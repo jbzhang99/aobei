@@ -51,7 +51,7 @@ public class AutoCouponListerer {
     @Autowired
     CacheReloadHandler cacheReloadHandler;
 
-    private static String key = "couponDistributedAuth";
+    private static String key = "couponDistributed";
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;

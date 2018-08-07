@@ -314,6 +314,22 @@ public class OrderInfo implements Serializable {
         return lbsLng;
     }
 
+    private String productName;
+
+    public String getProductName() {
+        if (product == null)
+            return null;
+        return product.getName();
+    }
+
+    private String skuName;
+
+    public String getSkuName() {
+        if (proSku == null)
+            return null;
+        return proSku.getName();
+    }
+
     //需要的实体类型
     List<Remark> remarkList;
     /**
