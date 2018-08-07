@@ -758,6 +758,7 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
                 RejectRecord rejectRecord = new RejectRecord();
                 rejectRecord.setReject_record_id(IdGenerator.generateId());
                 rejectRecord.setPay_order_id(n.getPay_order_id());
+                rejectRecord.setServer_name(order.getName());
                 rejectRecord.setServiceunit_id(n.getServiceunit_id());
                 rejectRecord.setCreate_datetime(new Date());
                 rejectRecord.setCus_username(order.getCus_username());

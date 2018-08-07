@@ -12,6 +12,9 @@ type RejectRecord{
     #创建日期
     create_datetime : Date
 
+    #订单名称/服务名称
+    server_name : String
+
     #用户姓名
     cus_username : String
 

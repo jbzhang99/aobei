@@ -102,6 +102,7 @@ public class AutoRejectOrderListener implements OnsMessageListener {
                 ServiceUnit serviceUnit = singleResult(serviceUnitService.selectByExample(serviceUnitExample));
                 RejectRecord rejectRecord = new RejectRecord();
                 rejectRecord.setReject_record_id(IdGenerator.generateId());
+                rejectRecord.setServer_name(order.getName());
                 rejectRecord.setPay_order_id(pay_order_id);
                 rejectRecord.setServiceunit_id(serviceUnit.getServiceunit_id());
                 rejectRecord.setCreate_datetime(new Date());
