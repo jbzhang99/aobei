@@ -29,7 +29,6 @@ import custom.bean.OrderInfo.OrderStatus;
 import custom.bean.OrderInfo.ServiceStatus;
 import custom.util.DistanceUtil;
 import custom.util.ParamsCheck;
-import org.apache.ibatis.jdbc.Null;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -46,6 +45,8 @@ import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -230,6 +231,16 @@ public class StudentApiServiceImpl implements StudentApiService {
 			switch (status) {
 			case START:
 			case ARRIVE:// 到达
+				Date startDate = serviceUnit.getC_begin_datetime();
+				if (!StringUtils.isEmpty(startDate)){
+					LocalDateTime nowTime = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+					LocalDateTime localDateTime = nowTime.minusHours(1);
+					LocalDateTime now = LocalDateTime.now();
+					if (!(now.isAfter(localDateTime) && now.isBefore(nowTime))){
+						apiResponse.setErrors(Errors._42033);
+						return apiResponse;
+					}
+				}
 				unit.setWork_status(2);
 				unit.setWork_1_datetime(new Date());
 				unit.setWork_2_datetime(new Date());
@@ -243,11 +254,20 @@ public class StudentApiServiceImpl implements StudentApiService {
 				break;
 			case LEAVE:
 			case DONE:// 离开
+				Date endDate = serviceUnit.getC_end_datetime();
+				if (!StringUtils.isEmpty(endDate)){
+					LocalDateTime now = LocalDateTime.now();
+					LocalDateTime endTime = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+					LocalDateTime localDateTime = endTime.minusHours(-1);
+					if (!(now.isAfter(endTime) && now.isBefore(localDateTime))){
+						apiResponse.setErrors(Errors._42033);
+						return apiResponse;
+					}
+				}
 				unit.setWork_status(4);
 				unit.setWork_3_datetime(new Date());
 				unit.setWork_4_datetime(new Date());
 				unit.setWork_remark(remarkStr);
-
 				serviceunitPerson.setWork_status(4);
 				serviceunitPerson.setWork_remark(remarkStr);
 				serviceunitPerson.setWork_3_datetime(new Date());

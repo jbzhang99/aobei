@@ -105,6 +105,7 @@ public class DefaultSmsAuthorizationCodeServices implements SmsAuthorizationCode
 				// 添加用户
 				int channel = (Integer)RequestContextHolder.getRequestAttributes().getAttribute("channel", 0);
 				user_id = userRepository.createUuidByPhone(userGroup, phone, channel, phoneUser == null);
+				opsList.leftPush("couponDistributed",user_id);
 			}else{
 				user_id = phoneUser.getUser_id();
 			}
