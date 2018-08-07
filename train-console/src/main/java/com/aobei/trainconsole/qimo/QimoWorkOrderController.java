@@ -20,7 +20,7 @@ public class QimoWorkOrderController {
 
     private static final Logger logger = LoggerFactory.getLogger(QimoWorkOrderController.class);
 
-    @PostMapping("/receiveWorkOrder")
+    @RequestMapping("/receiveWorkOrder")
     public String receiveWorkOrder(InputStream inputStream) {
         String returnCode = "400";
         try {
