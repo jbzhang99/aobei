@@ -333,7 +333,7 @@
 
 						<a class="btn btn-link btn-xs" th:if="${list.audit_state==1 || list.audit_state==3}"sec:authorize="hasRole('ROLE_PARTNER_EDIT')" th:onclick="|editPartnerCategory('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class="fas fa-edit"></i>合作项目</a>
 						<br/>
-						<a class="btn btn-link btn-xs" th:if="${list.audit_state==1 || list.audit_state==3}"  sec:authorize="hasRole('ROLE_PARTNER_FALLINTO')"  th:onclick="|addFallinto('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;" data-toggle="modal" data-target="#selectFallintoModal"><i class='glyphicon glyphicon-align-justify'></i>分成策略</a>&nbsp;
+						<!--<a class="btn btn-link btn-xs" th:if="${list.audit_state==1 || list.audit_state==3}"  sec:authorize="hasRole('ROLE_PARTNER_FALLINTO')"  th:onclick="|addFallinto('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;" data-toggle="modal" data-target="#selectFallintoModal"><i class='glyphicon glyphicon-align-justify'></i>分成策略</a>&nbsp;-->
 						<a class="btn btn-link btn-xs" th:if="${list.audit_state==1 || list.audit_state==3}" sec:authorize="hasRole('ROLE_PARTNER_BRING')" th:onclick="|auditPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='glyphicon glyphicon-pushpin'></i>提审</a>
 					</td>
 				</tr>

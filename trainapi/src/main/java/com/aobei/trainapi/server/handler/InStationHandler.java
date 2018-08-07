@@ -58,7 +58,13 @@ public class InStationHandler {
                 .andPidEqualTo(0l);
         ServiceUnit serviceUnit = DataAccessUtils.singleResult(serviceUnitService.selectByExample(serviceUnitExample));
         if(serviceUnit==null){
-            Errors._41007.throwError("服务单不存在");
+            return;
+        }
+        if(order==null){
+            return;
+        }
+        if(student==null){
+            return;
         }
         Message mes = new Message();
         mes.setId(IdGenerator.generateId());
@@ -104,7 +110,13 @@ public class InStationHandler {
                 .andPidEqualTo(0l);
         ServiceUnit serviceUnit = DataAccessUtils.singleResult(serviceUnitService.selectByExample(serviceUnitExample));
         if(serviceUnit==null){
-            Errors._41007.throwError("服务单不存在");
+            return;
+        }
+        if(order==null){
+            return;
+        }
+        if(partner==null){
+            return;
         }
         Message mes = new Message();
         mes.setId(IdGenerator.generateId());
@@ -152,7 +164,13 @@ public class InStationHandler {
                 .andPidEqualTo(0l);
         ServiceUnit serviceUnit = DataAccessUtils.singleResult(serviceUnitService.selectByExample(serviceUnitExample));
         if(serviceUnit==null){
-            Errors._41007.throwError("服务单不存在");
+            return;
+        }
+        if(order==null){
+            return;
+        }
+        if(student==null){
+            return;
         }
         Message mes = new Message();
         mes.setId(IdGenerator.generateId());
@@ -200,7 +218,13 @@ public class InStationHandler {
                 .andPidEqualTo(0l);
         ServiceUnit serviceUnit = DataAccessUtils.singleResult(serviceUnitService.selectByExample(serviceUnitExample));
         if(serviceUnit==null){
-            Errors._41007.throwError("服务单不存在");
+            return;
+        }
+        if(order==null){
+            return;
+        }
+        if(student==null){
+            return;
         }
         Message mes = new Message();
         mes.setId(IdGenerator.generateId());
@@ -248,7 +272,16 @@ public class InStationHandler {
                 .andPidEqualTo(0l);
         ServiceUnit serviceUnit = DataAccessUtils.singleResult(serviceUnitService.selectByExample(serviceUnitExample));
         if(serviceUnit==null){
-            Errors._41007.throwError("服务单不存在");
+            return;
+        }
+        if(order==null){
+            return;
+        }
+        if(student==null){
+            return;
+        }
+        if(customer==null){
+            return;
         }
         Message mes = new Message();
         mes.setId(IdGenerator.generateId());
@@ -293,6 +326,12 @@ public class InStationHandler {
         Customer customer = orderInfo.getCustomer();
         Student student = studentService.selectByPrimaryKey(student_ids.get(0));
         Order order = orderService.selectByPrimaryKey(pay_order_id);
+        if(order==null){
+            return;
+        }
+        if(student==null){
+            return;
+        }
         Message mes = new Message();
         mes.setId(IdGenerator.generateId());
         mes.setType(2);
@@ -339,7 +378,13 @@ public class InStationHandler {
                 .andPidEqualTo(0l);
         ServiceUnit serviceUnit = DataAccessUtils.singleResult(serviceUnitService.selectByExample(serviceUnitExample));
         if(serviceUnit==null){
-            Errors._41007.throwError("服务单不存在");
+            return;
+        }
+        if(order==null){
+            return;
+        }
+        if(student==null){
+            return;
         }
         Message mes = new Message();
         mes.setId(IdGenerator.generateId());

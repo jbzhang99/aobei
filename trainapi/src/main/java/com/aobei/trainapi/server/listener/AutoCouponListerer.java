@@ -119,7 +119,7 @@ public class AutoCouponListerer {
     }
 
     //私有方法(用来校验优惠策略)
-    private Object couponMethod(Customer customer) {
+    public Object couponMethod(Customer customer) {
         Map<Object, Object> hashMap = new HashMap<>();
         //插入新注册用户优惠券
         CouponEnvExample couponEnvExample = new CouponEnvExample();

@@ -133,7 +133,7 @@ public class CouponEnvController {
 			couponEnv.setCoupon_env_id(IdGenerator.generateId());
 			couponEnv.setCondition_env(object_to_json);
 			couponEnv.setCreate_datetime(new Date());
-			if(couponEnv.getCoupon_env_type()==2){
+			if(couponEnv.getCoupon_env_type()==1){
 				couponEnv.setCoupon_id(0l);
 			}
 			if(couponEnv.getCoupon_env_type()==1){
@@ -280,7 +280,7 @@ public class CouponEnvController {
 			couponEnvDate.setEdate(e_date);
 			String object_to_json = JacksonUtil.object_to_json(couponEnvDate);
 			couponEnv.setCondition_env(object_to_json);
-			if(couponEnv.getCoupon_env_type()==2){
+			if(couponEnv.getCoupon_env_type()==1){
 				couponEnv.setCoupon_id(0l);
 			}
 

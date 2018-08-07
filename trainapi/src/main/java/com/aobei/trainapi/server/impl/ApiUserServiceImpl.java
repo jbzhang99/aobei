@@ -12,6 +12,8 @@ import com.aobei.trainapi.server.ApiUserService;
 import com.aobei.trainapi.server.bean.ApiResponse;
 import com.aobei.trainapi.server.bean.Img;
 import com.aobei.trainapi.server.listener.AutoCouponListerer;
+import custom.bean.Constant;
+import custom.bean.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,9 +84,33 @@ public class ApiUserServiceImpl implements ApiUserService {
                 customer = new Customer();
                 customer.setCustomer_id(IdGenerator.generateId());
                 customer.setCreate_datetime(new Date());
-
                 //添加优惠券,有一张优惠券错误,全部返回
-                autoCouponListerer.distributeCoupon(user_id);
+                Map<Object, Object> hashMap = (Map<Object, Object>) autoCouponListerer.couponMethod(customer);
+                Boolean bool = (Boolean) hashMap.get("boolean");
+                if (bool){
+                    List<CouponAndCouponEnv> couponList =(List<CouponAndCouponEnv>) hashMap.get("couponList");
+                    for (CouponAndCouponEnv couponandCouponEnv: couponList) {
+                        Coupon coupon = couponService.selectByPrimaryKey(couponandCouponEnv.getCoupon_id());
+                        String key = Constant.getCouponKey(coupon.getCoupon_id());
+                        coupon.setNum_able(Integer.parseInt(redisTemplate.opsForValue().increment(key,-1L)+""));
+                        couponService.updateByPrimaryKeySelective(coupon);
+                        //为用户添加使用记录
+                        CouponReceive couponReceive = new CouponReceive();
+                        couponReceive.setCoupon_receive_id(IdGenerator.generateId());
+                        couponReceive.setUid(customer.getCustomer_id());
+                        couponReceive.setCoupon_id(couponandCouponEnv.getCoupon_id());
+                        couponReceive.setReceive_datetime(new Date());
+                        couponReceive.setStatus(2);//待使用状态
+                        couponReceive.setVerification(0);//未核销
+                        couponReceive.setDeleted(Status.DeleteStatus.no.value);
+                        couponReceive.setCoupon_env_id(couponandCouponEnv.getCoupon_env_id());
+                        couponReceive.setCreate_datetime(new Date());
+                        couponReceiveService.insert(couponReceive);
+                        cacheReloadHandler.couponListReload(customer.getCustomer_id());
+                        cacheReloadHandler.userCouponListReload(customer.getCustomer_id());
+                    }
+                }
+
             }
             customer.setUser_id(user_id);
             customer.setPhone(phone);
