@@ -330,7 +330,7 @@ public class QimoOrderController {
         QimoGenerateRequestBody requestBody = new QimoGenerateRequestBody();
         requestBody.set_id("");
         requestBody.setCustomerId("");
-        requestBody.setTargeUser(agent);
+        requestBody.setTargetUser(agent);
         requestBody.setCreateUser(agent);
         requestBody.setFlowName("工单记录");
         requestBody.setComment("");
