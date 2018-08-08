@@ -100,8 +100,8 @@ public class ApiUserServiceImpl implements ApiUserService {
                         couponReceive.setUid(customer.getCustomer_id());
                         couponReceive.setCoupon_id(couponandCouponEnv.getCoupon_id());
                         couponReceive.setReceive_datetime(new Date());
-                        couponReceive.setStatus(2);//待使用状态
                         couponReceive.setVerification(0);//未核销
+                        couponReceive.setStatus(2);//待使用状态
                         couponReceive.setDeleted(Status.DeleteStatus.no.value);
                         couponReceive.setCoupon_env_id(couponandCouponEnv.getCoupon_env_id());
                         couponReceive.setCreate_datetime(new Date());

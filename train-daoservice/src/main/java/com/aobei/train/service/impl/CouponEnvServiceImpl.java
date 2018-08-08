@@ -62,7 +62,7 @@ public class CouponEnvServiceImpl extends MbgServiceSupport<CouponEnvMapper, Lon
 
 
         List<DiscountData> discountDatas = list.stream().map(t -> {
-            Type.CouponEnvType type = Type.CouponEnvType.getType(t.getType());
+            Type.CouponEnvType type = Type.CouponEnvType.getType(t.getCoupon_env_type());
             Map<String, Object> map = JSON.parseObject(t.getCondition_env(), Map.class);
 
             switch (type) {
