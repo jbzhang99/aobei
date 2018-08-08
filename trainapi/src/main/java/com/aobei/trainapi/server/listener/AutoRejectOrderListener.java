@@ -89,17 +89,11 @@ public class AutoRejectOrderListener implements OnsMessageListener {
                 .andPidNotEqualTo(0l);
         if (serviceUnitService.countByExample(serviceUnitExample) > 0) {
             if (orderService.xRejectOrder(pay_order_id, partner_id, "超出接单时间限制[进行自动拒单]",0)) {
-                //添加订单变更日志
-                orderLogService.xInsert("system", 0l, pay_order_id, " 【系统自动】自动拒单，原因是:30 分钟没有接单[进行自动拒单]");
-                logger.info("aliOns-AutoRejectOrderListener: status{SUCCESS}");
-                cacheReloadHandler.partner_order_listReload(partner_id);
-                cacheReloadHandler.partner_order_detailReload(pay_order_id);
-
                 Order order = orderService.selectByPrimaryKey(pay_order_id);
                 ServiceUnitExample example = new ServiceUnitExample();
                 example.or().andPay_order_idEqualTo(pay_order_id)
-                            .andPidEqualTo(0l);
-                ServiceUnit serviceUnit = singleResult(serviceUnitService.selectByExample(serviceUnitExample));
+                        .andPidEqualTo(0l);
+                ServiceUnit serviceUnit = singleResult(serviceUnitService.selectByExample(example));
                 RejectRecord rejectRecord = new RejectRecord();
                 rejectRecord.setReject_record_id(IdGenerator.generateId());
                 rejectRecord.setServer_name(order.getName());
@@ -117,6 +111,11 @@ public class AutoRejectOrderListener implements OnsMessageListener {
                 rejectRecord.setPartner_id(serviceUnit.getPartner_id());
                 rejectRecord.setServer_datetime(serviceUnit.getC_begin_datetime());
                 rejectRecordService.insert(rejectRecord);
+                //添加订单变更日志
+                orderLogService.xInsert("system", 0l, pay_order_id, " 【系统自动】自动拒单，原因是:30 分钟没有接单[进行自动拒单]");
+                logger.info("aliOns-AutoRejectOrderListener: status{SUCCESS}");
+                cacheReloadHandler.partner_order_listReload(partner_id);
+                cacheReloadHandler.partner_order_detailReload(pay_order_id);
             } else {
                 logger.info("aliOns-AutoRejectOrderListener: status{FAIL}");
             }
