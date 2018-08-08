@@ -1,4 +1,4 @@
-package com.aobei.authserver.configuration.security.oauth2;
+package com.aobei.trainapi.configuration;
 
 import java.io.IOException;
 
@@ -17,9 +17,9 @@ import org.springframework.stereotype.Component;
 
 //@Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class OauthCorsFilter implements Filter {
+public class ApiCorsFilter implements Filter {
 
-    public OauthCorsFilter() {
+    public ApiCorsFilter() {
     }
 
     @Override
@@ -29,7 +29,7 @@ public class OauthCorsFilter implements Filter {
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
         response.setHeader("Access-Control-Max-Age", "3600");
-        response.setHeader("Access-Control-Allow-Headers", "x-requested-with, authorization");
+        response.setHeader("Access-Control-Allow-Headers", "x-requested-with, authorization, platform, channel, duuid, version, device, mts,content-type,key,nostr,sign,timestamp");
 
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
