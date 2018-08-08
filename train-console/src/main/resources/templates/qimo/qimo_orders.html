@@ -106,7 +106,7 @@
             return;
 		}
 	    var tdAcount = $(a).closest('tr').next('tr').first().find('td').length;
-	    if(tdAcount == 11){
+	    if(tdAcount == 11 || tdAcount == 0){
 	        flag = true;
 			$.ajax({
 				url:"/qimo/getOrderDetail",
@@ -188,6 +188,24 @@
 										 html+
 									"</tbody>"+
 								"</table>"+
+								"<a class='btn btn-link btn-xs' href='javascript:;' id='business_btn' style='outline:none' onclick=business_show('"+data.pay_order_id+"',this)>工单信息</a>"+
+								"<div hidden>"+
+									"<table class='table table-bordered'>" +
+										"<thead>" +
+											"<th style='vertical-align: middle;width: 100px;'>工单编号</th>"+
+											"<th style='vertical-align: middle;width: 100px;'>订单号</th>"+
+											"<th style='vertical-align: middle;width: 100px;'>顾客电话</th>"+
+											"<th style='vertical-align: middle;width: 100px;'>坐席号</th>"+
+											"<th style='vertical-align: middle;width: 100px;'>创建时间</th>"+
+											"<th style='vertical-align: middle;width: 100px;'>动作名称</th>"+
+											"<th style='vertical-align: middle;width: 100px;'>步骤名称</th>"+
+											"<th>步骤信息</th>"+
+										"</thead>"+
+										"<tbody>" +
+
+										"</tbody>"+
+									"</table>"+
+								"</div>"+
 							"</td></tr>");
 					}
 					flag = false;
@@ -215,6 +233,41 @@
 				reset();
 				alertify.alert(result.msg);
                 flag = false;
+            }
+        });
+    }
+    
+    function business_show(pay_order_id,a) {
+        $.ajax({
+            url:"/qimo/queryBusiness",
+            type : 'post',
+            data :{
+                pay_order_id:pay_order_id
+            },
+            success:function(businesses){
+                var html = '';
+
+                if(businesses != null && businesses != ''){
+                    $.each(businesses,function(i,business){
+                        html += "<tr>";
+                        html += "<td>"+business.business_id+"</td>";
+                        html += "<td>"+business.pay_order_id+"</td>";
+                        html += "<td>"+business.cus_phone+"</td>";
+                        html += "<td>"+business.user+"</td>";
+                        html += "<td>"+FormatDate(new Date(business.createTime))+"</td>";
+                        html += "<td>"+business.action+"</td>";
+                        html += "<td>"+business.stepName+"</td>";
+                        html += "<td>"+business.flowInfo+"</td>";
+                        html += "</tr>";
+                    });
+                }else{
+                    html += "<tr>";
+                    html += "<td colspan='8'>该订单无工单信息！</td>";
+                    html += "</tr>";
+				}
+
+                $(a).next("div").first().find('tbody').html(html);
+                $(a).next("div").first().removeAttr('hidden');
             }
         });
     }

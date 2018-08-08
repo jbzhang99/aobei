@@ -30,8 +30,8 @@ $(function() {
                     message: 'Sku名称不能为空'
                 },
                 stringLength: {/*长度提示*/
-                    max: 12,
-                    message: 'Sku名称不能超过12个字'
+                    max: 9,
+                    message: 'Sku名称不能超过9个字'
                 }
 			 }
 		 }); 
@@ -203,14 +203,23 @@ $(function() {
 		alertify.alert("请至少添加一个服务时间段");
 		return false;
 	 }
-	 var myReg = /^[\u4e00-\u9fa5]+$/;
+	/* var myReg = /^[\u4e00-\u9fa5]+$/;
 	 if($("#p_unit").val()!=''){
 		 if (!(myReg.test($("#unit").val()))) {
 			reset();
 			alertify.alert("单位：只能输入汉字");
 			return false;
 		 }
-	 }
+	 }*/
+     var dispaly=$('#dispaly option:selected').val();
+     var buy_multiple=$('input[name="buy_multiple_o2o"]:checked').val();
+     if(dispaly==1){
+         if(buy_multiple==1){
+             reset();
+             alertify.alert("一次购买多件，不允许一件商品配置一个服务人员！请选择【否】");
+             return false;
+         }
+     }
 	 $('#form1').data('bootstrapValidator').validate(); 
 	 if($('#form1').data('bootstrapValidator').isValid()){
 		  var name=$('#name').val();
@@ -366,11 +375,11 @@ $(function() {
 	             p_name: {
 	                 validators: {
 	                     notEmpty: {
-	                         message: '服务名称不能为空'
+	                         message: 'sku名称不能为空'
 	                     },
 	                     stringLength: {
-	                         max: 12,
-	                         message: '服务名称不能超过12个字'
+	                         max: 9,
+	                         message: 'sku名称不能超过9个字'
 	                     }
 	                 }
 	             },
@@ -588,6 +597,15 @@ $(function() {
             reset();
             alertify.alert("展示位置必须选择一个！");
             return false;
+        }
+        var dispaly=$('#p_dispaly option:selected').val();
+        var buy_multiple=$('input[name="p_buy_multiple_o2o"]:checked').val();
+        if(dispaly==1){
+            if(buy_multiple==1){
+                reset();
+                alertify.alert("一次购买多件，不允许一件商品配置一个服务人员！请选择【否】");
+                return false;
+            }
         }
 
 		$('#form2').data('bootstrapValidator').validate(); 

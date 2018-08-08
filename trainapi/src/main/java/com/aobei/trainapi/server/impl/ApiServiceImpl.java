@@ -93,6 +93,7 @@ public class ApiServiceImpl implements ApiService {
 	@Override
 	public StudentInfo studentInfoByUserId(Long user_id) {
 		logger.info("api-method:studentInfoByUserId:params user_id:{}", user_id);
+		List<StudentImgInfo> jobCerts = new ArrayList<>();
 		StudentInfo info = null;
 		StudentExample studentExample = new StudentExample();
 		studentExample.or()
@@ -115,6 +116,10 @@ public class ApiServiceImpl implements ApiService {
 				String justurl = myFileHandleUtil.get_signature_url(ossImg2.getUrl(),
 						3600l);
 				student.setCard_just(justurl);
+				StudentImgInfo studentJusturl = new StudentImgInfo();
+				studentJusturl.setName("身份证");
+				studentJusturl.setUrl(justurl);
+				jobCerts.add(studentJusturl);
 			}
 			// 身份证反面URL
 			if (student.getCard_against() != null) {
@@ -131,6 +136,10 @@ public class ApiServiceImpl implements ApiService {
 				String healthurl = myFileHandleUtil.get_signature_url(ossImg4.getUrl(),
 						3600l);
 				student.setHealth(healthurl);
+				StudentImgInfo studentHealthurl = new StudentImgInfo();
+				studentHealthurl.setName("健康证");
+				studentHealthurl.setUrl(healthurl);
+				jobCerts.add(studentHealthurl);
 			}
 			// 无犯罪记录
 			if (student.getInnocence_proof() != null) {
@@ -139,7 +148,11 @@ public class ApiServiceImpl implements ApiService {
 				OssImg ossImg5 = ossImgService.selectByPrimaryKey(img.getId());
 				String innocenceProof = myFileHandleUtil.get_signature_url(ossImg5.getUrl(),
                         3600l);
-				img.setUrl(innocenceProof);
+				student.setInnocence_proof(innocenceProof);
+				StudentImgInfo studentInnocenceProof = new StudentImgInfo();
+				studentInnocenceProof.setName("无犯罪证明");
+				studentInnocenceProof.setUrl(innocenceProof);
+				jobCerts.add(studentInnocenceProof);
 			}
 			// 学员服务项
 			StudentServiceitemExample studentServiceitemExample = new StudentServiceitemExample();
@@ -167,8 +180,30 @@ public class ApiServiceImpl implements ApiService {
 				}
 			}
 			info.setImgs(list);
-		}
+			//图片信息封装一起
+			list.stream().forEach(t->{
+				StudentImgInfo studentJobcert = new StudentImgInfo();
+				studentJobcert.setName("技能证书");
+				studentJobcert.setUrl(t.getUrl());
+				jobCerts.add(studentJobcert);
+			});
+			info.setImgUrl(jobCerts);
+			Integer gradeDesc = student.getGrade();
+			if (!StringUtils.isEmpty(gradeDesc)){
+				switch (gradeDesc){
+					case 1:info.setGradeDesc("高级");break;
+					case 2:info.setGradeDesc("中级");break;
+					case 3:info.setGradeDesc("初级");break;
+				}
+			}
+			Users users = usersService.selectByPrimaryKey(user_id);
+			if (StringUtils.isEmpty(users.getWx_id())){
+				info.setWhetherWXlogin(0);
+			}else {
+				info.setWhetherWXlogin(1);
+			}
 
+		}
 		return info;
 	}
 

@@ -1,5 +1,6 @@
 package com.aobei.trainconsole.configuration.onlinedtask;
 
+import com.alibaba.fastjson.JSONArray;
 import com.aobei.common.boot.RedisIdGenerator;
 import com.aobei.train.IdGenerator;
 import com.aobei.train.model.*;
@@ -7,12 +8,10 @@ import com.aobei.train.service.*;
 import custom.bean.StepData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import javax.annotation.PostConstruct;
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -78,6 +77,7 @@ public class BalanceSeventeenthTask {
         if (autoIncrId != 1){
             return;
         }
+
         LocalDate localDate = LocalDate.now().minusMonths(1);
         // 取本月第1天：
         LocalDate firstDayOfThisMonth = localDate.with(TemporalAdjusters.firstDayOfMonth());
@@ -105,6 +105,19 @@ public class BalanceSeventeenthTask {
         ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
         serviceUnitExample.or().andFinish_datetimeBetween(firstDate,endDate).andActiveEqualTo(1).andPidEqualTo(0L);
         List<ServiceUnit> serviceUnits = this.serviceUnitService.selectByExample(serviceUnitExample);
+        //之前的数据
+        ServiceUnitExample serviceUnitExamples = new ServiceUnitExample();
+        serviceUnitExamples.or().andFinish_datetimeLessThan(firstDate).andActiveEqualTo(1).andPidEqualTo(0L);
+        List<ServiceUnit> serviceUnitLists = this.serviceUnitService.selectByExample(serviceUnitExamples);
+        serviceUnitLists.stream().forEach(serviceUnit -> {
+            BalanceOrderExample balanceOrderExample = new BalanceOrderExample();
+            balanceOrderExample.or().andPay_order_idEqualTo(serviceUnit.getPay_order_id()).andServiceunit_idEqualTo(serviceUnit.getServiceunit_id());
+            List<BalanceOrder> balanceOrders = this.balanceOrderService.selectByExample(balanceOrderExample);
+            if(balanceOrders.isEmpty()){
+                serviceUnits.add(serviceUnit);
+            }
+        });
+
         if(!serviceUnits.isEmpty()){
             serviceUnits.stream().forEach(serviceUnit -> {
                 //根据服务单找到对应订单
@@ -196,9 +209,9 @@ public class BalanceSeventeenthTask {
         //单数阶梯
         if (!numList.isEmpty()) {
             Map<String, Map<String, List<ServiceUnit>>> mapList = partnerFallintoMap(numList,3,1);
-            List<StepData> newStepDataList=new ArrayList<>();
             mapList.forEach((String k, Map<String, List<ServiceUnit>> v) ->{
                 v.forEach((key,val) ->{
+                    List<StepData> newStepDataList=new ArrayList<>();
                     Fallinto fallinto = this.fallintoService.selectByPrimaryKey(Long.parseLong(key));
                     List<ServiceUnit> serviceUnitList = v.get(key);
                     List<StepData> stepData = com.alibaba.fastjson.JSONArray.parseArray(fallinto.getStep_data(), StepData.class);
@@ -215,7 +228,7 @@ public class BalanceSeventeenthTask {
                             serviceUnitList.stream().forEach(serviceUnit -> {
                                 Order order = this.orderService.selectByPrimaryKey(serviceUnit.getPay_order_id());
                                 BalanceOrder balance = combine(localDate, serviceUnit);
-                                balance.setPartner_balance_fee(Integer.parseInt(sd.getV()));//合伙人订单结算金额
+                                balance.setPartner_balance_fee(Integer.parseInt(sd.getV())*100);//合伙人订单结算金额
                                 balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
                                 balance.setFallinto_info(">=" + sd.getD() + "底价:" + sd.getV());//结算策略 命中说明
                                 this.balanceOrderService.insert(balance);
@@ -309,8 +322,11 @@ public class BalanceSeventeenthTask {
         //客单价
         if (!guestList.isEmpty()) {
             guestList.stream().forEach(serviceUnit -> {
-                BalanceOrder balance = combine(localDate, serviceUnit);
-                this.balanceOrderService.insert(balance);
+                BalanceOrder balance = combine(LocalDate.now(), serviceUnit);
+                if(balance.getBalance_order_id() !=null){
+                    this.balanceOrderService.insert(balance);
+                }
+
             });
         }
 
@@ -318,7 +334,7 @@ public class BalanceSeventeenthTask {
 
 
     /**
-     * 添加结算
+     * 添加结算(根据结算类型)
      * @param localDate
      * @param serviceUnit
      * @return
@@ -337,79 +353,67 @@ public class BalanceSeventeenthTask {
             }
         }
         BalanceOrder balance = new BalanceOrder();
-        balance.setBalance_order_id(IdGenerator.generateId());
-        String month = localDate.getMonthValue() < 10 ? "0" + localDate.getMonthValue() : localDate.getMonthValue() + "";
-        balance.setBalance_cycle(localDate.getYear() + month + "01");//结算期
-        balance.setPay_order_id(order.getPay_order_id());//订单号
-        balance.setServiceunit_id(serviceUnit.getServiceunit_id());//服务单号
-        balance.setBalance_type(1);//结算类型
-        balance.setStatus(1);//（1 待结算  2 已结算）
-        balance.setOrder_name(order.getName());//订单名称
-        balance.setProduct_id(serviceUnit.getProduct_id());//产品id
-        balance.setPsku_id(serviceUnit.getPsku_id());//sku id
-        balance.setOrder_create_datetime(order.getCreate_datetime());//订单创建时间
-        balance.setWork_finish_datetime(serviceUnit.getWork_4_datetime());//服务人员完成时间
-        balance.setFinish_datetime(serviceUnit.getFinish_datetime());//服务单完成时间
-        balance.setPrice_total(order.getPrice_total());//订单总价
-        balance.setPrice_discount(order.getPrice_discount());//优惠金额
-        balance.setPrice_pay(order.getPrice_pay());//实际支付金额
-        balance.setDiscount_data(order.getDiscount_data());//优惠数据JSON
-        balance.setPartner_id(serviceUnit.getPartner_id());//合伙人id
-        balance.setPartner_name(partner.getName());//合伙人名称
-        balance.setPartner_level(partner.getLevel());//合伙人级别
-        balance.setCooperation_start(partner.getCooperation_start());//合伙人合作开始时间
-        balance.setCooperation_end(partner.getCooperation_end());//合伙人合作结束时间
         switch (fallinto.getFallinto_type()) {
             case 1:
                 OrderItemExample orderItemExample = new OrderItemExample();
                 orderItemExample.or().andPay_order_idEqualTo(order.getPay_order_id());
                 OrderItem orderItem = DataAccessUtils.singleResult(orderItemService.selectByExample(orderItemExample));
+                balance = crateBalance(balance, fallinto, order, partner, localDate, serviceUnit);
                 balance.setPartner_balance_fee(fallinto.getFloor_price()*orderItem.getNum());//合伙人订单结算金额
                 balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
                 break;
             case 2:
-                balance.setPartner_balance_fee(order.getPrice_total() * fallinto.getPercent());//合伙人订单结算金额
+                balance = crateBalance(balance, fallinto, order, partner, localDate, serviceUnit);
+                balance.setPartner_balance_fee((int) (order.getPrice_pay() * Double.parseDouble(fallinto.getPercent()*0.01+"")));//合伙人订单结算金额
                 balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
                 break;
-            /*case 3:
-                balance = Numjudge(num, balance, fallinto, order);
+            case 3:
+                balance = crateBalance(balance, fallinto, order, partner, localDate, serviceUnit);
                 break;
             case 4:
-                balance = Moneyjudge(balance, fallinto, order);
-                break;*/
+                balance = crateBalance(balance, fallinto, order, partner, localDate, serviceUnit);
+                break;
             case 5:
-                balance = Moneyjudge(balance, fallinto, order);
+                balance = Moneyjudge(balance, fallinto, order,partner,localDate,serviceUnit);
                 break;
         }
-        balance.setFallinto_id(fallinto.getFallinto_id());// 结算策略id
-        balance.setFallinto_name(fallinto.getFallinto_name());//结算策略名称
-        balance.setCreate_datetime(new Date());
         return balance;
     }
 
     //金额按底价结算
-    public BalanceOrder Moneyjudge(BalanceOrder balance, Fallinto fallinto, Order order) {
-
-        List<StepData> stepData = com.alibaba.fastjson.JSONArray.parseArray(fallinto.getStep_data(), StepData.class);
+    public BalanceOrder Moneyjudge(BalanceOrder balance, Fallinto fallinto, Order order,Partner partner,LocalDate localDate, ServiceUnit serviceUnit) {
+        List<StepData> stepData = JSONArray.parseArray(fallinto.getStep_data(), StepData.class);
+        List<StepData> newStepDataList=new ArrayList<>();
         if (fallinto.getStep_type() == 1) {
             if (stepData.size() != 0) {
                 stepData.stream().forEach(step -> {
                     if(order.getPrice_total()>=step.getD()){
-                        balance.setPartner_balance_fee(Integer.parseInt(step.getV())*100);
-                        balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
-                        balance.setFallinto_info(">=" + step.getD() + "底价:" + step.getV());//结算策略 命中说明
+                        newStepDataList.add(step);
                     }
                 });
+            }
+            if(!newStepDataList.isEmpty()){
+                StepData sd = newStepDataList.get(newStepDataList.size() - 1);
+                balance=crateBalance(balance,fallinto, order,partner,localDate,serviceUnit);
+                balance.setPartner_balance_fee(Integer.parseInt(sd.getV())*100);
+                balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
+                balance.setFallinto_info(">=" + sd.getD() + "底价:" + sd.getV());//结算策略 命中说明
             }
         } else {
             if (stepData.size() != 0) {
                 stepData.stream().forEach(step -> {
                     if(order.getPrice_total()>=step.getD()){
-                        balance.setPartner_balance_fee((int) (order.getPrice_total() * Double.parseDouble(Integer.parseInt(step.getV())*0.01+"")));
-                        balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
-                        balance.setFallinto_info(">=" + step.getD() + "比例:" + step.getV());//结算策略 命中说明
+                        newStepDataList.add(step);
+
                     }
                 });
+            }
+            if(!newStepDataList.isEmpty()){
+                StepData sd = newStepDataList.get(newStepDataList.size() - 1);
+                balance=crateBalance(balance,fallinto, order,partner,localDate,serviceUnit);
+                balance.setPartner_balance_fee((int) (order.getPrice_total() * Double.parseDouble(Integer.parseInt(sd.getV())*0.01+"")));
+                balance.setBalance_fee(order.getPrice_total()-balance.getPartner_balance_fee());//平台订单结算金额
+                balance.setFallinto_info(">=" + sd.getD() + "比例:" + sd.getV());//结算策略 命中说明
             }
         }
         return balance;
@@ -417,7 +421,7 @@ public class BalanceSeventeenthTask {
 
 
     /**
-     * 进行封装数据
+     * 进行封装数据（同一合伙人不同策略的不同产品）
      * @param list
      * @param fType
      * @param bType
@@ -466,6 +470,39 @@ public class BalanceSeventeenthTask {
             mapList.put(k,FallintoMap);
         });
         return mapList;
+    }
+
+
+    /**
+     * 创建结算数据
+     */
+    public BalanceOrder crateBalance(BalanceOrder balance, Fallinto fallinto, Order order,Partner partner,LocalDate localDate, ServiceUnit serviceUnit){
+        balance.setBalance_order_id(IdGenerator.generateId());
+        String month = localDate.getMonthValue() < 10 ? "0" + localDate.getMonthValue() : localDate.getMonthValue() + "";
+        balance.setBalance_cycle(localDate.getYear() + month + "02");//结算期
+        balance.setPay_order_id(order.getPay_order_id());//订单号
+        balance.setServiceunit_id(serviceUnit.getServiceunit_id());//服务单号
+        balance.setBalance_type(1);//结算类型
+        balance.setStatus(1);//（1 待结算  2 已结算）
+        balance.setOrder_name(order.getName());//订单名称
+        balance.setProduct_id(serviceUnit.getProduct_id());//产品id
+        balance.setPsku_id(serviceUnit.getPsku_id());//sku id
+        balance.setOrder_create_datetime(order.getCreate_datetime());//订单创建时间
+        balance.setWork_finish_datetime(serviceUnit.getWork_4_datetime());//服务人员完成时间
+        balance.setFinish_datetime(serviceUnit.getFinish_datetime());//服务单完成时间
+        balance.setPrice_total(order.getPrice_total());//订单总价
+        balance.setPrice_discount(order.getPrice_discount());//优惠金额
+        balance.setPrice_pay(order.getPrice_pay());//实际支付金额
+        balance.setDiscount_data(order.getDiscount_data());//优惠数据JSON
+        balance.setPartner_id(serviceUnit.getPartner_id());//合伙人id
+        balance.setPartner_name(partner.getName());//合伙人名称
+        balance.setPartner_level(partner.getLevel());//合伙人级别
+        balance.setCooperation_start(partner.getCooperation_start());//合伙人合作开始时间
+        balance.setCooperation_end(partner.getCooperation_end());//合伙人合作结束时间
+        balance.setFallinto_id(fallinto.getFallinto_id());// 结算策略id
+        balance.setFallinto_name(fallinto.getFallinto_name());//结算策略名称
+        balance.setCreate_datetime(new Date());
+        return balance;
     }
 }
 

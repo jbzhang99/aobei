@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}" xmlns:th="http://www.w3.org/1999/xhtml"
+	  xmlns:layout="http://www.w3.org/1999/xhtml">
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"> -->
+<head>
+<meta charset="UTF-8"></meta>
+<title>合伙人详情页面</title>
+<script th:src="@{/js/bootstrapValidator.min.js}"></script>
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script TYPE="text/javascript" th:src="@{/js/fileinput.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/zh.js}"></script>
+<meta name="context-path" th:content="@{/}" />
+<style type="text/css">
+	.file-drag-handle{
+		display: none;
+	}
+	.kv-file-remove{
+		display: none;
+	}
+	.file-upload-indicator{
+		display: none;
+	}
+</style>
+<script></script>
+</head>
+<body>
+
+<!--/* 申明模板填充  */-->
+	<div layout:fragment="content">
+
+		<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+		<div class="page_content_bar">
+		
+			<!--/* 面包屑  */-->
+			<ol class="breadcrumb clearfix">
+			  <!-- <li><a href="#">一级目录</a></li> -->
+			  <li><a onclick="javascript:history.go(-1)" class="back_butn" style="cursor: pointer;">合伙人管理</a></li>
+			  <li class="active">详情</li>
+			</ol>
+			
+		</div>
+		
+		<!--/* 页面部分二              页面主内容  */-->
+		<div class="page_content_main">
+			<form id="defaultForm" method="post" class="form-horizontal" action="#" enctype="multipart/form-data">
+			    <!-- 下面这个div必须要有，插件根据这个进行添加提示 -->
+			    <div class="form-group" style="margin-top: 15px">
+					<span style="margin-left: 40px;">合伙人名称：</span><input type="text" th:value="${partner.name}"  disabled="disabled">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<span style="margin-left: 40px;">合伙人门店地址：</span><input type="text" th:value="${partner.address}"  disabled="disabled">
+			    </div>
+			    <div class="form-group">
+					<span style="margin-left: 40px;">合伙人等级：</span><input type="text" th:value="${partner.level}"  disabled="disabled">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<span style="margin-left: 40px;">派单优先级：</span><input type="text" th:value="${partner.dispatch_priority}"  disabled="disabled">
+			    </div>
+			
+				<div class="form-group">
+					<span style="margin-left: 40px;">联系人姓名：</span><input type="text" th:value="${partner.linkman}"  disabled="disabled">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<span style="margin-left: 40px;">联系电话：</span><input type="text" th:value="${partner.phone}"  disabled="disabled">
+				</div>
+				<div class="form-group">
+					<span style="margin-left: 40px;">统一社会信用代码：</span><input type="text" th:value="${partner.code}" disabled="disabled">
+				</div>
+				<div class="form-group">
+					<span style="margin-left: 40px;">银行开户银行：</span><input type="text" th:value="${partner.bank_name}"  disabled="disabled">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<span style="margin-left: 40px;">银行账号:</span><input type="text" th:value="${partner.bank_code}"  disabled="disabled">
+				</div>
+				<div class="form-group">
+					<span style="margin-left: 40px;">营业期限:</span><input type="text" th:if="${!(partner.operation_start eq null)}" th:value="${#dates.format(partner.operation_start,'yyyy-MM-dd')}" disabled="disabled">至<input type="text" th:if="${!(partner.operation_end eq null)}" th:value="${#dates.format(partner.operation_end,'yyyy-MM-dd')}" disabled="disabled">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				</div>
+				<div class="form-group">
+					<span style="margin-left: 40px;">合作起止日期:</span><input type="text" th:if="${!(partner.cooperation_start eq null)}" th:value="${#dates.format(partner.cooperation_start,'yyyy-MM-dd')}" disabled="disabled">至<input type="text" th:if="${!(partner.cooperation_end eq null)}" th:value="${#dates.format(partner.cooperation_end,'yyyy-MM-dd')}" disabled="disabled">
+				</div>
+				<div class="form-group">
+					<span style="margin-left: 40px;">合伙人头像:</span>
+					<img th:if="${!(logoImg eq null)}" th:src="${logoImg.url}" width="100px" height="100px"/>
+				</div>
+				<div class="form-group">
+					<span style="margin-left: 40px;">营业执照:</span>
+					<img th:if="${!(businessImg eq null)}" th:src="${businessImg.url}" width="100px" height="100px"/>
+				</div>
+				<div class="form-group">
+					<span style="margin-left: 40px;">身份证（正面）:</span>
+					<img th:if="${!(justImg eq null)}" th:src="${justImg.url}" width="100px" height="100px"/>
+				</div>
+				<div class="form-group">
+					<span style="margin-left: 40px;">身份证（反面）:</span>
+					<img th:if="${!(againstImg eq null)}" th:src="${againstImg.url}" width="100px" height="100px"/>
+				</div>
+				<div class="form-group">
+					<span style="margin-left: 40px;">包含的服务项目:</span>
+					<div class="form-group">
+						<th:block th:if="${!serviceitemList.isEmpty()}" th:each="serviceitem:${serviceitemList}">
+							<p style="margin-left: 90px;" th:text="${serviceitem.name}"></p>
+						</th:block>
+					</div>
+				</div>
+				 <div class="form-group">
+			        <div class="col-lg-12">
+			           	<table class="table table-bordered" style="table-layout:fixed" width="1000px">
+			           		<thead>
+			           			<tr>
+			           				<th width="80px"  style="vertical-align:middle;">服务地址</th>
+				           			<th width="70px"  style="vertical-align:middle;">上线时间</th>
+				           			<th width="70px"  style="vertical-align:middle;">下线时间</th>
+			           			</tr>
+			           		</thead>
+			           		<tbody>
+								<tr th:if="${!stations.isEmpty()}" th:each="station:${stations}">
+									<td th:text="${station.address}" style="vertical-align:middle;"></td>
+									<td th:text="${#dates.format(station.online_datetime,'yyyy-MM-dd')}" style="vertical-align:middle;"></td>
+									<td th:text="${#dates.format(station.offline_datetime,'yyyy-MM-dd')}" style="vertical-align:middle;"></td>
+								</tr>
+			           		</tbody>
+			           	</table>
+			        </div>
+			    </div>
+			</form>
+		</div>
+	</div>
+	
+</body>
+</html>

@@ -6,6 +6,7 @@ import com.aobei.train.service.MsgtextService;
 import com.aobei.trainapi.schema.type.MutationResult;
 import com.aobei.trainapi.server.ApiCommonService;
 import com.aobei.trainapi.server.ApiOrderService;
+import com.aobei.trainapi.server.ApiUserService;
 import com.aobei.trainapi.server.bean.ApiResponse;
 import com.coxautodev.graphql.tools.GraphQLMutationResolver;
 import custom.bean.MsgTextConstant;
@@ -26,6 +27,8 @@ public class AppCustomerMutation implements GraphQLMutationResolver {
     CustomerQuery query;
     @Autowired
     ApiOrderService apiOrderService;
+    @Autowired
+    ApiUserService apiUserService;
 
     public MutationResult get_code(String phone) {
         Msgtext msg;
@@ -73,5 +76,17 @@ public class AppCustomerMutation implements GraphQLMutationResolver {
             response.getErrors().throwError();
         }
         return response.getMutationResult();
+    }
+
+    /**
+     * 顾客解绑
+     */
+    public MutationResult customer_remove_the_bind(){
+        Customer customer = query.customer_info();
+        ApiResponse response = apiUserService.customerRemoveTheBing(customer);
+        if (response.getErrors() != null){
+            response.getErrors().throwError();
+        }
+        return new MutationResult();
     }
 }

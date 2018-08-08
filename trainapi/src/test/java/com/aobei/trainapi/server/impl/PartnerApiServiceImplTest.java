@@ -8,11 +8,13 @@ import com.aobei.train.service.*;
 import com.aobei.trainapi.util.JsonUtil;
 import custom.bean.ProductTag;
 import custom.bean.TransmissionContent;
+import custom.util.ParamsCheck;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import com.aliyun.openservices.ons.api.SendResult;
 import com.aobei.common.bean.SmsData;
@@ -32,6 +34,7 @@ import com.aobei.trainapi.util.JacksonUtil;
 
 import custom.bean.Constant;
 import custom.bean.OrderInfo;
+import org.springframework.transaction.annotation.Transactional;
 
 @RunWith(SpringRunner.class)
 //@Transactional
@@ -64,6 +67,8 @@ public class PartnerApiServiceImplTest {
 	 AppGrowthService appGrowthService;
 	 @Autowired
 	 PartnerService partnerService;
+	 @Autowired
+	StringRedisTemplate stringRedisTemplate;
 	 
 
 	@Test
@@ -430,22 +435,25 @@ public class PartnerApiServiceImplTest {
 		Message msg = new Message();
 		msg.setId(IdGenerator.generateId());
 		msg.setType(2);
-		msg.setBis_type(3);
-		msg.setUser_id(1130959866060382208l);
-		msg.setUid(1072162763415003136l);
-		msg.setMsg_title("服务变更通知新新新测试");
+		msg.setBis_type(1);
+		msg.setUser_id(1163365587586228224l);
+		msg.setUid(1067677206111346688l);
+		msg.setMsg_title("测试学员消息");
 		// 服务人员修改
 		MessageContent.ContentMsg content = new MessageContent.ContentMsg();
 		content.setMsgtype("native");
-		content.setContent("1535800497_2"+"订单变更");
+		content.setContent("这个是测试学员消息的哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵");
 		Map<String,String> param = new HashMap<>();
 		param.put("orderStatus","waitService");
-		param.put("pay_order_id","1535800497_2");
-		TransmissionContent tContent = new TransmissionContent(TransmissionContent.PARTNER,TransmissionContent.ORDER_DETAIL,param);
+		param.put("pay_order_id","1524481533");
+		TransmissionContent tContent = new TransmissionContent(TransmissionContent.STUDENT,TransmissionContent.ORDER_DETAIL,param);
 		content.setHref(tContent.getHrefNotEncode());
-		content.setTitle("服务变更通知");
+		content.setTitle("测试学员消息");
 		content.setTypes(1);
 		content.setNoticeTypes(2);
+		if (!ParamsCheck.checkStrAndLength(content.getContent(),200)){
+			return;
+		}
 		String object_to_json = null;
 		try {
 			object_to_json = JacksonUtil.object_to_json(content);
@@ -455,8 +463,8 @@ public class PartnerApiServiceImplTest {
 		msg.setMsg_content(object_to_json);
 		msg.setCreate_datetime(new Date());
 		msg.setNotify_datetime(new Date());
-		msg.setGroup_id("1535800497_2");
-		msg.setApp_type(3);
+		msg.setGroup_id("1524481533");
+		msg.setApp_type(1);
 		msg.setSend_type(1);
 		msg.setApp_platform(0);
 		messageService.insertSelective(msg);
@@ -492,6 +500,28 @@ public class PartnerApiServiceImplTest {
 		app.setCreate_datetime(new Date());
 		app.setDescr_version("你升级呀,升级呀,升级呀升级呀,升级呀");
 		appGrowthService.insertSelective(app);
+	}
+
+	@Test
+	public void robbingDetail(){
+		String pay_order_id = "1527602394_1";
+		Partner partner = partnerService.selectByPrimaryKey(1067670088150966272l);
+		OrderInfo orderInfo = partnerApiService.partnerRobbingDetail(partner, pay_order_id);
+		Assert.assertNotNull(orderInfo);
+		Assert.assertEquals(orderInfo.getOrderStatus(),"waitRobbing");
+	}
+
+	@Test
+	public void redisTest(){
+		/*final String REDIS_KEY_COUPONDIS = "couponList"+3;
+		//stringRedisTemplate.opsForSet().add(REDIS_KEY_COUPONDIS,"123");
+		stringRedisTemplate.opsForList().leftPush(REDIS_KEY_COUPONDIS,"987");
+		stringRedisTemplate.opsForList().leftPush(REDIS_KEY_COUPONDIS,String.valueOf(32423423));*/
+		final String REDIS_KEY_COUPONDIS = "couponDistributed_userId";
+		Long user_id = 1169135518328332288l;
+		Long lo = stringRedisTemplate.opsForList().leftPush(REDIS_KEY_COUPONDIS, String.valueOf(user_id));
+		System.out.println(lo);
+
 	}
 
 }

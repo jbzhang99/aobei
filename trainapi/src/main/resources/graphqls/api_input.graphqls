@@ -53,7 +53,7 @@ input StudentOrderInput{
 	#商品id
 	product_id:Long!
 	#skuid
-	psku_id:Long!
+	psku_id:Long
 	#开始时间
 	begin_datetime:String
 	#结束时间
@@ -66,5 +66,6 @@ input StudentOrderInput{
 	remark:String
 	#状态(不选预约时间为0  选择预约时间为1)
 	type:Int!
-
+	#服务单 1 收费单 2
+    continuousSingleState:Int
 }

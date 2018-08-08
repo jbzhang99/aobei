@@ -300,8 +300,8 @@ public class CouponServiceImpl extends MbgServiceSupport<CouponMapper, Long, Cou
             couponList.setVerify_user(n.getVerify_user());
             couponList.setCreate_user(n.getCreate_user());
             couponList.setIs_valid(n.getIs_valid());
-            couponList.setVerifier_name(n.getVerify_user()==null?"":getUser(n.getVerify_user()).getName());
-            couponList.setCreater_name(n.getCreate_user()==null?"":getUser(n.getCreate_user()).getName());
+            couponList.setVerifier_name(n.getVerify_user()==null?"":getUser(n.getVerify_user())==null?"":getUser(n.getVerify_user()).getName());
+            couponList.setCreater_name(n.getCreate_user()==null?"":getUser(n.getCreate_user())==null?"":getUser(n.getCreate_user()).getName());
             return couponList;
         }).collect(Collectors.toList());
         return new Page<CouponList>(list, page.getTotal(), pageNo, pageSize);
@@ -583,8 +583,7 @@ public class CouponServiceImpl extends MbgServiceSupport<CouponMapper, Long, Cou
     private SysUsers getUser(Long user_id){
         SysUsersExample sysUsersExample = new SysUsersExample();
         sysUsersExample.or()
-                .andUser_idEqualTo(user_id)
-                .andDeletedEqualTo(Status.DeleteStatus.no.value);
+                .andUser_idEqualTo(user_id);
         return DataAccessUtils.singleResult(sysUsersService.selectByExample(sysUsersExample));
     }
     @Override

@@ -38,6 +38,7 @@ public interface PayService {
 
     String aliPaymentBody(Order order,String appid) throws AlipayApiException;
 
+    String aliWapPayBody(Order order ,String appid) throws AlipayApiException;
     Order wxPayConfirm();
     Order aliPayConfirm();
 

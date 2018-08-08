@@ -183,14 +183,16 @@ public class PartnerServiceImpl extends MbgServiceSupport<PartnerMapper, Long, P
 	 */
 	@Override
 	@Transactional(timeout = 5)
-	public Partner xAddPartner(Map<String, Object> map) {
+	public Partner xAddPartner(Map<String, Object> map, Users users) {
 		// TODO Auto-generated method stub
 		//获取到填写的合伙人信息
 		JSONObject json = JSONObject.parseObject(map.get("parList").toString());
 		Partner partner = JSONObject.toJavaObject(json,Partner.class);
 		partner.setPartner_id(IdGenerator.generateId());
-		partner.setState(1);
+		partner.setState(0);
 		partner.setDeleted(Status.DeleteStatus.no.value);
+		partner.setAudit_state(1);
+		partner.setCreat_name(users.getUsername());
 		String regex = "\\s+";
 		partner.setLinkman(partner.getLinkman().replaceAll(regex,""));
 		//合伙人表进行添加

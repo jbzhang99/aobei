@@ -36,10 +36,10 @@ aobei:
           app-id: MAxA9DXnUZ9Z3Ck5dIvuN8
           app-key: 2polcZTPTnAYm7ss88viM7
           master-secret: TlQf0vh7p77ZitrLdzFFo5
-#        student:
-#          app-id: F3I5V5kiByArgh0JoUQZ02
-#          app-key: uQMIzY5rDQ8V2m67EfRc41
-#          master-secret: VFuY1ncyLG7dkvJM0XK5M1
+        student:
+          app-id: HXEryRAJhB70hqNaWXZy37
+          app-key: Sgf6fhFHKl5d5qe1XlVFY8
+          master-secret: B99zMVHIR6A16A06wsd6I3
 #        teacher:
 #          app-id: F3I5V5kiByArgh0JoUQZ02
 #          app-key: uQMIzY5rDQ8V2m67EfRc41

@@ -237,6 +237,7 @@
 					<th width="100px">合伙人公司名</th>
 					<th width="100px">服务人员</th>
 					<th width="100px">退款申请时间</th>
+					<th width="100px">退款完成时间</th>
 					<th width="100px" sec:authorize="hasRole('ROLE_REFUND')">操作</th>
 				</tr>
 			</thead>
@@ -275,6 +276,11 @@
 						<th:block th:unless="${refund.student_name != null}" th:text="未指派服务人员"></th:block>
 					</td>
 					<td style="vertical-align: middle" th:text="${#dates.format(refund.create_date,'yyyy-MM-dd')}"></td>
+					<td style="vertical-align: middle">
+						<th:block th:if="${refund.refund_date != null}">
+							<span th:text="${#dates.format(refund.refund_date,'yyyy-MM-dd')}"></span>
+						</th:block>
+					</td>
 					<td style="vertical-align: middle" sec:authorize="hasRole('ROLE_REFUND')">
 						<th:block th:if="${#lists.contains({0,3}, refund.status)}">
 							<a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|refund('${refund.refund_id}','${refund.pay_order_id}');|"><i class="fab fa-bitcoin"></i>退款</a>

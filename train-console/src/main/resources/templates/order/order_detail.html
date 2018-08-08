@@ -187,6 +187,11 @@
         $("#complete_save_btn").click(function(){
             var pay_order_id = [[${pay_order_id}]];
             var complete_info = $("#complete_info").val();
+            if(complete_info.length < 5 || complete_info.length > 150){
+                reset();
+                alertify.error("赔偿原因最少不能低于5个字，最多不能输入超过150字！");
+                return false;
+			}
 			$.ajax({
 				url:"/ordermanager/complete_apply",
 				type : 'post',
@@ -196,8 +201,13 @@
 					mts:mts
 				},
 				success:function(data){
-					reset();
-					alertify.success(data.msg);
+				    if(data.error != '' && data.error != null){
+                        reset();
+                        alertify.error(data.error);
+					}else{
+                        reset();
+                        alertify.success(data.msg);
+					}
 					setTimeout(function (){
 						location.reload(true);
 					}, 1500);
@@ -231,7 +241,7 @@
 					<li><a class="back_butn" style="cursor: pointer;">扣款申请列表</a></li>
 				</th:block>
 				<th:block th:if="${#strings.contains(Referer,'/ordermanager/reject_unit_list')}">
-					<li><a class="back_butn" style="cursor: pointer;">罚款查询</a></li>
+					<li><a class="back_butn" style="cursor: pointer;">拒单查询</a></li>
 				</th:block>
 				<th:block th:if="${#strings.contains(Referer,'/ordermanager/fine_money_list')}">
 					<li><a class="back_butn" style="cursor: pointer;">罚款申请管理</a></li>
@@ -259,6 +269,12 @@
                   	<span th:text="*{pay_order_id}"></span>
                   </td>
                 </tr>
+				<tr>
+					<td colspan="2" >下单件数</td>
+					<td colspan="2">
+						<span th:text="${num}"></span>件
+					</td>
+				</tr>
                 <tr>
                   <td colspan="2">订单状态</td>
                   <td colspan="2" th:switch="*{status_active}">
@@ -282,7 +298,7 @@
                 				<td colspan="2">
                 					<input type="button" class="btn cancel_btn btn-primary" value="为客人取消"/>
                 					&nbsp;&nbsp;&nbsp;&nbsp;
-                					<th:block th:if="*{r_status == -1}">
+                					<th:block th:if="*{r_status == -1  and channel ne 'JD-001'}">
 	                					<input type="button" class="btn refund_btn btn-primary" value="申请退款"/>
                 					</th:block>
                 				</td>
@@ -292,7 +308,7 @@
 	                			<td colspan="4">
 	                				<input type="button" class="btn cancel_btn btn-primary" value="为客人取消"/>
 	                				&nbsp;&nbsp;&nbsp;&nbsp;
-                					<th:block th:if="*{r_status == -1}">
+                					<th:block th:if="*{r_status == -1 and channel ne 'JD-001'}">
 	                					<input type="button" class="btn refund_btn btn-primary" value="申请退款"/>
                 					</th:block>
 	                			</td>
@@ -302,7 +318,7 @@
                 			<td colspan="2">
                 				<input type="button" class="btn cancel_btn btn-primary" value="为客人取消"/>
                 				&nbsp;&nbsp;&nbsp;&nbsp;
-                				<th:block th:if="*{r_status == -1}">
+                				<th:block th:if="*{r_status == -1 and channel ne 'JD-001'}">
                 					<input type="button" class="btn refund_btn btn-primary" value="申请退款"/>
                					</th:block>
                 			</td>
@@ -323,7 +339,7 @@
                 			</td>
                 		</th:block>
                 		<th:block th:unless="*{status_active eq 5 and r_status == -1}">
-                			<th:block th:if="*{status_active eq 4 and pay_status eq 1 and r_status == -1}">
+                			<th:block th:if="*{status_active eq 4 and pay_status eq 1 and r_status == -1  and channel ne 'JD-001'}">
                 				<td colspan="4"><input type="button" class="btn refund_btn btn-primary" value="申请退款"/></td>
                 			</th:block>
                 			<th:block th:unless="*{status_active eq 4 and pay_status eq 1 and r_status == -1}">

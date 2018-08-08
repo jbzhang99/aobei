@@ -125,7 +125,14 @@ public class AppCustomerQuery implements GraphQLQueryResolver {
         Customer customer = customerApiService.customerInfo(TOKEN.getUuid());
         ApiResponse<String> response = new ApiResponse<>();
         try {
-            response = apiOrderService.appAliPrePay(customer, pay_order_id, appid);
+            String client = TOKEN.getClientId();
+            if("h5_custom".equals(client)){
+                response = apiOrderService.wapAliPrePay(customer, pay_order_id, appid);
+            }else {
+                response = apiOrderService.appAliPrePay(customer, pay_order_id, appid);
+            }
+
+
         } catch (Exception e) {
             response.setErrors(Errors._41023);
             logger.error("api-method:error code:{},msg:{}", e);
