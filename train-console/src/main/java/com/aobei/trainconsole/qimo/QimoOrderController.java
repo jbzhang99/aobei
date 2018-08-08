@@ -16,6 +16,7 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -51,6 +52,9 @@ public class QimoOrderController {
 
     @Autowired
     private OrderLogService orderLogService;
+
+    @Autowired
+    private BusinessService businessService;
 
     /**
      *
@@ -306,6 +310,17 @@ public class QimoOrderController {
         map.put("data",orderService.orderInfoDetail(Roles.TMANAGER, order));
         map.put("logs",logs);
         return map;
+    }
+
+    @ResponseBody
+    @RequestMapping(value = {"/queryBusiness"}, method = RequestMethod.POST)
+    public Object queryBusiness(String pay_order_id,HttpServletResponse response){
+        if ("".equals(pay_order_id) || pay_order_id == null)
+            return null;
+        BusinessExample example = new BusinessExample();
+        example.or().andPay_order_idEqualTo(pay_order_id);
+        List<Business> businesses = businessService.selectByExample(example);
+        return businesses;
     }
 
     @ResponseBody
