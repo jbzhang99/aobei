@@ -328,8 +328,8 @@ public class StudentController {
 			for (int i = 0; i < job_cret.length; i++) {
 				Map<String,Object> json=new HashMap<>();
 				for (int j = i; j < imgList.size(); j++) {
+					long id = Long.parseLong(imgList.get(j));
 					if(!StringUtils.isEmpty(job_cret[i].getOriginalFilename())){
-						long id = Long.parseLong(imgList.get(j));
 						if(id==0 & job_cret[i].getOriginalFilename()!=""){
 							Map<String, String> params = this.myFileHandleUtil.file_upload(job_cret[i],PathType.img_student_cert);
 							String effect="学员技能证书";
@@ -339,15 +339,24 @@ public class StudentController {
 							json.put("url", img.getUrl());
 							job_crets.add(json);
 
-						}else{//没有更改的图片
+						}/*else{//没有更改的图片
 							long sid = Long.parseLong(imgList.get(j));
 							OssImg img = this.ossImgService.selectByPrimaryKey(sid);
 							json.put("id", img.getOss_img_id());
 							json.put("url", img.getUrl());
 							job_crets.add(json);
-						}
+						}*/
 						break;
-					};
+					}else{
+						if(id!=0){
+							long sid = Long.parseLong(imgList.get(j));
+							OssImg img = this.ossImgService.selectByPrimaryKey(sid);
+							json.put("id", img.getOss_img_id());
+							json.put("url", img.getUrl());
+							job_crets.add(json);
+							break;
+						}
+					}
 				}
 			}
 			student.setJob_cert(JSONArray.toJSONString(job_crets));

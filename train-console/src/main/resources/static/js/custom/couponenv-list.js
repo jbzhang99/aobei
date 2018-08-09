@@ -12,6 +12,12 @@ function couponEnv_on(id) {
     alertify.confirm("确定要生效此条策略吗",function (e) {
         if(e){
             $.post('/couponEnv/change_status',{couponEnv_id:id,mts:mts},function (data) {
+                var mgs = data.message;
+                if(mgs.indexOf("change_status")!=-1){
+                    reset();
+                    alertify.alert("生效失败，注册派券类型已存在！")
+                    return false;
+                }
                 reset();
                 alertify.success(data.message);
                 setTimeout(function () {

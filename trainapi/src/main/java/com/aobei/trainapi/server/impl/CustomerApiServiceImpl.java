@@ -25,10 +25,10 @@ import com.aobei.trainapi.server.PayService;
 import com.aobei.trainapi.server.bean.ApiResponse;
 import com.aobei.trainapi.server.bean.Img;
 import com.aobei.trainapi.server.bean.MessageContent;
+import com.aobei.trainapi.server.handler.InStationHandler;
 import com.aobei.trainapi.server.handler.OnsHandler;
 import com.aobei.trainapi.server.handler.PushHandler;
 import com.aobei.trainapi.server.handler.SmsHandler;
-import com.aobei.trainapi.util.JacksonUtil;
 import com.github.liyiorg.mbg.bean.Page;
 import custom.bean.*;
 import custom.bean.OrderInfo.OrderStatus;
@@ -146,6 +146,8 @@ public class CustomerApiServiceImpl implements CustomerApiService {
     PushHandler pushHandler;
     @Autowired
     RobbingService robbingService;
+    @Autowired
+    InStationHandler inStationHandler;
 
     Logger logger = LoggerFactory.getLogger(CustomerApiServiceImpl.class);
     //分页固定数值
@@ -698,7 +700,7 @@ public class CustomerApiServiceImpl implements CustomerApiService {
      * @param pay_order_id 订单号
      * @return OrderInfo
      */
-    //@Cacheable(value = "orderDetail",key = "'customer_id:'+#customer.customer_id+':pay_order_id:'+#pay_order_id",unless = "#result == null")
+    @Cacheable(value = "orderDetail",key = "'customer_id:'+#customer.customer_id+':pay_order_id:'+#pay_order_id",unless = "#result == null")
     @Override
     public OrderInfo orderDetail(Customer customer, String pay_order_id) {
         logger.info("api-method:orderDetail:params customer:{},pay_order_id:{}", customer, pay_order_id);
@@ -711,11 +713,15 @@ public class CustomerApiServiceImpl implements CustomerApiService {
                 break;
             case 2:
             case 3:
-                CancleStrategyMethod cancleStrategyMethod = cancleStrategyMethod(customer, pay_order_id).getT();
-                if (cancleStrategyMethod == null) {
+                if ("JD-001".equals(orderInfo.getOrder().getChannel())){
                     orderInfo.setAllowedToCancel(false);
-                } else {
-                    orderInfo.setAllowedToCancel(true);
+                }else {
+                    CancleStrategyMethod cancleStrategyMethod = cancleStrategyMethod(customer, pay_order_id).getT();
+                    if (cancleStrategyMethod == null) {
+                        orderInfo.setAllowedToCancel(false);
+                    } else {
+                        orderInfo.setAllowedToCancel(true);
+                    }
                 }
                 break;
             case 4:
@@ -1384,7 +1390,7 @@ public class CustomerApiServiceImpl implements CustomerApiService {
                 return response;
             }
             apiOrderService.paySuccess(order, paytype);
-            Station station = apiOrderService.dispatch(order, serviceUnit);
+            Station station = orderService.dispatchOrder(order,serviceUnit);
             // 发送短信
             // 您有一张新的${product_name}订单，订单号：${pay_order_id}}，还有10分钟将被自视为动拒单，请及时确认。
             Partner partner = partnerService.selectByPrimaryKey(station == null ? 0l : station.getPartner_id());
@@ -1595,6 +1601,7 @@ public class CustomerApiServiceImpl implements CustomerApiService {
             messageService.insertSelective(msg);*/
 
                 pushHandler.pushCancelOrderMessageToPartner(order, partner.getPartner_id().toString());
+                inStationHandler.sentToPartnerCancleOrder(pay_order_id,partner);
             }
             // 取消订单 有服务人员 释放库存
             ServiceunitPersonExample personExample = new ServiceunitPersonExample();
@@ -1625,7 +1632,8 @@ public class CustomerApiServiceImpl implements CustomerApiService {
                     cacheReloadHandler.selectStuUndoneOrderReload(t.getStudent_id());
                     //取消,推送服务人员
                     pushHandler.pushCancelOrderMessageToStudent(orderInfo, t.getStudent_id().toString());
-
+                    //站内消息（取消）
+                    inStationHandler.sentToStudentCancleOrder(pay_order_id,studentService.selectByPrimaryKey(t.getStudent_id()));
                 });
                 //同步serviceunitPerson的状态
                 ServiceunitPerson serviceunitPerson = new ServiceunitPerson();

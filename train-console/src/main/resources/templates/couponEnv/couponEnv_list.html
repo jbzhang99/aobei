@@ -43,6 +43,7 @@ $(function(){
 					<thead>
 						<tr>
 							<th>策略名称</th>
+							<th>策略类型</th>
 							<th>创建时间</th>
 							<th>状态</th>
 							<th>操作</th>
@@ -52,6 +53,10 @@ $(function(){
 						<tr th:each="env:${list_couponEnv}">
 
 							<td th:text="${env.name}"></td>
+							<td th:switch="${env.coupon_env_type}">
+								<p th:case="1">注册派券</p>
+								<p th:case="2">首单立减</p>
+							</td>
 							<td th:text="${#dates.format(env.create_datetime,'yyyy-MM-dd HH:mm:ss')}"></td>
 							<td th:switch="${env.status}">
 								<p th:case="1">已生效</p>

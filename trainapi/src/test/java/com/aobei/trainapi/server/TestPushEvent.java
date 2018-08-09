@@ -4,8 +4,15 @@ import com.aobei.common.bean.IGtPushData;
 import com.aobei.common.boot.EventPublisher;
 import com.aobei.common.boot.event.IGtPushEvent;
 import com.aobei.train.model.Order;
+import com.aobei.train.model.Partner;
+import com.aobei.train.model.Student;
+import com.aobei.train.model.StudentExample;
 import com.aobei.train.service.OrderService;
+import com.aobei.train.service.PartnerService;
+import com.aobei.train.service.StudentService;
+import com.aobei.trainapi.server.bean.ApiResponse;
 import com.aobei.trainapi.server.handler.PushHandler;
+import custom.bean.OrderInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +32,12 @@ public class TestPushEvent {
     PushHandler pushHandler;
     @Autowired
     OrderService orderService;
+    @Autowired
+    StudentService studentService;
+    @Autowired
+    PartnerApiService partnerApiService;
+    @Autowired
+    PartnerService partnerService;
     @Test
     public void testPushEvent(){
 
@@ -63,8 +76,12 @@ public class TestPushEvent {
 
     @Test
     public void testPushHandler(){
-        Order order  = orderService.selectByPrimaryKey("1528274898_1");
-        pushHandler.pushOrderMessageToPartner(order,"1107667325747568641");
+        /*Order order  = orderService.selectByPrimaryKey("1528274898_1");
+        pushHandler.pushOrderMessageToPartner(order,"1107667325747568641");*/
+        Student student = studentService.selectByPrimaryKey(1135929198610685952l);
+        Partner partner = partnerService.selectByPrimaryKey(1135912592396460032l);
+        OrderInfo orderInfo = partnerApiService.partner_order_detail(partner, "1535967698_2");
+        pushHandler.pushOrderMessageToStudent(orderInfo,String.valueOf(student.getStudent_id()));
     }
 
 }

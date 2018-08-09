@@ -1,17 +1,16 @@
 package com.aobei.trainapi.server;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import com.aobei.train.model.Message;
 import com.aobei.train.model.Order;
 import com.aobei.train.model.Student;
+import com.aobei.train.model.VideoContent;
 import com.aobei.trainapi.schema.input.StudentOrderInput;
-import com.aobei.trainapi.server.bean.ApiResponse;
-import com.aobei.trainapi.server.bean.CustomerDetail;
-import com.aobei.trainapi.server.bean.Img;
+import com.aobei.trainapi.server.bean.*;
 
-import com.aobei.trainapi.server.bean.MessageContent;
 import custom.bean.OrderInfo;
 import custom.bean.ProductInfo;
 import custom.bean.TimeModel;
@@ -50,7 +49,7 @@ public interface StudentApiService {
 	 * @param orderInput
 	 * @return
 	 */
-	ApiResponse<Order> create_order(Student student, StudentOrderInput orderInput);
+	ApiResponse<Order> create_order(Student student, String channelId,StudentOrderInput orderInput);
 
 	/**
 	 * 商品详情
@@ -85,10 +84,35 @@ public interface StudentApiService {
 	 * 服务人员取消订单
 	 * @param student
 	 * @param pay_order_id
-	 * @param remark_cancel
 	 * @return
 	 */
 	ApiResponse cancelOrder(Student student, String pay_order_id);
-	
 
+
+	/**
+	 * 是否有新的消息
+	 * @param studentInfo
+	 * @return
+	 */
+    MessageState whetherHaveNewMessages(StudentInfo studentInfo);
+
+	/**
+	 * 学员订单统计
+	 * @return
+	 */
+	StudentServiceOrderStatistics studentStatisticsOrder(StudentInfo studentInfo);
+
+	/**
+	 * 视频列表
+	 * @param clientId
+	 * @return
+	 */
+	List<VideoContent> studentVideoList(String clientId,int page_index,int  count);
+
+	/**
+	 * 服务人员解绑
+	 * @param studentInfo
+	 * @return
+	 */
+	ApiResponse removeTheBing(StudentInfo studentInfo);
 }

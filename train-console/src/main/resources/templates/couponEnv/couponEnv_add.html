@@ -4,14 +4,25 @@
 <head> 
 <meta charset="UTF-8" />
 <title>添加优惠策略</title>
+<link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
 <link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" />
 <script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
 <script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
 <script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
 <script th:src="@{/js/custom/couponenv-list.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-select.min.js}"></script>
 <script type="text/javascript" th:inline="javascript">
 	$(function(){
 		ymdhm();
+        var val = $("#coupon_env_type").val();
+        if(val==1){
+            $("#div_0").show();
+            $("#div_1").hide();
+        }
+        if(val==2){
+            $("#div_1").show();
+            $("#div_0").hide()
+        }
         /*$('.datetimepicker1').datetimepicker({//初始化使劲按控件
             language: 'zh-CN',//显示中文
             format: 'yyyy-mm-dd',//显示格式
@@ -61,120 +72,202 @@
 				}
 			}
 		})
-		$("#coupon_id").change(function(){			
+        $("#coupon_id1").change(function () {
+            var sv = $("#coupon_id1 option:selected").val();
+            var type = $("#coupon_env_type").val();
+            if($("#coupon_env_type").val()==2) {
+                $.post('/couponEnv/queryNumber', {coupon_id: sv, type: type}, function (data) {
+                    if (data.message.num_limit == 0) {
+                        var phtml = "<p style='color:red;'>该优惠券数量没有限制</p>"
+                        $("#div_number").show();
+                        $("#p_hidden").html(phtml);
+                        $("#p_hidden").show();
+                    } else {
+                        var phtml = "<p style='color:red;'>该优惠券剩余" + data.message.num_able + "张</p>"
+                        $("#div_number").show();
+                        $("#p_hidden").html(phtml);
+                        $("#p_hidden").show();
+                    }
+                })
+            }
+        })
+
+		/*$("#coupon_number").blur(function(){
 			var sv = $("#coupon_id option:selected").val();
-				$.post('/couponEnv/queryNumber',{coupon_id:sv},function(data){
-					if(data.message.num_limit==0){
-						var phtml = "<p style='color:red;'>该优惠券数量没有限制</p>"
-						$("#div_number").show();
-						$("#p_hidden").html(phtml);
-						$("#p_hidden").show();
-					}else{						
-						var phtml = "<p style='color:red;'>该优惠券剩余"+data.message.num_able+"张</p>"
-						$("#div_number").show();
-						$("#p_hidden").html(phtml);
-						$("#p_hidden").show();
-					}
-				})
-		}) 
-		
-		$("#add_btn").click(function(){
-				
-			var cname = $("#c_name").val();
-			var edate = $("#e_date").val();
-			var sdate = $("#s_date").val()
-			var edatetime = $("#end_datetime").val();
-			var sdatetime = $("#start_datetime").val();
-			var coupon_number = $("#coupon_number").val()
-			var select_coupon = $("#coupon_id option:selected").val()
-			var select_type = $("#type option:selected").val()
-
-
-			if(coupon_number!=""){
-				var regex = /^[0-9]*$/;
-				var data = $("#coupon_number").val();
-				if(!regex.test(data)){
-					reset();
-					alertify.alert("优惠券数量只能输入数字！")
-					return false;
+			var env = $("#couponEnv_id").val();
+			var num = $("#coupon_number").val();
+			var type = $("#coupon_env_type").val();
+			if(type==1){
+				if(num!=0){
+					$.post('/couponEnv/queryNumber',{coupon_ids:sv,coupon_env_id:env, type: type,number:num},function(data){
+						if(data.message!=null){
+                            $("#coupon_number").val('');
+							alertify.alert("最小优惠券数量为[" + data.message.num_able+"]优惠券数量不能大于此数！");
+							return false;
+						}
+					})
 				}
 			}
-			if($("#type option:selected").val()==1){
-				if(sdate==""){
-					reset();
-					alertify.alert("请选择顾客注册开始时间后再提交！")
-					return false;
-				}
-				if(edate==""){
-					reset();
-					alertify.alert("请选择顾客注册结束时间后再提交！")
-					return false;
-				}
-			}
-			if(cname==""){
-				reset();
-				alertify.alert("请输入策略名称后再提交！")
-				return false;
-			}else if(sdatetime==""){
-				reset();
-				alertify.alert("请选择开始时间后再提交！")
-				return false;
-			}else if(edatetime==""){
-				reset();
-				alertify.alert("请选择结束时间后再提交！")
-				return false;
-			}else if(select_type==0){
-				$("#type").focus();
-				reset();
-				alertify.alert("请选择适用类型！")
-				return false;
-			}else if(coupon_number==""){
-				reset();
-				alertify.alert("请输入优惠数量！")
-				return false;
-			}else if(select_coupon==0){
-				$("#coupon_id").focus();
-				reset();
-				alertify.alert("请选择优惠券！")
-				return false;
-			}else if(edate<=sdate){
-				reset();
-				alertify.alert("顾客结束结束时间不能小于等于顾客开始时间，请重新选择！")
-				return false;
-			}else if(edatetime<=sdatetime){
-				reset();
-				alertify.alert("结束时间不能小于等于开始时间，请重新选择！")
-				return false;
-			}else {	
-				var ed = formatDate($("#start_datetime").val());
-				$("#start_time").val(ed);
-				var rd = formatDate($("#end_datetime").val());
-				$("#end_time").val(rd);
+		})*/
 
-				$.ajax({
-					url:'/couponEnv/add_couponEnv',
-					type:'post',
-					data:$("#form1").serializeArray(),
-					success:function(data){
-						var current = [[${current}]]
-						reset();
-						alertify.success(data.message);
-						setTimeout(function(){							
-							window.location.href="/couponEnv/couponEnv_list?p="+current
-						},1500)
-					}
-				})
-			}
-		})
-		
+        $("#coupon_env_type").change(function () {
+            var val = $(this).val();
+            if(val==1){
+                $("#div_0").show();
+                $("#div_1").hide();
+            }
+            if(val==2){
+                $("#div_1").show();
+                $("#div_0").hide()
+            }
+        })
+        $("#add_btn").click(function(){
+            var cname = $("#c_name").val();
+            var edate = $("#e_date").val();
+            var sdate = $("#s_date").val()
+            var edatetime = $("#end_datetime").val();
+            var sdatetime = $("#start_datetime").val();
+            var coupon_number = $("#coupon_number").val()
+            var select_coupon = $("#coupon_id option:selected").val()
+            var select_type = $("#type option:selected").val();
+            var select_couponenv_type = $("#couponenv_type").val();
+            var regex_name = /^[a-zA-Z0-9\u4e00-\u9fa5]+$/;
+
+            if(!regex_name.test(cname)){
+                reset();
+                alertify.alert("优惠策略名称只能为中文，数字或字母！")
+                return false;
+            }
+            if(cname.length>20){
+                reset();
+                alertify.alert("优惠策略名称不能超过20个字！")
+                return false;
+            }
+            if(coupon_number!=""){
+                var regex = /^[0-9]*$/;
+                var data = $("#coupon_number").val();
+                if(!regex.test(data)){
+                    reset();
+                    alertify.alert("优惠券数量只能输入数字！")
+                    return false;
+                }
+            }
+            if(Number(coupon_number)>10000){
+                reset();
+                alertify.alert("优惠券最多添加10000张！")
+                return false;
+            }
+            if($("#type option:selected").val()==1){
+                if(sdate==""){
+                    reset();
+                    alertify.alert("请选择顾客注册开始时间后再提交！")
+                    return false;
+                }
+                if(edate==""){
+                    reset();
+                    alertify.alert("请选择顾客注册结束时间后再提交！")
+                    return false;
+                }
+            }
+            if(cname==""){
+                reset();
+                alertify.alert("请输入策略名称后再提交！")
+                return false;
+            }else if(sdatetime==""){
+                reset();
+                alertify.alert("请选择开始时间后再提交！")
+                return false;
+            }else if(edatetime==""){
+                reset();
+                alertify.alert("请选择结束时间后再提交！")
+                return false;
+            }else if(select_type==0){
+                $("#type").focus();
+                reset();
+                alertify.alert("请选择适用类型！")
+                return false;
+            }else if(select_couponenv_type==0){
+                $("#type").focus();
+                reset();
+                alertify.alert("请选择策略类型！")
+                return false;
+            }else if(coupon_number==""){
+                reset();
+                alertify.alert("请输入优惠数量！")
+                return false;
+            }else if(select_coupon==0){
+                $("#coupon_id").focus();
+                reset();
+                alertify.alert("请选择优惠券！")
+                return false;
+            }else if(edate<=sdate){
+                reset();
+                alertify.alert("顾客结束结束时间不能小于等于顾客开始时间，请重新选择！")
+                return false;
+            }else if(edatetime<=sdatetime){
+                reset();
+                alertify.alert("结束时间不能小于等于开始时间，请重新选择！")
+                return false;
+            }else {
+                var ed = formatDate($("#start_datetime").val());
+                $("#start_time").val(ed);
+                var rd = formatDate($("#end_datetime").val());
+                $("#end_time").val(rd);
+                $.ajax({
+                    url:'/couponEnv/add_couponEnv',
+                    type:'post',
+                    data:$("#form1").serializeArray(),
+                    success:function(data){
+                        var current = [[${current}]]
+                        var mgs = data.message;
+                        if(mgs!=undefined){
+                            if(mgs.indexOf("成功")!=-1){
+                                reset();
+                                alertify.success(data.message);
+                                setTimeout(function(){
+                                    window.location.href="/couponEnv/couponEnv_list?p="+current
+                                },1500)
+                            }
+                            if(mgs.indexOf("1")!=-1){
+                                reset();
+                                alertify.error("派券类型的新注册用户只能有一个！")
+                                setTimeout(function(){
+                                    window.location.href="/couponEnv/couponEnv_list?p="+current
+                                },2000)
+                            }
+                            if(mgs.indexOf("2")!=-1){
+                                reset();
+                                alertify.error("优惠券数量不能大于优惠券可用数量【"+data.val+"】,添加失败！")
+                                setTimeout(function(){
+                                    window.location.href="/couponEnv/couponEnv_list?p="+current
+                                },2000)
+                            }
+                            if(mgs.indexOf("3")!=-1){
+                                reset();
+                                alertify.error("优惠券不能超过十张，添加失败!")
+                                setTimeout(function(){
+                                    window.location.href="/couponEnv/couponEnv_list?p="+current
+                                },2000)
+                            }
+                            if(mgs.indexOf("4")!=-1){
+                                reset();
+                                alertify.error("优惠券为空，添加失败!")
+                                setTimeout(function(){
+                                    window.location.href="/couponEnv/couponEnv_list?p="+current
+                                },2000)
+                            }
+                        }
+                    }
+                })
+            }
+        })
+	
 		//取消按钮
 		$("#cancel_btn").click(function(){
 			var current = [[${current}]]
 			window.location.href="/couponEnv/couponEnv_list?p="+current
 		});
 	})
-	
-
 </script>
 </head>
 <body>
@@ -203,8 +296,17 @@
 					</div>
 				</div>
 				<div class="form-group">
-					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>适用类型</label>		
-					<div class="col-sm-2">	
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>策略类型</label>
+					<div class="col-sm-3">
+						<select id="coupon_env_type" name="coupon_env_type" class="form-control">
+							<option value="1">注册派券</option>
+							<option value="2">首单立减</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>适用顾客类型</label>
+					<div class="col-sm-3">
 						<select id="type" name="type" class="form-control">
 						
 						<option value="1">对新注册用户优惠</option>
@@ -223,11 +325,20 @@
 						<input id="e_date" name="e_date" class="form-control datetimepicker2" data-date-fomat="yyyy-MM-dd HH:mm" placeholder="请选择顾客注册结束时间" readonly/>
 					</div>
 				</div>
-				<div class="form-group">
-					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>优惠券</label>		
-					<div class="col-sm-2">	
-						<select id="coupon_id" name="coupon_id" class="form-control">
-							
+				<div class="form-group" id="div_0" hidden="hidden">
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>优惠券</label>
+					<div class="col-sm-3">
+						<select id="coupon_id" name="coupon_ids" class="form-control selectpicker"  multiple title="请选择优惠券" >
+
+							<option th:each="coupon:${list_coupon}" th:value="${coupon.coupon_id}" th:text="${coupon.name}"></option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group" id="div_1" hidden="hidden">
+					<label class="col-sm-4 control-label"><span style="color: red">*&nbsp;&nbsp;&nbsp;</span>优惠券</label>
+					<div class="col-sm-3">
+						<select id="coupon_id1" name="coupon_id" class="form-control" title="请选择优惠券" >
+
 							<option th:each="coupon:${list_coupon}" th:value="${coupon.coupon_id}" th:text="${coupon.name}"></option>
 						</select>
 					</div>

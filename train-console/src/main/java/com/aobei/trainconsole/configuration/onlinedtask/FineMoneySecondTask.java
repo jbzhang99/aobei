@@ -100,7 +100,7 @@ public class FineMoneySecondTask {
                         fallintoFineMoneyExample.or().andFine_money_idEqualTo(fineMoney.getFine_money_id()).andPay_order_idEqualTo(fineMoney.getPay_order_id());
                         FallintoFineMoney fallintoFineMoney = DataAccessUtils.singleResult(fallintoFineMoneyService.selectByExample(fallintoFineMoneyExample));
                         if(fallintoFineMoney==null){
-                            FallintoFineMoney fm = combine(localDate, fineMoney);
+                            FallintoFineMoney fm = combine(LocalDate.now(), fineMoney);
                             this.fallintoFineMoneyService.insert(fm);
                         }
                     }
@@ -141,7 +141,7 @@ public class FineMoneySecondTask {
                         fallintoFineMoneyExample.or().andFine_money_idEqualTo(fineMoney.getFine_money_id()).andPay_order_idEqualTo(fineMoney.getPay_order_id());
                         FallintoFineMoney fallintoFineMoney = DataAccessUtils.singleResult(fallintoFineMoneyService.selectByExample(fallintoFineMoneyExample));
                         if(fallintoFineMoney==null){
-                            FallintoFineMoney fm = combine(localDate, fineMoney);
+                            FallintoFineMoney fm = combine(LocalDate.now(), fineMoney);
                             this.fallintoFineMoneyService.insert(fm);
                         }
                     }
@@ -163,7 +163,7 @@ public class FineMoneySecondTask {
         FallintoFineMoney fallintoFineMoney=new FallintoFineMoney();
         fallintoFineMoney.setFallinto_fine_money_id(IdGenerator.generateId());
         String month = localDate.getMonthValue() < 10 ? "0" + localDate.getMonthValue() : localDate.getMonthValue() + "";
-        fallintoFineMoney.setBalance_cycle(localDate.getYear() + month + "16");//结算期
+        fallintoFineMoney.setBalance_cycle(localDate.getYear() + month + "02");//结算期
         fallintoFineMoney.setFine_money_id(fineMoney.getFine_money_id());//罚款单号
         fallintoFineMoney.setPay_order_id(order.getPay_order_id());//订单号
         fallintoFineMoney.setServiceunit_id(serviceUnit.getServiceunit_id());//服务单号

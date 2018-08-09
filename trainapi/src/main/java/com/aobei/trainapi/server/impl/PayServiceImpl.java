@@ -4,8 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.domain.AlipayTradeAppPayModel;
+import com.alipay.api.domain.AlipayTradeWapPayModel;
 import com.alipay.api.request.AlipayTradeAppPayRequest;
+import com.alipay.api.request.AlipayTradeWapPayRequest;
 import com.alipay.api.response.AlipayTradeAppPayResponse;
+import com.alipay.api.response.AlipayTradePagePayResponse;
+import com.alipay.api.response.AlipayTradeWapPayResponse;
 import com.aobei.train.IdGenerator;
 import com.aobei.train.model.*;
 import com.aobei.train.service.UsersService;
@@ -190,6 +194,30 @@ public class PayServiceImpl implements PayService {
         //就是orderString 可以直接给客户端请求，无需再做处理。
         return aliResponse.getBody();
     }
+
+    @Override
+    public String aliWapPayBody(Order order, String appId) throws AlipayApiException {
+        AlipayClient alipayClient = aliPayClientMap.getClient(appId);
+        AlipayTradeWapPayRequest request = new AlipayTradeWapPayRequest();
+        AlipayTradeWapPayModel model = new AlipayTradeWapPayModel();
+        model.setBody(order.getName());
+        model.setSubject(order.getName());
+        model.setOutTradeNo(order.getPay_order_id());
+        model.setTimeoutExpress("30m");
+        model.setTotalAmount(order.getPrice_pay() / 100D + "");
+        model.setProductCode("QUICK_WAP_WAY");
+        request.setBizModel(model);
+        request.setBizModel(model);
+        String notify_url = properties.getAlipay().getPayNotifyUrl().replace("{path}", appId);
+        request.setNotifyUrl(notify_url);
+        AlipayTradeWapPayResponse response = alipayClient.sdkExecute(request);
+        String payUrl = "https://openapi.alipay.com/gateway.do?";
+        if (response.isSuccess()){
+            return payUrl+response.getBody();
+        }
+        return  "";
+    }
+
 
     @Override
     public Order wxPayConfirm() {

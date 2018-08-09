@@ -15,6 +15,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
+import org.springframework.format.annotation.DateTimeFormat;
 import weixin.popular.api.PayMchAPI;
 import weixin.popular.bean.paymch.SecapiPayRefund;
 import weixin.popular.bean.paymch.Unifiedorder;
@@ -367,10 +368,37 @@ public class TestMain {
     }
 
 
-    public static void main(String[] args){
-        Pattern pattern = Pattern.compile("^[a-zA-Z]{5}(\\-)\\d{4}$", Pattern.DOTALL);
+    public static void main(String[] args) throws ParseException {
+        /*Pattern pattern = Pattern.compile("^[a-zA-Z]{5}(\\-)\\d{4}$", Pattern.DOTALL);
 
-        System.out.println(pattern.matcher("abace-1233").find());
+        System.out.println(pattern.matcher("abace-1233").find());*/
+
+        /*Instant instant = new Date().toInstant();
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDateTime localDateTime = instant.atZone(zoneId).toLocalDateTime();
+        LocalDateTime localDateTime1 = localDateTime.minusDays(1).withHour(8).withMinute(0).withSecond(0);
+        ZonedDateTime zonedDateTime = localDateTime1.atZone(zoneId);
+        Date date = Date.from(zonedDateTime.toInstant());
+        System.out.println(date);*/
+        String str = "2018-08-07 15:35:10";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = sdf.parse(str);
+        LocalDateTime nowTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        System.out.println("转换之后"+nowTime);
+        LocalDateTime localDateTime = nowTime.minusHours(1);
+        System.out.println("一小时前"+localDateTime);
+
+        LocalDateTime localDateTimes = nowTime.minusHours(-1);
+        System.out.println("一小时后"+localDateTimes);
+        //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        System.out.println("当前时间"+now);
+        if (now.isAfter(localDateTime) && now.isBefore(nowTime)){
+            System.out.println("当前时间在1小时之前");
+        }
+
+
+
     }
 
 

@@ -132,7 +132,7 @@ public class BalanceController {
         String str = request.getParameter("result");
         logger.info("M[balance] F[addFallinto] U[{}] ,params request:{}",
                 users.getUser_id(),str);
-        int num=this.balanceOrderService.xAddFallinto(str);
+        int num=this.balanceOrderService.xAddFallinto(str,users);
         Map<String, Object> resultMap=new HashMap<>();
         resultMap.put("message", String.format("结算策略%s!",num>0 ? "成功" : "失败"));
         logger.info("M[balance] F[addFallinto] U[{}] ,execute result:{}",
@@ -156,6 +156,7 @@ public class BalanceController {
                 users.getUser_id(),fallinto_id);
         Fallinto fallinto = this.fallintoService.selectByPrimaryKey(fallinto_id);
         fallinto.setActived(1);
+        fallinto.setIs_actived(1);
         int num = this.fallintoService.updateByPrimaryKeySelective(fallinto);
         Map<String, Object> resultMap=new HashMap<>();
         resultMap.put("message", String.format("生效%s!",num>0 ? "成功" : "失败"));
