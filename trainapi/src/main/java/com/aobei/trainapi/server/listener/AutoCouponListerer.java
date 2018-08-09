@@ -127,6 +127,7 @@ public class AutoCouponListerer {
         or.andTypeEqualTo(1)
                 .andStatusEqualTo(1)
                 .andCoupon_env_typeEqualTo(1)
+                .andStart_datetimeLessThanOrEqualTo(new Date())
                 .andEnd_datetimeGreaterThanOrEqualTo(new Date());
         CouponEnv couponEnv = singleResult(couponEnvService.selectByExample(couponEnvExample));
         if (!StringUtils.isEmpty(couponEnv)) {
