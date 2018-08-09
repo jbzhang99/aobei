@@ -792,7 +792,7 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
         msg.setId(IdGenerator.generateId());
         msg.setType(2);
         msg.setBis_type(3);
-        msg.setUser_id(partner_id);
+        msg.setUser_id(partnerService.selectByPrimaryKey(partner_id) == null ? 0l : partnerService.selectByPrimaryKey(partner_id).getUser_id());
         msg.setUid(partner_id);
         msg.setMsg_title("订单通知");
         msg.setMsg_content(
