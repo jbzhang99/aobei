@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(value = Exception.class)
-    public ModelAndView defaultErrorHandler(HttpServletRequest req,Exception e) throws Exception{
+    public ModelAndView defaultErrorHandler(HttpServletRequest req,Exception e){
         logger.error("error is happened",e);
         ModelAndView mav = new ModelAndView(DEFAULT_ERROR_VIEW);
         mav.addObject("exception",e);
