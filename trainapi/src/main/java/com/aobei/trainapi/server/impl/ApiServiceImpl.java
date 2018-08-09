@@ -195,6 +195,8 @@ public class ApiServiceImpl implements ApiService {
 					case 2:info.setGradeDesc("中级");break;
 					case 3:info.setGradeDesc("初级");break;
 				}
+			}else {
+				info.setGradeDesc("");
 			}
 			Users users = usersService.selectByPrimaryKey(user_id);
 			if (StringUtils.isEmpty(users.getWx_id())){

@@ -3,10 +3,7 @@ package com.aobei.trainapi.server.handler;
 import com.alibaba.fastjson.JSON;
 import com.aobei.train.IdGenerator;
 import com.aobei.train.model.*;
-import com.aobei.train.service.MessageService;
-import com.aobei.train.service.OrderService;
-import com.aobei.train.service.ServiceUnitService;
-import com.aobei.train.service.StudentService;
+import com.aobei.train.service.*;
 import com.aobei.trainapi.schema.Errors;
 import com.aobei.trainapi.server.bean.MessageContent;
 import custom.bean.OrderInfo;
@@ -44,6 +41,9 @@ public class InStationHandler {
     @Autowired
     private ServiceUnitService serviceUnitService;
 
+    @Autowired
+    private CustomerService customerService;
+
     /**
      * 待确定变待服务站内消息
      * @param student_id
@@ -71,15 +71,17 @@ public class InStationHandler {
         mes.setType(2);
         mes.setBis_type(1);
         mes.setUser_id(student.getUser_id()==null ? 0l : student.getUser_id());
-        mes.setUid(order.getUid());
+        mes.setUid(student.getStudent_id());
         mes.setMsg_title("新订单通知");
         MessageContent.ContentMsg contentMsg = new MessageContent.ContentMsg();
         SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String beginTimeStr = sd.format(serviceUnit.getC_begin_datetime());
         contentMsg.setMsgtype("native");
         contentMsg.setContent("您有一个新的"+order.getName()+"任务，于"+beginTimeStr+"去"+order.getCus_address()+"进行服务");
+
         Map<String,String> param = new HashMap<>();
         param.put("pay_order_id",order.getPay_order_id());
+        param.put("orderStatus","waitService");
         TransmissionContent tContent = new TransmissionContent(TransmissionContent.STUDENT,TransmissionContent.ORDER_DETAIL,param);
         contentMsg.setHref(tContent.getHrefNotEncode());
         contentMsg.setTypes(1);//纯文本
@@ -132,6 +134,7 @@ public class InStationHandler {
         contentMsg.setContent("您于"+beginTimeStr+"进行"+order.getName()+"服务的订单已取消");
         Map<String,String> param = new HashMap<>();
         param.put("pay_order_id",order.getPay_order_id());
+        param.put("orderStatus","cancel");
         TransmissionContent tContent = new TransmissionContent(TransmissionContent.PARTNER,TransmissionContent.ORDER_DETAIL,param);
         contentMsg.setHref(tContent.getHrefNotEncode());
         contentMsg.setTypes(1);//纯文本
@@ -186,6 +189,7 @@ public class InStationHandler {
         contentMsg.setContent("您于"+beginTimeStr+"去"+order.getCus_address()+"进行"+order.getName()+"服务的订单已取消");
         Map<String,String> param = new HashMap<>();
         param.put("pay_order_id",order.getPay_order_id());
+        param.put("orderStatus","cancel");
         TransmissionContent tContent = new TransmissionContent(TransmissionContent.STUDENT,TransmissionContent.ORDER_DETAIL,param);
         contentMsg.setHref(tContent.getHrefNotEncode());
         contentMsg.setTypes(1);//纯文本
@@ -240,6 +244,7 @@ public class InStationHandler {
         contentMsg.setContent("您于"+beginTimeStr+"进行"+order.getName()+"服务");
         Map<String,String> param = new HashMap<>();
         param.put("pay_order_id",order.getPay_order_id());
+        param.put("orderStatus","waitService");
         TransmissionContent tContent = new TransmissionContent(TransmissionContent.STUDENT,TransmissionContent.ORDER_DETAIL,param);
         contentMsg.setHref(tContent.getHrefNotEncode());
         contentMsg.setTypes(1);//纯文本
@@ -287,8 +292,8 @@ public class InStationHandler {
         mes.setId(IdGenerator.generateId());
         mes.setType(1);//系统消息
         mes.setBis_type(4);//顾客端
-        mes.setUser_id(customer.getCustomer_id());
-        mes.setUid(student.getStudent_id());
+        mes.setUser_id(customer.getUser_id());
+        mes.setUid(customer.getCustomer_id());
         mes.setMsg_title("服务时间提醒");
         MessageContent.ContentMsg contentMsg = new MessageContent.ContentMsg();
         SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -297,6 +302,7 @@ public class InStationHandler {
         contentMsg.setContent("服务人员"+order.getName()+"电话"+student.getPhone()+"将于"+beginTimeStr+"为您进行服务，请安排好您的时间等待服务人员上门为您服务");
         Map<String,String> param = new HashMap<>();
         param.put("pay_order_id",order.getPay_order_id());
+        param.put("orderStatus","waitService");
         TransmissionContent tContent = new TransmissionContent(TransmissionContent.CUSTOM,TransmissionContent.ORDER_DETAIL,param);
         contentMsg.setHref(tContent.getHrefNotEncode());
         contentMsg.setTypes(1);//纯文本
@@ -318,12 +324,12 @@ public class InStationHandler {
 
     /**
      * 服务变更通知（人员，时间变更） 顾客
-     * @param orderInfo
+     * @param customer_id
      * @param student_ids    新服务人员id
      * @param pay_order_id   订单号
      */
-    public void sentToCustomerChangeOrder(OrderInfo orderInfo,List<Long> student_ids,String pay_order_id){
-        Customer customer = orderInfo.getCustomer();
+    public void sentToCustomerChangeOrder(Long customer_id,List<Long> student_ids,String pay_order_id){
+        Customer customer = customerService.selectByPrimaryKey(customer_id);
         Student student = studentService.selectByPrimaryKey(student_ids.get(0));
         Order order = orderService.selectByPrimaryKey(pay_order_id);
         if(order==null){
@@ -332,11 +338,14 @@ public class InStationHandler {
         if(student==null){
             return;
         }
+        if(customer==null){
+            return;
+        }
         Message mes = new Message();
         mes.setId(IdGenerator.generateId());
         mes.setType(2);
         mes.setBis_type(4);//顾客端
-        mes.setUser_id(customer.getCustomer_id());
+        mes.setUser_id(customer.getUser_id());
         mes.setUid(customer.getCustomer_id());
         mes.setMsg_title("服务变更通知");
         MessageContent.ContentMsg contentMsg = new MessageContent.ContentMsg();
@@ -346,6 +355,7 @@ public class InStationHandler {
         contentMsg.setContent("您"+order.getName()+"的订单由服务人员"+student.getName()+"为您进行服务");
         Map<String,String> param = new HashMap<>();
         param.put("pay_order_id",order.getPay_order_id());
+        param.put("orderStatus","waitService");
         TransmissionContent tContent = new TransmissionContent(TransmissionContent.CUSTOM,TransmissionContent.ORDER_DETAIL,param);
         contentMsg.setHref(tContent.getHrefNotEncode());
         contentMsg.setTypes(1);//纯文本
@@ -400,6 +410,7 @@ public class InStationHandler {
         contentMsg.setContent("您的"+order.getName()+"订单服务时间变更，请于"+beginTimeStr+"，去"+order.getCus_address()+"为进行服务服务");
         Map<String,String> param = new HashMap<>();
         param.put("pay_order_id",order.getPay_order_id());
+        param.put("orderStatus","waitService");
         TransmissionContent tContent = new TransmissionContent(TransmissionContent.CUSTOM,TransmissionContent.ORDER_DETAIL,param);
         contentMsg.setHref(tContent.getHrefNotEncode());
         contentMsg.setTypes(1);//纯文本

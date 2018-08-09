@@ -88,6 +88,9 @@ public class ApiUserServiceImpl implements ApiUserService {
                 Map<Object, Object> hashMap = (Map<Object, Object>) autoCouponListerer.couponMethod(customer);
                 Boolean bool = (Boolean) hashMap.get("boolean");
                 if (bool){
+                    CouponEnv couponEnv =(CouponEnv) hashMap.get("couponEnv");
+                    couponEnv.setCoupon_number(couponEnv.getCoupon_number()-1);
+                    couponEnvService.updateByPrimaryKeySelective(couponEnv);
                     List<CouponAndCouponEnv> couponList =(List<CouponAndCouponEnv>) hashMap.get("couponList");
                     for (CouponAndCouponEnv couponandCouponEnv: couponList) {
                         Coupon coupon = couponService.selectByPrimaryKey(couponandCouponEnv.getCoupon_id());

@@ -90,6 +90,9 @@ public class AutoCouponListerer {
         Map<Object, Object> hashMap = (Map<Object, Object>) couponMethod(customer);
         Boolean bool = (Boolean) hashMap.get("boolean");
         if (bool){
+            CouponEnv couponEnv =(CouponEnv) hashMap.get("couponEnv");
+            couponEnv.setCoupon_number(couponEnv.getCoupon_number() -1);
+            couponEnvService.updateByPrimaryKeySelective(couponEnv);
             List<CouponAndCouponEnv> couponList =(List<CouponAndCouponEnv>) hashMap.get("couponList");
             for (CouponAndCouponEnv couponandCouponEnv: couponList) {
                 Coupon coupon = couponService.selectByPrimaryKey(couponandCouponEnv.getCoupon_id());
@@ -128,9 +131,11 @@ public class AutoCouponListerer {
                 .andStatusEqualTo(1)
                 .andCoupon_env_typeEqualTo(1)
                 .andStart_datetimeLessThanOrEqualTo(new Date())
-                .andEnd_datetimeGreaterThanOrEqualTo(new Date());
+                .andEnd_datetimeGreaterThanOrEqualTo(new Date())
+                .andCoupon_numberGreaterThan(0);
         CouponEnv couponEnv = singleResult(couponEnvService.selectByExample(couponEnvExample));
         if (!StringUtils.isEmpty(couponEnv)) {
+            hashMap.put("couponEnv", couponEnv);
             String condition_env = couponEnv.getCondition_env();
             Map<String, String> envMap = new HashMap<>();
             Map map = JSON.parseObject(condition_env, envMap.getClass());
@@ -177,6 +182,8 @@ public class AutoCouponListerer {
                     }
                 }
             }
+        }else {
+            hashMap.put("boolean",false);
         }
         hashMap.put("boolean", true);
         return hashMap;

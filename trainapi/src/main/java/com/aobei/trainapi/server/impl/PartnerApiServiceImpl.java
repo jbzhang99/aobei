@@ -939,7 +939,7 @@ public class PartnerApiServiceImpl implements PartnerApiService {
         //推送消息 服务人员进行变更，发送给顾客
         pushHandler.pushOrderMessageWhenStudentChangeToCustomer(orderInfo,customer.getCustomer_id().toString());
         //站内消息，服务人员变更（通知顾客）
-        inStationHandler.sentToCustomerChangeOrder(orderInfo,student_ids,pay_order_id);
+        inStationHandler.sentToCustomerChangeOrder(customer.getCustomer_id(),student_ids,pay_order_id);
         Message msg = new Message();
         msg.setId(IdGenerator.generateId());
         msg.setType(2);

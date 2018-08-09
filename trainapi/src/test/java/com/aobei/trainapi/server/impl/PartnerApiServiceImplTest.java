@@ -3,8 +3,10 @@ package com.aobei.trainapi.server.impl;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.alibaba.fastjson.JSON;
 import com.aobei.train.model.*;
 import com.aobei.train.service.*;
+import com.aobei.trainapi.schema.Errors;
 import com.aobei.trainapi.util.JsonUtil;
 import custom.bean.ProductTag;
 import custom.bean.TransmissionContent;
@@ -37,7 +39,7 @@ import custom.bean.OrderInfo;
 import org.springframework.transaction.annotation.Transactional;
 
 @RunWith(SpringRunner.class)
-//@Transactional
+@Transactional
 @SpringBootTest
 public class PartnerApiServiceImplTest {
 
@@ -432,42 +434,38 @@ public class PartnerApiServiceImplTest {
 	
 	@Test
 	public void test2(){
-		Message msg = new Message();
-		msg.setId(IdGenerator.generateId());
-		msg.setType(2);
-		msg.setBis_type(1);
-		msg.setUser_id(1163365587586228224l);
-		msg.setUid(1067677206111346688l);
-		msg.setMsg_title("测试学员消息");
-		// 服务人员修改
-		MessageContent.ContentMsg content = new MessageContent.ContentMsg();
-		content.setMsgtype("native");
-		content.setContent("这个是测试学员消息的哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵呵");
+		Message mes = new Message();
+		mes.setId(IdGenerator.generateId());
+		mes.setType(2);
+		mes.setBis_type(3);//合伙人端
+		mes.setUser_id(1140145971255091200l);
+		mes.setUid(1135912592396460032l);
+		mes.setMsg_title("订单取消通知哈哈");
+		MessageContent.ContentMsg contentMsg = new MessageContent.ContentMsg();
+		SimpleDateFormat sd = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String beginTimeStr = "2018-08-10 10:00:00";
+		contentMsg.setMsgtype("native");
+		contentMsg.setContent("您于"+beginTimeStr+"进行服务的订单已取消");
 		Map<String,String> param = new HashMap<>();
-		param.put("orderStatus","waitService");
-		param.put("pay_order_id","1524481533");
-		TransmissionContent tContent = new TransmissionContent(TransmissionContent.STUDENT,TransmissionContent.ORDER_DETAIL,param);
-		content.setHref(tContent.getHrefNotEncode());
-		content.setTitle("测试学员消息");
-		content.setTypes(1);
-		content.setNoticeTypes(2);
-		if (!ParamsCheck.checkStrAndLength(content.getContent(),200)){
-			return;
+		param.put("pay_order_id","1536159070_2");
+		param.put("orderStatus","cancel");
+		TransmissionContent tContent = new TransmissionContent(TransmissionContent.PARTNER,TransmissionContent.ORDER_DETAIL,param);
+		contentMsg.setHref(tContent.getHrefNotEncode());
+		contentMsg.setTypes(1);//纯文本
+		contentMsg.setNoticeTypes(3);//订单取消类型
+		contentMsg.setTitle("订单取消通知");
+		if (contentMsg.getContent() != null && !ParamsCheck.checkStrAndLength(contentMsg.getContent(),500)){
+			Errors._41040.throwError("消息长度过长");
 		}
-		String object_to_json = null;
-		try {
-			object_to_json = JacksonUtil.object_to_json(content);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		msg.setMsg_content(object_to_json);
-		msg.setCreate_datetime(new Date());
-		msg.setNotify_datetime(new Date());
-		msg.setGroup_id("1524481533");
-		msg.setApp_type(1);
-		msg.setSend_type(1);
-		msg.setApp_platform(0);
-		messageService.insertSelective(msg);
+		String json = JSON.toJSONString(contentMsg);
+		mes.setMsg_content(json);
+		mes.setCreate_datetime(new Date());
+		mes.setNotify_datetime(new Date());
+		mes.setGroup_id("1536159070_2");
+		mes.setSend_type(1);//站内类型
+		mes.setApp_type(3);//合伙人员端
+		mes.setApp_platform(0);//所有平台
+		messageService.insertSelective(mes);
 		
 	}
 
