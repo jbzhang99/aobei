@@ -1131,16 +1131,18 @@ public class StudentApiServiceImpl implements StudentApiService {
                 if (serviceUnit != null) {
                     if (serviceUnit.getWork_2_datetime() != null) {
                         if (is_day) {
-                            String c_begin_time_sdh = sdh.format(serviceUnit.getWork_2_datetime());
-                            String local_date_sdh = sdh.format(new Date());
-                            if (c_begin_time_sdh.equals(local_date_sdh)) {
-                                instance.setTime(sd.parse(local_date_sdh));
-                                int day_local = instance.get(Calendar.DAY_OF_MONTH) + 1;//当前时间 /天
-                                instance.setTime(sd.parse(c_begin_time_sdh));
-                                int day_service = instance.get(Calendar.DAY_OF_MONTH) + 1;//服务时间 /天
-                                if (day_local == day_service)
-                                    serviceUnits.add(serviceUnit);
-                            }
+                            String c_begin_time_sdh = sdh.format(serviceUnit.getC_begin_datetime());
+                            if(c_begin_time_sdh != null){
+								String local_date_sdh = sdh.format(new Date());
+								if (c_begin_time_sdh.equals(local_date_sdh)) {
+									instance.setTime(sd.parse(local_date_sdh));
+									int day_local = instance.get(Calendar.DAY_OF_MONTH) + 1;//当前时间 /天
+									instance.setTime(sd.parse(c_begin_time_sdh));
+									int day_service = instance.get(Calendar.DAY_OF_MONTH) + 1;//服务时间 /天
+									if (day_local == day_service)
+										serviceUnits.add(serviceUnit);
+								}
+							}
                         } else {
                             String c_begin_time = sd.format(serviceUnit.getWork_2_datetime());
                             String local_date = sd.format(new Date());
