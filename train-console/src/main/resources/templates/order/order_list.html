@@ -612,15 +612,15 @@
 	<div class="page_content_main" data-sidea="side_13">
 		<div style="padding:10px 10px; background:#fff" class="screen">
 			<div class="ab_screen">
-				<div class="form-inline">
-					<label>订单来源：</label>
-					<select class="form-control channel_code input-sm" name="channel_code"  style="margin-right: 20px">
-						<option value=''>请选择</option>
-						<th:block th:each="channel:${channels}">
-							<option  th:value="${channel.code}" th:text="${channel.channel_name}" th:selected="${channel_code eq channel.code}"></option>
-						</th:block>
-					</select>
-				</div>
+				<!--<div class="form-inline">-->
+					<!--<label>订单来源：</label>-->
+					<!--<select class="form-control channel_code input-sm" name="channel_code"  style="margin-right: 20px">-->
+						<!--<option value=''>请选择</option>-->
+						<!--<th:block th:if="${!channels.isEmpty()}" th:each="channel:${channels}">-->
+							<!--<option  th:value="${channel.code}" th:text="${channel.channel_name}" th:selected="${channel_code eq channel.code}"></option>-->
+						<!--</th:block>-->
+					<!--</select>-->
+				<!--</div>-->
 				<br/>
 				<div class="form-inline">
 					<div class="form-group"  style="margin-right: 20px">
