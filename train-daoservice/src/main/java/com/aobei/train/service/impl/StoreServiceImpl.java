@@ -349,12 +349,13 @@ public class StoreServiceImpl implements StoreService {
         String key = Constant.getStudentTaskScheduleKey(student.getStudent_id(), dateTime);
         String schedule = redisService.getStringValue(key);
         Integer[] schedules = null;
-
+        logger.info("isStudent{},{},{}",dateTime,begin,end);
         try {
             schedules = scheduleStr(schedule, dateTime, student);
         } catch (Exception e) {
-            schedules = Constant.defaultAvailableTimeArrar;
-            logger.error("data of student is illegal  studentId:{}", student.getStudent_id());
+            logger.error("data of student is illegal  studentId:{}", student.getStudent_id(),e);
+            return false;
+
         }
         //此处不在进行数据更新。只做处理
        // redisService.setStringValue(key, JSON.toJSONString(schedules), dateTime + " 23:59:59");

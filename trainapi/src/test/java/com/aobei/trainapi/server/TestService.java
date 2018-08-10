@@ -5,9 +5,12 @@ import com.aobei.train.handler.CacheReloadHandler;
 import com.aobei.train.model.*;
 import com.aobei.train.service.*;
 
+import custom.bean.Constant;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,10 +19,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Date;
 import java.util.List;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class TestService {
 
+    Logger logger  = LoggerFactory.getLogger("d");
     @Autowired
     UsersService usersService;
 
@@ -35,7 +40,7 @@ public class TestService {
     RedisService redisService;
 
     @Autowired
-    RedisTemplate<String,Object> customerRedisTemplate;
+    RedisTemplate<String, Object> customerRedisTemplate;
     @Autowired
     StoreService storeService;
     @Autowired
@@ -103,7 +108,7 @@ public class TestService {
     }
 
     @Test
-    public  void  testMqConsumer(){
+    public void testMqConsumer() {
 
 
     }
@@ -114,13 +119,13 @@ public class TestService {
     }
 
     @Test
-    public void testredis(){
-         Customer customer  = new Customer();
-         customer.setChannel_id(1224);
-         customer.setName("nihao");
-         customer.setPhone("1860020");
-         customer.setName("任丕明");
-         customerRedisTemplate.opsForValue().set("customer",customer);
+    public void testredis() {
+        Customer customer = new Customer();
+        customer.setChannel_id(1224);
+        customer.setName("nihao");
+        customer.setPhone("1860020");
+        customer.setName("任丕明");
+        customerRedisTemplate.opsForValue().set("customer", customer);
 
         System.out.println(customerRedisTemplate.opsForValue().get("customer"));
 
@@ -128,42 +133,42 @@ public class TestService {
     }
 
     @Test
-    public  void testUpdatetime(){
-        storeService.updateAvilableTimeUnits(11l,"2018-05-17",10,20,1);
+    public void testUpdatetime() {
+        storeService.updateAvilableTimeUnits(11l, "2018-05-17", 10, 20, 1);
     }
 
 
     @Test
     public void testCatchAdd() {
 
-        redisTemplate.opsForValue().set("addressList:customer_id:1234567","111111111");
-        redisTemplate.opsForValue().set("bannerList:","ddddd");
-        redisTemplate.opsForValue().set("customerInfo:user_id:1234567","11111");
-        redisTemplate.opsForValue().set("couponList:customer_id:1234567","1111");
-        redisTemplate.opsForValue().set("recommendProducts:","1111");
-        redisTemplate.opsForValue().set("homePageProducts2:","1111");
-        redisTemplate.opsForValue().set("homeProductList:","1111");
-        redisTemplate.opsForValue().set("homeCategoryList:","111");
-        redisTemplate.opsForValue().set("getDefaultAddress:customer_id:1234567","1111");
-        redisTemplate.opsForValue().set("my_employeeManagement:partner_id:1234567","11111");
-        redisTemplate.opsForValue().set("my_mission_scheduled_information:partner_id:1234567","dddddd");
-        redisTemplate.opsForValue().set("orderList:customer_id:1234567","2222");
-        redisTemplate.opsForValue().set("orderDetail:customer_id:1234567:pay_order_id:78910","22222");
-        redisTemplate.opsForValue().set("productEvaluatesList:product_id:1234567","11111");
-        redisTemplate.opsForValue().set("partner_order_detail:pay_order_id:78910","1111");
-        redisTemplate.opsForValue().set("partner_order_list:partner_id:1234567","11111");
-        redisTemplate.opsForValue().set("productEvaluateBase:product_id:1234567","111111");
-        redisTemplate.opsForValue().set("partnerInfoByUserId:user_id:1234567","ddddd");
-        redisTemplate.opsForValue().set("proSkuList:product_id:1234567","dddd");
-        redisTemplate.opsForValue().set("productListByCategoryLevelCode:","didik");
-        redisTemplate.opsForValue().set("productDetail:product_id:1234567","dkdkd");
-        redisTemplate.opsForValue().set("studentInfoByUserId:user_id:1234567","dkdk");
-        redisTemplate.opsForValue().set("Store_information:partner_id:1234567","29499");
-        redisTemplate.opsForValue().set("selectStuShowTaskdetail:student_id:1234567:pay_order_id:78910","1e1");
-        redisTemplate.opsForValue().set("selectStuCompleteOrder:student_id:1234567","kdkn");
-        redisTemplate.opsForValue().set("selectStuUndoneOrder:student_id:1234567","kdkdk");
-        redisTemplate.opsForValue().set("student_order_list:student_id:1234567","kldkdk");
-        redisTemplate.opsForValue().set("userCouponList:customer_id:1234567","kkdkdk");
+        redisTemplate.opsForValue().set("addressList:customer_id:1234567", "111111111");
+        redisTemplate.opsForValue().set("bannerList:", "ddddd");
+        redisTemplate.opsForValue().set("customerInfo:user_id:1234567", "11111");
+        redisTemplate.opsForValue().set("couponList:customer_id:1234567", "1111");
+        redisTemplate.opsForValue().set("recommendProducts:", "1111");
+        redisTemplate.opsForValue().set("homePageProducts2:", "1111");
+        redisTemplate.opsForValue().set("homeProductList:", "1111");
+        redisTemplate.opsForValue().set("homeCategoryList:", "111");
+        redisTemplate.opsForValue().set("getDefaultAddress:customer_id:1234567", "1111");
+        redisTemplate.opsForValue().set("my_employeeManagement:partner_id:1234567", "11111");
+        redisTemplate.opsForValue().set("my_mission_scheduled_information:partner_id:1234567", "dddddd");
+        redisTemplate.opsForValue().set("orderList:customer_id:1234567", "2222");
+        redisTemplate.opsForValue().set("orderDetail:customer_id:1234567:pay_order_id:78910", "22222");
+        redisTemplate.opsForValue().set("productEvaluatesList:product_id:1234567", "11111");
+        redisTemplate.opsForValue().set("partner_order_detail:pay_order_id:78910", "1111");
+        redisTemplate.opsForValue().set("partner_order_list:partner_id:1234567", "11111");
+        redisTemplate.opsForValue().set("productEvaluateBase:product_id:1234567", "111111");
+        redisTemplate.opsForValue().set("partnerInfoByUserId:user_id:1234567", "ddddd");
+        redisTemplate.opsForValue().set("proSkuList:product_id:1234567", "dddd");
+        redisTemplate.opsForValue().set("productListByCategoryLevelCode:", "didik");
+        redisTemplate.opsForValue().set("productDetail:product_id:1234567", "dkdkd");
+        redisTemplate.opsForValue().set("studentInfoByUserId:user_id:1234567", "dkdk");
+        redisTemplate.opsForValue().set("Store_information:partner_id:1234567", "29499");
+        redisTemplate.opsForValue().set("selectStuShowTaskdetail:student_id:1234567:pay_order_id:78910", "1e1");
+        redisTemplate.opsForValue().set("selectStuCompleteOrder:student_id:1234567", "kdkn");
+        redisTemplate.opsForValue().set("selectStuUndoneOrder:student_id:1234567", "kdkdk");
+        redisTemplate.opsForValue().set("student_order_list:student_id:1234567", "kldkdk");
+        redisTemplate.opsForValue().set("userCouponList:customer_id:1234567", "kkdkdk");
 
 
     }
@@ -214,31 +219,40 @@ public class TestService {
     }
 
 
-
     @Test
-    public void catchreload(){
+    public void catchreload() {
         handler.userCouponListReload(1099040188304236544L);
     }
 
 
     @Test
-    public  void testIncrese(){
-        redisTemplate.opsForValue().increment("key1111",-1);
+    public void testIncrese() {
+        redisTemplate.opsForValue().increment("key1111", -1);
     }
+
     @Test
-    public void testRedisType(){
+    public void testRedisType() {
 
-        redisTemplate.opsForHash().put("order_id","123","12345");
-
-
-
-
-
-
+        redisTemplate.opsForHash().put("order_id", "123", "12345");
 
 
     }
 
+
+    @Test
+    public void teststore() {
+
+        redisTemplate.opsForValue().set(Constant.getStudentTaskScheduleKey(1067677206111346688L,"2018--08-16"),Constant.defaultAvailableTime);
+        Student student = new Student();
+        student.setStudent_id(1067677206111346688L);
+        student.setService_cycle("[\"4\",\"5\"]");
+        student.setService_times("{\"s\":\"40\",\"e\":\"42\"}");
+        boolean store  = storeService.isStudentHasStore(student,"2018-08-16",8,12);
+
+        logger.info("+++++++++++++++++++{}",store);
+
+
+    }
 
 
 }
