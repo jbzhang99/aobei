@@ -788,20 +788,23 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         // 新订单通知，2018-1-2 12:00 建国饭店1203.张先生，电话12312341234
-        Message msg = new Message();
-        msg.setId(IdGenerator.generateId());
-        msg.setType(2);
-        msg.setBis_type(3);
-        msg.setUser_id(partner_id);
-        msg.setUid(partner_id);
-        msg.setMsg_title("订单通知");
-        msg.setMsg_content(
-                "你好，您有一条新的订单通知，于" + sdf.format(unit.getC_begin_datetime()) + " " + order.getCus_address() + "为"
-                        + order.getCus_username() + "提供" + order.getName() + "服务，联系电话：" + order.getCus_phone());
-        msg.setCreate_datetime(new Date());
-        msg.setNotify_datetime(new Date(unit.getC_begin_datetime().getTime() - 3600 * 24 * 3 * 1000l));
-        msg.setGroup_id(order.getPay_order_id() + "-" + partner_id + "-" + unit.getServiceunit_id());
-        messageService.insertSelective(msg);
+        Partner partner = partnerService.selectByPrimaryKey(partner_id);
+        if(partner != null && partner.getUser_id() != null){
+            Message msg = new Message();
+            msg.setId(IdGenerator.generateId());
+            msg.setType(2);
+            msg.setBis_type(3);
+            msg.setUser_id(partner.getUser_id());
+            msg.setUid(partner_id);
+            msg.setMsg_title("订单通知");
+            msg.setMsg_content(
+                    "你好，您有一条新的订单通知，于" + sdf.format(unit.getC_begin_datetime()) + " " + order.getCus_address() + "为"
+                            + order.getCus_username() + "提供" + order.getName() + "服务，联系电话：" + order.getCus_phone());
+            msg.setCreate_datetime(new Date());
+            msg.setNotify_datetime(new Date(unit.getC_begin_datetime().getTime() - 3600 * 24 * 3 * 1000l));
+            msg.setGroup_id(order.getPay_order_id() + "-" + partner_id + "-" + unit.getServiceunit_id());
+            messageService.insertSelective(msg);
+        }
         return i;
     }
 
@@ -1355,12 +1358,12 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
             if (customerAddress.getCity() != null){
                 criteria.andCityEqualTo(customerAddress.getCity());
             }
-            List<Station> stationList = stationService.selectByExample(stationExample);
-            stations = stationList.stream().filter(t -> DistanceUtil.GetDistance(
-                    new Double(t.getLbs_lat() == null ? "0" : t.getLbs_lat()),
-                    new Double(t.getLbs_lng() == null ? "0" : t.getLbs_lng()),
-                    new Double(customerAddress.getLbs_lat()),
-                    new Double(customerAddress.getLbs_lng())) <= integer).collect(Collectors.toList());
+            stations = stationService.selectByExample(stationExample);
+//            stations = stationList.stream().filter(t -> DistanceUtil.GetDistance(
+//                    new Double(t.getLbs_lat() == null ? "0" : t.getLbs_lat()),
+//                    new Double(t.getLbs_lng() == null ? "0" : t.getLbs_lng()),
+//                    new Double(customerAddress.getLbs_lat()),
+//                    new Double(customerAddress.getLbs_lng())) <= integer).collect(Collectors.toList());
         } else {// 未绑定合伙人的产品
             stations = stationService.findNearbyStation(customerAddress, integer);
             stations = stationService.filterByProduct(product, stations);
