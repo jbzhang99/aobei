@@ -1631,7 +1631,7 @@ public class CustomerApiServiceImpl implements CustomerApiService {
                     cacheReloadHandler.selectStuShowTaskdetailReload(t.getStudent_id(), pay_order_id);
                     cacheReloadHandler.selectStuUndoneOrderReload(t.getStudent_id());
                     //取消,推送服务人员
-                    pushHandler.pushCancelOrderMessageToStudent(orderInfo, t.getStudent_id().toString());
+                    //pushHandler.pushCancelOrderMessageToStudent(orderInfo, t.getStudent_id().toString());
                     //站内消息（取消）
                     inStationHandler.sentToStudentCancleOrder(pay_order_id,studentService.selectByPrimaryKey(t.getStudent_id()));
                 });

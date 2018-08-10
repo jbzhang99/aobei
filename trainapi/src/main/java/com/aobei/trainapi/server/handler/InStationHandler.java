@@ -81,12 +81,11 @@ public class InStationHandler {
         String beginTimeStr = sd.format(serviceUnit.getC_begin_datetime());
         contentMsg.setMsgtype("native");
         contentMsg.setContent("您有一个新的"+order.getName()+"任务，于"+beginTimeStr+"去"+order.getCus_address()+"进行服务");
-
-        Map<String,String> param = new HashMap<>();
+        /*Map<String,String> param = new HashMap<>();
         param.put("pay_order_id",order.getPay_order_id());
         param.put("orderStatus","waitService");
         TransmissionContent tContent = new TransmissionContent(TransmissionContent.STUDENT,TransmissionContent.ORDER_DETAIL,param);
-        contentMsg.setHref(tContent.getHrefNotEncode());
+        contentMsg.setHref(tContent.getHrefNotEncode());*/
         contentMsg.setTypes(1);//纯文本
         contentMsg.setNoticeTypes(1);//新订单类型
         contentMsg.setTitle("新订单通知");
@@ -196,11 +195,11 @@ public class InStationHandler {
         String beginTimeStr = sd.format(serviceUnit.getC_begin_datetime());
         contentMsg.setMsgtype("native");
         contentMsg.setContent("您于"+beginTimeStr+"去"+order.getCus_address()+"进行"+order.getName()+"服务的订单已取消");
-        Map<String,String> param = new HashMap<>();
+        /*Map<String,String> param = new HashMap<>();
         param.put("pay_order_id",order.getPay_order_id());
         param.put("orderStatus","cancel");
         TransmissionContent tContent = new TransmissionContent(TransmissionContent.STUDENT,TransmissionContent.ORDER_DETAIL,param);
-        contentMsg.setHref(tContent.getHrefNotEncode());
+        contentMsg.setHref(tContent.getHrefNotEncode());*/
         contentMsg.setTypes(1);//纯文本
         contentMsg.setNoticeTypes(3);//订单取消类型
         contentMsg.setTitle("订单取消通知");
@@ -254,11 +253,11 @@ public class InStationHandler {
         String beginTimeStr = sd.format(serviceUnit.getC_begin_datetime());
         contentMsg.setMsgtype("native");
         contentMsg.setContent("您于"+beginTimeStr+"进行"+order.getName()+"服务");
-        Map<String,String> param = new HashMap<>();
+        /*Map<String,String> param = new HashMap<>();
         param.put("pay_order_id",order.getPay_order_id());
         param.put("orderStatus","waitService");
         TransmissionContent tContent = new TransmissionContent(TransmissionContent.STUDENT,TransmissionContent.ORDER_DETAIL,param);
-        contentMsg.setHref(tContent.getHrefNotEncode());
+        contentMsg.setHref(tContent.getHrefNotEncode());*/
         contentMsg.setTypes(1);//纯文本
         //contentMsg.setNoticeTypes(3);//订单取消类型************************************
         contentMsg.setTitle("服务时间提醒");
@@ -423,11 +422,11 @@ public class InStationHandler {
         String beginTimeStr = sd.format(serviceUnit.getC_begin_datetime());
         contentMsg.setMsgtype("native");
         contentMsg.setContent("您的"+order.getName()+"订单服务时间变更，请于"+beginTimeStr+"，去"+order.getCus_address()+"为进行服务服务");
-        Map<String,String> param = new HashMap<>();
+        /*Map<String,String> param = new HashMap<>();
         param.put("pay_order_id",order.getPay_order_id());
         param.put("orderStatus","waitService");
         TransmissionContent tContent = new TransmissionContent(TransmissionContent.CUSTOM,TransmissionContent.ORDER_DETAIL,param);
-        contentMsg.setHref(tContent.getHrefNotEncode());
+        contentMsg.setHref(tContent.getHrefNotEncode());*/
         contentMsg.setTypes(1);//纯文本
         contentMsg.setNoticeTypes(2);//订单取消类型
         contentMsg.setTitle("服务变更通知");
