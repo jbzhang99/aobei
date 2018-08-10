@@ -279,6 +279,7 @@ public class ApiOrderServiceImpl implements ApiOrderService {
      * 用户领取优惠券
      */
     @Override
+    @Transactional(timeout = 5)
     public ApiResponse getCounpons(Customer customer, Long coupon_id) {
         logger.info("api-method:getCounpons:params customer:{},coupon_id:{}", customer, coupon_id);
         ApiResponse response = new ApiResponse();
@@ -288,24 +289,11 @@ public class ApiOrderServiceImpl implements ApiOrderService {
             return response;
         }
         if (coupon.getReceive_end_datetime().after(new Date()) && coupon.getType()==3) {
-            if (coupon.getNum_limit() == 1) {
-                CouponExample couponExample = new CouponExample();
-                couponExample.or().andCoupon_idEqualTo(coupon_id)
-                        .andNum_ableGreaterThan(0);
-                Coupon updateCoupon = new Coupon();
-                updateCoupon.setNum_able(coupon.getNum_able() - 1);
-                int  count  = couponService.updateByExampleSelective(updateCoupon,couponExample);
-                if (count==0){
-                    response.setErrors(Errors._42029);
-                    logger.info("api-method:getCounpons:process  the numAble is out of size");
-                    return response;
-                }
-            }
             CouponReceiveExample couponReceiveExample  =new CouponReceiveExample();
             couponReceiveExample.or()
-                                    .andCoupon_idEqualTo(coupon_id)
-                                    .andUidEqualTo(customer.getCustomer_id())
-                                    .andDeletedEqualTo(0);
+                    .andCoupon_idEqualTo(coupon_id)
+                    .andUidEqualTo(customer.getCustomer_id())
+                    .andDeletedEqualTo(0);
             List<CouponReceive> couponReceives = couponReceiveService.selectByExample(couponReceiveExample);
             logger.info("api-method:getCounpons:process couponReceives:{}", couponReceives);
             //目前需求一个优惠券一个用户只可以领取一次
@@ -322,6 +310,19 @@ public class ApiOrderServiceImpl implements ApiOrderService {
             }else{
                 response.setErrors(Errors._42029);
                 return response;
+            }
+            if (coupon.getNum_limit() == 1) {
+                CouponExample couponExample = new CouponExample();
+                couponExample.or().andCoupon_idEqualTo(coupon_id)
+                        .andNum_ableGreaterThan(0);
+                Coupon updateCoupon = new Coupon();
+                updateCoupon.setNum_able(coupon.getNum_able() - 1);
+                int  count  = couponService.updateByExampleSelective(updateCoupon,couponExample);
+                if (count==0){
+                    response.setErrors(Errors._42029);
+                    logger.info("api-method:getCounpons:process  the numAble is out of size");
+                    return response;
+                }
             }
         } else {
             response.setErrors(Errors._42029);
