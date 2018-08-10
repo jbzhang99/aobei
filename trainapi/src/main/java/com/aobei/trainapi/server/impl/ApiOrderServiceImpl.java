@@ -17,6 +17,7 @@ import com.aobei.trainapi.server.ApiOrderService;
 import com.aobei.trainapi.server.PayService;
 import com.aobei.trainapi.server.bean.AliPayClientMap;
 import com.aobei.trainapi.server.bean.ApiResponse;
+import com.aobei.trainapi.server.bean.StudentInfo;
 import com.aobei.trainapi.server.handler.OnsHandler;
 import com.aobei.trainapi.server.handler.PushHandler;
 import com.github.liyiorg.mbg.bean.Page;
@@ -132,7 +133,7 @@ public class ApiOrderServiceImpl implements ApiOrderService {
 
     }
 
-    @Override
+    /*@Override
     public Station dispatch(Order order, ServiceUnit serviceUnit) {
         Station station = null;
         if (order.getProxyed().equals(0)) {
@@ -272,7 +273,7 @@ public class ApiOrderServiceImpl implements ApiOrderService {
             partnerMap.put(priority, tmp);
         });
         return partnerMap;
-    }
+    }*/
 
     /**
      * 用户领取优惠券
@@ -282,10 +283,23 @@ public class ApiOrderServiceImpl implements ApiOrderService {
         logger.info("api-method:getCounpons:params customer:{},coupon_id:{}", customer, coupon_id);
         ApiResponse response = new ApiResponse();
         Coupon coupon = couponService.selectByPrimaryKey(coupon_id);
+        if (coupon.getNum_limit() == 1 && coupon.getNum_able() < 1){
+            response.setErrors(Errors._42029);
+            return response;
+        }
         if (coupon.getReceive_end_datetime().after(new Date()) && coupon.getType()==3) {
             if (coupon.getNum_limit() == 1) {
-                coupon.setNum_able(coupon.getNum_able() - 1);
-                couponService.updateByPrimaryKeySelective(coupon);
+                CouponExample couponExample = new CouponExample();
+                couponExample.or().andCoupon_idEqualTo(coupon_id)
+                        .andNum_ableGreaterThan(0);
+                Coupon updateCoupon = new Coupon();
+                updateCoupon.setNum_able(coupon.getNum_able() - 1);
+                int  count  = couponService.updateByExampleSelective(updateCoupon,couponExample);
+                if (count==0){
+                    response.setErrors(Errors._42029);
+                    logger.info("api-method:getCounpons:process  the numAble is out of size");
+                    return response;
+                }
             }
             CouponReceiveExample couponReceiveExample  =new CouponReceiveExample();
             couponReceiveExample.or()
@@ -330,6 +344,9 @@ public class ApiOrderServiceImpl implements ApiOrderService {
         //第一步：顾虑满足指定商品的优惠券
         List<Coupon> coupons = queryList(page_index, count);
         coupons =  coupons.stream().filter(t->{
+            if(t.getNum_able()<=0){
+                return  false;
+            }
             Condition_type condition = JSON.parseObject(t.getCondition(), Condition_type.class);
             if (t.getCondition_type()==1 || t.getCondition_type()==3){
               return   true;
@@ -548,8 +565,35 @@ public class ApiOrderServiceImpl implements ApiOrderService {
             return response;
         }
         try {
+
            String body =  payService.aliPaymentBody(order,appId);
            response.setT(body);
+        } catch (AlipayApiException e) {
+            response.setErrors(Errors._41023);
+            logger.error("api-method:error code:{},msg:{}",e.getErrCode(),e.getErrMsg());
+        }
+        return response;
+    }
+
+    @Override
+    public ApiResponse<String> wapAliPrePay(Customer customer, String pay_order_id, String appId) {
+        ApiResponse<String> response = new ApiResponse<>();
+        Order order = orderService.selectByPrimaryKey(pay_order_id);
+        if (order == null) {
+            response.setErrors(Errors._41007);
+            return response;
+        }
+        if (order.getExpire_datetime().before(new Date()) || order.getStatus_active() == 4) {
+            response.setErrors(Errors._41018);
+            return response;
+        }
+        if (Status.PayStatus.payed.value.equals(order.getPay_status())) {
+            response.setErrors(Errors._41043);
+            return response;
+        }
+        try {
+            String body =  payService.aliWapPayBody(order,appId);
+            response.setT(body);
         } catch (AlipayApiException e) {
             response.setErrors(Errors._41023);
             logger.error("api-method:error code:{},msg:{}",e.getErrCode(),e.getErrMsg());
@@ -774,7 +818,38 @@ public class ApiOrderServiceImpl implements ApiOrderService {
         });
     }
 
-
+    /**
+     * 服务人员重新计算订单价格
+     * @param studentInfo
+     * @param psku_id
+     * @param num
+     * @return
+     */
+    @Override
+    public ApiResponse<OrderPrice> studentRecalculatePrice(StudentInfo studentInfo, Long psku_id, Integer num) {
+        logger.info("api-method:studentRecalculatePrice:params studentInfo:{},psku_id:{},num:{}", studentInfo, psku_id, num);
+        ApiResponse<OrderPrice> response = new ApiResponse<>();
+        ProSku proSku = proSkuService.selectByPrimaryKey(psku_id);
+        if (proSku == null) {
+            response.setErrors(Errors._41006);
+            return response;
+        }
+        if (num==null || num == 0) {
+            if (proSku.getBuy_limit() == 1) {
+                num  =  proSku.getBuy_multiple_min();
+            }else {
+                num = 1;
+            }
+        }
+        Integer totalPrice = proSku.getPrice() * num;
+        Integer payPrice = totalPrice;
+        OrderPrice orderPrice = new OrderPrice();
+        orderPrice.setTotalPrice(totalPrice);
+        orderPrice.setPayPrice(payPrice);
+        orderPrice.setDiscountPrice(0);
+        response.setT(orderPrice);
+        return response;
+    }
 
 
 }

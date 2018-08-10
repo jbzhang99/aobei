@@ -1,0 +1,45 @@
+#拒单记录表
+type RejectRecord{
+
+    reject_record_id : Long
+
+    #订单id
+    pay_order_id : String
+
+    #服务单id
+    serviceunit_id : Long
+
+    #创建日期
+    create_datetime : Date
+
+    #订单名称/服务名称
+    server_name : String
+
+    #用户姓名
+    cus_username : String
+
+    #顾客电话
+    cus_phone : String
+
+    #顾客地址/服务地址
+    cus_address : String
+
+    #服务价格
+    price_total : Int
+
+    #实付金额
+    price_pay : Int
+
+    #拒单类型 0被动拒单、1主动拒单、2订单改派拒单
+    reject_type : Int
+
+    #拒单原因
+    reject_info : String
+
+    #拒单合伙人id
+    partner_id : Long
+
+    #预约服务时间
+    server_datetime : Date
+}
+

@@ -141,6 +141,7 @@
     <springProfile name="test">
         <root level="INFO">
             <appender-ref ref="FILE"/>
+            <!--<appender-ref ref="CONSOLE"/>-->
         </root>
         <logger name="com.aobei.train.mapper" level="DEBUG"/>
     </springProfile>

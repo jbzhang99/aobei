@@ -98,7 +98,7 @@ public class ExportCompensationBalanceAndToOss implements Callable<Integer>{
 					n.getPay_order_id()==null?"":n.getPay_order_id().toString(),
 					n.getServiceunit_id()==null?"":n.getServiceunit_id().toString(),
 					n.getCompensation_id()==null?"":n.getCompensation_id().toString(),
-					"退款",
+					"赔偿",
 					n.getOrder_create_datetime()==null?"":sd.format(n.getOrder_create_datetime()),
 					n.getCompensation_create_datetime()==null?"":sd.format(n.getCompensation_create_datetime()),
 					n.getCompensation_confirm_datetime()==null?"":sd.format(n.getCompensation_confirm_datetime()),

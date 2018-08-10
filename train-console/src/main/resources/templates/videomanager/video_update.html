@@ -1,0 +1,283 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}" xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>视频管理</title>
+
+<link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/css/fileinput.min.css}" rel="stylesheet" />
+<script th:src="@{/js/bootstrap-select.js}"></script>
+<script th:src="@{/js/bootstrapValidator.min.js}"></script>
+<script th:src="@{/js/jquery.form.min.js}"></script>
+<script th:src="@{/js/fileinput.min.js}"></script>
+<script th:src="@{/js/zh.js}"></script>
+<script src="https://gosspublic.alicdn.com/aliyun-oss-sdk-5.3.0.min.js"></script>
+<script th:inline="javascript">
+	var videoUploading = false;
+	$(function(){
+	    // 判断是否为添加数据
+		var isInsert = $('#video_content_id').val() == '';
+		var imgFileOption = {
+            required: isInsert,
+            language: 'zh', //设置语言
+            //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+            allowedFileExtensions: ['jpg', 'gif', 'png'],//接收的文件后缀
+            //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+            //uploadAsync: true, //默认异步上传
+            showUpload:false, //是否显示上传按钮
+            showRemove :false, //显示移除按钮
+            showPreview :true, //是否显示预览
+            showCaption:false,//是否显示标题
+            //browseClass:"btn btn-primary", //按钮样式
+            dropZoneEnabled: false,//是否显示拖拽区域
+            minImageWidth: 50, //图片的最小宽度
+            minImageHeight: 50,//图片的最小高度
+            maxImageWidth: 1000,//图片的最大宽度
+            maxImageHeight: 1000,//图片的最大高度
+            maxFileSize: 1024,//单位为kb，如果为0表示不限制文件大小
+            //minFileCount: [[${param.id}? 0 : 1]],
+            maxFileCount:1, //表示允许同时上传的最大文件个数
+            enctype:'multipart/form-data',
+            validateInitialCount:true,
+            //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+            //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+        };
+
+        if(!isInsert){
+            // 更新模式   初始化图片
+            var videoData = $('#img_url').val();
+
+            $.extend(imgFileOption,{initialPreview: [
+                    $.parseJSON(videoData).url
+                ],
+                initialPreviewAsData: true,
+                initialPreviewConfig: [
+                    {url: "$urlD"}
+                ]});
+        }
+        $("#imgFile").fileinput(imgFileOption);
+
+        var videoFileOption = {
+            required: isInsert,
+            language: 'zh', //设置语言
+            //uploadUrl:"http://127.0.0.1/testDemo/fileupload/upload.do", //上传的地址
+            allowedFileExtensions: ['mp4'],//接收的文件后缀
+            //uploadExtraData:{"id": 1, "fileName":'123.mp3'},
+            //uploadAsync: true, //默认异步上传
+            showUpload:false, //是否显示上传按钮
+            showRemove :false, //显示移除按钮
+            showPreview :true, //是否显示预览
+            showCaption:false,//是否显示标题
+            //browseClass:"btn btn-primary", //按钮样式
+            dropZoneEnabled: false,//是否显示拖拽区域
+            minImageWidth: 50, //图片的最小宽度
+            minImageHeight: 50,//图片的最小高度
+            maxImageWidth: 1000,//图片的最大宽度
+            maxImageHeight: 1000,//图片的最大高度
+            maxFileSize: 1024 * 1024 * 10,//单位为kb，如果为0表示不限制文件大小
+            //minFileCount: [[${param.id}? 0 : 1]],
+            maxFileCount:1, //表示允许同时上传的最大文件个数
+            enctype:'multipart/form-data',
+            validateInitialCount:true,
+            //previewFileIcon: "<iclass='glyphicon glyphicon-king'></i>",
+            //msgFilesTooMany: "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+
+        };
+
+        if(!isInsert){
+            var videoData = $('#video_url').val();
+            // 更新模式   初始化视频
+            $.extend(videoFileOption,{initialPreview: [
+                    $.parseJSON(videoData).url
+                ],
+                initialPreviewAsData: true,
+                initialPreviewConfig: [
+                    {type: "video",  filetype: "video/mp4",  url: "$urlD"}
+                    ]});
+		}
+
+        $("#videoFile").fileinput(videoFileOption);
+        
+		(function(){
+            var client = new OSS.Wrapper({
+                region: 'oss-cn-hangzhou',
+                accessKeyId: [[${accessKeyId}]],
+                accessKeySecret: [[${accessKeySecret}]],
+                secure: true,
+                endpoint: 'oss-cn-beijing.aliyuncs.com',
+                bucket: [[${bucket}]]
+            });
+
+            $("#videoFile").on('change', function (e) {
+                var file = e.target.files[0];
+                var storeAs = [[${fileKey}]];
+                console.log(file.name + ' => ' + storeAs);
+                client.multipartUpload(storeAs, file,{
+                    mime: 'application/octet-stream',
+                    progress: function* (p) {
+                        $('#progress').show();
+                        $('#progress').find('.progress-bar').width(p * 100 + '%');
+                        $('#progress').find('span').text(p * 100 + '%');
+                        console.log('Progress: ' + p);
+
+                        videoUploading = p == 1;
+                        if(p == 1){
+							$('#video_url').val('https://' + [[${bucket}]] + '.oss-cn-beijing.aliyuncs.com' + storeAs);
+                            $('#subBtn').attr('disabled',false);
+                        }else{
+                            $('#subBtn').attr('disabled',true);
+						}
+                    }
+                }).then(function (result) {
+                    console.log(result);
+                }).catch(function (err) {
+                    console.log(err);
+                });
+                var object = client.head(storeAs);
+                console.log(object);
+            });
+		})();
+
+
+       $('#form1').bootstrapValidator({
+            message: 'This value is not valid',
+
+            fields: {
+                title: {
+                    validators: {
+                        notEmpty: {
+                            message: '标题不能为空'
+                        },
+                        stringLength: {
+                            max: 20,
+                            message: '标题最长不得多于20个字'
+                        },
+                        regexp: {
+                            regexp:  /^\S+.*\S+$/,
+                            message: '两端不能输入空格'
+                        }
+                    }
+                },
+                descripte: {
+                    validators: {
+                        stringLength: {
+                            max: 200,
+                            message: '描述最长不得多于200个字'
+                        },
+                        regexp: {
+                            regexp:  /^\S+.*\S+$/,
+                            message: '两端不能输入空格'
+                        }
+                    }
+                }}
+        });
+	});
+	
+
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+            <li><a th:href="@{/videomanager/video_list(clientType=${param.clientType},p=${param.p})}">视频管理</a></li>
+            <li>[[${param.id}? '编辑':'添加']]</li>
+		</ol>
+
+	</div>
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_60">
+
+	<!-- 动态 -->
+			<form id="form1" class="form-horizontal" enctype="multipart/form-data"
+				action="#" th:action="@{/videomanager/video_update}"  method="post">
+				<input type="hidden" name="video_content_id" id="video_content_id" th:value="${videoContent?.video_content_id}">
+				<input type="hidden" name="video_url" id="video_url" th:value="${videoContent?.video_url}">
+				<input type="hidden" name="img_url" id="img_url" th:value="${videoContent?.img_url}">
+				<input type="hidden" name="mts" th:value="${application.mts}">
+				<div class="form-group">
+					<label class="col-sm-4 control-label" for="imgFile">
+						<span style="color: red;">* </span>
+						封面图
+					</label>
+					<div class="col-sm-5">
+						<input type="file" class="form-control" id="imgFile"
+							   name="imgFile" placeholder="请选择要上传的封面图片" /><br/>
+						<span>建议图片宽750，高375，分辨率比例为2:1，大小不超过1M</span>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-4 control-label" for="videoFile">
+						<span style="color: red;">* </span>视频文件
+					</label>
+					<div class="col-sm-5">
+						<div class="progress" id="progress" style="display: none;">
+							<div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+								<span class="asr-only">0%</span>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-offset-4 col-sm-5">
+						<input type="file" id="videoFile" class="form-control"  placeholder="请选择要上传的视屏文件"  />
+						<span>建议时长在1s到10分钟之间 ,文件格式 MP4</span>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-4 control-label" for="title">
+						<span style="color: red;">* </span>
+						标题
+					</label>
+					<div class="col-sm-5">
+						<!-- 选完章节自动选中对应的标题 -->
+						<input type="text" class="form-control" id="title" name="title" th:value="${videoContent?.title}"/>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-4 control-label" for="descripte">简介</label>
+					<div class="col-sm-5">
+						<textarea class="form-control" id="descripte"
+							name="descripte"  placeholder="请输入视屏信息简介">[[${videoContent?.descripte}]]</textarea>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-4 control-label" for="client_type">
+						<span style="color: red;">* </span>
+						使用端
+					</label>
+					<div class="col-sm-2">
+						<select class="form-control" id="client_type" name="client_type">
+							<option value="student" th:selected="${videoContent?.client_type} == 'student'?'selected'">服务人员</option>
+							<!--
+							<option value="custom" th:selected="${videoContent?.client_type} == 'custom'?'selected'">顾客</option>
+							<option value="partner" th:selected="${videoContent?.client_type} == 'partner'?'selected'">合伙人</option>
+							<option value="teacher" th:selected="${videoContent?.client_type} == 'teacher'?'selected'">老师</option>
+							-->
+						</select>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<div class="col-sm-9 col-sm-offset-4">
+						<button type="submit" id="subBtn" class="btn btn-primary" >确定</button>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<a th:href="@{/videomanager/video_list(clientType=${param.clientType},p=${param.p})}" class="btn btn-primary">取消</a>
+					</div>
+				</div>
+			</form>
+
+
+	</div>
+
+
+	</div>
+</body>
+</html>

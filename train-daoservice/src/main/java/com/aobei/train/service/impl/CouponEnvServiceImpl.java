@@ -47,7 +47,9 @@ public class CouponEnvServiceImpl extends MbgServiceSupport<CouponEnvMapper, Lon
         CouponEnvExample couponEnvExample = new CouponEnvExample();
         couponEnvExample.or().andStart_datetimeLessThanOrEqualTo(now)
                 .andEnd_datetimeGreaterThanOrEqualTo(now)
-                .andStatusEqualTo(1);
+                .andStatusEqualTo(1)
+                .andCoupon_env_typeEqualTo(2)
+                .andCoupon_idNotEqualTo(0l);
         List<CouponEnv> couponEnvs = selectByExample(couponEnvExample);
         if (couponEnvs == null || couponEnvs.size() == 0) {
             return new DiscountData();
@@ -60,7 +62,7 @@ public class CouponEnvServiceImpl extends MbgServiceSupport<CouponEnvMapper, Lon
 
 
         List<DiscountData> discountDatas = list.stream().map(t -> {
-            Type.CouponEnvType type = Type.CouponEnvType.getType(t.getType());
+            Type.CouponEnvType type = Type.CouponEnvType.getType(t.getCoupon_env_type());
             Map<String, Object> map = JSON.parseObject(t.getCondition_env(), Map.class);
 
             switch (type) {

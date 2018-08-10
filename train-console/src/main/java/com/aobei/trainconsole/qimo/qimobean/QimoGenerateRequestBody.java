@@ -16,7 +16,7 @@ public class QimoGenerateRequestBody implements Serializable{
     private String _id;
     private String customerId;
     private List<QimoFiled> fields = new ArrayList<>();
-    private String targeUser;
+    private String targetUser;
     private String createUser;
     private String flowName;
     private String comment;
@@ -49,12 +49,12 @@ public class QimoGenerateRequestBody implements Serializable{
         this.fields = fields;
     }
 
-    public String getTargeUser() {
-        return targeUser;
+    public String getTargetUser() {
+        return targetUser;
     }
 
-    public void setTargeUser(String targeUser) {
-        this.targeUser = targeUser;
+    public void setTargetUser(String targetUser) {
+        this.targetUser = targetUser;
     }
 
     public String getCreateUser() {

@@ -11,7 +11,7 @@ public interface BalanceOrderService extends MbgReadService<Long, BalanceOrder, 
 
     String selectMaxBalanceCycle();
 
-    int xAddFallinto(String str);
+    int xAddFallinto(String str, Users users);
 
     int xHangUp(Long balance_order_id,Users users);
 }

@@ -11,8 +11,30 @@
 <script type="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
 <script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
 <script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
+<!--<script type="text/javascript" th:src="@{/js/citydata.js}"></script>
+<script type="text/javascript" th:src="@{/js/cityPicker-1.0.0.js?v=1}"></script>-->
 <script type="text/javascript" th:inline="javascript">
 	$(function(){
+        /*var select = $('.city-picker-select').cityPicker({
+            dataJson: cityData,
+            renderMode: false,
+            linkage: false
+        });
+
+        var province = [[${province}]];
+        var city = [[${city}]];
+        var area = [[${area}]];
+        if(province && city && area){
+            select.setCityVal([{
+                'id':province.toString()
+            },{
+                'id':city.toString()
+            },{
+                'id':area.toString()
+            }
+            ]);
+        }*/
+
 		ymd();
         var mts = [[${application.mts}]];
 		var partner_id = [[${partner_id}]];
@@ -49,10 +71,15 @@
 			var qe_create_time = $(".qe_create_time").val();
 			var qs_pay_time = $(".qs_pay_time").val();
 			var qe_pay_time = $(".qe_pay_time").val();
+			var assign_state = $(".assign_state").val();
 
 			var url = "/ordermanager/goto_order_list?channel_code="+channel_code+"&uname="+uname+"&pay_order_id="+pay_order_id+
 				"&cuname="+cuname+"&uphone="+uphone+"&student_name="+student_name+
 				"&partner_id="+partner_id+"&statu="+statu;
+
+			if(assign_state != '' && assign_state != null){
+			    url = url + "&assign_state="+assign_state;
+			}
 
 			if(c_begin_datetime != '' && c_end_datetime != ''){
 				if(c_end_datetime < c_begin_datetime){
@@ -220,31 +247,22 @@
         });
 
         $("#assign_btn").click(function () {
-            if($("input[name='time']:checked").size() <= 0){
-                reset();
-                alertify.alert("请选择服务时间段！");
-                return false;
-			}
-			if($("#partner").val() == ''){
-                reset();
-                alertify.alert("请选择合伙人！");
-                return false;
-			}
-            if($("#station").val() == ''){
-                reset();
-                alertify.alert("请选择服务站点！");
-                return false;
-            }
             if($("#select_date").val() == ''){
                 reset();
                 alertify.alert("请选择服务日期！");
                 return false;
             }
+            if($("input[name='time']:checked").size() <= 0){
+                reset();
+                alertify.alert("请选择服务时间段！");
+                return false;
+            }
             var time = $("input[name='time']:checked").val();
-            var partner = $("#partner").val();
-            var station = $("#station").val();
-            var select_date = $("#select_date").val();
+            /*var partner = $("#partner").val();
+            var station = $("#station").val();*/
+            var select_date = $("#server_date").val();
             var pay_order_id = $("#form3_pay_order_id").val();
+            var address = $("#address").val();
 
             $.ajax({
                 url:"/ordermanager/assign_order",
@@ -252,9 +270,10 @@
                 data :{
                     pay_order_id:pay_order_id,
                     time:time,
-                    partner:partner,
-                    station:station,
+                    /*partner:partner,
+                    station:station,*/
                     select_date:select_date,
+					address:address,
                     mts:mts
                 },
                 success:function(data){
@@ -268,6 +287,7 @@
         });
 
         $("#save_btn").click(function(){
+            $('#form1').data('bootstrapValidator').resetForm();
             $("#form1").bootstrapValidator('validate');
             if ($("#form1").data('bootstrapValidator').isValid()) {
                 var amount = $("#amount").val();
@@ -281,17 +301,29 @@
                     return false;
 				}
 				if(amount != ''){
-					if(partner_bear_amount == ''){
+					if($("#partner_bear_amount").val() == ''){
                         reset();
                         alertify.alert("请填写合伙人承担金额！");
                         return false;
 					}
 				}
                 if(coupon_id != null && coupon_id != ''){
-                    if(partner_bear_coupon_amount == ''){
+                    if($("#partner_bear_coupon_amount").val() == ''){
                         reset();
                         alertify.alert("请填写合伙人承担券金额！");
                         return false;
+                    }
+                }
+                if($("#partner_bear_amount").val() != ''){
+                    if(amount == ''){
+                        $("#partner_bear_amount").val(0);
+                        partner_bear_amount = 0;
+                    }
+                }
+                if($("#partner_bear_coupon_amount").val() != ''){
+                    if(coupon_id == ''){
+                        $("#partner_bear_coupon_amount").val(0);
+                        partner_bear_coupon_amount = 0;
                     }
                 }
                 var payee = $("#payee").val();
@@ -299,14 +331,14 @@
                 var receiving_bank = $("#receiving_bank").val();
                 var partner_id = $("#partner_id").val();
                 var pay_order_id = $("#pay_order_id").val();
-                if(Number(amount) > 1000000){
+                if(Number(amount) > 1000000 || Number(amount) < 0){
                     reset();
-                    alertify.alert("赔偿金额最大不能超过1000000.00元！");
+                    alertify.alert("赔偿金额最小不能等于0元，最大不能超过1000000.00元！");
                     return false;
 				}
-                if(Number(partner_bear_coupon_amount) > 1000000){
+                if(Number(partner_bear_coupon_amount) > 1000000 || Number(partner_bear_coupon_amount) < 0){
                     reset();
-                    alertify.alert("合伙人承担券金额最大不能超过1000000.00元！");
+                    alertify.alert("合伙人承担券金额最小不能等于0元，最大不能超过1000000.00元！");
                     return false;
                 }
                 if(amount != '' && Number(partner_bear_amount) > Number(amount)){
@@ -343,14 +375,15 @@
         });
 
         $("#save_btn1").click(function () {
+            $('#form2').data('bootstrapValidator').resetForm();
             $("#form2").bootstrapValidator('validate');
             if ($("#form2").data('bootstrapValidator').isValid()) {
                 var deduct_amount = $("#deduct_amount").val();
                 var deduct_info = $("#deduct_info").val();
                 var pay_order_id = $("#pay_order_id_deduct").val();
-                if(Number(deduct_amount) > 1000000){
+                if(Number(deduct_amount) > 1000000 || Number(deduct_amount) <= 0){
                     reset();
-                    alertify.alert("扣款金额最大不能超过1000000.00元！");
+                    alertify.alert("扣款金额最小不能等于0元，最大不能超过1000000.00元！");
                     return false;
                 }
                 $.ajax({
@@ -398,10 +431,12 @@
                 var qe_create_time = $(".qe_create_time").val();
                 var qs_pay_time = $(".qs_pay_time").val();
                 var qe_pay_time = $(".qe_pay_time").val();
+                var channel_code = $(".channel_code").val();
+                var assign_state = $(".assign_state").val();
 
-                var json = {"uname":uname,"pay_order_id":pay_order_id,"c_begin_datetime":c_begin_datetime,"c_end_datetime":c_end_datetime,
+                var json = {"channel_code":channel_code,"uname":uname,"pay_order_id":pay_order_id,"c_begin_datetime":c_begin_datetime,"c_end_datetime":c_end_datetime,
                     "cuname":cuname,"uphone":uphone,"student_name":student_name,"partner_id":partner_id,"statu":statu,
-                    "qs_create_time":qs_create_time,"qe_create_time":qe_create_time,"qs_pay_time":qs_pay_time,"qe_pay_time":qe_pay_time,"mts":mts};
+                    "qs_create_time":qs_create_time,"qe_create_time":qe_create_time,"qs_pay_time":qs_pay_time,"qe_pay_time":qe_pay_time,"mts":mts,"assign_state":assign_state};
 
                 reset = function () {
                     $("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
@@ -468,6 +503,19 @@
                     $("#compensation").modal('show');
                     $(".modal-footer").hide();
                 }else{
+                    $(".modal-footer").show();
+
+                    $("#amount").val('');
+                    $("input[type='radio']").each(function(i,ele){
+						$(this).attr('checked',false);
+                    });
+                    $("#partner_bear_amount").val('');
+                    $("#partner_bear_coupon_amount").val('');
+                    $("#compensation_info").val('');
+                    $("#payee").val('');
+                    $("#payee_card").val('');
+                    $("#receiving_bank").val('');
+
                     $("#partner_id").val(partner_id);
                     $("#pay_order_id").val(pay_order_id);
                     $("#compensation").modal('show');
@@ -486,10 +534,13 @@
             success:function(data){
                 if(data.pay_order_id != null){
                     $("#deduct_info").val(data.deduct_info);
-                    $("#deduct_amount").val(data.deduct_amount);
+                    $("#deduct_amount").val(data.deduct_amount * 0.01);
                     $("#deduct_money").modal('show');
                     $(".modal-footer").hide();
                 }else{
+                    $(".modal-footer").show();
+                    $("#deduct_info").val('');
+                    $("#deduct_amount").val('');
                     $("#pay_order_id_deduct").val(pay_order_id);
                     $("#deduct_money").modal('show');
                 }
@@ -497,100 +548,103 @@
         });
 	}
 
-	function assign_order_pre(pay_order_id) {
+	function assign_order_pre(pay_order_id,cus_address) {
+        $("#address").val('');
+        $("#timeModels").val('');
+        $("#server_date").html("<option value=''>请选择</option>");
+        $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
+
         $("#form3_pay_order_id").val(pay_order_id);
-        $.ajax({
-            url:"/ordermanager/assign_order_pre",
-            type : 'post',
-            data :{
-                pay_order_id:pay_order_id
-            },
-            success:function(data){
-				var partners = data.partners;
-				$("#stations").val(data.stationsJson);
-                var html = [];
-                html.push("<option value=''>请选择</option>");
-				$.each(partners,function (i,partner) {
-                    html.push("<option value="+partner.partner_id+">"+partner.name+"</option>");
-                });
-				$("#partner").html(html.join(''));
-            }
-        });
-        $("#assign_order").modal('show');
-    }
-
-    function select_partner(partner_id) {
-        var stations = $.parseJSON($("#stations").val());
-        var html = [];
-        html.push("<option value=''>请选择</option>");
-        $.each(stations, function(i, ele) {
-            if(ele.partner_id == partner_id){
-                html.push("<option value="+ele.station_id+">" + ele.address + "</option>");
-            }
-        });
-        $("#station").html(html.join(''));
-    }
-    
-    function server_date(server_date) {
-        var timeArray=['00:00','00:30','01:00','01:30','02:00','02:30','03:00','03:30',
-            '04:00','04:30','05:00','05:30','06:00','06:30','07:00','07:30',
-            '08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
-            '12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
-            '16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30',
-            '20:00','20:30','21:00','21:30','22:00','22:30','23:00','23:30'
-        ];
-
-		var station_id = $("#station").val();
-		var pay_order_id = $("#form3_pay_order_id").val();
-		var num = $("#num").val();
-		if(station_id == '' || pay_order_id == '' || num == ''){
-		    alertify.alert("请先选择出站点信息和填入需要的服务人员数！");
-		    return false;
-		}
-
-		if(server_date == ''){
-            $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
-            return false;
-		}
+        $("#jd_address").val(cus_address);
 
         $.ajax({
-            url:"/ordermanager/get_optional_time_scope",
+            url:"/ordermanager/get_has_store_time_scope",
             type : 'post',
             data :{
                 pay_order_id:pay_order_id,
-				station_id:station_id,
-				server_date:server_date,
-				num:num
+				address:""
             },
             success:function(data){
                 var html = [];
+                html.push("<option value=''>请选择</option>");
                 if (data.msg != null) {
-                    html.push("<span style='color: red'>该站点下服务人员数量不足<span>");
+                    reset();
+                    alertify.alert(data.msg);
                 }else{
-					var scopeStores = data.scopeStores;
-                    $.each(scopeStores, function(i, ele) {
-                        var s = ele.skuTime.s;
-                        var e = ele.skuTime.e;
-                        var inputStr = "<input type='radio' class='input timeScope' value='{\"s\":"+s+",\"e\":"+e+"}' name='time'/>";
-                        $.each(timeArray,function (i, n) {
-							if(i == s){
-								inputStr += n + ' - ';
-							}
-                        });
-                        $.each(timeArray,function (i, n) {
-                            if(i == e){
-                                inputStr += n +"&nbsp;&nbsp;&nbsp;";
-                            }
-                        });
-                        html.push(inputStr);
+                    var timeModels = data.timeModels;
+					$("#timeModels").val(JSON.stringify(timeModels));
+                    $.each(timeModels, function(i, ele) {
+                        html.push("<option value='"+ele.dateTime+"'>"+ele.dateTime+"</option>");
                     });
-				}
-                $("#time_scope").html(html.join(''));
-                $(".modal-footer").removeAttr('hidden');
+                }
+                $("#server_date").html(html.join(''));
+                $("#assign_order").modal('show');
             }
         });
+    }
 
+    function select_date() {
+        $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
+        var timeModels = $("#timeModels").val();
+        var times = JSON.parse(timeModels);
+        var html = [];
+        $.each(times, function(i, ele) {
+            if(ele.dateTime == $("#server_date").val()){
+                var models = ele.models;
+                $.each(models, function(j, e) {
+					var start = e.start;
+					var end = e.end;
+					var end_s = '';
+					if(typeof(end) == "undefined"){
+						end_s = "untime";
+					}else{
+						end_s = end;
+					}
 
+					var inputStr = "";
+					if(j != 0 && (j+1)%2 != 0){
+						inputStr += "</br>";
+					}
+					inputStr += "<input type='radio' class='input timeScope' value='"+start+","+end_s+"' name='time'/>";
+					inputStr += start + " - " + end_s + "&nbsp;&nbsp;&nbsp;";
+					html.push(inputStr);
+				});
+            }
+        });
+        $("#time_scope").html(html.join(''));
+    }
+
+    function change_address() {
+        var pay_order_id = $("#form3_pay_order_id").val();
+        $("#timeModels").val('');
+        $("#server_date").val('');
+        var address = $("#address").val();
+        if(address != ''){
+            $.ajax({
+                url:"/ordermanager/get_has_store_time_scope",
+                type : 'post',
+                data :{
+                    pay_order_id:pay_order_id,
+                    address:address
+                },
+                success:function(data){
+                    var html = [];
+                    html.push("<option value=''>请选择</option>");
+                    if (data.msg != null) {
+                        reset();
+                        alertify.alert(data.msg);
+                    }else{
+                        var timeModels = data.timeModels;
+                        $("#timeModels").val(JSON.stringify(timeModels));
+                        $.each(timeModels, function(i, ele) {
+                            html.push("<option value='"+ele.dateTime+"'>"+ele.dateTime+"</option>");
+                        });
+                    }
+                    $("#server_date").html(html.join(''));
+                }
+            });
+        }
+        $("#time_scope").html("<span style='font-size: 10px'>&nbsp;&nbsp;&nbsp;当前无可选的服务时间段哦！</span>");
     }
 </script>
 </head>
@@ -615,11 +669,19 @@
 				<div class="form-inline">
 					<label>订单来源：</label>
 					<select class="form-control channel_code input-sm" name="channel_code"  style="margin-right: 20px">
-						<option value=''>请选择</option>
+						<option value=''>全部</option>
 						<th:block th:each="channel:${channels}">
 							<option  th:value="${channel.code}" th:text="${channel.channel_name}" th:selected="${channel_code eq channel.code}"></option>
 						</th:block>
 					</select>
+					<th:block th:if="${channel_code eq 'JD-001'}">
+						<label>派单状态：</label>
+						<select class="form-control assign_state input-sm" name="assign_state"  style="margin-right: 20px">
+							<option value=''>请选择</option>
+							<option th:selected="${assign_state eq 0}" value='0'>未派单</option>
+							<option th:selected="${assign_state eq 1}" value='1'>已派单</option>
+						</select>
+					</th:block>
 				</div>
 				<br/>
 				<div class="form-inline">
@@ -740,10 +802,11 @@
 					<th width="100px" sec:authorize="hasRole('ROLE_ORDER_BROWSE')">订单号</th>
 					<th width="100px">订单状态</th>
 					<th width="100px">下单日期</th>
+					<th width="100px">下单件数</th>
 					<th width="100px">服务名称</th>
 					<th width="100px">用户姓名</th>
 					<th width="100px">收货人电话</th>
-					<th width="100px">顾客电话</th>
+					<th width="100px">下单人电话</th>
 					<th width="100px">服务地址</th>
 					<th width="100px">服务价格</th>
 					<th width="100px">实付金额</th>
@@ -772,6 +835,7 @@
 						<span th:case="5">已完成</span>
 					</td>
 					<td style="vertical-align: middle;width: 100px;" th:text="${#dates.format(info.create_datetime,'yyyy-MM-dd HH:mm:ss')}"></td>
+					<td style="vertical-align: middle;width: 100px;" th:text="${info.num}"></td>
 					<td style="vertical-align: middle;width: 100px;" th:text="${info.uname}"></td>
 					<td style="vertical-align: middle;" th:text="${info.cus_username}"></td>
 					<td style="vertical-align: middle" th:text="${info.cus_phone}"></td>
@@ -807,15 +871,15 @@
 						<th:block sec:authorize="hasAnyRole('ROLE_DEDUCT_MONEY_ADD','ROLE_DEDUCT_MONEY_BROWSE')" th:if="${(info.o_status_active eq 5) or (info.work_status gt 1)}" >
 							<a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|deduct_money('${info.pay_order_id}');|"><i class="fab fa-bitcoin"></i>扣款</a>
 						</th:block>
-						<th:block sec:authorize="hasRole('ROLE_ORDER_EDIT')" th:if="${info.o_status_active eq 2 and info.channel eq 'JD-001' and info.status_active != 6}">
-							<a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|assign_order_pre('${info.pay_order_id}');|"><span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span>派发订单</a>
+						<th:block sec:authorize="hasRole('ROLE_ORDER_EDIT')" th:if="${info.o_status_active eq 2 and info.channel eq 'JD-001' and info.status_active eq 1}">
+							<a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|assign_order_pre('${info.pay_order_id}','${info.cus_address}');|"><span class="glyphicon glyphicon-hand-right" aria-hidden="true"></span>派发订单</a>
 						</th:block>
 					</td>
 				</tr>
 				</tbody>
 			</table>
 		</div>
-		<div th:include="~{tags/pagination::p1(@{/ordermanager/goto_order_list(uname=${uname},pay_order_id=${pay_order_id},c_begin_datetime=${#dates.format(c_begin_datetime,'yyyy-MM-dd')},c_end_datetime=${#dates.format(c_end_datetime,'yyyy-MM-dd')},
+		<div th:include="~{tags/pagination::p1(@{/ordermanager/goto_order_list(channel_code=${channel_code},assign_state=${assign_state},uname=${uname},pay_order_id=${pay_order_id},c_begin_datetime=${#dates.format(c_begin_datetime,'yyyy-MM-dd')},c_end_datetime=${#dates.format(c_end_datetime,'yyyy-MM-dd')},
 			cuname=${cuname},uphone=${uphone},student_name=${student_name},partner_id=${partner_id},statu=${statu},qs_create_time=${#dates.format(qs_create_time,'yyyy-MM-dd')},qe_create_time=${#dates.format(qe_create_time,'yyyy-MM-dd')},qs_pay_time=${#dates.format(qs_pay_time,'yyyy-MM-dd')},
 			qe_pay_time=${#dates.format(qe_pay_time,'yyyy-MM-dd')})},${page.total}
 					,${page.pageSize},${page.pageNo},${page.totalPage},right,p)}">
@@ -916,35 +980,25 @@
 						<h4 class="modal-title">派发订单</h4>
 					</div>
 					<form id="form3">
-						<div class="modal-body " style="margin-left: 160px">
+						<div class="modal-body " style="margin-left: 155px">
 							<input type="hidden" name="pay_order_id" id="form3_pay_order_id"/>
-							<div class="form-group" >
-								<label>合伙人：</label>
-								<select class="form-control input-sm" id="partner" name="partner_id" onchange="select_partner(this.value)" style="width: 250px">
-
-								</select>
-							</div>
-							<br/>
+							<input type="hidden" id="timeModels"/>
 							<div class="form-group">
-								<label>服务站点：</label>
-								<input id="stations" type="hidden">
-								<select class="form-control station_id input-sm" id="station" name="partner_id" style="width: 250px">
-
-								</select>
+								<label>京东收货地址：</label>
+								<textarea class="form-control input-sm" id="jd_address" style="width: 250px;height: 50px" disabled></textarea>
 							</div>
 							<div class="form-group">
-								<label>服务人数：</label>
-								<input type="number" id="num" class="form-control input-sm" name="num" min="1" max="10" style="width: 250px"/>
+								<label style="color: red;width: 250px" >特别提示：若顾客服务地址有变，则需在如下“服务地址”处重新输入！</label>
 							</div>
-							<br/>
+							<div class="form-group">
+								<label>服务地址：</label>
+								<textarea class="form-control input-sm" id="address" name="address" minlength="5" maxlength="20" style="width: 250px;height: 50px" onchange="change_address()"></textarea>
+							</div>
 							<div class="form-group">
 								<label>服务日期：</label>
-								<div class="input-group date datetimepicker1">
-									<input class="form-control input-sm" type="text" id="select_date" style="width: 200px;" onchange="server_date(this.value)"/>
-									<span class="input-group-addon" style="width: 50px; height: 30px;">
-										<span class="glyphicon glyphicon-calendar"></span>
-									</span>
-								</div>
+								<select class="form-control server_date input-sm" name="server_date" id="server_date" style="width: 250px;" onchange="select_date()">
+									<option value=''>请选择</option>
+								</select>
 							</div>
 							<br/>
 							<div class="form-group">
@@ -954,7 +1008,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="modal-footer form-group" hidden>
+						<div class="modal-footer form-group">
 							<button sec:authorize="hasRole('ROLE_ORDER_EDIT')" id="assign_btn" type="button" class="btn btn-primary">确定</button>
 						</div>
 					</form>

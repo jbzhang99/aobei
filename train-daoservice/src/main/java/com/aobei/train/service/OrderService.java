@@ -194,4 +194,12 @@ public interface OrderService extends MbgReadService<String, Order, Order, Order
      * @return
      */
     int xUpdateRejectFineMoney(FineMoney fineMoney, Users users);
+
+    /**
+     * 派发订单
+     * @param order
+     * @param serviceUnit
+     * @return
+     */
+    Station dispatchOrder(Order order, ServiceUnit serviceUnit);
 }

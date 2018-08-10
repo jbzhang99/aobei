@@ -193,8 +193,8 @@ public class PartnerMutation implements GraphQLMutationResolver{
 	 * 消息状态修改
 	 */
 	public MutationResult partner_message_status_alter(Long message_id){
-		Partner partner = partnerQuery.partner_bindinfo();
-		return partnerApiService.messageStatusAlter(partner,message_id);
+		//Partner partner = partnerQuery.partner_bindinfo();
+		return partnerApiService.messageStatusAlter(message_id);
 	}
 
 	/**

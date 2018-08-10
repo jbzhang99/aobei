@@ -1,0 +1,28 @@
+#工单信息记录表（七陌）
+type Business{
+
+    #工单编号
+    business_id : String
+
+    #坐席号
+    user : String
+
+    #创建时间
+    createTime : Date
+
+    #执行的动作名称
+    action : String
+
+    #当前步骤的名称
+    stepName : String
+
+    #当前步骤的的步骤信息
+    flowInfo : String
+
+    #订单号
+    pay_order_id : String
+
+    #顾客电话
+    cus_phone : String
+}
+

@@ -37,7 +37,7 @@ public class ApiOrderServiceImplTest {
         example.or().andPay_order_idEqualTo("1526901775_1")
                 .andPidEqualTo(0l);
         ServiceUnit serviceUnit  = singleResult(serviceUnitService.selectByExample(example));
-        apiOrderService.dispatch(order,serviceUnit);
+        orderService.dispatchOrder(order,serviceUnit);
     }
 
     @Test

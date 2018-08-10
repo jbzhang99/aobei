@@ -5,10 +5,15 @@ import com.aliyun.openservices.ons.api.Action;
 import com.aliyun.openservices.ons.api.ConsumeContext;
 import com.aliyun.openservices.ons.api.Message;
 import com.aobei.common.boot.OnsMessageListener;
+import com.aobei.train.IdGenerator;
 import com.aobei.train.handler.CacheReloadHandler;
+import com.aobei.train.model.Order;
+import com.aobei.train.model.RejectRecord;
+import com.aobei.train.model.ServiceUnit;
 import com.aobei.train.model.ServiceUnitExample;
 import com.aobei.train.service.OrderLogService;
 import com.aobei.train.service.OrderService;
+import com.aobei.train.service.RejectRecordService;
 import com.aobei.train.service.ServiceUnitService;
 import com.aobei.trainapi.configuration.CustomProperties;
 import custom.bean.ons.RejectOrderMessage;
@@ -17,6 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Date;
+
+import static org.springframework.dao.support.DataAccessUtils.singleResult;
 
 @Component
 public class AutoRejectOrderListener implements OnsMessageListener {
@@ -32,6 +41,8 @@ public class AutoRejectOrderListener implements OnsMessageListener {
     CustomProperties properties;
     @Autowired
     CacheReloadHandler cacheReloadHandler;
+    @Autowired
+    RejectRecordService rejectRecordService;
     @Override
     public String getTopic() {
         return properties.getAliyun().getOns().getTopic();
@@ -78,6 +89,28 @@ public class AutoRejectOrderListener implements OnsMessageListener {
                 .andPidNotEqualTo(0l);
         if (serviceUnitService.countByExample(serviceUnitExample) > 0) {
             if (orderService.xRejectOrder(pay_order_id, partner_id, "超出接单时间限制[进行自动拒单]",0)) {
+                Order order = orderService.selectByPrimaryKey(pay_order_id);
+                ServiceUnitExample example = new ServiceUnitExample();
+                example.or().andPay_order_idEqualTo(pay_order_id)
+                        .andPidEqualTo(0l);
+                ServiceUnit serviceUnit = singleResult(serviceUnitService.selectByExample(example));
+                RejectRecord rejectRecord = new RejectRecord();
+                rejectRecord.setReject_record_id(IdGenerator.generateId());
+                rejectRecord.setServer_name(order.getName());
+                rejectRecord.setPay_order_id(pay_order_id);
+                rejectRecord.setServiceunit_id(serviceUnit.getServiceunit_id());
+                rejectRecord.setCreate_datetime(new Date());
+                rejectRecord.setServer_name(order.getName());
+                rejectRecord.setCus_username(order.getCus_username());
+                rejectRecord.setCus_phone(order.getCus_phone());
+                rejectRecord.setCus_address(order.getCus_address());
+                rejectRecord.setPrice_total(order.getPrice_total());
+                rejectRecord.setPrice_pay(order.getPrice_pay());
+                rejectRecord.setReject_type(0);
+                rejectRecord.setReject_info(serviceUnit.getP_reject_remark() == null ? "":serviceUnit.getP_reject_remark());
+                rejectRecord.setPartner_id(serviceUnit.getPartner_id());
+                rejectRecord.setServer_datetime(serviceUnit.getC_begin_datetime());
+                rejectRecordService.insert(rejectRecord);
                 //添加订单变更日志
                 orderLogService.xInsert("system", 0l, pay_order_id, " 【系统自动】自动拒单，原因是:30 分钟没有接单[进行自动拒单]");
                 logger.info("aliOns-AutoRejectOrderListener: status{SUCCESS}");

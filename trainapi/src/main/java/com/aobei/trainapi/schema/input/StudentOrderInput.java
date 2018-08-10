@@ -11,6 +11,17 @@ public class StudentOrderInput {
     int num ;
     String remark;
     int type;
+    //服务单 1  收费单 2
+	int continuousSingleState;
+
+	public int getContinuousSingleState() {
+		return continuousSingleState;
+	}
+
+	public void setContinuousSingleState(int continuousSingleState) {
+		this.continuousSingleState = continuousSingleState;
+	}
+
 	public String getPay_order_id() {
 		return pay_order_id;
 	}

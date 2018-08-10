@@ -108,6 +108,9 @@
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_BURL_BROWSE')">
                     <a id="side_33" th:href="@{/bannermanager/cmsurl_list}">banner图路径</a>
                 </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_VIDEO_BROWSE')">
+                    <a id="side_60" th:href="@{/videomanager/video_list}">视频管理</a>
+                </li>
             </ul>
         </div>
     </th:block>
@@ -139,7 +142,7 @@
     </th:block>
 
 
-    <th:block sec:authorize="hasAnyRole('ROLE_PARTNER_BROWSE,ROLE_STUDENT_BROWSE')">
+    <th:block sec:authorize="hasAnyRole('ROLE_PARTNER_BROWSE,ROLE_STUDENT_BROWSE,ROLE_PARTNER_AUDIT_BROWSE,ROLE_INSURANCE_BROWSE')">
         <div class="list-group ti">
             <h5 class="ab_f13 ab_cursor">
                 <span>
@@ -150,6 +153,10 @@
             <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_PARTNER_BROWSE')">
                     <a id="side_11" th:href="@{/partner/showPartner}">合伙人信息</a>
+                </li>
+                <!--sec:authorize="hasRole('ROLE_PARTNER_AUDIT_BROWSE')"-->
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_PARTNER_AUDIT_BROWSE')">
+                    <a id="side_61" th:href="@{/partner/showAuditPartner}">合伙人信息审核</a>
                 </li>
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_STUDENT_BROWSE')">
                     <a id="side_12" th:href="@{/student/showStudent}">学员信息</a>
@@ -193,7 +200,7 @@
                     <a id="side_38" th:href="@{/ordermanager/deduct_money_list}">扣款申请单管理</a>
                 </li>
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_REJECT_UNIT_BROWSE')">
-                    <a id="side_42" th:href="@{/ordermanager/reject_unit_list}">罚款查询</a>
+                    <a id="side_42" th:href="@{/ordermanager/reject_unit_list}">拒单查询</a>
                 </li>
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_FINE_MONEY_BROWSE')">
                     <a id="side_43" th:href="@{/ordermanager/fine_money_list}">罚款申请管理</a>
@@ -283,7 +290,7 @@
             </h5>
             <!--  -->
             <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
-                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_TACTICS_BROWSE')">
+                <!--<li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_TACTICS_BROWSE')">
                     <a id="side_34" th:href="@{/balance/balance_tactics_list}">结算策略</a>
                 </li>
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_ORDER_BROWSE')">
@@ -321,8 +328,8 @@
                 </li>
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_DEDUCT_BROWSE')">
                     <a id="side_55" th:href="@{/balance/deduct_money_list}">扣款已结算</a>
-                </li>
-                <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_FINE_BROWSE')">
+                </li>-->
+                <!--<li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_FINE_BROWSE')">
                     <a id="side_56" th:href="@{/balance/fine_money_waiting_list}">罚款待结算</a>
                 </li>
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_FINE_BROWSE')">
@@ -330,7 +337,7 @@
                 </li>
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_BALANCE_FINE_BROWSE')">
                     <a id="side_58" th:href="@{/balance/fine_money_list}">罚款已结算</a>
-                </li>
+                </li>-->
             </ul>
         </div>
     </th:block>
@@ -400,4 +407,42 @@
             </ul>
         </div>
     </th:block>
+
+    <!--<th:block sec:authorize="hasRole('ROLE_CHANNEL_BROWSE')">
+        <div class="list-group ti">
+            <h5 class="ab_f13 ab_cursor">
+               <span>
+                 <i class="icon iconfont icon-arrRight-fill"></i>
+               </span>
+                数据统计
+            </h5>
+            &lt;!&ndash;  &ndash;&gt;
+            <ul class="list-group ab_list ab_margin list-menu" style="display: none;">
+                <li class="list-group-item">
+                    <a id="side_61" th:href="@{/channel/channel_list}">dashboard概况</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_62" th:href="@{/channelType/channelType_list}">订单数据统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_63" th:href="@{/channelType/channelType_list}">顾客数据统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_64" th:href="@{/dataManager/partnerDatas}">合伙人数据统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_65" th:href="@{/channelType/channelType_list}">服务人员数据统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_66" th:href="@{/channelType/channelType_list}">优惠券统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_67" th:href="@{/channelType/channelType_list}">产品转化率统计</a>
+                </li>
+                <li class="list-group-item">
+                    <a id="side_68" th:href="@{/channelType/channelType_list}">各渠道流量转化</a>
+                </li>
+            </ul>
+        </div>
+    </th:block>-->
 </th:block>

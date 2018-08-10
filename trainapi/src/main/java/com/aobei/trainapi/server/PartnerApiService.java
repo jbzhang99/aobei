@@ -210,11 +210,10 @@ public interface PartnerApiService {
 
 	/**
 	 * 消息状态修改
-	 * @param partner
 	 * @param message_id
 	 * @return
 	 */
-	MutationResult messageStatusAlter(Partner partner, Long message_id);
+	MutationResult messageStatusAlter(Long message_id);
 
 	/**
 	 * 抢单详情

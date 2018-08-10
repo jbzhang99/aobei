@@ -79,7 +79,11 @@ public class CompensationSeventeenthTask {
 
         CompensationExample compensationExample = new CompensationExample();
         compensationExample.or().andConfirm_datetimeBetween(firstDate,endDate).andCompensation_statusEqualTo(2);
+
+        //CompensationExample compensationExamples = new CompensationExample();
+       // compensationExamples.or().andConfirm_datetimeLessThan(firstDate).andCompensation_statusEqualTo(2);
         List<Compensation> compensations = compensationService.selectByExample(compensationExample);
+        //compensations.addAll(compensationService.selectByExample(compensationExamples));
         if(!compensations.isEmpty()){
             compensations.stream().forEach(compensation -> {
                 ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
@@ -119,7 +123,7 @@ public class CompensationSeventeenthTask {
         FallintoCompensation fallintoCompensation=new FallintoCompensation();
         fallintoCompensation.setFallinto_compensation_id(IdGenerator.generateId());
         String month = localDate.getMonthValue() < 10 ? "0" + localDate.getMonthValue() : localDate.getMonthValue() + "";
-        fallintoCompensation.setBalance_cycle(localDate.getYear() + month + "01");//结算期
+        fallintoCompensation.setBalance_cycle(localDate.getYear() + month + "17");//结算期
         fallintoCompensation.setCompensation_id(compensation.getCompensation_id());//赔偿单号
         fallintoCompensation.setPay_order_id(order.getPay_order_id());//订单号
         fallintoCompensation.setServiceunit_id(serviceUnit.getServiceunit_id());//服务单号
