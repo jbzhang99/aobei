@@ -2229,17 +2229,23 @@ public class OrderController {
         	appid =payAliNotify.getApp_id();
         }
 
-        RefundOrderMessage refundMsg = new RefundOrderMessage();
-        refundMsg.setAppid(appid);
-        refundMsg.setMessageId(IdGenerator.generateId() + "");
-        refundMsg.setPay_order_id(pay_order_id);
-        refundMsg.setRefund_id(refund_id);
-        Message message = new Message();
-        message.setTopic(properties.getAliyun().getOns().getTopic());
-        message.setTag(refundMsg.getTag());
-        message.setBody(JSON.toJSONBytes(refundMsg));
-        producer.send(message);
-        Map<String, String> map = new HashMap<>();
+		RefundOrderMessage refundMsg = new RefundOrderMessage();
+		refundMsg.setAppid(appid);
+		refundMsg.setMessageId(IdGenerator.generateId() + "");
+		refundMsg.setPay_order_id(pay_order_id);
+		refundMsg.setRefund_id(refund_id);
+		Message message = new Message();
+		message.setTopic(properties.getAliyun().getOns().getTopic());
+		message.setTag(refundMsg.getTag());
+		message.setBody(JSON.toJSONBytes(refundMsg));
+		producer.send(message);
+		//更新退款单到退款中状态
+		Refund refund = new Refund();
+		refund.setRefund_id(refund_id);
+		refund.setStatus(Status.RefundStatus.refunding.value);
+		refundService.updateByPrimaryKeySelective(refund);
+
+		Map<String, String> map = new HashMap<>();
 		map.put("msg", "退款申请已提交，请静心等待处理结果！");
 		orderLogService.xInsert(authentication.getName(), users.getUser_id(), pay_order_id,
 				"用户[" + authentication.getName() + "] 为客户进行了确认退款操作！");
