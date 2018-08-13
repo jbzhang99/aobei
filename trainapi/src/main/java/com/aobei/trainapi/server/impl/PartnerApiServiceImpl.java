@@ -795,6 +795,13 @@ public class PartnerApiServiceImpl implements PartnerApiService {
             response.setErrors(Errors._41013);
             return response;
         }
+        Integer work_status = unit.getWork_status();
+        if (!StringUtils.isEmpty(work_status)){
+            if (work_status == 2 || work_status == 4){
+                response.setErrors(Errors._42034);
+                return response;
+            }
+        }
         logger.info("api-method:partnerAlterOrder:process partner:{}", partner);
         Customer customer = customerService.selectByPrimaryKey(unit.getCustomer_id());
         logger.info("api-method:partnerAlterOrder:process customer:{}", customer);
@@ -845,7 +852,7 @@ public class PartnerApiServiceImpl implements PartnerApiService {
 			smsHandler.sendToWorkWhenOrderAssign(order.getName(), order.getCus_username(), order.getCus_address(),
 					format.format(unit.getC_begin_datetime()), order.getCus_phone(), student.getPhone());
 			//推送消息  新服务人员新订单通知
-			pushHandler.pushOrderMessageToStudent(orderInfo,student.getStudent_id().toString());
+			//pushHandler.pushOrderMessageToStudent(orderInfo,student.getStudent_id().toString());
 			//站内消息(学员)
             inStationHandler.sentToStudentOrder(student.getStudent_id(),pay_order_id);
 		}
@@ -858,7 +865,7 @@ public class PartnerApiServiceImpl implements PartnerApiService {
 			smsHandler.sendToPartnerWhenOrderCancel(order.getName(), format.format(unit.getC_begin_datetime()),
 					order.getCus_username(), order.getCus_address(), student.getPhone());
 			//推送消息  原服务人员取消订单
-			pushHandler.pushCancelOrderMessageToStudent(orderInfo,student.getStudent_id().toString());
+			//pushHandler.pushCancelOrderMessageToStudent(orderInfo,student.getStudent_id().toString());
 			//站内消息(学员)
             inStationHandler.sentToStudentCancleOrder(pay_order_id,student);
         }
@@ -1063,7 +1070,7 @@ public class PartnerApiServiceImpl implements PartnerApiService {
                                     student.getPhone());
 
                             //推送新订单 通知到服务人员0_0
-                            pushHandler.pushOrderMessageToStudent(orderInfo,student.getStudent_id().toString());
+                            //pushHandler.pushOrderMessageToStudent(orderInfo,student.getStudent_id().toString());
                             //发送站内消息
                             inStationHandler.sentToStudentOrder(student.getStudent_id(),pay_order_id);
                             //暂无 服务时间提醒类型

@@ -2534,7 +2534,7 @@ public class OrderController {
 			cacheReloadHandler.student_order_listReload(n.getStudent_id());
 			cacheReloadHandler.selectStuShowTaskdetailReload(n.getStudent_id(),order_db.getPay_order_id());
 			//订单取消，发送个推消息
-			pushHandler.pushCancelOrderMessageToStudent(orderInfo,n.getStudent_id().toString());
+			//pushHandler.pushCancelOrderMessageToStudent(orderInfo,n.getStudent_id().toString());
 		});
 		ServiceunitPerson sp = new ServiceunitPerson();
 		sp.setStatus_active(Status.OrderStatus.cancel.value);

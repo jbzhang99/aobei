@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alipay.api.AlipayApiException;
 import com.aobei.common.bean.SmsData;
 import com.aobei.common.boot.EventPublisher;
+import com.aobei.common.boot.RedisIdGenerator;
 import com.aobei.common.boot.event.SmsSendEvent;
 import com.aobei.train.IdGenerator;
 import com.aobei.train.Roles;
@@ -26,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import weixin.popular.bean.paymch.MchPayApp;
@@ -93,6 +95,10 @@ public class ApiOrderServiceImpl implements ApiOrderService {
     PushHandler pushHandler;
     @Autowired
     OnsHandler onsHandler;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+    @Autowired
+    private RedisIdGenerator redisIdGenerator;
     @Override
     public void paySuccess(Order order, int paytype) {
         // 只需要更新order表中的订单支付状态表
@@ -279,6 +285,7 @@ public class ApiOrderServiceImpl implements ApiOrderService {
      * 用户领取优惠券
      */
     @Override
+    @Transactional(timeout = 5)
     public ApiResponse getCounpons(Customer customer, Long coupon_id) {
         logger.info("api-method:getCounpons:params customer:{},coupon_id:{}", customer, coupon_id);
         ApiResponse response = new ApiResponse();
@@ -288,26 +295,20 @@ public class ApiOrderServiceImpl implements ApiOrderService {
             return response;
         }
         if (coupon.getReceive_end_datetime().after(new Date()) && coupon.getType()==3) {
-            if (coupon.getNum_limit() == 1) {
-                CouponExample couponExample = new CouponExample();
-                couponExample.or().andCoupon_idEqualTo(coupon_id)
-                        .andNum_ableGreaterThan(0);
-                Coupon updateCoupon = new Coupon();
-                updateCoupon.setNum_able(coupon.getNum_able() - 1);
-                int  count  = couponService.updateByExampleSelective(updateCoupon,couponExample);
-                if (count==0){
-                    response.setErrors(Errors._42029);
-                    logger.info("api-method:getCounpons:process  the numAble is out of size");
-                    return response;
-                }
-            }
             CouponReceiveExample couponReceiveExample  =new CouponReceiveExample();
             couponReceiveExample.or()
-                                    .andCoupon_idEqualTo(coupon_id)
-                                    .andUidEqualTo(customer.getCustomer_id())
-                                    .andDeletedEqualTo(0);
+                    .andCoupon_idEqualTo(coupon_id)
+                    .andUidEqualTo(customer.getCustomer_id())
+                    .andDeletedEqualTo(0);
             List<CouponReceive> couponReceives = couponReceiveService.selectByExample(couponReceiveExample);
             logger.info("api-method:getCounpons:process couponReceives:{}", couponReceives);
+            RedisIdGenerator idGenerator = new RedisIdGenerator();
+            idGenerator.setRedisTemplate(redisTemplate);
+            long autoIncrId = idGenerator.getAutoIncrNum(coupon_id+customer.getCustomer_id()+"");
+            if (autoIncrId != 1){
+                response.setErrors(Errors._42029);
+                return response;
+            }
             //目前需求一个优惠券一个用户只可以领取一次
             if (couponReceives.size() == 0){
                 CouponReceive couponReceive = new CouponReceive();
@@ -322,6 +323,19 @@ public class ApiOrderServiceImpl implements ApiOrderService {
             }else{
                 response.setErrors(Errors._42029);
                 return response;
+            }
+            if (coupon.getNum_limit() == 1) {
+                CouponExample couponExample = new CouponExample();
+                couponExample.or().andCoupon_idEqualTo(coupon_id)
+                        .andNum_ableGreaterThan(0);
+                Coupon updateCoupon = new Coupon();
+                updateCoupon.setNum_able(coupon.getNum_able() - 1);
+                int  count  = couponService.updateByExampleSelective(updateCoupon,couponExample);
+                if (count==0){
+                    response.setErrors(Errors._42029);
+                    logger.info("api-method:getCounpons:process  the numAble is out of size");
+                    return response;
+                }
             }
         } else {
             response.setErrors(Errors._42029);
