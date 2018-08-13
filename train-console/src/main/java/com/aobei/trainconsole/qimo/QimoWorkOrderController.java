@@ -6,12 +6,12 @@ import com.aobei.train.model.BusinessExample;
 import com.aobei.train.service.BusinessService;
 import com.aobei.trainconsole.qimo.qimobean.QimoFiled;
 import com.aobei.trainconsole.qimo.qimobean.QimoReceiveRequestBody;
-import com.aobei.trainconsole.util.QimoServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StreamUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -60,8 +60,10 @@ public class QimoWorkOrderController {
                 }
             });
             BusinessExample example = new BusinessExample();
-            example.or().andPay_order_idEqualTo(business.getPay_order_id());
-            if(businessService.countByExample(example) <= 1){
+            example.or()
+                    .andBusiness_idEqualTo(business.getBusiness_id())
+                    .andPay_order_idEqualTo(business.getPay_order_id());
+            if(businessService.countByExample(example) < 1){
                 businessService.insertSelective(business);
             }
             returnCode = "200";
