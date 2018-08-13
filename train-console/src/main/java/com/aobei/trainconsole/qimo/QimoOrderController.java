@@ -129,7 +129,7 @@ public class QimoOrderController {
         logger.info("qimo tab query:{}", request.getQueryString());
         logger.info("[receiveQimoRequest getOrders] Agent is {}",Agent);
         if ("".equals(originCallNo) || originCallNo == null){
-            originCallNo = "15313882039";
+            originCallNo = "";
         }
         SimpleDateFormat sdfhms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
