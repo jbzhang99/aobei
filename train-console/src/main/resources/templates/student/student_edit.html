@@ -683,7 +683,7 @@
                     job_number:job_number,
                     job_cret:json_job_cret,
                     service_times:map,
-                    service_cycle:list.length>0?list:null
+                    service_cycle:list.length>0?list:"[]"
                     //job_img_ids:json_img_id
                 });
                 //封装服务项目
@@ -1110,13 +1110,13 @@
 						</th:block>
 					</select>
 					<th:block th:if="${weeks.isEmpty()}">
-						<input type="checkbox" name="week" value="1"  checked/>星期一&nbsp;&nbsp;
-						<input type="checkbox" name="week" value="2"  checked/>星期二&nbsp;&nbsp;
-						<input type="checkbox" name="week" value="3"  checked/>星期三&nbsp;&nbsp;
-						<input type="checkbox" name="week" value="4"  checked/>星期四&nbsp;&nbsp;
-						<input type="checkbox" name="week" value="5"  checked/>星期五&nbsp;&nbsp;
-						<input type="checkbox" name="week" value="6"  checked/>星期六&nbsp;&nbsp;
-						<input type="checkbox" name="week" value="7"  checked/>星期天
+						<input type="checkbox" name="week" value="1"/>星期一&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="2"/>星期二&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="3"/>星期三&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="4"/>星期四&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="5"/>星期五&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="6"/>星期六&nbsp;&nbsp;
+						<input type="checkbox" name="week" value="7"/>星期天
 					</th:block>
 					<th:block th:unless="${weeks.isEmpty()}">
 						<input type="checkbox" name="week" value="1"  th:checked="*{#lists.contains(weeks,1)}"/>星期一&nbsp;&nbsp;
@@ -1138,8 +1138,7 @@
 				</div>
 			</div>
 			<div class="form-group" id="div_begin">
-				<label class="col-sm-4 control-label"><span
-						style="color: red">*</span>技能证书:</label>
+				<label class="col-sm-4 control-label">技能证书:</label>
 				<div id="first_job_cret" class="col-sm-5 form-style form-inline">
 					<div id="div_job_body">
 						<input img_id="0" type="file" style="display: none" class="form-control job_c_multi" id="job_cret"   name="job_cret[]" placeholder="点击上传电子件"/>
