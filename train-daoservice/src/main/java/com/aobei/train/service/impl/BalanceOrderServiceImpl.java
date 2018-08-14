@@ -48,11 +48,12 @@ public class BalanceOrderServiceImpl extends MbgServiceSupport<BalanceOrderMappe
 	/**
 	 * 添加结算策略
 	 * @param str
+	 * @param users
 	 * @return
 	 */
 	@Override
 	@Transactional
-	public int xAddFallinto(String str) {
+	public int xAddFallinto(String str, Users users) {
 		List<Fallinto> fallintos = JSONObject.parseArray(str, Fallinto.class);
 		Fallinto fallinto=new Fallinto();
 		if(fallintos.size()>0){
@@ -62,6 +63,8 @@ public class BalanceOrderServiceImpl extends MbgServiceSupport<BalanceOrderMappe
 		fallinto.setCreate_datetime(new Date());
 		fallinto.setDeleted(0);
 		fallinto.setActived(0);
+		fallinto.setIs_actived(0);
+		fallinto.setCreate_name(users.getUsername());
 		int num = this.fallintoService.insert(fallinto);
 		return num;
 	}

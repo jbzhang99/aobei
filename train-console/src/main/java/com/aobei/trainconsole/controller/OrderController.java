@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.aliyun.openservices.ons.api.Message;
 import com.aliyun.openservices.ons.api.Producer;
+import com.aliyun.openservices.ons.api.SendResult;
 import com.aobei.common.bean.SmsData;
 import com.aobei.common.boot.EventPublisher;
 import com.aobei.common.boot.event.SmsSendEvent;
@@ -15,11 +16,13 @@ import com.aobei.train.model.*;
 import com.aobei.train.model.ServiceUnitExample.Criteria;
 import com.aobei.train.service.*;
 import com.aobei.trainconsole.configuration.CustomProperties;
+import com.aobei.trainconsole.handler.OnsHandler;
 import com.aobei.trainconsole.util.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.liyiorg.mbg.bean.Page;
 import custom.bean.*;
 import custom.bean.ons.RefundOrderMessage;
+import custom.util.DistanceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -42,11 +45,14 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletionService;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.springframework.dao.support.DataAccessUtils.singleResult;
 
@@ -175,6 +181,22 @@ public class OrderController {
 	@Autowired
 	private ChannelService channelService;
 
+	@Autowired
+	private RejectRecordService rejectRecordService;
+
+	@Autowired
+	private RedisService redisService;
+
+	@Autowired
+	private OnsHandler onsHandler;
+
+	@Autowired
+	private OrderItemService orderItemService;
+
+	@Autowired
+	private StoreService storeService;
+
+
 	/**
 	 * 跳转到订单列表页
 	 * @param map
@@ -200,12 +222,15 @@ public class OrderController {
 							 @RequestParam(required = false) Long partner_id, @RequestParam(required = false) Integer statu,
 							 @RequestParam(required = false) String qs_create_time,@RequestParam(required = false) String qe_create_time,
 							 @RequestParam(required = false) String qs_pay_time,@RequestParam(required = false) String qe_pay_time,
-							 @RequestParam(defaultValue = "PUERJIA-001") String channel_code) {
+							 @RequestParam(required = false,defaultValue = "") String channel_code,
+							 @RequestParam(required = false) Integer assign_state) {
 		VOrderUnitExample orderUnitExample = new VOrderUnitExample();
 		orderUnitExample.setOrderByClause(VOrderUnitExample.C.create_datetime + " desc");
 		//查询条件的对象
 		VOrderUnitExample.Criteria or = orderUnitExample.or();
-		or.andChannelEqualTo(channel_code);
+		if (!"".equals(channel_code) && channel_code != null){
+			or.andChannelEqualTo(channel_code);
+		}
 		or.andPay_order_idLessThan(Integer.MAX_VALUE + "");
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat sdfhms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -297,15 +322,25 @@ public class OrderController {
 				e.printStackTrace();
 			}
 		}
+		if (assign_state != null){
+			if (assign_state == 0){
+				or.andPartner_idIsNull();
+			}
+			if (assign_state == 1){
+				or.andPartner_idIsNotNull();
+			}
+			map.addAttribute("assign_state",assign_state);
+		}
 
 		Page<VOrderUnit> page = vOrderUnitService.selectByExample(orderUnitExample, p, ps);
 		List<VOrderUnit> list = page.getList();
 
-
-		List<Channel> channels = channelService.selectByExample(new ChannelExample());
+        ChannelExample channelExample = new ChannelExample();
+        channelExample.or().andDeletedEqualTo(0);
+        List<Channel> channels = channelService.selectByExample(channelExample);
 
 		PartnerExample partnerExample = new PartnerExample();
-		partnerExample.or().andDeletedEqualTo(Status.DeleteStatus.no.value).andStateEqualTo(1);
+		//partnerExample.or().andDeletedEqualTo(Status.DeleteStatus.no.value).andStateEqualTo(1);  08/06 update 合伙人条件无需根据上、下线状态过滤
 		List<Partner> partners = partnerService.selectByExample(partnerExample);
 		map.addAttribute("list", list);
 		map.addAttribute("page", page);
@@ -352,9 +387,15 @@ public class OrderController {
 			List<ServiceunitPerson> persons_done = serviceunitPersonService.selectByExample(example);
 			map.addAttribute("persons",persons_done);
 		}
+
+		OrderItemExample orderItemExample = new OrderItemExample();
+		orderItemExample.or().andPay_order_idEqualTo(pay_order_id);
+		OrderItem item = singleResult(orderItemService.selectByExample(orderItemExample));
+
 		String Referer = request.getHeader("Referer");
 		map.addAttribute("Referer",Referer);
 		map.addAttribute("order", order);
+		map.addAttribute("num",item.getNum());
 		map.addAttribute("su", serviceUnit);
 		map.addAttribute("page_current_page", page_current_page);
 		map.addAttribute("pay_order_id", pay_order_id);
@@ -507,6 +548,16 @@ public class OrderController {
 	@ResponseBody
 	@RequestMapping("/complete_apply")
 	public Object complete_apply(CompleteApply completeApply,Authentication authentication){
+		CompleteApplyExample completeApplyExample = new CompleteApplyExample();
+		completeApplyExample.or()
+				.andPay_order_idEqualTo(completeApply.getPay_order_id() == null ? "" :completeApply.getPay_order_id())
+				.andApply_statusIn(Arrays.asList(1,2));
+		List<CompleteApply> completeApplyList = completeApplyService.selectByExample(completeApplyExample);
+		Map<String, String> map = new HashMap<>();
+		if (completeApplyList.size() > 0){
+			map.put("error", "服务完成申请已存在！");
+			return map;
+		}
 		Users users = usersService.xSelectUserByUsername(authentication.getName());
 		logger.info("M[order] F[complete_apply] U[{}] , params completeApply:{} .",
 				users.getUser_id(),completeApply);
@@ -526,7 +577,6 @@ public class OrderController {
 		}
 		logger.info("M[order] F[complete_apply] U[{}] , execute complete_apply insert result:{} .",
 				users.getUser_id(),String.format("发起确认服务完成申请操作%s!", i > 0 ? "成功" : "失败"));
-		Map<String, String> map = new HashMap<>();
 		map.put("msg", String.format("发起确认服务完成申请操作%s!", i > 0 ? "成功" : "失败"));
 		return map;
 	}
@@ -863,8 +913,6 @@ public class OrderController {
 	 * @param partner_id
 	 * @param qs_create_time
 	 * @param qe_create_time
-	 * @param qs_pay_time
-	 * @param qe_pay_time
 	 * @return
 	 */
 	@RequestMapping("/reject_unit_list")
@@ -872,42 +920,27 @@ public class OrderController {
 								   @RequestParam(defaultValue = "1") Integer p,
 								   @RequestParam(defaultValue = "10") Integer ps,
 								   @RequestParam(required = false) Long partner_id,
-								   @RequestParam(required = false) String qs_create_time,@RequestParam(required = false) String qe_create_time,
-								   @RequestParam(required = false) String qs_pay_time,@RequestParam(required = false) String qe_pay_time){
+								   @RequestParam(required = false) String qs_create_time,@RequestParam(required = false) String qe_create_time){
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		SimpleDateFormat sdfhms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		OrderExample orderExample = new OrderExample();
-		OrderExample.Criteria or = orderExample.or();
+		RejectRecordExample recordExample = new RejectRecordExample();
+		recordExample.setOrderByClause(RejectRecordExample.C.create_datetime + " desc");
+		RejectRecordExample.Criteria criteria = recordExample.or();
 		try {
 			if (!("".equals(qe_create_time)) && qe_create_time != null) {
-				or.andCreate_datetimeBetween(sdf.parse(qs_create_time),sdfhms.parse(qe_create_time + " 23:59:59"));
+				criteria.andCreate_datetimeBetween(sdf.parse(qs_create_time),sdfhms.parse(qe_create_time + " 23:59:59"));
 				map.addAttribute("qs_create_time",sdf.parse(qs_create_time));
 				map.addAttribute("qe_create_time",sdf.parse(qe_create_time));
 			}
-			if (!("".equals(qe_pay_time)) && qe_pay_time != null) {
-				or.andPay_datetimeBetween(sdf.parse(qs_pay_time),sdfhms.parse(qe_pay_time + " 23:59:59"));
-				map.addAttribute("qs_pay_time",sdf.parse(qs_pay_time));
-				map.addAttribute("qe_pay_time",sdf.parse(qe_pay_time));
-			}
 		} catch (ParseException e) {
 			e.printStackTrace();
-		}
-		ServiceUnitExample example = new ServiceUnitExample();
-		Criteria criteria = example.or();
-		criteria.andStatus_activeEqualTo(6).andPidNotEqualTo(0l).andActiveEqualTo(0);
-		if (or.getCriteria().size() > 0){
-			List<Order> orders = orderService.selectByExample(orderExample);
-			List<String> orderids = orders.stream().map(n -> n.getPay_order_id()).collect(Collectors.toList());
-			if (orderids.size() > 0){
-				criteria.andPay_order_idIn(orderids);
-			}
 		}
 		if (partner_id != null) {
 			criteria.andPartner_idEqualTo(partner_id);
 			map.addAttribute("partner_id", partner_id);
 		}
-		Page<OrderInfo> page = orderService.orderInfoList(Roles.TMANAGER, example, p, ps);
-		List<OrderInfo> list = page.getList();
+		Page<RejectRecord> page = rejectRecordService.selectByExample(recordExample, p, ps);
+		List<RejectRecord> list = page.getList();
 		List<Partner> partners = partnerService.selectByExample(new PartnerExample());
 		map.addAttribute("page",page);
 		map.addAttribute("partners",partners);
@@ -928,9 +961,9 @@ public class OrderController {
 		String str = request.getParameter("params");
 		String username = authentication.getName();
 		long id = IdGenerator.generateId();
-		ServiceUnitExample serviceUnitExample = orderService.generateDownloadTaskAndPottingParam(str, username, id, ServiceUnitExample.class);
+		RejectRecordExample rejectRecordExample = orderService.generateDownloadTaskAndPottingParam(str, username, id, RejectRecordExample.class);
 		exportRejectUnitToOss.setData_download_id(id);
-		exportRejectUnitToOss.setServiceUnitExample(serviceUnitExample);
+		exportRejectUnitToOss.setRejectRecordExample(rejectRecordExample);
 		// 生成excel并将之上传到阿里云OSS
 		completionService.submit(exportRejectUnitToOss);
 		Map<String, String> result = new HashMap<>();
@@ -1264,12 +1297,50 @@ public class OrderController {
 	@RequestMapping("/change_partner")
 	@Transactional
 	public Object change_partner(Authentication authentication, Long partner_id, Long station_id, String change_intro,
-								 String pay_order_id, @RequestParam(required = false) Date c_begin_datetime,
-								 @RequestParam(required = false) Date c_end_datetime) {
+								 String pay_order_id, String c_begin_datetime,
+								 String time) {
+		//更新服务时间到服务单上
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SkuTime skuTime = null;
+        String begins = null;
+        String ends = null;
+        if (!"".equals(time) && time != null){
+            try {
+                skuTime =JacksonUtil.json_to_object(time,SkuTime.class);
+                int s = skuTime.getS();
+                int e = skuTime.getE();
+                Map<String, Integer> timeUnisMap = Constant.timeUnisMap;
+                Iterator<Map.Entry<String, Integer>> iterator = timeUnisMap.entrySet().iterator();
+                while (iterator.hasNext()){
+                    Map.Entry<String, Integer> entry = iterator.next();
+                    if (entry.getValue().equals(s)){
+                        begins = c_begin_datetime + " " + entry.getKey();
+                    }
+                    if (entry.getValue().equals(e)){
+                        ends = c_begin_datetime + " " + entry.getKey();
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+		Date cBeginDatetime = null;
+		Date c_end_datetime = null;
+
+		try {
+		    if (!"".equals(begins) && begins != null){
+                cBeginDatetime = sdf.parse(begins);
+                c_end_datetime = sdf.parse(ends);
+            }
+		} catch (ParseException e1) {
+			e1.printStackTrace();
+		}
+
 		Users users = usersService.xSelectUserByUsername(authentication.getName());
 		logger.info("M[order] F[change_partner] U[{}] , params partner_id:{},station_id:{},change_info:{}," +
 						"pay_order_id:{},c_begin_datetime:{},c_end_datetime:{} .",
-				users.getUser_id(),partner_id,station_id,change_intro,pay_order_id,c_begin_datetime,c_end_datetime);
+				users.getUser_id(),partner_id,station_id,change_intro,pay_order_id,begins,ends);
 		Order order = orderService.selectByPrimaryKey(pay_order_id);
 		Partner partner = partnerService.selectByPrimaryKey(partner_id);
 		ServiceUnitExample sue = new ServiceUnitExample();
@@ -1282,8 +1353,8 @@ public class OrderController {
 		criteria.andPartner_idEqualTo(partner_id);
 		criteria.andStation_idEqualTo(station_id);
 		criteria.andPidEqualTo(0l);
-		if(c_begin_datetime!=null) {
-			criteria.andC_begin_datetimeEqualTo(c_begin_datetime);
+		if(cBeginDatetime!=null) {
+			criteria.andC_begin_datetimeEqualTo(cBeginDatetime);
 			criteria.andC_end_datetimeEqualTo(c_end_datetime);
 		}
 		if (serviceUnitService.countByExample(outExample) > 0 && unit.getStatus_active() != 6) {
@@ -1333,7 +1404,7 @@ public class OrderController {
 
 		//变更前原合伙人缓存清除
 		cacheReloadHandler.partner_order_listReload(unit.getPartner_id());
-		int i = orderService.changeOrder(authentication.getName(),partner_id,station_id,change_intro,order,c_begin_datetime,c_end_datetime,unit);
+		int i = orderService.changeOrder(authentication.getName(),partner_id,station_id,change_intro,order,cBeginDatetime,c_end_datetime,unit);
 		cacheReloadHandler.orderListReload(order.getUid());
 		cacheReloadHandler.orderDetailReload(order.getUid(),order.getPay_order_id());
 		cacheReloadHandler.partner_order_detailReload(order.getPay_order_id());
@@ -1364,8 +1435,8 @@ public class OrderController {
 			String object_to_json = null;
 			try {
 				object_to_json = JSON.toJSONString(content);
-			} catch (Exception e) {
-				e.printStackTrace();
+			} catch (Exception e1) {
+				e1.printStackTrace();
 			}
 			msg.setMsg_content(object_to_json);
 			msg.setCreate_datetime(new Date());
@@ -1489,9 +1560,12 @@ public class OrderController {
 		}).collect(Collectors.toList());
 
 		Partner partner = partnerService.selectByPrimaryKey(partner_id);
-
-		List<Product> products = productService.selectByExample(new ProductExample());
-		List<ProSku> skus = proSkuService.selectByExample(new ProSkuExample());
+        ProductExample productExample = new ProductExample();
+        productExample.or().andDeletedEqualTo(0).andOnlineEqualTo(1);
+        List<Product> products = productService.selectByExample(productExample);
+        ProSkuExample proSkuExample = new ProSkuExample();
+        proSkuExample.or().andDeletedEqualTo(0);
+        List<ProSku> skus = proSkuService.selectByExample(proSkuExample);
 		String json = null;
 		try {
 			json = JacksonUtil.object_to_json(skus);
@@ -1529,7 +1603,7 @@ public class OrderController {
 									@RequestParam(required = false) String c_begin_date,
 									@RequestParam(required = false) String c_end_date) {
 		StationExample example = new StationExample();
-		example.or().andPartner_idEqualTo(partner_id);
+		example.or().andPartner_idEqualTo(partner_id).andOnlinedEqualTo(1).andDeletedEqualTo(0);
 		List<Station> stations = stationService.selectByExample(example);
 		Partner partner = partnerService.selectByPrimaryKey(partner_id);
 
@@ -1563,8 +1637,12 @@ public class OrderController {
 			map.addAttribute("c_begin_date", c_begin_date);
 			map.addAttribute("c_end_date", c_end_date);
 		}
-		List<Product> products = productService.selectByExample(new ProductExample());
-		List<ProSku> skus = proSkuService.selectByExample(new ProSkuExample());
+        ProductExample productExample = new ProductExample();
+        productExample.or().andDeletedEqualTo(0).andOnlineEqualTo(1);
+        List<Product> products = productService.selectByExample(productExample);
+        ProSkuExample proSkuExample = new ProSkuExample();
+        proSkuExample.or().andDeletedEqualTo(0);
+        List<ProSku> skus = proSkuService.selectByExample(proSkuExample);
 		String json = null;
 		try {
 			json = JacksonUtil.object_to_json(skus);
@@ -1619,7 +1697,7 @@ public class OrderController {
 		ServiceUnitExample sue = new ServiceUnitExample();
 		sue.or().andPay_order_idEqualTo(pay_order_id).andPidEqualTo(0l);
 		ServiceUnit serviceUnit = singleResult(serviceUnitService.selectByExample(sue));
-		Product product = productService.selectByPrimaryKey(serviceUnit.getProduct_id());
+		/*Product product = productService.selectByPrimaryKey(serviceUnit.getProduct_id());
 		CustomerAddress customerAddress =new CustomerAddress();
 		customerAddress.setCity(order.getCus_city());
 		customerAddress.setLbs_lat(order.getLbs_lat());
@@ -1660,7 +1738,111 @@ public class OrderController {
 		}
 		Map<String,Object> map = new HashMap<>();
 		map.put("partners",partners);
-		map.put("stationsJson",stationsJson);
+		map.put("stationsJson",stationsJson);*/
+
+		ProSku proSku = proSkuService.selectByPrimaryKey(serviceUnit.getPsku_id());
+		String serviceTimes = proSku.getService_times();
+		List<SkuTime> timesList = JSON.parseArray(serviceTimes, SkuTime.class);
+		Map<String,Object> map = new HashMap<>();
+		map.put("timesList",timesList);
+		return map;
+	}
+
+	/**
+	 * 派单前查看选择日期是否又库存，且订单
+	 * @param pay_order_id
+	 * @param address
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/get_has_store_time_scope")
+	public Object get_has_store_time_scope(String pay_order_id,String address){
+		Order order = orderService.selectByPrimaryKey(pay_order_id);
+
+		OrderItemExample orderItemExample = new OrderItemExample();
+		orderItemExample.or().andPay_order_idEqualTo(pay_order_id);
+		OrderItem orderItem = singleResult(orderItemService.selectByExample(orderItemExample));
+
+		//根据pay_order_id查询的服务单
+		ServiceUnitExample sue = new ServiceUnitExample();
+		sue.or().andPay_order_idEqualTo(pay_order_id).andPidEqualTo(0l);
+		ServiceUnit serviceUnit = singleResult(serviceUnitService.selectByExample(sue));
+		ProSku proSku = proSkuService.selectByPrimaryKey(serviceUnit.getPsku_id());
+		String times = proSku.getService_times();
+		List<SkuTime> timesList = JSON.parseArray(times, SkuTime.class);
+
+		Map<String,Object> map = new HashMap<>();
+
+		Product product = productService.selectByPrimaryKey(serviceUnit.getProduct_id());
+		CustomerAddress customerAddress =new CustomerAddress();
+		String lat = "";
+		String lng = "";
+		if (!"".equals(address) && address != null){
+			try {
+				Map<String, String> addressMap = HttpAddressUtil.coordinate_GaoDe(address, "");
+				if(addressMap!=null){
+					//经度
+					lng = addressMap.get("lng_b");
+					//纬度
+					lat = addressMap.get("lat_b");
+				}
+			} catch (Exception e) {
+				logger.info("M[order] F[get_has_store_time_scope] error[{}].",e.toString());
+				map.put("msg","地址信息解析出错！");
+				return map;
+			}
+			customerAddress.setCity(null);
+			customerAddress.setLbs_lat(lat);
+			customerAddress.setLbs_lng(lng);
+		}else{
+			customerAddress.setCity(order.getCus_city());
+			customerAddress.setLbs_lat(order.getLbs_lat());
+			customerAddress.setLbs_lng(order.getLbs_lng());
+		}
+
+
+		Metadata metadata  = metadataService.selectByPrimaryKey(Constant.MKEY_MAX_SEARCH_RADIUS);
+		Integer integer  = metadata.getMeta_value()==null?Constant.SEARCH_RADIUS:Integer.parseInt(metadata.getMeta_value());
+
+		List<Station> stationList = null;
+		ProductSoleExample soleExample = new ProductSoleExample();
+		soleExample.or().andProduct_idEqualTo(product.getProduct_id());
+		List<ProductSole> productSoles = productSoleService.selectByExample(soleExample);
+		if (productSoles.size() != 0) {//绑定合伙人的产品
+			List<Long> partner_ids = productSoles.stream().map(n -> n.getPartner_id()).collect(Collectors.toList());
+			StationExample stationExample = new StationExample();
+			StationExample.Criteria or = stationExample.or();
+			or.andPartner_idIn(partner_ids);
+			or.andOnlinedEqualTo(1);
+			or.andDeletedEqualTo(Status.DeleteStatus.no.value);
+			if (customerAddress.getCity() != null){
+				or.andCityEqualTo(customerAddress.getCity());
+			}
+			List<Station> stations = stationService.selectByExample(stationExample);
+			stationList = stations.stream().filter(t -> DistanceUtil.GetDistance(
+					new Double(t.getLbs_lat() == null ? "0" : t.getLbs_lat()),
+					new Double(t.getLbs_lng() == null ? "0" : t.getLbs_lng()),
+					new Double(customerAddress.getLbs_lat()),
+					new Double(customerAddress.getLbs_lng())) <= integer).collect(Collectors.toList());
+		} else {//未绑定的
+			stationList = stationService.findNearbyStation(customerAddress, integer);
+			stationList = stationService.filterByProduct(product, stationList);
+		}
+
+		List<TimeModel> timeModels = storeService.stationsTimeModel(stationList, 15, proSku,
+				proSku.getBuy_multiple_o2o() == 1 ? orderItem.getNum() : 1);
+
+		timeModels = timeModels.stream().filter(n -> n.isActive() == true).collect(Collectors.toList());
+		timeModels = timeModels.stream().map(n ->{
+			Set<TimeModel.Model> models = n.getModels().stream().filter(m -> m.isActive() == true).collect(Collectors.toSet());
+			n.setModels(models);
+			return n;
+		}).collect(Collectors.toList());
+		if (timeModels.size() <= 0){
+			map.put("msg","无可供选择的服务时间段！");
+		}else{
+			map.put("timeModels",timeModels);
+		}
 		return map;
 	}
 
@@ -1704,33 +1886,127 @@ public class OrderController {
 
 	/**
 	 * 分配订单
-	 * @param partner
-	 * @param station
 	 * @param select_date
 	 * @param time
 	 * @return
 	 */
 	@ResponseBody
 	@RequestMapping("/assign_order")
-	public Object assign_order(Long partner,
-							   Long station,
-							   String select_date,
+	public Object assign_order(String select_date,
 							   String time,
-							   String pay_order_id){
-
-//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM0-dd HH:mm");
-//		//根据pay_order_id查询的服务单
-//		ServiceUnitExample sue = new ServiceUnitExample();
-//		sue.or().andPay_order_idEqualTo(pay_order_id);
-//		List<ServiceUnit> unitList = serviceUnitService.selectByExample(sue);
-//		unitList.forEach(n ->{
-//			ServiceUnit upUnit = new ServiceUnit();
-//			upUnit.setServiceunit_id(n.getServiceunit_id());
-//			upUnit.setPartner_id(partner);
-//			upUnit.setStation_id(station);
-//			upUnit.setP2s_assign_datetime(new Date());
-//		});
+							   String pay_order_id,String address){
+		Order original_order = orderService.selectByPrimaryKey(pay_order_id);
 		Map<String,Object> map = new HashMap<>();
+		String lat = "";
+		String lng = "";
+		if (!"".equals(address) && address != null){
+			try {
+				Map<String, String> addressMap = HttpAddressUtil.coordinate_GaoDe(address, "");
+				if(addressMap!=null){
+					//经度
+					lng = addressMap.get("lng_b");
+					//纬度
+					lat = addressMap.get("lat_b");
+				}
+			} catch (Exception e) {
+				logger.info("M[order] F[assign_order] error[{}].",e.toString());
+				map.put("msg","地址信息解析出错！");
+				return map;
+			}
+			Order upOrder = new Order();
+			upOrder.setPay_order_id(pay_order_id);
+			upOrder.setCus_address(address);
+			upOrder.setLbs_lat(lat);
+			upOrder.setLbs_lng(lng);
+			orderService.updateByPrimaryKeySelective(upOrder);
+			CustomerAddress customerAddress = customerAddressService.selectByPrimaryKey(original_order.getCustomer_address_id());
+			CustomerAddress upCustomerAddress = new CustomerAddress();
+			upCustomerAddress.setCustomer_address_id(customerAddress.getCustomer_address_id());
+			upCustomerAddress.setAddress(address);
+			upCustomerAddress.setLbs_lat(lat);
+			upCustomerAddress.setLbs_lng(lng);
+			customerAddressService.updateByPrimaryKeySelective(upCustomerAddress);
+		}
+		//更新服务时间到服务单上
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		String[] split = null;
+		if (!"".equals(time) && time != null){
+			split = time.split(",");
+		}
+		String s = split[0];
+		String e = split[1];
+		String begin = null;
+		String end = null;
+		begin = select_date + " " + s;
+		if (!"untime".equals(e)){
+			end = select_date + " " + e;
+		}
+		ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
+		Criteria criteria = serviceUnitExample.or();
+		criteria.andPay_order_idEqualTo(pay_order_id);
+		ServiceUnit upUnit = new ServiceUnit();
+		try {
+			upUnit.setC_begin_datetime(sdf.parse(begin));
+			if (end != null){
+				upUnit.setC_end_datetime(sdf.parse(end));
+			}
+			serviceUnitService.updateByExampleSelective(upUnit,serviceUnitExample);
+		} catch (ParseException e1) {
+			e1.printStackTrace();
+		}
+
+		//派单
+		criteria.andPidEqualTo(0l);
+		ServiceUnit unit = DataAccessUtils.singleResult(serviceUnitService.selectByExample(serviceUnitExample));
+		Order order = orderService.selectByPrimaryKey(pay_order_id);
+		Station station = orderService.dispatchOrder(order,unit);
+		Partner partner = partnerService.selectByPrimaryKey(station == null ? 0l : station.getPartner_id());
+		if (partner != null) {
+			// 发送短信
+			Map<String, String> params = new HashMap<>();
+			params.put("product_name", order.getName());
+			sendMsg(Constant.SEND_TO_PARTNER_WHEN_CUSTOMER_PAYED,partner.getPhone(),Constant.SIGN_NAME,params);
+			//推送消息 新订单 通知到合伙人
+			pushHandler.pushOrderMessageToPartner(order, partner.getPartner_id().toString());
+
+			// 发送自动拒单命令，晚上18点至早8:00份的订单 第二日早8点半取消
+			Metadata metadata = metadataService.selectByPrimaryKey("max_pay_time");
+			Metadata metadata1 = metadataService.selectByPrimaryKey("min_pay_time");
+			Metadata metadata2 = metadataService.selectByPrimaryKey("default_reject_time");
+			LocalDateTime local = LocalDateTime.now();
+			Integer times = local.getHour();
+
+			String max = metadata == null ? "20" : metadata.getMeta_value();
+			String min = metadata1 == null ? "8" : metadata1.getMeta_value();
+			String rejectTime = metadata2 == null ? "30" : metadata2.getMeta_value();
+			Long delayTime = System.currentTimeMillis() + Integer.parseInt(rejectTime) * 60 * 1000;
+			if (times <= Integer.parseInt(min)) {
+				delayTime = local.withHour(8).withMinute(30).toInstant(ZoneOffset.of("+8")).toEpochMilli();
+			} else if (times >= Integer.parseInt(max)) {
+				delayTime = local.plusDays(1).withHour(8).withMinute(30).toInstant(ZoneOffset.of("+8")).toEpochMilli();
+			}
+			// 发mq消息
+			try {
+				SendResult sendRejectMessage = onsHandler.sendRejectMessage(order.getPay_order_id(), partner.getPartner_id(),
+						delayTime);
+				//拒单和抢单是同时进行的，防止冲突。延迟3秒进行抢单的发起
+				delayTime = delayTime + 3000;
+				SendResult sendRobbingMessage = onsHandler.sendRobbingMessage(order.getPay_order_id(), 0, delayTime);
+				logger.info("console-method:assign_order:sendRejectMessage:{},sendRobbingMessage:{}", sendRejectMessage.toString(), sendRobbingMessage.toString());
+			} catch (Exception e3) {
+				logger.error("ONS ERROR {} sendRejectMessage sendRobbingMessage orderID{}", e3.getMessage(), order.getPay_order_id());
+			}
+
+			cacheReloadHandler.partner_order_listReload(partner.getPartner_id());
+			cacheReloadHandler.partner_order_detailReload(pay_order_id);
+			cacheReloadHandler.partner_order_listReload(unit.getPartner_id());
+		}
+		//更新缓存
+		cacheReloadHandler.orderListReload(order.getUid());
+		cacheReloadHandler.orderDetailReload(order.getUid(), pay_order_id);
+
+
+		map.put("msg",String.format("订单派发%s!", partner != null ? "成功" : "失败"));
 		return map;
 	}
 
@@ -1953,17 +2229,23 @@ public class OrderController {
         	appid =payAliNotify.getApp_id();
         }
 
-        RefundOrderMessage refundMsg = new RefundOrderMessage();
-        refundMsg.setAppid(appid);
-        refundMsg.setMessageId(IdGenerator.generateId() + "");
-        refundMsg.setPay_order_id(pay_order_id);
-        refundMsg.setRefund_id(refund_id);
-        Message message = new Message();
-        message.setTopic(properties.getAliyun().getOns().getTopic());
-        message.setTag(refundMsg.getTag());
-        message.setBody(JSON.toJSONBytes(refundMsg));
-        producer.send(message);
-        Map<String, String> map = new HashMap<>();
+		RefundOrderMessage refundMsg = new RefundOrderMessage();
+		refundMsg.setAppid(appid);
+		refundMsg.setMessageId(IdGenerator.generateId() + "");
+		refundMsg.setPay_order_id(pay_order_id);
+		refundMsg.setRefund_id(refund_id);
+		Message message = new Message();
+		message.setTopic(properties.getAliyun().getOns().getTopic());
+		message.setTag(refundMsg.getTag());
+		message.setBody(JSON.toJSONBytes(refundMsg));
+		producer.send(message);
+		//更新退款单到退款中状态
+		Refund refund = new Refund();
+		refund.setRefund_id(refund_id);
+		refund.setStatus(Status.RefundStatus.refunding.value);
+		refundService.updateByPrimaryKeySelective(refund);
+
+		Map<String, String> map = new HashMap<>();
 		map.put("msg", "退款申请已提交，请静心等待处理结果！");
 		orderLogService.xInsert(authentication.getName(), users.getUser_id(), pay_order_id,
 				"用户[" + authentication.getName() + "] 为客户进行了确认退款操作！");
@@ -2219,6 +2501,13 @@ public class OrderController {
 	}
 
 	public void cancelOrderWhenWaitService(Map<String,String> params,ServiceUnit unit,Order order_db){
+		//清除服务人员时间调度副本
+		Set<String> set = redisService.sMembers(order_db.getPay_order_id());
+		if (set!=null){
+			redisService.delete(order_db.getPay_order_id());
+			redisService.delete(set);
+		}
+
 		ServiceunitPersonExample serviceunitPersonExample = new ServiceunitPersonExample();
 		ServiceunitPersonExample.Criteria criteria = serviceunitPersonExample.or();
 		criteria.andServiceunit_idEqualTo(unit.getServiceunit_id());
@@ -2251,7 +2540,7 @@ public class OrderController {
 			cacheReloadHandler.student_order_listReload(n.getStudent_id());
 			cacheReloadHandler.selectStuShowTaskdetailReload(n.getStudent_id(),order_db.getPay_order_id());
 			//订单取消，发送个推消息
-			pushHandler.pushCancelOrderMessageToStudent(orderInfo,n.getStudent_id().toString());
+			//pushHandler.pushCancelOrderMessageToStudent(orderInfo,n.getStudent_id().toString());
 		});
 		ServiceunitPerson sp = new ServiceunitPerson();
 		sp.setStatus_active(Status.OrderStatus.cancel.value);
@@ -2296,6 +2585,9 @@ public class OrderController {
 		}
 		if (end > 45) {
 			restUnit = 0;
+		}
+		if (end > 42) {
+			end = 42;
 		}
 		//连续时间：如果不可使用，就代表不能提供服务；
 		for (int i = begin - (restUnit-1); i < end + restUnit; i++) {

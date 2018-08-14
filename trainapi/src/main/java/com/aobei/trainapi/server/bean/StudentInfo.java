@@ -13,7 +13,36 @@ public class StudentInfo extends Student{
 	private List<Serviceitem> serviceItems;
 	
 	private Img img;
-	
+
+	private List<StudentImgInfo> imgUrl;
+
+	private String gradeDesc;
+
+	private int whetherWXlogin;
+
+	public int getWhetherWXlogin() {
+		return whetherWXlogin;
+	}
+
+	public void setWhetherWXlogin(int whetherWXlogin) {
+		this.whetherWXlogin = whetherWXlogin;
+	}
+
+	public String getGradeDesc() {
+		return gradeDesc;
+	}
+
+	public void setGradeDesc(String gradeDesc) {
+		this.gradeDesc = gradeDesc;
+	}
+
+	public List<StudentImgInfo> getImgUrl() {
+		return imgUrl;
+	}
+
+	public void setImgUrl(List<StudentImgInfo> imgUrl) {
+		this.imgUrl = imgUrl;
+	}
 
 	public Img getImg() {
 		return img;

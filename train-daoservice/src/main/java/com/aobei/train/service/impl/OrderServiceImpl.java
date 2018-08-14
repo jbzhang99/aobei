@@ -12,6 +12,7 @@ import com.github.liyiorg.mbg.bean.Page;
 import com.github.liyiorg.mbg.support.service.MbgServiceSupport;
 import com.github.liyiorg.mbg.template.factory.MbgMapperTemplateFactory;
 import custom.bean.*;
+import custom.util.DistanceUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
@@ -85,6 +86,17 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
     FineMoneyService fineMoneyService;
     @Autowired
     CouponService couponService;
+    @Autowired
+    RejectRecordService rejectRecordService;
+
+    @Autowired
+    private ProductSoleService productSoleService;
+
+    @Autowired
+    private StationService stationService;
+
+    @Autowired
+    private StoreService storeService;
 
     @Autowired
     private void initService(MbgMapperTemplateFactory mbgMapperTemplateFactory) {
@@ -267,6 +279,7 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
         orderInfo.setProSku(proSkuService.selectByPrimaryKey(serviceUnit.getPsku_id()));
         Order order = orderService.selectByPrimaryKey(serviceUnit.getPay_order_id());
         orderInfo.setOrder(order);
+        orderInfo.setCustomer(customerService.selectByPrimaryKey(order.getUid()));
         RobbingExample robbingExample = new RobbingExample();
         if (partner != null) {
             ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
@@ -744,22 +757,54 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
         unitup.or().andServiceunit_idEqualTo(unit.getServiceunit_id());
         int i = serviceUnitService.updateByExample(unit,unitup);
 
+        //变更完成后的被动变为拒单的子单记录插入到拒单记录表里
+        ServiceUnitExample rejectUnitExample = new ServiceUnitExample();
+        rejectUnitExample.or()
+                .andPidEqualTo(unit.getServiceunit_id())
+                .andPay_order_idEqualTo(order.getPay_order_id())
+                .andStatus_activeEqualTo(6);
+        List<ServiceUnit> units = serviceUnitService.selectByExample(rejectUnitExample);
+        if (units.size() > 0){
+            units.forEach(n ->{
+                RejectRecord rejectRecord = new RejectRecord();
+                rejectRecord.setReject_record_id(IdGenerator.generateId());
+                rejectRecord.setPay_order_id(n.getPay_order_id());
+                rejectRecord.setServer_name(order.getName());
+                rejectRecord.setServiceunit_id(n.getServiceunit_id());
+                rejectRecord.setCreate_datetime(new Date());
+                rejectRecord.setServer_name(order.getName());
+                rejectRecord.setCus_username(order.getCus_username());
+                rejectRecord.setCus_phone(order.getCus_phone());
+                rejectRecord.setCus_address(order.getCus_address());
+                rejectRecord.setPrice_total(order.getPrice_total());
+                rejectRecord.setPrice_pay(order.getPrice_pay());
+                rejectRecord.setReject_type(2);
+                rejectRecord.setReject_info("[SYSTEM]订单改派拒单！");
+                rejectRecord.setPartner_id(n.getPartner_id());
+                rejectRecord.setServer_datetime(n.getC_begin_datetime());
+                rejectRecordService.insert(rejectRecord);
+            });
+        }
+
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         // 新订单通知，2018-1-2 12:00 建国饭店1203.张先生，电话12312341234
-        Message msg = new Message();
-        msg.setId(IdGenerator.generateId());
-        msg.setType(2);
-        msg.setBis_type(3);
-        msg.setUser_id(partner_id);
-        msg.setUid(partner_id);
-        msg.setMsg_title("订单通知");
-        msg.setMsg_content(
-                "你好，您有一条新的订单通知，于" + sdf.format(unit.getC_begin_datetime()) + " " + order.getCus_address() + "为"
-                        + order.getCus_username() + "提供" + order.getName() + "服务，联系电话：" + order.getCus_phone());
-        msg.setCreate_datetime(new Date());
-        msg.setNotify_datetime(new Date(unit.getC_begin_datetime().getTime() - 3600 * 24 * 3 * 1000l));
-        msg.setGroup_id(order.getPay_order_id() + "-" + partner_id + "-" + unit.getServiceunit_id());
-        messageService.insertSelective(msg);
+        Partner partner = partnerService.selectByPrimaryKey(partner_id);
+        if(partner != null && partner.getUser_id() != null){
+            Message msg = new Message();
+            msg.setId(IdGenerator.generateId());
+            msg.setType(2);
+            msg.setBis_type(3);
+            msg.setUser_id(partner.getUser_id());
+            msg.setUid(partner_id);
+            msg.setMsg_title("订单通知");
+            msg.setMsg_content(
+                    "你好，您有一条新的订单通知，于" + sdf.format(unit.getC_begin_datetime()) + " " + order.getCus_address() + "为"
+                            + order.getCus_username() + "提供" + order.getName() + "服务，联系电话：" + order.getCus_phone());
+            msg.setCreate_datetime(new Date());
+            msg.setNotify_datetime(new Date(unit.getC_begin_datetime().getTime() - 3600 * 24 * 3 * 1000l));
+            msg.setGroup_id(order.getPay_order_id() + "-" + partner_id + "-" + unit.getServiceunit_id());
+            messageService.insertSelective(msg);
+        }
         return i;
     }
 
@@ -795,7 +840,7 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
             name = year + "-" + mouth + "-" + day + " 扣款结算单列表下载";
         }else if(clazz.isInstance(new FallintoFineMoneyExample())){
             name = year + "-" + mouth + "-" + day + " 罚款结算单列表下载";
-        }else if(clazz.isInstance(new ServiceUnitExample())){
+        }else if(clazz.isInstance(new RejectRecordExample())){
             name = year + "-" + mouth + "-" + day + " 拒单列表下载";
         }
         dataDownload.setName(name);
@@ -855,6 +900,7 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
                 }
             }
             String cuname = (String) map.get("cuname");
+            String channel_code = (String) map.get("channel_code");
             String uphone = (String) map.get("uphone");
             String student_name = (String) map.get("student_name");
             String par_id = (String) map.get("partner_id");
@@ -867,10 +913,18 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
             if (!("".equals(sta))) {
                 statu = Integer.valueOf(sta);
             }
+            String assign_states = (String)map.get("assign_state");
+            Integer assign_state = null;
+            if (!"".equals(assign_states) && assign_states != null){
+                assign_state = Integer.valueOf(assign_states);
+            }
 
             VOrderUnitExample orderUnitExample = new VOrderUnitExample();
             orderUnitExample.setOrderByClause(VOrderUnitExample.C.create_datetime + " desc");
             VOrderUnitExample.Criteria or = orderUnitExample.or();
+            if (!"".equals(channel_code) && channel_code != null){
+                or.andChannelEqualTo(channel_code);
+            }
             or.andPay_order_idLessThan(Integer.MAX_VALUE + "");
             if (statu != null) {
                 if (statu < 10) {
@@ -929,6 +983,14 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
             }
             if (qs_pay_time != null && qe_pay_time != null){
                 or.andPay_datetimeBetween(qs_pay_time,qe_pay_time);
+            }
+            if (assign_state != null){
+                if (assign_state == 0){
+                    or.andPartner_idIsNull();
+                }
+                if (assign_state == 1){
+                    or.andPartner_idIsNotNull();
+                }
             }
             return (T) orderUnitExample;
         } else if (clazz.isInstance(new RefundExample())) {
@@ -1166,28 +1228,16 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
         }else if(clazz.isInstance(new FallintoFineMoneyExample())) {
             FallintoFineMoneyExample fallintoFineMoneyExample = new FallintoFineMoneyExample();
             return (T)fallintoFineMoneyExample;
-        }else if(clazz.isInstance(new ServiceUnitExample())) {
+        }else if(clazz.isInstance(new RejectRecordExample())) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String qs_create = (String)map.get("qs_create_time");
             String qe_create = (String)map.get("qe_create_time");
             Date qs_create_time = null;
             Date qe_create_time = null;
-            String qs_pay = (String)map.get("qs_pay_time");
-            String qe_pay = (String)map.get("qe_pay_time");
             if (!("".equals(qs_create)) && !("".equals(qe_create))){
                 try {
                     qs_create_time = sdf.parse(qs_create + " 00:00:00");
                     qe_create_time = sdf.parse(qe_create + " 23:59:59");
-                }catch (ParseException e) {
-                    e.printStackTrace();
-                }
-            }
-            Date qs_pay_time = null;
-            Date qe_pay_time = null;
-            if (!("".equals(qs_pay)) && !("".equals(qe_pay))){
-                try {
-                    qs_pay_time = sdf.parse(qs_pay  + " 00:00:00");
-                    qe_pay_time = sdf.parse(qe_pay  + " 23:59:59");
                 }catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -1197,28 +1247,17 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
             if (!("".equals(par_id))) {
                 partner_id = Long.valueOf(par_id);
             }
-            OrderExample orderExample = new OrderExample();
-            OrderExample.Criteria or = orderExample.or();
-            if (!("".equals(qe_create_time)) && qe_create_time != null) {
-                or.andCreate_datetimeBetween(qs_create_time,qe_create_time);
-            }
-            if (!("".equals(qe_pay_time)) && qe_pay_time != null) {
-                or.andPay_datetimeBetween(qs_pay_time,qe_pay_time);
-            }
-            ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
-            ServiceUnitExample.Criteria criteria = serviceUnitExample.or();
-            criteria.andStatus_activeEqualTo(6).andPidNotEqualTo(0l).andActiveEqualTo(0);
-            if (or.getCriteria().size() > 0){
-                List<Order> orders = orderService.selectByExample(orderExample);
-                List<String> orderids = orders.stream().map(n -> n.getPay_order_id()).collect(Collectors.toList());
-                if (orderids.size() > 0){
-                    criteria.andPay_order_idIn(orderids);
-                }
+            RejectRecordExample recordExample = new RejectRecordExample();
+            recordExample.setOrderByClause(RejectRecordExample.C.create_datetime + " desc");
+            RejectRecordExample.Criteria criteria = recordExample.or();
+            if (qe_create_time != null) {
+                criteria.andCreate_datetimeBetween(qs_create_time,qe_create_time);
+
             }
             if (partner_id != null) {
                 criteria.andPartner_idEqualTo(partner_id);
             }
-            return (T)serviceUnitExample;
+            return (T)recordExample;
         }else {
             return null;
         }
@@ -1248,6 +1287,155 @@ public class OrderServiceImpl extends MbgServiceSupport<OrderMapper, String, Ord
         fineMoneyup.setFine_money_id(fineMoney.getFine_money_id());
         fineMoneyup.setFine_status(3);
         return fineMoneyService.updateByPrimaryKeySelective(fineMoneyup);
+    }
+
+    @Override
+    @Transactional
+    public Station dispatchOrder(Order order, ServiceUnit serviceUnit) {
+        Station station = null;
+        if (order.getProxyed().equals(0)) {
+            station = getStation(order, serviceUnit);
+            // 如果找不到任何合伙人，那么这一条订单无法分配了。
+            if (station == null) {
+                String text = "找不到对应的合伙人和工作站，订单不能正常分配！";
+                orderLogService.xInsert("system", 0l, order.getPay_order_id(), text);
+            }
+        }
+        // 更新服务单到等待合伙人确认状态
+        ServiceUnit upUnit = new ServiceUnit();
+        upUnit.setActive(1);
+        upUnit.setStatus_active(station == null ? 1 : 2);
+        if (order.getProxyed().equals(1)) {
+            upUnit.setStatus_active(4);
+        }
+        upUnit.setStation_id(station == null ? null : station.getStation_id());
+        upUnit.setPartner_id(station == null ? null : station.getPartner_id());
+        ServiceUnitExample example = new ServiceUnitExample();
+        example.or()
+                .andPay_order_idEqualTo(order.getPay_order_id())
+                .andGroup_tagEqualTo(serviceUnit.getGroup_tag());
+        serviceUnitService.updateByExampleSelective(upUnit, example);
+        if (order.getProxyed() == 1) {
+            ServiceunitPersonExample serviceunitPersonExample = new ServiceunitPersonExample();
+            serviceunitPersonExample.or()
+                    .andServiceunit_idEqualTo(serviceUnit.getServiceunit_id());
+            ServiceunitPerson serviceunitPerson = new ServiceunitPerson();
+            serviceunitPerson.setStatus_active(Status.OrderStatus.wait_service.value);
+            serviceunitPerson.setServiceunit_id(serviceUnit.getServiceunit_id());
+            serviceunitPersonService.updateByExampleSelective(serviceunitPerson, serviceunitPersonExample);
+
+        }
+
+        return station;
+    }
+
+    private Station getStation(Order order, ServiceUnit serviceUnit) {
+
+        Product product = productService.selectByPrimaryKey(serviceUnit.getProduct_id());
+        ProSku proSku = proSkuService.selectByPrimaryKey(serviceUnit.getPsku_id());
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        OrderItemExample orderItemExample = new OrderItemExample();
+        orderItemExample.or()
+                .andPay_order_idEqualTo(order.getPay_order_id());
+        OrderItem orderItem = singleResult(orderItemService.selectByExample(orderItemExample));
+        CustomerAddress customerAddress = customerAddressService.selectByPrimaryKey(order.getCustomer_address_id());
+        Metadata metadata = metadataService.selectByPrimaryKey(Constant.MKEY_MAX_SEARCH_RADIUS);
+        Integer integer = metadata.getMeta_value() == null ? Constant.SEARCH_RADIUS
+                : Integer.parseInt(metadata.getMeta_value());
+        ProductSoleExample soleExample = new ProductSoleExample();
+        soleExample.or().andProduct_idEqualTo(product.getProduct_id());
+        List<ProductSole> productSoles = productSoleService.selectByExample(soleExample);
+        List<Partner> partners = new ArrayList<>();
+        List<Station> stations = new ArrayList<>();
+        List<Long> partner_ids = new ArrayList<>();
+        //获取到能够提供服务的所有服务站
+        if (productSoles.size() != 0) {// 绑定合伙人的产品
+            partner_ids = productSoles.stream().map(n -> n.getPartner_id()).collect(Collectors.toList());
+            StationExample stationExample = new StationExample();
+            StationExample.Criteria criteria = stationExample.or();
+            criteria.andPartner_idIn(partner_ids);
+            if (customerAddress.getCity() != null){
+                criteria.andCityEqualTo(customerAddress.getCity());
+            }
+            stations = stationService.selectByExample(stationExample);
+//            stations = stationList.stream().filter(t -> DistanceUtil.GetDistance(
+//                    new Double(t.getLbs_lat() == null ? "0" : t.getLbs_lat()),
+//                    new Double(t.getLbs_lng() == null ? "0" : t.getLbs_lng()),
+//                    new Double(customerAddress.getLbs_lat()),
+//                    new Double(customerAddress.getLbs_lng())) <= integer).collect(Collectors.toList());
+        } else {// 未绑定合伙人的产品
+            stations = stationService.findNearbyStation(customerAddress, integer);
+            stations = stationService.filterByProduct(product, stations);
+        }
+        partner_ids = stations.stream().map(n -> n.getPartner_id()).collect(Collectors.toList());
+        PartnerExample partnerExample = new PartnerExample();
+        if (partner_ids.size() > 0) {
+            partnerExample.or().andPartner_idIn(partner_ids);
+            partnerExample.setOrderByClause(PartnerExample.C.dispatch_priority.name());
+            partners = partnerService.selectByExample(partnerExample);
+        }
+        //按照合伙人分组服务站
+        Map<Long, List<Station>> stationMap = groupStationByPartnerId(stations);
+        //按照优先级分组合伙人
+        Map<Integer, List<Partner>> partnerMap = groupPartnerByPriority(partners);
+        Set<Integer> set = partnerMap.keySet();
+        for (Integer key : set) {
+            List<Station> resultStations = new ArrayList<>();
+            for (Partner partner : partnerMap.get(key)) {
+                StationExample stationExample = new StationExample();
+                stationExample.or()
+                        .andPartner_idEqualTo(partner.getPartner_id());
+
+                resultStations.addAll(stationMap.get(partner.getPartner_id()).stream()
+                        .filter(t -> storeService.isStationHasStore(
+                                t,
+                                format.format(serviceUnit.getC_begin_datetime()),
+                                product,
+                                serviceUnit.getC_begin_datetime(),
+                                serviceUnit.getC_end_datetime(),
+                                proSku.getBuy_multiple_o2o() == 1 ? orderItem.getNum() : 1))
+                        .collect(Collectors.toList()));
+            }
+            Station station = stationService.randomAStation(resultStations);
+            if (station != null) {
+                return station;
+            }
+        }
+        return null;
+
+    }
+
+
+    private Map<Long, List<Station>> groupStationByPartnerId(List<Station> stations) {
+        Map<Long, List<Station>> stationMap = new HashMap<>();
+        for (Station station1 : stations) {
+            List<Station> t = new ArrayList<>();
+            if (stationMap.get(station1.getPartner_id()) == null) {
+                t.add(station1);
+            } else {
+                t = stationMap.get(station1.getPartner_id());
+                t.add(station1);
+            }
+            stationMap.put(station1.getPartner_id(), t);
+        }
+        return stationMap;
+    }
+
+    private Map<Integer, List<Partner>> groupPartnerByPriority(List<Partner> partners) {
+        Map<Integer, List<Partner>> partnerMap = new LinkedHashMap<>();
+        partners.forEach(t -> {
+            Integer priority = t.getDispatch_priority();
+            List<Partner> tmp = new ArrayList<>();
+            if (partnerMap.get(priority) == null) {
+                tmp.add(t);
+            } else {
+                tmp = partnerMap.get(priority);
+                tmp.add(t);
+            }
+            partnerMap.put(priority, tmp);
+        });
+        return partnerMap;
     }
 
 }

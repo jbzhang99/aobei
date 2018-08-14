@@ -7,9 +7,10 @@
         $(function () {
             var val = [[${list}]];
             var data = $.parseJSON(val);
+            var type = [[${type}]];
             $.each(data,function (i,k) {
                 if(k.value!=0){
-                    show_back_plus(k);
+                    show_back_plus(k,type);
                 }else{
                     if(k.allow){
                         $("#end_time").val(k.beforeHour)
@@ -81,7 +82,7 @@
                             }else {
                                 if(!regex_double.test(price)){
                                     reset();
-                                    alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                                    alertify.alert("扣除金额为固定金额，只能输入整数或两位小数金额！");
                                     flag=false;
                                     return false;
                                 }
@@ -114,7 +115,7 @@
                             }else {
                                 if(!regex_double.test(price)){
                                     reset();
-                                    alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                                    alertify.alert("扣除金额为固定金额，只能输入整数或两位小数金额！");
                                     flag=false;
                                     return false;
                                 }
@@ -143,22 +144,6 @@
                 var val = $("#end_time").val();
 
                 if(Number(div_length)==0){
-                    /*var d_begin = $("#init_begin_time").val();
-                    var last_div = $("#div_content").children("div").last();
-                    var last_hour = last_div.find(".input_hour").val();
-                    var last_end = last_div.find(".input_price").val();
-                    if(Number(d_begin)<Number(last_hour)){
-                        reset();
-                        alertify.alert("第二行取消策略小时数不能小于等于第一条取消策略！");
-                        flag=false;
-                        return false;
-                    }
-                    if(last_end==''){
-                        reset();
-                        alertify.alert("第二条取消策略金额数不能为空！");
-                        flag=false;
-                        return false;
-                    }*/
                     var begin = $("#init_begin_time").val();
                     var end = $("#end_time").val();
                     if(Number(begin)!=Number(end)){
@@ -191,15 +176,7 @@
                         flag=false;
                         return false;
                     }
-                }/*else{
-                    if(Number(val)<=$("#init_begin_time").val()){
-                        $("#init_begin_time").val('');
-                        reset();
-                        alertify.alert("最后一行小时数应比所有取消策略都大！");
-                        flag=false;
-                        return false;
-                    }
-                }*/
+                }
                 //组装数据
                 $.each(list_data,function (i,k) {
                     var begin_time = $(k).children('div').children().eq(1).val();
@@ -216,7 +193,12 @@
                     alertify.alert("最后一条取消策略小时数不能为空，请输入！");
                     return false;
                 }
-
+                if(list.length==0){
+                    flag=false;
+                    reset();
+                    alertify.alert("不能添加空数据！");
+                    return false;
+                }
                 //send
                 if(flag){
                     $.ajax({
@@ -278,6 +260,9 @@
 
         function minus(obj) {
             $(obj).parent().parent().remove();
+            var last_div = $("#div_content").children("div").last();
+            last_div.find(".input_hour").attr("readonly",false);
+            last_div.find(".input_price").attr("readonly",false);
         }
         function plus(obj) {
             var regex_number = /^[0-9]*$/;
@@ -302,7 +287,7 @@
                 alertify.alert("最多只能添加10条取消策略！");
                 return false;
             }
-            if(div_length==0){
+            /*if(div_length==0){
                 var begin = $("#init_begin_time").val();
                 var end = $("#end_time").val();
                 if(Number(begin)!=Number(end)){
@@ -321,7 +306,7 @@
                     flag=false;
                     return false;
                 }
-            }
+            }*/
             if(div_length==1){
 
                 var init_time = $("#init_begin_time").val();
@@ -349,7 +334,7 @@
                     }else {
                         if(!regex_double.test(last_price)){
                             reset();
-                            alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                            alertify.alert("扣除金额为固定金额，只能输入整数或两位小数金额！");
                             flag=false;
                             return false;
                         }
@@ -373,11 +358,6 @@
                     alertify.alert("小时数只能是数字！");
                     flag=false;
                     return false;
-                }else if(Number(last_price)>=Number(prev_price)){
-                    reset();
-                    alertify.alert("不能大于等于第一条取消策略扣除金额百分比！");
-                    flag=false;
-                    return false;
                 }else{
                     if($("#cancle_type").val()!=3){
                         if(!regex_fixed.test(last_price)){
@@ -386,10 +366,22 @@
                             flag=false;
                             return false;
                         }
+                        if(Number(last_price)>=Number(prev_price)){
+                            reset();
+                            alertify.alert("不能大于等于第"+div_length+"条取消策略扣除金额百分比！");
+                            flag=false;
+                            return false;
+                        }
                     }else {
                         if(!regex_double.test(last_price)){
                             reset();
-                            alertify.alert("扣除金额为固定金额，只能输入整数或小数金额！");
+                            alertify.alert("扣除金额为固定金额，只能输入整数或两位小数金额！");
+                            flag=false;
+                            return false;
+                        }
+                        if(Number(last_price)>=Number(prev_price)){
+                            reset();
+                            alertify.alert("不能大于等于第"+div_length+"条取消策略扣除金额！");
                             flag=false;
                             return false;
                         }
@@ -422,7 +414,7 @@
 
             $("#div_content").append(html.join(" "));
         }
-        function show_back_plus(k) {
+        function show_back_plus(k,type) {
             var sel = $("#cancle_type").val();
             var html = [];
             html.push("<div class='form-group form-inline'><label class='col-sm-3 control-label'></label>");
@@ -430,7 +422,11 @@
             html.push("<span>距离服务开始时间</span>");
             html.push("<input type='text' name='begin_time' class='input_hour form-control input-sm' style='width: 60px;margin-left: 13px' value="+k.beforeHour+" placeholder='小时'/>");
             html.push("<span>小时前<span style='margin-left: 40px'></span>扣除</span>");
-            html.push("<input type='text' name='price' class='input_price form-control input-sm' style='width: 60px' value="+k.value+" placeholder='金额'/>");
+            if(Number(type)==3){
+                html.push("<input type='text' name='price' class='input_price form-control input-sm' style='width: 60px' value="+k.value/100+" placeholder='金额'/>");
+            }else{
+                html.push("<input type='text' name='price' class='input_price form-control input-sm' style='width: 60px' value="+k.value+" placeholder='金额'/>");
+            }
             html.push("<input type='hidden' name='is_oper_end' value='0'/>");
             if(sel==2 || sel ==1){
                 html.push("%");

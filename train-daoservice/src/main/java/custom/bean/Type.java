@@ -40,7 +40,7 @@ public class Type {
 
     public enum CouponEnvType {
         all_order(0),
-        first_order(1);
+        first_order(2);
         private String name;
         public Integer value;
 

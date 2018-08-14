@@ -481,5 +481,20 @@
         <table schema="" tableName="pay_order_jd" domainObjectName="JdOrder">
             <property name="useActualColumnNames" value="true"/>
         </table>
+
+        <!--合伙人拒单记录表-->
+        <table schema="" tableName="reject_record" domainObjectName="RejectRecord">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!--优惠券和优惠策略中间表-->
+        <table schema="" tableName="coupon__coupon_env" domainObjectName="CouponAndCouponEnv">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
+
+        <!--工单信息记录表（七陌）-->
+        <table schema="" tableName="business" domainObjectName="Business">
+            <property name="useActualColumnNames" value="true"/>
+        </table>
     </context>
 </generatorConfiguration>

@@ -36,11 +36,11 @@ public class CancleStrategyServiceImpl extends MbgServiceSupport<CancleStrategyM
 		super.mbgMapperTemplate = mbgMapperTemplateFactory.getMbgMapperTemplate(cancleStrategyMapper);
 	}
 
-	@Transactional(timeout = 3)
+	@Transactional(timeout = 5)
 	@Override
 	public Integer xInsertCancleStratrgy(String list, CancleStrategy strategy,Authentication authentication) {
 		String json = null;
-		List<CancleStrategyJson> cancle_strategy = Dispose(list);
+		List<CancleStrategyJson> cancle_strategy = Dispose(list,strategy.getCancle_type());
 		Collections.sort(cancle_strategy);
 		json = JSONObject.toJSONString(cancle_strategy);
 		Users users = usersService.xSelectUserByUsername(authentication.getName());
@@ -53,12 +53,12 @@ public class CancleStrategyServiceImpl extends MbgServiceSupport<CancleStrategyM
 		return this.cancleStrategyMapper.insertSelective(strategy);
 	}
 
-	@Transactional(timeout = 3)
+	@Transactional(timeout = 5)
 	@Override
 	public Integer xUpdateCancleStratrgy(String list, CancleStrategy strategy, Authentication authentication) {
 
 		String json = null;
-		List<CancleStrategyJson> cancle_strategy = Dispose(list);
+		List<CancleStrategyJson> cancle_strategy = Dispose(list,strategy.getCancle_type());
 		Collections.sort(cancle_strategy);
 		json = JSONObject.toJSONString(cancle_strategy);
 		Users users = usersService.xSelectUserByUsername(authentication.getName());
@@ -71,7 +71,7 @@ public class CancleStrategyServiceImpl extends MbgServiceSupport<CancleStrategyM
 	}
 
 	//处理取消策略的接送数据，返回封装的object
-	private List<CancleStrategyJson> Dispose(String list){
+	private List<CancleStrategyJson> Dispose(String list,int type){
 		ArrayList<CancleStrategyJson> cancle_strategy = new ArrayList<>();
 		if(!list.isEmpty()){
 			List<String> strings = JSON.parseArray(list, String.class);
@@ -91,11 +91,22 @@ public class CancleStrategyServiceImpl extends MbgServiceSupport<CancleStrategyM
 					allow = false;
 				}
 				strategyJson.setBeforeHour(begin_time);
-				strategyJson.setValue(price);
+				if(type==3){
+					strategyJson.setValue(formatPrice(price));
+				}else {
+					strategyJson.setValue(price);
+				}
 				strategyJson.setAllow(allow);
 				cancle_strategy.add(strategyJson);
 			}
 		}
 		return cancle_strategy;
+	}
+
+	private String formatPrice(String price) {
+		double parseDouble = Double.parseDouble(price) * 100;
+		String data = String.valueOf(parseDouble);
+		String s = data.substring(0, data.indexOf("."));
+		return s;
 	}
 }

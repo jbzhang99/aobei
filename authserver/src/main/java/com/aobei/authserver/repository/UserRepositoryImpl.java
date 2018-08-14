@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.support.DataAccessUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -28,6 +29,9 @@ public class UserRepositoryImpl implements UserRepository {
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
+	@Autowired
+	StringRedisTemplate stringRedisTemplate;
+
 
 	private RowMapper<User> rowMapper = new BeanPropertyRowMapper<User>(User.class);
 	private RowMapper<UserWx> userWxRowMapper = new BeanPropertyRowMapper<UserWx>(UserWx.class);

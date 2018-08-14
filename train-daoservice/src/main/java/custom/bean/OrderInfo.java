@@ -232,6 +232,39 @@ public class OrderInfo implements Serializable {
      */
     private Integer buy_multiple_o2o;
 
+    /**
+     * 服务人员点击开始时间
+     * @return
+     */
+    private String  workDateTimeString;
+
+    public String getWorkDateTimeString() {
+       if (serviceUnit == null || serviceUnit.getWork_2_datetime() == null)
+            return null;
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String dateString = format.format(serviceUnit.getWork_2_datetime());
+        this.workDateTimeString = dateString;
+        return workDateTimeString;
+    }
+
+    public void setWorkDateTimeString(String workDateTimeString) {
+        this.workDateTimeString = workDateTimeString;
+    }
+
+    /**
+     * 该条订单是否可以续单(0 可以续单  1不可以续单)
+     * @return
+     */
+    private int whetherCanContinue;
+
+    public int getWhetherCanContinue() {
+        return whetherCanContinue;
+    }
+
+    public void setWhetherCanContinue(int whetherCanContinue) {
+        this.whetherCanContinue = whetherCanContinue;
+    }
+
     public String getUnit() {
         if (proSku != null) {
             this.unit = proSku.getUnit();
@@ -261,6 +294,41 @@ public class OrderInfo implements Serializable {
     private String startTime;
     private String endTime;
 
+    /**
+     * 订单经纬度
+     */
+    private String lbsLat;
+    private String lbsLng;
+
+    public String getLbsLat() {
+        if (order == null)
+            return null;
+        this.lbsLat = order.getLbs_lat();
+        return lbsLat;
+    }
+
+    public String getLbsLng() {
+        if (order == null)
+            return null;
+        this.lbsLng = order.getLbs_lng();
+        return lbsLng;
+    }
+
+    private String productName;
+
+    public String getProductName() {
+        if (product == null)
+            return null;
+        return product.getName();
+    }
+
+    private String skuName;
+
+    public String getSkuName() {
+        if (proSku == null)
+            return null;
+        return proSku.getName();
+    }
 
     //需要的实体类型
     List<Remark> remarkList;
@@ -311,6 +379,79 @@ public class OrderInfo implements Serializable {
     private Roles roles;
 
     private String dServiceStartTime;
+
+    /**
+     * 服务人员开始时间
+     */
+    private String studentStartTime;
+
+    public String getStudentStartTime() {
+        Date date = serviceUnit.getWork_2_datetime();
+        if(date!= null) {
+            Instant instant = date.toInstant();
+            ZoneId zone = ZoneId.systemDefault();
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, zone);
+            StringBuilder  builder  = new StringBuilder(localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE));
+            builder.append("(");
+            builder.append(DateUtil.getWeekSay(localDateTime.getDayOfWeek()));
+            builder.append(")");
+            builder.append("  ");
+            builder.append(getStudentStart());
+            studentStartTime = builder.toString();
+        }
+        return studentStartTime;
+    }
+
+
+
+    /**
+     * 服务人员结束时间
+     */
+    private String studentEndTime;
+
+    public String getStudentEndTime() {
+        Date date = serviceUnit.getWork_4_datetime();
+        if(date!= null) {
+            Instant instant = date.toInstant();
+            ZoneId zone = ZoneId.systemDefault();
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, zone);
+            StringBuilder  builder  = new StringBuilder(localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE));
+            builder.append("(");
+            builder.append(DateUtil.getWeekSay(localDateTime.getDayOfWeek()));
+            builder.append(")");
+            builder.append("  ");
+            builder.append(getStudentEnd());
+            studentEndTime = builder.toString();
+        }
+        return studentEndTime;
+    }
+
+    /**
+     * 服务人员点击开始时间 时分秒
+     * @return
+     */
+    private String studentStart;
+
+    public String getStudentStart() {
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+        if (serviceUnit.getWork_2_datetime() != null)
+            studentStart = format.format(serviceUnit.getWork_2_datetime());
+        return studentStart;
+    }
+
+    /**
+     * 服务人员点击离开时间 时分秒
+     * @return
+     */
+    private String studentEnd;
+
+    public String getStudentEnd() {
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+        if (serviceUnit.getWork_4_datetime() != null)
+            studentEnd = format.format(serviceUnit.getWork_4_datetime());
+        return studentEnd;
+    }
+
     /**
      * 通用构造方法，自己指定需要传进来的实体类型。Roles是必须的。
      *
@@ -731,6 +872,8 @@ public class OrderInfo implements Serializable {
         if (serviceUnit == null)
             return null;
         this.c_begin_datetime = serviceUnit.getC_begin_datetime();
+        if (c_begin_datetime == null)
+            return null;
         this.c_end_datetime = serviceUnit.getC_end_datetime();
         if(c_begin_datetime.equals(c_end_datetime)){
         	return null;
@@ -742,6 +885,8 @@ public class OrderInfo implements Serializable {
         if (serviceUnit == null)
             return null;
         this.c_end_datetime = serviceUnit.getC_end_datetime();
+        if (c_end_datetime == null)
+            return null;
         this.c_begin_datetime = serviceUnit.getC_begin_datetime();
         if(c_end_datetime != null){
         	if(c_end_datetime.equals(c_begin_datetime)){

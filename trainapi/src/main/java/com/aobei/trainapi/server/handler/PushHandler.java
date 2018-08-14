@@ -87,8 +87,7 @@ public class PushHandler {
     public void pushOrderMessageToStudent(OrderInfo orderInfo, String... alia) {
         //{预约时间}新服务订单，请及时查看
         IGtPushData data = new IGtPushData();
-        List<String> alias = new ArrayList<>();
-        Arrays.asList(alia);
+        List<String> alias = Arrays.asList(alia);
         data.setAlias(alias);
         data.setStyle(IGtPushData.Style0);
         data.setTitle("新订单通知");

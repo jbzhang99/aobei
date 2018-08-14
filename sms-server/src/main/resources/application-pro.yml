@@ -35,3 +35,7 @@ aobei:
             app-id: 1K41HlMTi7APCf5OrxCRM7
             app-key: FMiWatBRpe9YgWspuSHxNA
             master-secret: 5hZmQgsfKb8pvBO9xskNl6
+          student:
+            app-id: tjHpQ2gGkhAM6Z8tLwBhC8
+            app-key: 5JVObGyD1s7VSpIPSVSggA
+            master-secret: CowA3FlIhA6nIuGqfNi93

@@ -53,7 +53,7 @@ public class RefundSecondTask {
         FallintoRefundExample fallintoRefundExample = new FallintoRefundExample();
         fallintoRefundExample.or().andStatusEqualTo(1);
         List<FallintoRefund> fallintoRefunds = this.fallintoRefundService.selectByExample(fallintoRefundExample);
-        if(fallintoRefunds.isEmpty()){
+        if(!fallintoRefunds.isEmpty()){
             fallintoRefunds.stream().forEach(fallintoRefund -> {
                 fallintoRefund.setStatus(2);
                 this.fallintoRefundService.updateByPrimaryKeySelective(fallintoRefund);
@@ -91,7 +91,7 @@ public class RefundSecondTask {
             refunds = refunds.stream().filter(refund -> refund.getFee() < refund.getPrice_pay()).collect(Collectors.toList());
             refunds.stream().forEach(refund -> {
                 ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
-                serviceUnitExample.or().andPay_order_idEqualTo(refund.getPay_order_id()).andActiveEqualTo(1).andPidEqualTo(0L);
+                serviceUnitExample.or().andPay_order_idEqualTo(refund.getPay_order_id()).andPidEqualTo(0L);
                 ServiceUnit serviceUnit = DataAccessUtils.singleResult(this.serviceUnitService.selectByExample(serviceUnitExample));
                 if(serviceUnit!=null){
                     //找出半月结的数据
@@ -105,7 +105,7 @@ public class RefundSecondTask {
                         fallintoRefundExample.or().andRefund_idEqualTo(refund.getRefund_id()).andPay_order_idEqualTo(refund.getPay_order_id());
                         FallintoRefund fd = DataAccessUtils.singleResult(this.fallintoRefundService.selectByExample(fallintoRefundExample));
                         if(fd==null){
-                            FallintoRefund fallintoRefund = combine(localDate, refund);
+                            FallintoRefund fallintoRefund = combine(LocalDate.now(), refund);
                             this.fallintoRefundService.insert(fallintoRefund);
                         }
                     }
@@ -134,7 +134,7 @@ public class RefundSecondTask {
             refunds = refunds.stream().filter(refund -> refund.getFee() < refund.getPrice_pay()).collect(Collectors.toList());
             refunds.stream().forEach(refund -> {
                 ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
-                serviceUnitExample.or().andPay_order_idEqualTo(refund.getPay_order_id()).andActiveEqualTo(1).andPidEqualTo(0L);
+                serviceUnitExample.or().andPay_order_idEqualTo(refund.getPay_order_id()).andPidEqualTo(0L);
                 ServiceUnit serviceUnit = DataAccessUtils.singleResult(this.serviceUnitService.selectByExample(serviceUnitExample));
                 if(serviceUnit!=null){
                     //找出半月结的数据
@@ -148,7 +148,7 @@ public class RefundSecondTask {
                         fallintoRefundExample.or().andRefund_idEqualTo(refund.getRefund_id()).andPay_order_idEqualTo(refund.getPay_order_id());
                         FallintoRefund fd = DataAccessUtils.singleResult(this.fallintoRefundService.selectByExample(fallintoRefundExample));
                         if(fd==null){
-                            FallintoRefund fallintoRefund = combine(localDate, refund);
+                            FallintoRefund fallintoRefund = combine(LocalDate.now(), refund);
                             this.fallintoRefundService.insert(fallintoRefund);
                         }
                     }
@@ -162,7 +162,7 @@ public class RefundSecondTask {
         Order order = this.orderService.selectByPrimaryKey(refund.getPay_order_id());
         //对应服务单
         ServiceUnitExample serviceUnitExample = new ServiceUnitExample();
-        serviceUnitExample.or().andPay_order_idEqualTo(order.getPay_order_id()).andActiveEqualTo(1).andPidEqualTo(0L);
+        serviceUnitExample.or().andPay_order_idEqualTo(order.getPay_order_id()).andPidEqualTo(0L);
         ServiceUnit serviceUnit = DataAccessUtils.singleResult(serviceUnitService.selectByExample(serviceUnitExample));
         //找到对应订单合伙人信息，对应结算策略信息
         Partner partner = partnerService.selectByPrimaryKey(serviceUnit.getPartner_id());
@@ -170,7 +170,7 @@ public class RefundSecondTask {
         FallintoRefund fallintoRefund=new FallintoRefund();
         fallintoRefund.setFallinto_refund_id(IdGenerator.generateId());
         String month = localDate.getMonthValue() < 10 ? "0" + localDate.getMonthValue() : localDate.getMonthValue() + "";
-        fallintoRefund.setBalance_cycle(localDate.getYear() + month + "16");//结算期
+        fallintoRefund.setBalance_cycle(localDate.getYear() + month + "02");//结算期
         fallintoRefund.setRefund_id(refund.getRefund_id());//退款单号
         fallintoRefund.setPay_order_id(order.getPay_order_id());//订单号
         fallintoRefund.setServiceunit_id(serviceUnit.getServiceunit_id());//服务单号

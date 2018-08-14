@@ -152,6 +152,22 @@ type OrderInfo{
 	buy_multiple_o2o:Int
 	#是否支持取消(true:支持取消 false:不支持取消)
 	allowedToCancel:Boolean
+	#服务人员点击开始时间
+	workDateTimeString:String
+	#该条订单是否可以续单(0 可以续单  1不可以续单)
+	whetherCanContinue:Int
+	#服务人员开始时间
+	studentStartTime:String
+	#服务人员结束时间
+	studentEndTime:String
+	#订单坐标 纬度
+	lbsLat:String
+	#坐标 经度
+	lbsLng:String
+	#商品名称
+	productName:String
+	#sku名称
+	skuName:String
 }
 
 type CouponResponse{
@@ -273,6 +289,14 @@ type StudentInfo{
 	serviceItems:[Serviceitem]
 	#无犯罪记录
 	img:Img
+	#无犯罪证书
+	innocence_proof:String
+	#图片url
+	imgUrl:[StudentImgInfo]
+	#等级描述
+	gradeDesc:String
+	#是否微信登录过
+	whetherWXlogin:Int
 }
 type StudentType{
 	#学生
@@ -528,4 +552,26 @@ type OutOfServiceStatistics{
    totalDays:Int
    #具体的请假列表
    outOfServices:[OutOfService]
+}
+type StudentServiceOrderStatistics{
+    #统计本月已服务订单
+    servicedOrder:Int
+    #本月服务完成单
+    doneOrder:Int
+    #全部待服务订单
+    allWaitServiceOrder:Int
+    #今日待服务订单
+    todayWaitServiceOrder:Int
+}
+
+type StudentImgInfo{
+    #姓名
+    name:String
+    #url
+    url:String
+}
+
+type MessageState{
+    #状态
+    state:Int
 }

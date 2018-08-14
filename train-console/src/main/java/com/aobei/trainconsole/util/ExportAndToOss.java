@@ -7,18 +7,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.aobei.train.model.*;
+import com.aobei.train.service.*;
 import custom.bean.Status;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.stereotype.Component;
 
 import com.aobei.train.IdGenerator;
-import com.aobei.train.service.DataDownloadService;
-import com.aobei.train.service.OssFileService;
-import com.aobei.train.service.PartnerService;
-import com.aobei.train.service.ProSkuService;
-import com.aobei.train.service.ProductService;
-import com.aobei.train.service.StationService;
-import com.aobei.train.service.VOrderUnitService;
 import com.aobei.trainconsole.util.PathUtil.PathType;
 
 
@@ -50,6 +45,9 @@ public class ExportAndToOss implements Callable<Integer>{
 	@Autowired
 	private OssFileService ossFileService;
 
+	@Autowired
+	private OrderItemService orderItemService;
+
 	private VOrderUnitExample orderUnitExample;
 	
 	private Long data_download_id;
@@ -79,7 +77,7 @@ public class ExportAndToOss implements Callable<Integer>{
 	public Integer call() throws Exception {
 		List<VOrderUnit> list = vOrderUnitService.selectByExample(orderUnitExample);
 		
-		String[] rowsName = new String[]{"订单号", "订单名称", "顾客姓名", "顾客电话","订单来源渠道",
+		String[] rowsName = new String[]{"订单号", "订单名称","商品件数", "顾客姓名", "顾客电话","订单来源渠道",
 										"总价（元）","优惠金额（元）","实际支付金额（元）","支付方式","支付状态",
 										"下单时间","支付时间","可退金额（元）","退款状态","退款申请日期",
 										"退款完成日期","客户联系人","服务地址","客户联系人电话","用户下单备注",
@@ -117,8 +115,13 @@ public class ExportAndToOss implements Callable<Integer>{
 		List<Station> stations = stationService.selectByExample(stationExample);
 		Map<Long, Station> sta_map = stations.stream().collect(Collectors.toMap(Station::getStation_id, Function.identity()));
 
+
 //		long s = System.currentTimeMillis();
 		List<Object[]> dataList = list.stream().map(ou ->{
+			OrderItemExample orderItemExample = new OrderItemExample();
+			orderItemExample.or().andPay_order_idEqualTo(ou.getPay_order_id());
+			OrderItem item = DataAccessUtils.singleResult(orderItemService.selectByExample(orderItemExample));
+
 			Product product = pro_map.get(ou.getProduct_id());
 			ProSku  sku = sku_map.get(ou.getPsku_id());
 			Partner partner = par_map.get(ou.getPartner_id());
@@ -127,10 +130,28 @@ public class ExportAndToOss implements Callable<Integer>{
 			Integer o_status_active = ou.getO_status_active();
 			Integer u_status = ou.getStatus_active();
 			Integer w_status = ou.getWork_status();
+			Integer pay_type = ou.getPay_type();
 			String r_statu = null;
 			String o_statu = null;
 			String u_statu = null;
 			String w_statu = null;
+			String pay_type_info = null;
+
+			if (pay_type != null){
+				switch (pay_type){
+					case 1:
+						pay_type_info = "微信";
+						break;
+					case 2:
+						pay_type_info = "支付宝";
+						break;
+					default:
+						pay_type_info = "其他";
+						break;
+				}
+			}else{
+				pay_type_info = "其他";
+			}
 
             if(r_status != null) {
                 switch (r_status){
@@ -223,11 +244,11 @@ public class ExportAndToOss implements Callable<Integer>{
 			String remark =ou.getRemark() == null ? "":ou.getRemark();
 			String remarkCancel = ou.getRemark_cancel() == null ? "": ou.getRemark_cancel();
 			String orderName = ou.getUname();
-			Object[] obj = {ou.getPay_order_id(),orderName,ou.getCuname(),ou.getUphone(),ou.getChannel(),
+			Object[] obj = {ou.getPay_order_id(),orderName,item.getNum() +"",ou.getCuname(),ou.getUphone(),ou.getChannel(),
 					ou.getPrice_total()/100d+"",
 					ou.getPrice_discount()/100d+"",
 					ou.getPrice_pay()/100d+"",
-					"1".equals(ou.getPay_type()+"") ? "微信" : "",
+					pay_type_info,
 					"0".equals(ou.getPay_status()+"") ? "待支付" : "已支付",
 					sdf.format(ou.getCreate_datetime()),
 					ou.getPay_datetime() == null ? "" :sdf.format(ou.getPay_datetime()),

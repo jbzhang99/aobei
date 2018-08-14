@@ -65,7 +65,7 @@ public class FineMoneySeventeenthTask {
             return;
         }
 
-        LocalDate localDate = LocalDate.now().minusMonths(2);
+        LocalDate localDate = LocalDate.now().minusMonths(1);
         // 取本月第1天：
         LocalDate firstDayOfThisMonth = localDate.with(TemporalAdjusters.firstDayOfMonth());
         ZoneId zoneId = ZoneId.systemDefault();
@@ -118,7 +118,7 @@ public class FineMoneySeventeenthTask {
         FallintoFineMoney fallintoFineMoney=new FallintoFineMoney();
         fallintoFineMoney.setFallinto_fine_money_id(IdGenerator.generateId());
         String month = localDate.getMonthValue() < 10 ? "0" + localDate.getMonthValue() : localDate.getMonthValue() + "";
-        fallintoFineMoney.setBalance_cycle(localDate.getYear() + month + "01");//结算期
+        fallintoFineMoney.setBalance_cycle(localDate.getYear() + month + "17");//结算期
         fallintoFineMoney.setFine_money_id(fineMoney.getFine_money_id());//罚款单号
         fallintoFineMoney.setPay_order_id(order.getPay_order_id());//订单号
         fallintoFineMoney.setServiceunit_id(serviceUnit.getServiceunit_id());//服务单号

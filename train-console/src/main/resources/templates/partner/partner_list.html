@@ -1,5 +1,5 @@
 <!DOCTYPE html>
- <html layout:decorate="~{base_layout}">
+<html layout:decorate="~{base_layout}" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
 <!-- <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:th="http://www.thymeleaf.org"> -->
 <head>
@@ -22,6 +22,25 @@
 		  buttonFocus  : "ok"
 	    });
 	};
+
+    $(function(){
+        $('#state_selected,#auditState_selected').change(function(){
+            var state = $("#state_selected").val();
+            var auditState = $("#auditState_selected").val();
+            var p = [[${page.pageNo}]];
+            var url  = "/partner/showPartner?" + $.param({
+                    state_selected : state?state:2,
+                    auditState_selected : auditState?auditState:0,
+                    p : p?p:1
+                });
+            window.location.href = url;
+        });
+
+        var stateBack = [[${state_selected}]];
+        $("#state_selected").val(stateBack);
+        var auditStateBack = [[${auditState_selected}]];
+        $("#auditState_selected").val(auditStateBack);
+    });
 
 	 function createPartner(pageNo){
 		 window.location.href="/partner/addpartnerShow/"+pageNo; 
@@ -106,9 +125,7 @@
             },
             dataType:'json'
         });
-
-
-
+    }
         /*$.ajax({
             url:'/partner/addFallinto/'+partner_id,
             type:'GET',
@@ -142,7 +159,7 @@
             },
             dataType:'json'
         });*/
-    }
+
 
     //分成策略模态框上面的关闭按钮
     /*function closeModel(){
@@ -190,7 +207,26 @@
         });
 
 	}*/
-
+    function auditPartner(partner_id,pageNo) {
+        reset();
+        alertify.confirm("确定要提审该条信息吗？", function (e) {
+            if (e) {
+                $.ajax({
+                    url: '/partner/auditPartner/' + partner_id,
+                    type: 'POST',
+                    success: function (data) {
+                        //请求成功时
+                        reset();
+                        alertify.success(data.msg);
+                        setTimeout(function () {
+                            window.location.href = "/partner/showPartner?p=" + pageNo;
+                        }, 3000);
+                    },
+                    dataType: 'json'
+                });
+            }
+        });
+    }
     function editPartnerCategory(partner_id,pageNo){
         window.location.href="/partner/editPartnerCategory/"+partner_id+"/"+pageNo;
     }
@@ -217,7 +253,23 @@
 	<!--/* 页面部分二              页面主内容  */-->
 	<div class="page_content_main" data-sidea="side_11">
 		
-		
+		<div class="form-inline">
+			<div class="form-group">
+				状态：<select id="state_selected" name="state_selected" class="form-control input-sm" style="max-width: 153px;">
+								<option value="2">全部</option>
+								<option value="0">下线</option>
+								<option value="1">上线</option>
+							</select>&nbsp;&nbsp;&nbsp;&nbsp;
+				审核状态：<select id="auditState_selected" name="auditState_selected" class="form-control input-sm" style="max-width: 170px;">
+							<option value="0">全部</option>
+							<option value="1">待提审</option>
+							<option value="2">待审核</option>
+							<option value="3">审核未通过</option>
+							<option value="4">审核已通过</option>
+						</select>
+			</div>
+		</div>
+		<hr/>
 		<!--/* 以下为自定义代码块  */-->
 		<div class="table-responsive">
 		<!-- 动态 -->
@@ -232,13 +284,20 @@
 					<th width="50px">联系电话</th>
 					<th width="60px">合伙人等级</th>
 					<th width="60px">派单优先级</th>
-					<th width="210px" sec:authorize="hasAnyRole('ROLE_PARTNER_EDIT,ROLE_PARTNER_DEL,ROLE_PARTNER_FALLINTO')">操作</th>
+					<th width="60px">状态</th>
+					<th width="60px">审核状态</th>
+					<th width="60px">创建人</th>
+					<th width="60px">审核人</th>
+
+					<th width="240px" sec:authorize="hasAnyRole('ROLE_PARTNER_EDIT,ROLE_PARTNER_DEL,ROLE_PARTNER_FALLINTO,ROLE_PARTNER_BRING')">操作</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="list:${partnerList}" bgcolor="#FFFFFF">
 					<td th:text="${list.partner_id}" hidden="hidden"></td>
-					<td th:text="${list.name}" style="vertical-align:middle;word-break:break-all"></td>
+					<td style="vertical-align:middle;word-break:break-all">
+						<a th:href="@{'/partner/partnerDetail/'+${list.partner_id}}" th:text="${list.name}" ></a>
+					</td>
 					<td th:text="${list.address}" style="vertical-align:middle;word-break:break-all"></td>
 					<td style="vertical-align:middle;">
 						<span th:text="${#dates.format(list.cooperation_start,'yyyy-MM-dd')}"></span>至
@@ -251,20 +310,38 @@
 					<td th:if="${list.level==2}" style="vertical-align:middle;">B级</td>
 					<td th:if="${list.level==3}" style="vertical-align:middle;">C级</td>
 					<td th:text="${list.dispatch_priority}" style="vertical-align:middle;"></td>
+					<td th:switch="${list.state}">
+						<span th:case="0">下线</span>
+						<span th:case="1">上线</span>
+					</td>
+					<td th:switch="${list.audit_state}">
+						<span th:case="1">待提审</span>
+						<span th:case="2">待审核</span>
+						<span th:case="3" style="color: red" data-toggle="tooltip" data-placement="left" th:title="${list.audit_opinion}">审核未通过</span>
+						<span th:case="4" style="color: green" data-toggle="tooltip" data-placement="left" th:title="${list.audit_opinion}">审核已通过</span>
+					</td>
+					<td >
+						<span th:text="${list.creat_name}"></span>
+					</td>
+					<td >
+						<span th:text="${list.audit_name}"></span>
+					</td>
 					<td style="vertical-align:middle;">
-						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_EDIT')"  th:onclick="|editPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class="fas fa-edit"></i>基本信息</a>&nbsp;&nbsp;
-						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_DEL')" th:if="${list.state==0}" th:onclick="|upPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='fa fa-arrow-circle-down' aria-hidden='true'></i>上线</a>
-						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_DEL')" th:if="${list.state==1}" th:onclick="|delPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='fa fa-arrow-circle-down' aria-hidden='true'></i>下线</a>
+						<a class="btn btn-link btn-xs" th:if="${list.audit_state==1 || list.audit_state==3}" sec:authorize="hasRole('ROLE_PARTNER_EDIT')"  th:onclick="|editPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class="fas fa-edit"></i>基本信息</a>&nbsp;
+						<!--<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_DEL')" th:if="${list.state==0}" th:onclick="|upPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='fa fa-arrow-circle-down' aria-hidden='true'></i>上线</a>-->
+						<!--<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_DEL')" th:if="${list.state==1}" th:onclick="|delPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='fa fa-arrow-circle-down' aria-hidden='true'></i>下线</a>-->
+
+						<a class="btn btn-link btn-xs" th:if="${list.audit_state==1 || list.audit_state==3}"sec:authorize="hasRole('ROLE_PARTNER_EDIT')" th:onclick="|editPartnerCategory('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class="fas fa-edit"></i>合作项目</a>
 						<br/>
-						<a class="btn btn-link btn-xs" sec:authorize="hasRole('ROLE_PARTNER_EDIT')" th:onclick="|editPartnerCategory('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class="fas fa-edit"></i>合作项目</a>&nbsp;&nbsp;
-						<a class="btn btn-link btn-xs"  sec:authorize="hasRole('ROLE_PARTNER_FALLINTO')"  th:onclick="|addFallinto('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;" data-toggle="modal" data-target="#selectFallintoModal"><i class='glyphicon glyphicon-align-justify'></i>分成策略</a>
+						<!--<a class="btn btn-link btn-xs" th:if="${list.audit_state==1 || list.audit_state==3}"  sec:authorize="hasRole('ROLE_PARTNER_FALLINTO')"  th:onclick="|addFallinto('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;" data-toggle="modal" data-target="#selectFallintoModal"><i class='glyphicon glyphicon-align-justify'></i>分成策略</a>&nbsp;-->
+						<a class="btn btn-link btn-xs" th:if="${list.audit_state==1 || list.audit_state==3}" sec:authorize="hasRole('ROLE_PARTNER_BRING')" th:onclick="|auditPartner('${list.partner_id}',${page.pageNo})|" style="cursor: pointer;"><i class='glyphicon glyphicon-pushpin'></i>提审</a>
 					</td>
 				</tr>
 			</tbody>
 		</table>
 		</div>
 		
-		<div th:include="~{tags/pagination::p1(@{/partner/showPartner},${page.total},${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
+		<div th:include="~{tags/pagination::p1(@{/partner/showPartner(auditState_selected=${auditState_selected},state_selected=${state_selected})},${page.total},${page.pageSize},${page.pageNo},${page.totalPage},right,p)}"></div>
 	</div>
 
 	<!--分成策略模态框-->

@@ -38,6 +38,9 @@
                 productid=$(oTr[i]).children("td:last").attr('productid'),
                 fallino_id=$(oTr[i]).find('.fallino_id').val(),
 					balance_type=$(oTr[i]).find('.balance_type').val();
+				if(fallino_id==0){
+                    flag=false;
+				}
             /*var start=$(oTr[i]).find('.start').val(),
             	end=$(oTr[i]).find('.end').val(),
                 productName=$(oTr[i]).children("td:eq(0)").text(),
@@ -85,6 +88,10 @@
                 },
                 dataType:'json'
             });
+		}else{
+            reset();
+            alertify.alert("有产品未选择策略，请选择策略！");
+            return false;
 		}
 
 
@@ -105,7 +112,7 @@
 	
 		<!--/* 面包屑  */-->
 		<ol class="breadcrumb clearfix">
-			<li><a href="/partner/showPartner" class="back_butn" style="cursor: pointer;">合伙人信息</a></li>
+			<li><a onclick="javascript:history.go(-1)" class="back_butn" style="cursor: pointer;">合伙人信息</a></li>
 		  <li class="active">分成策略</li>
 		</ol>
 		
@@ -146,6 +153,7 @@
 										</th:block>
 									</th:block>
 									<th:block th:if="${list['partnerFallinto'] ==null}">
+										<option value="0">请选择策略</option>
 										<th:block th:each="fallinto:${list['fallintos']}">
 											<option  th:value="${fallinto.fallinto_id}" th:text="${fallinto.fallinto_name}"></option>
 										</th:block>

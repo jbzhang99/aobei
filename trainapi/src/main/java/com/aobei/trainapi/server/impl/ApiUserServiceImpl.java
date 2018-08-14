@@ -3,23 +3,26 @@ package com.aobei.trainapi.server.impl;
 import com.alibaba.fastjson.JSON;
 import com.aobei.train.IdGenerator;
 import com.aobei.train.Roles;
+import com.aobei.train.handler.CacheReloadHandler;
 import com.aobei.train.model.*;
-import com.aobei.train.service.ChannelService;
-import com.aobei.train.service.CustomerService;
-import com.aobei.train.service.UsersService;
-import com.aobei.train.service.UsersWxInfoService;
+import com.aobei.train.service.*;
 import com.aobei.trainapi.schema.Errors;
 import com.aobei.trainapi.schema.type.MutationResult;
 import com.aobei.trainapi.server.ApiUserService;
 import com.aobei.trainapi.server.bean.ApiResponse;
 import com.aobei.trainapi.server.bean.Img;
+import com.aobei.trainapi.server.listener.AutoCouponListerer;
+import custom.bean.Constant;
+import custom.bean.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.springframework.dao.support.DataAccessUtils.singleResult;
@@ -35,6 +38,24 @@ public class ApiUserServiceImpl implements ApiUserService {
     UsersWxInfoService wxInfoService;
     @Autowired
     ChannelService channelService;
+    @Autowired
+    StudentService studentService;
+    @Autowired
+    CouponEnvService couponEnvService;
+    @Autowired
+    CouponAndCouponEnvService couponAndCouponEnvService;
+    @Autowired
+    CouponReceiveService couponReceiveService;
+    @Autowired
+    CacheReloadHandler cacheReloadHandler;
+    @Autowired
+    StringRedisTemplate redisTemplate;
+    @Autowired
+    CouponService couponService;
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    AutoCouponListerer autoCouponListerer;
     @Override
     public Customer customerInfo(Long userId) {
         CustomerExample example = new CustomerExample();
@@ -52,37 +73,68 @@ public class ApiUserServiceImpl implements ApiUserService {
      * @return
      */
     @Override
+    @Transactional(timeout = 5)
     public ApiResponse<Customer> bindUser(Long user_id, String phone, String channelCode) {
         ApiResponse<Customer> response = new ApiResponse<>();
-        try{
-            CustomerExample customerExample  = new CustomerExample();
+        try {
+            CustomerExample customerExample = new CustomerExample();
             customerExample.or().andPhoneEqualTo(phone);
-            Customer customer  = singleResult(customerService.selectByExample(customerExample));
-            if(customer==null){
+            Customer customer = singleResult(customerService.selectByExample(customerExample));
+            if (customer == null) {
                 customer = new Customer();
                 customer.setCustomer_id(IdGenerator.generateId());
                 customer.setCreate_datetime(new Date());
+                //添加优惠券,有一张优惠券错误,全部返回
+                Map<Object, Object> hashMap = (Map<Object, Object>) autoCouponListerer.couponMethod(customer);
+                Boolean bool = (Boolean) hashMap.get("boolean");
+                if (bool){
+                    CouponEnv couponEnv =(CouponEnv) hashMap.get("couponEnv");
+                    couponEnv.setCoupon_number(couponEnv.getCoupon_number()-1);
+                    couponEnvService.updateByPrimaryKeySelective(couponEnv);
+                    List<CouponAndCouponEnv> couponList =(List<CouponAndCouponEnv>) hashMap.get("couponList");
+                    for (CouponAndCouponEnv couponandCouponEnv: couponList) {
+                        Coupon coupon = couponService.selectByPrimaryKey(couponandCouponEnv.getCoupon_id());
+                        String key = Constant.getCouponKey(coupon.getCoupon_id());
+                        coupon.setNum_able(Integer.parseInt(redisTemplate.opsForValue().increment(key,-1L)+""));
+                        couponService.updateByPrimaryKeySelective(coupon);
+                        //为用户添加使用记录
+                        CouponReceive couponReceive = new CouponReceive();
+                        couponReceive.setCoupon_receive_id(IdGenerator.generateId());
+                        couponReceive.setUid(customer.getCustomer_id());
+                        couponReceive.setCoupon_id(couponandCouponEnv.getCoupon_id());
+                        couponReceive.setReceive_datetime(new Date());
+                        couponReceive.setVerification(0);//未核销
+                        couponReceive.setStatus(2);//待使用状态
+                        couponReceive.setDeleted(Status.DeleteStatus.no.value);
+                        couponReceive.setCoupon_env_id(couponandCouponEnv.getCoupon_env_id());
+                        couponReceive.setCreate_datetime(new Date());
+                        couponReceiveService.insert(couponReceive);
+                        cacheReloadHandler.couponListReload(customer.getCustomer_id());
+                        cacheReloadHandler.userCouponListReload(customer.getCustomer_id());
+                    }
+                }
+
             }
             customer.setUser_id(user_id);
             customer.setPhone(phone);
             Integer channelId = 0;
-            if (channelCode!=null) {
+            if (channelCode != null) {
                 ChannelExample channelExample = new ChannelExample();
                 channelExample.or().andCodeEqualTo(channelCode);
                 Channel channel = singleResult(channelService.selectByExample(channelExample));
-                channelId= channel==null?0:channel.getChannel_id();
+                channelId = channel == null ? 0 : channel.getChannel_id();
             }
             customer.setChannel_id(channelId);
-            Users users  = usersService.selectByPrimaryKey(user_id);
-            String wx_id  = users.getWx_id();
+            Users users = usersService.selectByPrimaryKey(user_id);
+            String wx_id = users.getWx_id();
             //如果用户绑定微信的第三方登录。查看微信的一些基本信息作为顾客的基本信息
-            if(wx_id!=null){
-                UsersWxInfo  info = wxInfoService.selectByPrimaryKey(wx_id);
-                if(info!=null){
-                    if(customer.getName()==null) {
+            if (wx_id != null) {
+                UsersWxInfo info = wxInfoService.selectByPrimaryKey(wx_id);
+                if (info != null) {
+                    if (customer.getName() == null) {
                         customer.setName(info.getNickName());
                     }
-                    if(customer.getLogo_img()==null){
+                    if (customer.getLogo_img() == null) {
                         Img img = new Img();
                         img.setId(0l);
                         img.setUrl(info.getAvatarUrl());
@@ -99,12 +151,63 @@ public class ApiUserServiceImpl implements ApiUserService {
                 return response;
             }
             response.setErrors(Errors._41001);
-        }catch (Exception e ){
-            logger.error("ERROR binduser" ,e);
+        } catch (Exception e) {
+            logger.error("ERROR binduser", e);
         }
-
         return response;
     }
+
+
+        /**
+         * 服务人员端绑定
+         * @param user_id
+         * @param phone
+         * @param channelCode
+         * @return
+         */
+        public ApiResponse<Student> bindUserStudent (Long user_id, String phone, String channelCode){
+            ApiResponse<Student> response = new ApiResponse<>();
+            try {
+                StudentExample studentExample = new StudentExample();
+                studentExample.or().andPhoneEqualTo(phone);
+                Student student = singleResult(studentService.selectByExample(studentExample));
+                if (student == null) {
+                    response.setErrors(Errors._40101);
+                    return response;
+                }
+                student.setUser_id(user_id);
+                Users users = usersService.selectByPrimaryKey(user_id);
+                String wx_id = users.getWx_id();
+                //如果用户绑定微信的第三方登录。查看微信的一些基本信息作为顾客的基本信息
+                if (wx_id != null) {
+                    UsersWxInfo info = wxInfoService.selectByPrimaryKey(wx_id);
+                    if (info != null) {
+                        if (student.getName() == null) {
+                            student.setName(info.getNickName());
+                        }
+                        if (student.getLogo_img() == null) {
+                            Img img = new Img();
+                            img.setId(0l);
+                            img.setUrl(info.getAvatarUrl());
+                            student.setLogo_img(JSON.toJSONString(img));
+                        }
+                    }
+                }
+                //插入或更新服务人员信息。
+                int count = studentService.updateByPrimaryKeySelective(student);
+                if (count > 0) {
+                    userAddRole(user_id, Roles.STUDENT.roleName());
+                    MutationResult mutationResult = new MutationResult();
+                    mutationResult.setExtra("200");
+                    response.setMutationResult(mutationResult);
+                    return response;
+                }
+                response.setErrors(Errors._41001);
+            } catch (Exception e) {
+                logger.error("ERROR binduser", e);
+            }
+            return response;
+        }
 
 /********************************************
  * 我是分割线，下面是本类中的私有方法
@@ -130,5 +233,28 @@ public class ApiUserServiceImpl implements ApiUserService {
         }
         users.setRoles(org.springframework.util.StringUtils.arrayToCommaDelimitedString(roles));
         return usersService.updateByPrimaryKeySelective(users);
+    }
+
+    /**
+     * 解绑
+     * @param customer
+     * @return
+     */
+    @Override
+    public ApiResponse customerRemoveTheBing(Customer customer) {
+        ApiResponse response = new ApiResponse();
+        if (StringUtils.isEmpty(customer)){
+            response.setErrors(Errors._41003);
+            return response;
+        }else {
+            cacheReloadHandler.customerInfoReload(customer.getUser_id());
+            Customer cus = new Customer();
+            cus.setCustomer_id(customer.getCustomer_id());
+            cus.setUser_id(0l);
+            customerService.updateByPrimaryKeySelective(cus);
+        }
+        response.setMutationResult(new MutationResult());
+        return response;
+
     }
 }

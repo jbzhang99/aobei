@@ -55,7 +55,6 @@ public class JdOrderGrab {
 
     private static final String client_secret = "ebd674ee3a134862b7b1061bf95e4969";
 
-    //todo 改为京东云鼎的服务器域名
     private static final String server_url = "http://jdapi.aobei.com/routerjson";
 
     @Autowired
@@ -104,8 +103,8 @@ public class JdOrderGrab {
     /**
      * 定时抓取订单数据
      */
-    //@Scheduled(cron = "0 0/10 * * * ?")
-    //@Scheduled(initialDelay = 2000, fixedDelay = 24*60*60*100)
+    @Scheduled(cron = "0 0/10 * * * ?")
+//    @Scheduled(initialDelay = 2000, fixedDelay = 24*60*60*100)
     private void getJdOrder() {
         //保证单实例运行
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -126,9 +125,10 @@ public class JdOrderGrab {
             Date before10m = now.getTime();
             String endDate = sdf.format(nowTime) + ":00";
             String startDate = sdf.format(before10m) + ":00";
-//            request.setStartDate(startDate);
-//            request.setEndDate(endDate);
-            request.setOrderState( "WAIT_SELLER_STOCK_OUT,FINISHED_L");
+            logger.info("[OrderGrab] query time scope startDate is {},endDate is {}",startDate,endDate);
+            request.setStartDate(startDate);
+            request.setEndDate(endDate);
+            request.setOrderState( "WAIT_SELLER_STOCK_OUT");
             request.setOptionalFields( "orderId," +  //	订单id
                     "venderId" +   //	商家id
                     "payType," +  //	支付方式（1货到付款, 2邮局汇款, 3自提, 4在线支付, 5公司转账, 6银行卡转账）
@@ -210,6 +210,7 @@ public class JdOrderGrab {
                                         if (!jdOrder.getModified().equals(queryLocal.getModified())){
                                             //完成单，标记订单已完成和服务单已完成
                                             if (jdOrder.getOrderState().equals("FINISHED_L")){
+                                                logger.info("[OrderGrab] update order to finished");
                                                 List<Order> orders = orderService.selectByExample(orderExample);
                                                 orders.stream().forEach(m ->{
                                                     Order upOrder = new Order();
@@ -338,6 +339,9 @@ public class JdOrderGrab {
             if (!"".equals(skuId) && skuId != null){
                 Order order = new Order();
                 ProSku proSku = proSkuService.selectByPrimaryKey(Long.valueOf(skuId));
+                if (proSku == null){
+                    return;
+                }
                 Product product = productService.selectByPrimaryKey(proSku.getProduct_id());
                 String pay_order_id = redisIdGenerator.generatorId("pay_order_id", 1000) + "";
                 if ("dev".equals(profile)) {
@@ -346,10 +350,13 @@ public class JdOrderGrab {
                     pay_order_id = pay_order_id + "_2";
                 }
                 order.setPay_order_id(pay_order_id);
+
+                logger.info("[OrderGrab initOrderByJdOrder] the local pay_order_id is {},out_order_id is {}",pay_order_id,orderSearchInfo.getOrderId());
+
                 order.setName(product.getName()+proSku.getName());
                 order.setUid(customer.getCustomer_id());
-                order.setChannel("JD");
-                //order.setClient_id();
+                order.setChannel("JD-001");
+                order.setClient_id("eb_custom");
                 order.setPrice_total((int)(Double.valueOf(jdPrice)*100*(Integer.valueOf(nItemTotal))));
                 order.setPrice_discount(0);
                 order.setPrice_pay((int)(Double.valueOf(jdPrice)*100*(Integer.valueOf(nItemTotal))));
@@ -364,7 +371,7 @@ public class JdOrderGrab {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                order.setCus_username(customer.getName());
+                order.setCus_username(customerAddress.getUsername());
                 order.setCustomer_address_id(customerAddress.getCustomer_address_id());
                 order.setCus_phone(customerAddress.getPhone());
                 order.setCus_address(customerAddress.getAddress());
@@ -405,7 +412,7 @@ public class JdOrderGrab {
                 serviceUnitService.insertSelective(subUnit);
 
                 orderLogService.xInsert("SYSTEM", 0l, pay_order_id,
-                        "用户[SYSTEM]为用户"+customer.getName()+"生成了京东订单["+orderSearchInfo.getOrderId()+"],本地订单号["+pay_order_id+"]。");
+                        "用户[SYSTEM]为用户"+customerAddress.getUsername()+"生成了京东订单["+orderSearchInfo.getOrderId()+"],本地订单号["+pay_order_id+"]。");
             }
         });
 

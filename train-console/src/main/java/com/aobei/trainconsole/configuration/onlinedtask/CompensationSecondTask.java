@@ -47,7 +47,6 @@ public class CompensationSecondTask {
 	 */
 	//@Scheduled(cron = "0 0 0 2 * ?")
 	private void extractData() {
-        System.out.println("============++++++++++++++++++++++++++++++++++++++==========");
         FallintoCompensationExample fallintoCompensationExample = new FallintoCompensationExample();
         fallintoCompensationExample.or().andStatusEqualTo(1);
         List<FallintoCompensation> fallintoCompensationList = this.fallintoCompensationService.selectByExample(fallintoCompensationExample);
@@ -72,6 +71,10 @@ public class CompensationSecondTask {
     public void halfMonth(){
         LocalDate localDate = LocalDate.now().minusMonths(1);
         ZoneId zoneId = ZoneId.systemDefault();
+        // 取本月第1天：
+        LocalDate firstDayOfThisMonth = localDate.with(TemporalAdjusters.firstDayOfMonth());
+        ZonedDateTime zdt = firstDayOfThisMonth.atStartOfDay(zoneId);
+        Date firstDate = Date.from(zdt.toInstant());
         // 取本月最后一天
         LocalDate lastDayOfThisMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
         LocalDateTime localDateTime = lastDayOfThisMonth.atTime(23, 59, 59);
@@ -102,7 +105,7 @@ public class CompensationSecondTask {
                         fallintoCompensationExample.or().andCompensation_idEqualTo(compensation.getCompensation_id()).andPay_order_idEqualTo(compensation.getPay_order_id());
                         FallintoCompensation fc = DataAccessUtils.singleResult(fallintoCompensationService.selectByExample(fallintoCompensationExample));
                         if(fc==null){
-                            FallintoCompensation fallintoCompensation = combine(localDate, compensation);
+                            FallintoCompensation fallintoCompensation = combine(LocalDate.now(), compensation);
                             this.fallintoCompensationService.insert(fallintoCompensation);
                         }
                     }
@@ -144,7 +147,7 @@ public class CompensationSecondTask {
                         fallintoCompensationExample.or().andCompensation_idEqualTo(compensation.getCompensation_id()).andPay_order_idEqualTo(compensation.getPay_order_id());
                         FallintoCompensation fc = DataAccessUtils.singleResult(fallintoCompensationService.selectByExample(fallintoCompensationExample));
                         if(fc==null){
-                            FallintoCompensation fallintoCompensation = combine(localDate, compensation);
+                            FallintoCompensation fallintoCompensation = combine(LocalDate.now(), compensation);
                             this.fallintoCompensationService.insert(fallintoCompensation);
                         }
                     }
@@ -166,7 +169,7 @@ public class CompensationSecondTask {
         FallintoCompensation fallintoCompensation=new FallintoCompensation();
         fallintoCompensation.setFallinto_compensation_id(IdGenerator.generateId());
         String month = localDate.getMonthValue() < 10 ? "0" + localDate.getMonthValue() : localDate.getMonthValue() + "";
-        fallintoCompensation.setBalance_cycle(localDate.getYear() + month + "16");//结算期
+        fallintoCompensation.setBalance_cycle(localDate.getYear() + month + "02");//结算期
         fallintoCompensation.setCompensation_id(compensation.getCompensation_id());//赔偿单号
         fallintoCompensation.setPay_order_id(order.getPay_order_id());//订单号
         fallintoCompensation.setServiceunit_id(serviceUnit.getServiceunit_id());//服务单号

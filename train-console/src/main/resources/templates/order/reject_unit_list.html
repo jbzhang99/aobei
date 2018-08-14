@@ -28,8 +28,6 @@
 		    var partner_id = $(".partner_id").val();
 			var qs_create_time = $(".qs_create_time").val();
 			var qe_create_time = $(".qe_create_time").val();
-			var qs_pay_time = $(".qs_pay_time").val();
-			var qe_pay_time = $(".qe_pay_time").val();
 
 			var url = "/ordermanager/reject_unit_list?partner_id="+partner_id;
 
@@ -48,20 +46,6 @@
 				return;
 			}
 
-			if(qs_pay_time != '' && qe_pay_time != ''){
-				if(qe_pay_time < qs_pay_time){
-					reset();
-					alertify.alert("查询结束时间不得小于查询开始时间！");
-					return;
-				}else{
-					var pay_be = "&qs_pay_time="+qs_pay_time+"&qe_pay_time="+qe_pay_time;
-					url = url + pay_be;
-				}
-			}else if(qs_pay_time != '' || qe_pay_time != ''){
-				reset();
-				alertify.alert("查询开始、结束时间不可以有空值！");
-				return;
-			}
 			window.location.href = url;
 		});
 
@@ -101,15 +85,16 @@
         });
 
         $("#save_btn").click(function () {
+            $('#form1').data('bootstrapValidator').resetForm();
             $("#form1").bootstrapValidator('validate');
             if ($("#form1").data('bootstrapValidator').isValid()) {
                 var fine_amount = $("#fine_amount").val();
                 var fine_info = $("#fine_info").val();
                 var pay_order_id = $("#pay_order_id").val();
                 var partner_id = $("#partner_id").val();
-                if(Number(fine_amount) > 1000000){
+                if(Number(fine_amount) > 1000000 || Number(fine_amount) <= 0){
                     reset();
-                    alertify.alert("扣款金额最大不能超过1000000.00元！");
+                    alertify.alert("扣款金额最小不能等于0元，最大不能超过1000000.00元！");
                     return false;
                 }
                 $.ajax({
@@ -153,6 +138,9 @@
                     $("#fine_money").modal('show');
                     $(".modal-footer").hide();
                 }else{
+                    $(".modal-footer").show();
+                    $("#fine_info").val('');
+                    $("#fine_amount").val('');
                     $("#pay_order_id").val(pay_order_id);
                     $("#partner_id").val(partner_id);
                     $("#fine_money").modal('show');
@@ -169,11 +157,8 @@
                 var partner_id = $(".partner_id").val();
                 var qs_create_time = $(".qs_create_time").val();
                 var qe_create_time = $(".qe_create_time").val();
-                var qs_pay_time = $(".qs_pay_time").val();
-                var qe_pay_time = $(".qe_pay_time").val();
 
-                var json = {"partner_id":partner_id,"qs_create_time":qs_create_time,"qe_create_time":qe_create_time
-                    ,"qs_pay_time":qs_pay_time,"qe_pay_time":qe_pay_time,"mts":mts};
+                var json = {"partner_id":partner_id,"qs_create_time":qs_create_time,"qe_create_time":qe_create_time,"mts":mts};
 
                 reset = function () {
                     $("toggleCSS").href = "assets/js/lib/alertify/alertify.bootstrap.css";
@@ -213,7 +198,7 @@
 	<div class="page_content_bar">
 		<!--/* 面包屑  */-->
 		<ol class="breadcrumb clearfix">
-			<li class="active">罚款查询</li>
+			<li class="active">拒单查询</li>
 			<li class="libtn">
 				<button sec:authorize="hasRole('ROLE_REJECT_UNIT_EXPORT')" id="export_btn" name="file" class="btn btn-primary" onclick="exportExcel()">
 					<span class="fas fa-sign-out-alt"></span>导出
@@ -234,7 +219,7 @@
 						</select>
 					</div>
 					<div class="form-group">
-						<label>下单时间：</label>
+						<label>拒单日期：</label>
 						<div class="input-group date datetimepicker1">
 							<input class="form-control  qs_create_time input-sm" type="text" name="qs_create_time" th:if="${qs_create_time != ''}"
 								   th:value="${#dates.format(qs_create_time,'yyyy-MM-dd')}" style="width: 130px;" />
@@ -251,29 +236,7 @@
 									</span>
 						</div>
 					</div>
-				</div>
-				<br/>
-				<div class="form-inline">
-					<div class="form-group" style="margin-right: 20px">
-						<label>支付时间：</label>
-						<div class="input-group date datetimepicker1">
-							<input class="form-control  qs_pay_time input-sm" type="text" name="qs_pay_time" th:if="${qs_pay_time != ''}"
-								   th:value="${#dates.format(qs_pay_time,'yyyy-MM-dd')}" style="width: 130px;" />
-							<span class="input-group-addon" style="width: 50px; height: 30px;">
-										<span class="glyphicon glyphicon-calendar"></span>
-									</span>
-						</div>
-						<label>~</label>
-						<div class="input-group date datetimepicker1">
-							<input class="form-control  qe_pay_time input-sm" type="text" name="qe_pay_time" th:if="${qe_pay_time != ''}"
-								   th:value="${#dates.format(qe_pay_time,'yyyy-MM-dd')}" style="width: 130px;" />
-							<span class="input-group-addon" style="width: 50px; height: 30px;">
-										<span class="glyphicon glyphicon-calendar"></span>
-									</span>
-						</div>
-					</div>
-					<button class="btn btn-primary query btn-sm">查询</button>
-
+					<button class="btn btn-primary query btn-sm" style="margin-left: 20px">查询</button>
 				</div>
 			</div>
 		</div>
@@ -302,25 +265,25 @@
 					<td style="vertical-align: middle" sec:authorize="hasRole('ROLE_ORDER_BROWSE')">
 						<a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|detail('${info.pay_order_id}','${page.pageNo}');|" th:text="${info.pay_order_id}"></a>
 					</td>
-					<td style="vertical-align: middle;width: 100px;" th:text="${info.name}" ></td>
+					<td style="vertical-align: middle;width: 100px;" th:text="${info.server_name}" ></td>
 					<td style="vertical-align: middle;" th:text="${info.cus_username}"></td>
 					<td style="vertical-align: middle" th:text="${info.cus_phone}"></td>
-					<td style="vertical-align: middle" th:text="${info.customer_address}"></td>
+					<td style="vertical-align: middle" th:text="${info.cus_address}"></td>
 					<td style="vertical-align: middle" th:text="${#numbers.formatDecimal(info.price_total*0.01,1,2)}"></td>
 					<td style="vertical-align: middle">
 						<th:block th:if="${info.price_pay != null}" th:text="${#numbers.formatDecimal(info.price_pay*0.01,1,2)}"></th:block>
 						<th:block th:unless="${info.price_pay != null}" th:text="订单未支付"></th:block>
 					</td>
 					<td style="vertical-align: middle">
-						<th:blcok th:if="${info.serviceUnit.reject_type != null}" th:switch="${info.serviceUnit.reject_type}">
+						<th:blcok th:if="${info.reject_type != null}" th:switch="${info.reject_type}">
 							<span th:case="0">超时拒单</span>
 							<span th:case="1">主动拒单</span>
 							<span th:case="2">改派拒单</span>
 						</th:blcok>
 					</td>
 					<td style="vertical-align: middle">
-						<th:block th:if="${info.p_reject_remark != null}">
-							<span th:text="${info.p_reject_remark}"></span>
+						<th:block th:if="${info.reject_info != null}">
+							<span th:text="${info.reject_info}"></span>
 						</th:block>
 					</td>
 					<td style="vertical-align: middle">
@@ -332,7 +295,7 @@
 						<th:block th:unless="${info.partner_id != null}" th:text="还未指派合伙人"></th:block>
 					</td>
 					<td style="vertical-align: middle">
-						<span th:text="${#dates.format(info.serviceUnit.c_begin_datetime,'yyyy-MM-dd HH:mm:ss')}"></span>
+						<span th:text="${#dates.format(info.server_datetime,'yyyy-MM-dd HH:mm:ss')}"></span>
 					</td>
 					<td style="vertical-align: middle">
 						<a class="btn btn-link btn-xs" href="javascript:;" style="outline:none" th:onclick="|fine_money('${info.pay_order_id}','${info.partner_id}');|"><i class="fab fa-bitcoin"></i>罚款</a>
@@ -341,8 +304,7 @@
 				</tbody>
 			</table>
 		</div>
-		<div th:include="~{tags/pagination::p1(@{/ordermanager/reject_unit_list(partner_id=${partner_id},qs_create_time=${#dates.format(qs_create_time,'yyyy-MM-dd')},qe_create_time=${#dates.format(qe_create_time,'yyyy-MM-dd')},qs_pay_time=${#dates.format(qs_pay_time,'yyyy-MM-dd')},
-			qe_pay_time=${#dates.format(qe_pay_time,'yyyy-MM-dd')})},${page.total}
+		<div th:include="~{tags/pagination::p1(@{/ordermanager/reject_unit_list(partner_id=${partner_id},qs_create_time=${#dates.format(qs_create_time,'yyyy-MM-dd')},qe_create_time=${#dates.format(qe_create_time,'yyyy-MM-dd')})},${page.total}
 					,${page.pageSize},${page.pageNo},${page.totalPage},right,p)}">
 		</div>
 		<div class="modal fade" id="fine_money" data-keyboard="false"
