@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html layout:decorate="~{base_layout}">
+<html layout:decorate="~{base_layout}" xmlns:th="http://www.w3.org/1999/xhtml">
 <!-- <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:th="http://www.thymeleaf.org"> -->
 <head>
@@ -62,6 +62,17 @@ $(function() {
                 }*/
 			 }
 		 });
+        $("#form1").bootstrapValidator('addField','settlement_base_price',{
+            validators: {
+                notEmpty: {
+                    message: '约定结算基准价不能为空'
+                },
+                regexp: {
+                    regexp: /^[0-9]+(.[0-9]{1,2})?$/,
+                    message: '请输入正确格式'
+                }
+            }
+        });
 		 $("#form1").bootstrapValidator('addField','sort_num',{
 			 validators: {  
                 notEmpty: {  
@@ -187,10 +198,15 @@ $(function() {
  var num=0;
  function addSkuBut(){
 	 if($('#bespeak_strategy option').length==0){
-			reset();
-			alertify.alert("预约策略为空，请先去添加预约策略！");
-			return false;
-		}
+		reset();
+		alertify.alert("预约策略为空，请先去添加预约策略！");
+		return false;
+	 }
+     if($('input[name="dateType"]:checked').length==0){
+         reset();
+         alertify.alert("请选择预约时间！");
+         return false;
+     }
 	 if(!($("input[name='option']").is(':checked'))){
 	 	reset();
 		alertify.alert("必须勾选服务时长是否固定");
@@ -236,6 +252,9 @@ $(function() {
 		  var buy_multiple;//是否允许一次购买多件
 		  var buy_multiple_min;//最小限制
 		  var buy_multiple_max;//最大限制
+         var settlement_base_price=$("#settlement_base_price").val();//约定结算基准价
+         var booking_date_type;//预约日期类型：0按长期，1按星期  2按日期
+         var dateTypeToValue;
          if(pricev>50000){
              reset();
              alertify.alert("市场价格不能大于50000");
@@ -246,6 +265,39 @@ $(function() {
              alertify.alert("浦尔家价格不能大于50000");
              return false;
          }
+         if(settlement_base_price>10000){
+             reset();
+             alertify.alert("约定结算基准价不能大于10000");
+             return false;
+         }
+         //长期
+         if($('input[name="dateType"]:checked').val()==0){
+             booking_date_type=0;
+             dateTypeToValue="[]";
+         }
+         //按星期
+         if($('input[name="dateType"]:checked').val()==1){
+             booking_date_type=1;
+             var list=[];
+             $('input:checkbox[name=week]:checked').each(function(i){
+                 list.push($(this).val());
+             });
+             dateTypeToValue=JSON.stringify(list);
+         }
+         //按日期
+         if($('input[name="dateType"]:checked').val()==2){
+             booking_date_type=2;
+             var list=[];
+             $('.dayDate').find("div").each(function (i,v) {
+                 var map={};
+                 map["m"]=$(v).find("input:first").val();
+                 map["d"]=$(v).find("input:last").val();
+                 list.push(map);
+             });
+             console.log(list);
+             dateTypeToValue=JSON.stringify(list);
+         }
+
 		  if($('input[name="buy_multiple"]:checked').val()==1){
 			  buy_multiple="是";
 			  if($('#buy_multiple_min').val()==''){
@@ -338,10 +390,10 @@ $(function() {
          var html="";
 		  if(dispalyValue==0){
               html+='<tr select-Option='+selectOption+' data-id='+num+' data-times='+zzReturn+'><td style="vertical-align:middle;">'+name+'</td><td style="vertical-align:middle;">'+pricev+'</td><td style="vertical-align:middle;">'+price+'</td><td style="vertical-align:middle;">'+sortNum+'</td><td style="vertical-align:middle;">'+descript+'</td><td style="vertical-align:middle;">'+serTimeLen+'</td><td style="vertical-align:middle;">'+serTimes+'</td><td style="vertical-align:middle;">'+buy_multiple+'</td><td style="vertical-align:middle;">'+buy_multiple_min+'</td><td style="vertical-align:middle;">'+buy_multiple_max+'</td><td style="vertical-align:middle;">'+buy_multiple_o2o+'</td><td id='+bespeakOkValue+' style="vertical-align:middle;">'+bespeakOkText+'</td><td style="vertical-align:middle;">'+unit+'</td><td id='+dispalyValue+' style="vertical-align:middle;">'+dispalyText+'</td>'+
-                  '</br><td><input  type="radio" name="oneCheck" checked/></td><td style="vertical-align:middle;"><a onclick="javascript:updateSku(this)" data-toggle="modal" data-target=".bs-example-modal-lg-er" style="cursor: pointer;"><i class="fas fa-edit"></i>编辑</a>&nbsp;&nbsp;&nbsp;</br><a onclick="javascript:deleteSku(this)" style="cursor: pointer;"><i class="far fa-trash-alt"></i>删除</a></td></tr>';
+                  '</br><td data-price='+settlement_base_price+' data-type='+booking_date_type+' data-val='+dateTypeToValue+'><input  type="radio" name="oneCheck" checked/></td><td style="vertical-align:middle;"><a onclick="javascript:updateSku(this)" data-toggle="modal" data-target=".bs-example-modal-lg-er" style="cursor: pointer;"><i class="fas fa-edit"></i>编辑</a>&nbsp;&nbsp;&nbsp;</br><a onclick="javascript:deleteSku(this)" style="cursor: pointer;"><i class="far fa-trash-alt"></i>删除</a></td></tr>';
           }else{
               html+='<tr select-Option='+selectOption+' data-id='+num+' data-times='+zzReturn+'><td style="vertical-align:middle;">'+name+'</td><td style="vertical-align:middle;">'+pricev+'</td><td style="vertical-align:middle;">'+price+'</td><td style="vertical-align:middle;">'+sortNum+'</td><td style="vertical-align:middle;">'+descript+'</td><td style="vertical-align:middle;">'+serTimeLen+'</td><td style="vertical-align:middle;">'+serTimes+'</td><td style="vertical-align:middle;">'+buy_multiple+'</td><td style="vertical-align:middle;">'+buy_multiple_min+'</td><td style="vertical-align:middle;">'+buy_multiple_max+'</td><td style="vertical-align:middle;">'+buy_multiple_o2o+'</td><td id='+bespeakOkValue+' style="vertical-align:middle;">'+bespeakOkText+'</td><td style="vertical-align:middle;">'+unit+'</td><td id='+dispalyValue+' style="vertical-align:middle;">'+dispalyText+'</td>'+
-                  '</br><td></td><td style="vertical-align:middle;"><a onclick="javascript:updateSku(this)" data-toggle="modal" data-target=".bs-example-modal-lg-er" style="cursor: pointer;"><i class="fas fa-edit"></i>编辑</a>&nbsp;&nbsp;&nbsp;</br><a onclick="javascript:deleteSku(this)" style="cursor: pointer;"><i class="far fa-trash-alt"></i>删除</a></td></tr>';
+                  '</br><td data-price='+settlement_base_price+' data-type='+booking_date_type+' data-val='+dateTypeToValue+'> </td><td style="vertical-align:middle;"><a onclick="javascript:updateSku(this)" data-toggle="modal" data-target=".bs-example-modal-lg-er" style="cursor: pointer;"><i class="fas fa-edit"></i>编辑</a>&nbsp;&nbsp;&nbsp;</br><a onclick="javascript:deleteSku(this)" style="cursor: pointer;"><i class="far fa-trash-alt"></i>删除</a></td></tr>';
           }
 		  //<td>'+buyLimit+'</td>一天最多购买数
 		 num++;
@@ -410,6 +462,17 @@ $(function() {
 	                     }*/
 	                 }
 	             },
+                 p_settlement_base_price:{
+                     validators: {
+                         notEmpty: {
+                             message: '约定结算基准价不能为空'
+                         },
+                         regexp: {
+                             regexp: /^[0-9]+(.[0-9]{1,2})?$/,
+                             message: '请输入正确格式'
+                         }
+                     }
+                 },
 	             p_sort_num: {
 	                 validators: {
 	                     notEmpty: {
@@ -570,6 +633,54 @@ $(function() {
 		}else{
 			$("input:radio[name='p_option'][value=1]").prop("checked",true);
 		}
+        //结算基准价格
+        var settlement_base_price=$(obj).closest('tr').find('td:eq(14)').attr("data-price");
+        $("#p_settlement_base_price").val(settlement_base_price==0?'':settlement_base_price);
+        //预约日期
+        var booking_date_type=$(obj).closest('tr').find('td:eq(14)').attr("data-type");
+        var dateVal=$(obj).closest('tr').find('td:eq(14)').attr("data-val");
+        var dateValList=$.parseJSON(dateVal);
+        if(booking_date_type==0){//长期
+            $(".p_weekDate").hide();
+            $(".p_dayDate").empty().hide();
+            $("input:radio[name='p_dateType'][value=0]").prop("checked",true);
+        }else if(booking_date_type==1){//按星期
+            $(".p_dayDate").empty().hide();
+            $("input:radio[name='p_dateType'][value=1]").prop("checked",true);
+            if(dateValList.length==0){
+                //$('.p_weekDate input:checkbox[name=week]').removeProp("checked");
+                $(".p_weekDate").show();
+            }else{
+                $.each(dateValList,function (n,dv) {
+                    $('.p_weekDate input:checkbox[name=week]').each(function(i,elem){
+                        console.log($(elem).val()==dv);
+                        if($(elem).val()==dv){
+                            $(elem).prop("checked",true);
+                        }
+                    });
+                });
+
+                $(".p_weekDate").show();
+            }
+        }else if(booking_date_type==2){//按日期
+            $(".p_weekDate").hide();
+            $("input:radio[name='p_dateType'][value=2]").prop("checked",true);
+            var html=[];
+            $.each(dateValList,function (n,dv) {
+                if(n==0){
+                    html.push('<div>月份：<input type="text" style="width:30px;" value='+dv.m+' disabled="disabled"/> 日：<input type="text" value='+dv.d+'></div>');
+                }else{
+                    html.push('<div style="margin-left: 300px;">月份：<input type="text" style="width:30px;" value='+dv.m+' disabled="disabled"/> 日：<input type="text" value='+dv.d+'></div>');
+                }
+            });
+            $(".p_dayDate").html(html.join(" "));
+            $(".p_dayDate").show();
+        }else{
+            $("input:radio[name='p_dateType']").removeProp("checked");
+            $(".p_dayDate").empty().hide();
+            $(".p_weekDate").hide();
+
+        }
 	}
 	//sku删除
 	function deleteSku(obj){
@@ -592,7 +703,11 @@ $(function() {
 			alertify.alert("预约策略为空，请先去添加预约策略！");
 			return false;
 		}
-
+        if($('input[name="p_dateType"]:checked').length==0){
+            reset();
+            alertify.alert("请选择预约时间！");
+            return false;
+        }
         if($('#p_dispaly').val()==null){
             reset();
             alertify.alert("展示位置必须选择一个！");
@@ -647,25 +762,31 @@ $(function() {
 				  timeSelect="<p>"+startOptionTime+"</p>";
 				  tr.removeAttr("data-times");
 			}
-				 var name=$('#p_name').val();
-				  var pricev=$('#p_pricev').val();
-				  var price=$('#p_price').val();
-				  var sortNum=$('#p_sort_num').val();
-				  var descript=$('#p_descript').val();
-				  var buy_multiple;//是否允许一次购买多件
-				  var buy_multiple_min;//最小限制
-				  var buy_multiple_max;//最大限制
-				  var buy_multiple_o2o;//是否允许派遣服务人员一对一
-					if(pricev>50000){
-						reset();
-						alertify.alert("市场价格不能大于50000");
-						return false;
-					}
-					if(price>50000){
-						reset();
-						alertify.alert("浦尔家价格不能大于50000");
-						return false;
-					}
+				var name=$('#p_name').val();
+				var pricev=$('#p_pricev').val();
+				var price=$('#p_price').val();
+				var sortNum=$('#p_sort_num').val();
+				var descript=$('#p_descript').val();
+				var buy_multiple;//是否允许一次购买多件
+				var buy_multiple_min;//最小限制
+				var buy_multiple_max;//最大限制
+				var buy_multiple_o2o;//是否允许派遣服务人员一对一
+				if(pricev>50000){
+					reset();
+					alertify.alert("市场价格不能大于50000");
+					return false;
+				}
+				if(price>50000){
+					reset();
+					alertify.alert("浦尔家价格不能大于50000");
+					return false;
+				}
+				var settlement_base_price=$("#p_settlement_base_price").val();//约定结算基准价
+				if(settlement_base_price>10000){
+					reset();
+					alertify.alert("约定结算基准价不能大于10000");
+					return false;
+				}
 				  if($('input[name="p_buy_multiple"]:checked').val()==1){
 					  buy_multiple="是";
 					  if($('#p_buy_multiple_min').val()==''){
@@ -722,6 +843,33 @@ $(function() {
 				  var dispalyOkText=$('#p_dispaly option:selected').text();//展示位置
 				  var unit=$('#p_unit option:selected').val();//预约策略
 				  var buyLimit=$('#p_buy_limit').val();
+				var booking_date_type;//预约日期类型：0按长期，1按星期  2按日期
+				var dateTypeToValue;
+				//长期
+				if($('input[name="p_dateType"]:checked').val()==0){
+					booking_date_type=0;
+				}
+				//按星期
+				if($('input[name="p_dateType"]:checked').val()==1){
+					booking_date_type=1;
+					var list=[];
+					$('.p_weekDate input:checkbox[name=week]:checked').each(function(i){
+						list.push($(this).val());
+					});
+					dateTypeToValue=JSON.stringify(list);
+				}
+				//按日期
+				if($('input[name="p_dateType"]:checked').val()==2){
+					booking_date_type=2;
+					var list=[];
+					$('.p_dayDate').find("div").each(function (i,v) {
+						var map={};
+						map["m"]=$(v).find("input:first").val();
+						map["d"]=$(v).find("input:last").val();
+						list.push(map);
+					});
+					dateTypeToValue=JSON.stringify(list);
+				}
 				  tr.attr("select-option",selectOption);
 				  tr.find('td:eq(6)').empty();
 				  tr.find('td:eq(0)').text(name);
@@ -742,6 +890,9 @@ $(function() {
 				  tr.find('td:eq(13)').text(dispalyOkText);
 				  tr.find('td:eq(13)').attr("id",dispalyOkValue);
 				 // tr.find('td:eq(7)').text(buyLimit);
+				tr.find('td:eq(14)').attr("data-price",settlement_base_price);
+				tr.find('td:eq(14)').attr("data-type",booking_date_type);
+				tr.find('td:eq(14)').attr("data-val",dateTypeToValue);
 				  $('#p_service_time_length').val('');
 				  $('#editModal').modal('hide');
 	  	}
@@ -819,7 +970,11 @@ $(function() {
 		        		 bespeak_strategy_id:datas.eq(11).attr('id'),
 		        		 unit:datas.eq(12).text(),
 		        		 dispaly:datas.eq(13).attr('id'),
-                        default_sku:checkVal
+                        default_sku:checkVal,
+                        settlement_base_price:datas.eq(14).attr('data-price')*100,
+                        booking_date_type:datas.eq(14).attr('data-type'),
+                        service_cycle:datas.eq(14).attr('data-type')==1?datas.eq(14).attr('data-val'):"[]",
+                        service_date:datas.eq(14).attr('data-type')==2?datas.eq(14).attr('data-val'):"[]"
 			        });
 				}else{//不等于1：就是不固定时间
 					unsetSkuList.push({
@@ -839,7 +994,11 @@ $(function() {
 		        		 bespeak_strategy_id:datas.eq(11).attr('id'),
 		        		 unit:datas.eq(12).text(),
 		        		 dispaly:datas.eq(13).attr('id'),
-                        default_sku:checkVal
+                        default_sku:checkVal,
+                        settlement_base_price:datas.eq(14).attr('data-price')*100,
+                        booking_date_type:datas.eq(14).attr('data-type'),
+                        service_cycle:datas.eq(14).attr('data-type')==1?datas.eq(14).attr('data-val'):"[]",
+                        service_date:datas.eq(14).attr('data-type')==2?datas.eq(14).attr('data-val'):"[]"
 			        });
 				}
 		    });
@@ -1093,6 +1252,64 @@ $(function() {
 		$('#editModal').attr('select-option',$(obj).val());
 		$('#startOptionTime').val(16);
 	}
+
+//长期
+function longTimeBtn(obj){
+    $(".dayDate").hide();
+    $(".weekDate").hide();
+}
+
+//按星期
+function weekBtn(obj){
+    $('.weekDate input:checkbox[name=week]').each(function(i,elem){
+        $(elem).prop("checked",true);
+    });
+    $(".dayDate").hide();
+    $(".weekDate").show();
+}
+
+//按日期
+function dayBtn(obj){
+    $(".weekDate").hide();
+    $(".dayDate").empty();
+    var myDate = new Date;
+    var yue = myDate.getMonth()+1;//获取当前月
+    var html=[];
+    html.push('<div>月份：<input type="text" style="width:30px;" value='+yue+' disabled="disabled"/> 日：<input type="text"/></div>');
+    html.push('<div style="margin-left: 300px;">月份：<input type="text" style="width:30px;" value='+(myDate.getMonth()+2)+' disabled="disabled"/> 日：<input type="text"/></div>');
+    html.push('<div style="margin-left: 300px;">月份：<input type="text" style="width:30px;" value='+(myDate.getMonth()+3)+' disabled="disabled"/> 日：<input type="text"/></div>');
+    $(".dayDate").html(html.join(" "));
+    $(".dayDate").show();
+}
+
+//编辑  长期
+function longTimeEditBtn(obj){
+    $(".p_dayDate").empty().hide();
+    $(".p_weekDate").hide();
+}
+
+//编辑   按星期
+function weekEditBtn(obj){
+    $('.p_weekDate input:checkbox[name=week]').each(function(i,elem){
+        $(elem).prop("checked",true);
+    });
+    $(".p_dayDate").empty().hide();
+    $(".p_weekDate").show();
+}
+
+//编辑   按日期
+function dayEditBtn(obj){
+    $(".p_weekDate").hide();
+    $(".p_dayDate").empty();
+    var myDate = new Date;
+    var yue = myDate.getMonth()+1;//获取当前月
+    var html=[];
+    html.push('<div>月份：<input type="text" style="width:30px;" value='+yue+' disabled="disabled"/> 日：<input type="text"/></div>');
+    html.push('<div style="margin-left: 300px;">月份：<input type="text" style="width:30px;" value='+(myDate.getMonth()+2)+' disabled="disabled"/> 日：<input type="text"/></div>');
+    html.push('<div style="margin-left: 300px;">月份：<input type="text" style="width:30px;" value='+(myDate.getMonth()+3)+' disabled="disabled"/> 日：<input type="text"/></div>');
+    $(".p_dayDate").html(html.join(" "));
+    $(".p_dayDate").show();
+}
 </script>
 </head>
 <body>
@@ -1203,6 +1420,37 @@ $(function() {
 										<div class="col-sm-4">
 											<input type="text" class="form-control" id="price"
 												name="price" placeholder="请输入浦尔家价格" required />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>约定结算基准价:</label>
+										<div class="col-sm-4">
+											<input type="text" class="form-control" id="settlement_base_price" name="settlement_base_price" placeholder="请输入约定结算基准价" required />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>预约日期:</label>
+										<div>
+											<input type="radio" name="dateType" onclick="longTimeBtn(this)" value="0"/>长期&nbsp;&nbsp;&nbsp;&nbsp;
+											<input type="radio" name="dateType" onclick="weekBtn(this)" value="1"/>按星期&nbsp;&nbsp;&nbsp;&nbsp;
+											<input type="radio" name="dateType" onclick="dayBtn(this)" value="2"/>按日期
+										</div>
+										<div hidden="hidden" class="weekDate">
+											<input type="checkbox" name="week" value="1" checked/>星期一&nbsp;&nbsp;
+											<input type="checkbox" name="week" value="2" checked/>星期二&nbsp;&nbsp;
+											<input type="checkbox" name="week" value="3" checked/>星期三&nbsp;&nbsp;
+											<input type="checkbox" name="week" value="4" checked/>星期四&nbsp;&nbsp;
+											<input type="checkbox" name="week" value="5" checked/>星期五&nbsp;&nbsp;
+											<input type="checkbox" name="week" value="6" checked/>星期六&nbsp;&nbsp;
+											<input type="checkbox" name="week" value="7" checked/>星期天
+										</div>
+										<div hidden="hidden" class="dayDate">
 										</div>
 									</div>
 								</div>
@@ -1408,6 +1656,37 @@ $(function() {
 										<div class="col-sm-4">
 											<input type="text" class="form-control" id="p_price"
 												name="p_price" placeholder="请输入浦尔家价格" required />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>约定结算基准价:</label>
+										<div class="col-sm-4">
+											<input type="text" class="form-control" id="p_settlement_base_price" name="p_settlement_base_price" placeholder="请输入约定结算基准价" required />
+										</div>
+									</div>
+								</div>
+								</br>
+								<div class="row">
+									<div class="form-group">
+										<label class="col-sm-4 control-label" style="text-align:right;margin-top: 5px;"><span style="color: red">*</span>预约日期:</label>
+										<div>
+											<input type="radio" name="p_dateType" onclick="longTimeEditBtn(this)" value="0"/>长期&nbsp;&nbsp;&nbsp;&nbsp;
+											<input type="radio" name="p_dateType" onclick="weekEditBtn(this)" value="1"/>按星期&nbsp;&nbsp;&nbsp;&nbsp;
+											<input type="radio" name="p_dateType" onclick="dayEditBtn(this)" value="2"/>按日期
+										</div>
+										<div hidden="hidden" class="p_weekDate">
+											<input type="checkbox" name="week" value="1"/>星期一&nbsp;&nbsp;
+											<input type="checkbox" name="week" value="2"/>星期二&nbsp;&nbsp;
+											<input type="checkbox" name="week" value="3"/>星期三&nbsp;&nbsp;
+											<input type="checkbox" name="week" value="4"/>星期四&nbsp;&nbsp;
+											<input type="checkbox" name="week" value="5"/>星期五&nbsp;&nbsp;
+											<input type="checkbox" name="week" value="6"/>星期六&nbsp;&nbsp;
+											<input type="checkbox" name="week" value="7"/>星期天
+										</div>
+										<div hidden="hidden" class="p_dayDate">
 										</div>
 									</div>
 								</div>
