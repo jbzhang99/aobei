@@ -1,10 +1,12 @@
 package com.aobei.trainconsole.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
 import com.aobei.train.model.*;
-import com.aobei.train.service.UsersService;
+import com.aobei.train.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.aobei.train.model.CustomerExample.Criteria;
-import com.aobei.train.service.CustomerAddressService;
-import com.aobei.train.service.CustomerService;
-import com.aobei.train.service.OrderService;
 import com.github.liyiorg.mbg.bean.Page;
 
 import custom.bean.Status;
@@ -40,13 +39,22 @@ public class CustomerController {
 
 	@Autowired
 	private UsersService usersService;
-	
+
+	@Autowired
+	private ChannelService channelService;
+
 	@RequestMapping("/goto_customer_list")
 	public String goto_customer_list(Model map,
 			@RequestParam(defaultValue = "1")Integer p ,
 			@RequestParam(defaultValue = "10") Integer ps,
 			@RequestParam(required = false) Integer locked,
-			@RequestParam(required = false) String phone){
+			@RequestParam(required = false) String phone,
+            @RequestParam(required = false) Integer channel,
+            @RequestParam(required = false) String client,
+            @RequestParam(required = false) String begin_date,
+            @RequestParam(required = false) String end_date){
+        SimpleDateFormat sf=new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sfs=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		CustomerExample example = new CustomerExample();
 		example.setOrderByClause(CustomerExample.C.create_datetime + " desc");
 		Criteria criteria = example.or();
@@ -56,12 +64,39 @@ public class CustomerController {
 		if (!("".equals(phone)) && phone != null) {
 			criteria.andPhoneEqualTo(phone);
 		}
+        if (channel != null) {
+            criteria.andChannel_idEqualTo(channel);
+        }
+        if (!("".equals(client)) && client != null) {
+            criteria.andClient_idEqualTo(client);
+        }
+        if (!("".equals(begin_date)) && begin_date != null) {
+            try {
+                criteria.andCreate_datetimeGreaterThanOrEqualTo(sf.parse(begin_date));
+                map.addAttribute("begin_date", sf.parse(begin_date));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        if (!("".equals(end_date)) && end_date != null) {
+            try {
+                criteria.andCreate_datetimeLessThanOrEqualTo(sfs.parse(end_date+" 23:59:59"));
+                map.addAttribute("end_date", sf.parse(end_date));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
 		Page<Customer> page = customerService.selectByExample(example,p,ps);
 		List<Customer> customers = page.getList();
-		map.addAttribute("customers", customers);
+		//所有渠道
+        List<Channel> channelList = this.channelService.selectByExample(new ChannelExample());
+        map.addAttribute("customers", customers);
 		map.addAttribute("page", page);
 		map.addAttribute("locked", locked);
 		map.addAttribute("phone", phone);
+        map.addAttribute("channel", channel);
+        map.addAttribute("client", client);
+        map.addAttribute("channelList", channelList);
 		return "customer/customer_list";
 	}
 	
