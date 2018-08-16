@@ -1,8 +1,13 @@
 package com.aobei.trainconsole.controller.datastatistics;
 
 import com.aobei.train.model.DataStatisticsSinglePartnerData;
+import com.aobei.train.model.Partner;
+import com.aobei.train.model.Station;
+import com.aobei.train.model.StationExample;
 import com.aobei.train.service.DataStatisticsCustomService;
 import com.aobei.train.service.DataStatisticsPartnerService;
+import com.aobei.train.service.PartnerService;
+import com.aobei.train.service.StationService;
 import com.aobei.train.service.bean.PurchasePartnerStatisticsData;
 import org.apache.poi.hpsf.DocumentSummaryInformation;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -45,6 +50,12 @@ public class DataStatisticsPartnerController {
     @Autowired
     private DataStatisticsPartnerService dataStatisticsPartnerService;
 
+    @Autowired
+    private StationService stationService;
+
+    @Autowired
+    private PartnerService partnerService;
+
     /**
      * 处理日期范围向后的边界值
      *
@@ -69,7 +80,30 @@ public class DataStatisticsPartnerController {
         return "data_statistics/partner";
     }
 
+  /*  @GetMapping("/test")
+    public String test() {
+        return "data_statistics/partner_map_test";
+    }*/
 
+
+    @GetMapping("/loadPartnerMap")
+    @ResponseBody
+    public List loadPartnerMap() {
+        List<Station> stations = this.stationService.selectByExample(new StationExample());
+        List<Map<String,List<String>>> list=new ArrayList<>();
+        stations.stream().forEach(station -> {
+            //根据每个站点找到对应合伙人名称
+            Partner partner = this.partnerService.selectByPrimaryKey(station.getPartner_id());
+            Map<String,List<String>> map =new HashMap<>();
+            List<String> stringList=new ArrayList<>();
+            stringList.add(station.getLbs_lng());//经度
+            stringList.add(station.getLbs_lat());//纬度
+            map.put("lnglat",stringList);
+            //map.put("partner_name",partner.getName());
+            list.add(map);
+        });
+        return list;
+    }
     /**
      * 加载 用户数据
      *
