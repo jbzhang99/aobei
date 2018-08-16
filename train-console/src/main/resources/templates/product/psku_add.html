@@ -862,7 +862,13 @@ $(function() {
 				if($('input[name="p_dateType"]:checked').val()==2){
 					booking_date_type=2;
 					var list=[];
+					var regx=/^(\d{2,},)*\d+$/;
 					$('.p_dayDate').find("div").each(function (i,v) {
+					    if(!regx.test($(v).find("input:last").val())){
+                            reset();
+                            alertify.alert("预约日期只能输入英文逗号以及数字！");
+                            return false;
+						}
 						var map={};
 						map["m"]=$(v).find("input:first").val();
 						map["d"]=$(v).find("input:last").val();

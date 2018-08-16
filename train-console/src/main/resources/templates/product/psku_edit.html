@@ -883,13 +883,25 @@ $(function() {
             //按日期
             if($('input[name="p_dateType"]:checked').val()==2){
                 booking_date_type=2;
+                var regx=/^(\d+,)*\d+$/;
                 var list=[];
+                var num=0;
                 $('.p_dayDate').find("div").each(function (i,v) {
+                    if($(v).find("input:last").val()!=""){
+                        if(!regx.test($(v).find("input:last").val())){
+                            num++;
+                        }
+					}
                     var map={};
                     map["m"]=$(v).find("input:first").val();
                     map["d"]=$(v).find("input:last").val();
                     list.push(map);
                 });
+                if(num>0){
+                    reset();
+                    alertify.alert("预约日期只能输入英文逗号以及数字！");
+                    return false;
+				}
                 dateTypeToValue=JSON.stringify(list);
             }
 			 // var tr=$(obj).parent().parent();
