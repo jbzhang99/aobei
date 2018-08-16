@@ -844,5 +844,12 @@ public class ProductServiceImpl extends MbgServiceSupport<ProductMapper, Long, P
 
 			return productWithCoupon;
 		}).collect(Collectors.toList());
+
+
+	}
+
+	@Override
+	public List<Long> xSelectSingleSkuProduct() {
+		return productMapper.xSelectSingleSkuProduct();
 	}
 }

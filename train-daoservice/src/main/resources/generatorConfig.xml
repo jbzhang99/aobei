@@ -496,5 +496,10 @@
         <table schema="" tableName="business" domainObjectName="Business">
             <property name="useActualColumnNames" value="true"/>
         </table>
+
+        <!-- 团购活动 -->
+        <table schema="" tableName="group_purchase" domainObjectName="GroupPurchase">
+            <property name="useActualColumnNames" value="false"/>
+        </table>
     </context>
 </generatorConfiguration>

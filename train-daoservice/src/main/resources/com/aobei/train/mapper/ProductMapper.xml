@@ -947,4 +947,11 @@
       cancle_strategy_id = #{cancle_strategy_id,jdbcType=INTEGER}
     where product_id = #{product_id,jdbcType=BIGINT}
   </update>
+
+  <select id="xSelectSingleSkuProduct" resultType="Long">
+    SELECT t.product_id
+    FROM psku t
+    GROUP BY t.product_id
+    HAVING COUNT(*) = 1;
+  </select>
 </mapper>

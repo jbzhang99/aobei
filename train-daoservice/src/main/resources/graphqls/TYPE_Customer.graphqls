@@ -30,5 +30,8 @@ type Customer{
 
     #渠道id
     channel_id : Int
+
+    #客户端id
+    client_id : String
 }
 

@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html layout:decorate="~{base_layout}">
+<html layout:decorate="~{base_layout}" xmlns:th="http://www.springframework.org/schema/jdbc">
 <head>
-    <meta charset="UTF-8"></meta>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
     <title>合伙人数据统计</title>
     <link th:href="@{/js/jquery-date-range-picker/daterangepicker.min.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
     <style type="text/css">
         .inputDate {
             width: 453px;
@@ -65,8 +68,8 @@
         #mapBack{
             position: absolute;
             z-index: 3;
-            top:10px;
-            left: 10px;
+            top:100px;
+            left: -60px;
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -75,10 +78,13 @@
             display: none;
         }
     </style>
+
     <script TYPE="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
     <script TYPE="text/javascript" th:src="@{/js/jquery-date-range-picker/jquery.daterangepicker.min.js}"></script>
     <script TYPE="text/javascript" th:src="@{/js/echarts.min.js}"></script>
     <script TYPE="text/javascript" th:src="@{/js/echart_map/china.js}"></script>
+    <script src="https://webapi.amap.com/maps?v=1.4.9&key=2892ea3eeb60064cf5a6d6a932646ce6&plugin=AMap.MarkerClusterer"></script>
+    <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
     <script type="text/javascript" th:inline="javascript">
         $(function () {
             // 按日
@@ -276,6 +282,13 @@
             $('#downPartnerMapData').click(function () {
                 var downUrl = [[@{/data_statistics/partner/downPartnerMapData}]];
                 window.location.href = downUrl + '?' + $.param(window.CURRENT_SEARCH_DATA);
+            });
+
+            $('#mapBack').click(function(){
+                loadPartnerMapData(window.CURRENT_SEARCH_DATA);
+                $("#mapChart").show();
+                $(this).hide();
+                $("#container").hide();
             });
 
         });
@@ -550,8 +563,11 @@
                 $('#customMapBox tbody').html(html.join(''));
                 CHARTS.mapChart.hideLoading();
                 CHARTS.mapChart.setOption(option);
+                CHARTS.mapChart.on('click', function (chinaParam) {
+                    $('#mapBack').show();
+                    $("#container").show();
+                });
             });
-
         }
 
 
@@ -686,9 +702,39 @@
 
                          </div>
                          <div class="col-sm-9 col-xs-12" id="mapDiv">
-                             <div id="mapChart" style="height:600px;"></div>
+                             <div>
+                                 <div id="mapChart" style="height:600px;"></div>
+                                 <div id="container" hidden="hidden"></div>
+                             </div>
                              <button id="mapBack" class="btn btn-success">返回</button>
+
                          </div>
+                         <script>
+                             var cluster, markers = [];
+                             var map = new AMap.Map("container", {
+                                 resizeEnable: false,
+                                 center:[105,34],
+                                 zoom: 4
+                             });
+                             $.ajax({
+                                 url:"/data_statistics/partner/loadPartnerMap",
+                                 type : 'get',
+                                 async:false,
+                                 success:function(data){
+                                     console.log(data);
+                                     for(var i=0;i<data.length;i+=1){
+                                         markers.push(new AMap.Marker({
+                                             position:data[i]['lnglat'],
+                                             content: '<div style="background-color: hsla(180, 100%, 50%, 0.7); height: 24px; width: 24px; border: 1px solid hsl(180, 100%, 40%); border-radius: 12px; box-shadow: hsl(180, 100%, 50%) 0px 0px 1px;"></div>',
+                                             offset: new AMap.Pixel(-15,-15)
+                                         }))
+                                     }
+                                     var count  = markers.length;
+                                     //addCluster(0);
+                                     cluster = new AMap.MarkerClusterer(map, markers,{gridSize:80});
+                                 }
+                             });
+                         </script>
                      </div>
 
                  </div>

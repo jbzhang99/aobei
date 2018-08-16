@@ -1,0 +1,80 @@
+#团购活动
+type GroupPurchase{
+
+    id : Long
+
+    #活动开始时间
+    startTime : Date
+
+    #活动结束时间
+    endTime : Date
+
+    #团长条件  0 无限制  1 新用户  2 老用户
+    organizerCondition : Int
+
+    #参团条件  0 无限制  1 新用户  2 老用户
+    memberCondition : Int
+
+    #团长权益   优惠卷id
+    organizerCouponId : Long
+
+    #团员权益   优惠卷id
+    memberCouponId : Long
+
+    #商品id
+    productId : Long
+
+    #商品sku id
+    pskuId : Long
+
+    #成团最大数量
+    groupLimit : Int
+
+    #持续时间  单位小时 (是不是开团后的）
+    duration : Int
+
+    #单位成团人数
+    successLimit : Int
+
+    #排序号
+    orderNum : Int
+
+    #团购价格   单位分
+    groupPrice : Int
+
+    #灌水基数
+    baseSuccessNum : Int
+
+    #已成功成团数量
+    successedNum : Int
+
+    #活动描述
+    description : String
+
+    #权益说明
+    rightInfo : String
+
+    #团购说明
+    groupPurchaseInfo : String
+
+    #是否在首页显示  0 否 1 是 
+    showIndex : Int
+
+    #上线判断  0 未上线 1 已上线
+    online : Int
+
+    #是否上过线   0 未上过线  1 已上过线
+    overOnline : Int
+
+    #过期状态   0 未过期 1 已过期
+    expireStatus : Int
+
+    #允许自然流量拼团  0 不允许  1 允许
+    allowNaturalGrouping : Int
+
+    #创建时间
+    createTime : Date
+
+    updateTime : Date
+}
+

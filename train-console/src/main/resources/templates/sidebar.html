@@ -111,6 +111,9 @@
                 <li class="list-group-item" sec:authorize="hasRole('ROLE_VIDEO_BROWSE')">
                     <a id="side_60" th:href="@{/videomanager/video_list}">视频管理</a>
                 </li>
+                <li class="list-group-item" sec:authorize="hasRole('ROLE_GROUP_PURCHASE')">
+                    <a id="side_70" th:href="@{/group_purchase/list}">拼团活动管理</a>
+                </li>
             </ul>
         </div>
     </th:block>
