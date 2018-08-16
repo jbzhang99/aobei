@@ -8,13 +8,18 @@ import com.aobei.train.service.OrdersDataStatisticsService;
 import com.aobei.train.service.bean.OrdersStatisticsData;
 import custom.bean.AreaData;
 import custom.bean.DataResultSet;
+import custom.bean.EffectiveOrder;
 import custom.bean.Status;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -259,6 +264,114 @@ public class OrdersDataStatisticsServiceImpl implements OrdersDataStatisticsServ
     @Override
     public Long getOrdersGmvByClient(Date startDateTime, Date endDateTime, String client) {
         return ordersDataStatisticsMapper.getOrdersGmvByClient(startDateTime,endDateTime,client);
+    }
+
+    /**
+     * 查询当前时间点之前的有效订单 / 根据服务名称模糊查询
+     * @param nowDateTime
+     * @param serverName
+     * @return
+     */
+    @Override
+    public List<EffectiveOrder> getEffectiveOrdersNumMonth(Date nowDateTime,String serverName) {
+        List<DataResultSet> results = ordersDataStatisticsMapper.getEffectiveOrdersNumMonth(nowDateTime,serverName,0);//顾客下单
+        List<DataResultSet> resultsStu = ordersDataStatisticsMapper.getEffectiveOrdersNumMonth(nowDateTime,serverName,1);//学员下单
+        DataResultSet first = null;
+        if (results.size() > 0){
+            first = results.get(0);
+        }
+        Map<String, DataResultSet> map = results.stream().collect(Collectors.toMap(DataResultSet::getDateStr, Function.identity()));
+        List<DataResultSet> temp = new ArrayList<>();
+        List<EffectiveOrder> datas = new ArrayList<>();
+        LocalDateTime startLocalDateTime = null;
+        if (first != null){
+            startLocalDateTime = LocalDateTime.parse(first.getDateStr()+"/01 00:00:00",DateTimeFormatter.ofPattern("yyyy/MM月/dd HH:mm:ss"));
+        }else{
+            startLocalDateTime = LocalDateTime.now().minusMonths(2L).with(TemporalAdjusters.firstDayOfMonth());
+        }
+        LocalDateTime endLocalDateTime = LocalDateTime.ofInstant(nowDateTime.toInstant(), ZoneId.systemDefault());
+        while (startLocalDateTime.isBefore(endLocalDateTime)) {
+            String key = startLocalDateTime.format(DateTimeFormatter.ofPattern("yyyy/MM月"));
+            if (!map.containsKey(key)){
+                DataResultSet data = new DataResultSet();
+                data.setDateStr(key);
+                data.setNum(0L);
+                temp.add(data);
+            }else {
+                temp.add(map.get(key));
+            }
+            startLocalDateTime = startLocalDateTime.plusMonths(1);
+        }
+        for (int i = 0 ; i< temp.size();i++){
+            DataResultSet data = temp.get(i);
+            EffectiveOrder effectiveOrder = new EffectiveOrder();
+            BeanUtils.copyProperties(data,effectiveOrder);
+            if (i == 0){
+                effectiveOrder.setIncrRate(0);
+            }else{
+                effectiveOrder.setIncrRate(getIncrRate(temp.get(i-1),temp.get(i)));
+            }
+            datas.add(effectiveOrder);
+        }
+        datas.stream().forEach(n ->{
+            n.setStuNum(0L);
+            resultsStu.stream().forEach(m ->{
+                if (n.getDateStr().equals(m.getDateStr())){
+                    n.setStuNum(m.getNum());
+                }
+            });
+        });
+        return datas;
+    }
+
+    /**
+     * 顾客/学员下单各次数顾客/学员数量统计
+     * @param startDateTime
+     * @param endDateTime
+     * @param proxyed
+     * @return
+     */
+    @Override
+    public List<DataResultSet> purchaseNumSum(Date startDateTime, Date endDateTime, int proxyed) {
+        if (startDateTime == null || endDateTime == null){
+            endDateTime = new Date();
+            startDateTime = Date.from(LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        }
+        return ordersDataStatisticsMapper.PurchaseNumSum(startDateTime,endDateTime,proxyed);
+    }
+
+    @Override
+    public List<EffectiveOrder> getEffectiveOrdersNumByIsNew(String serverName, int isNew) {
+        List<EffectiveOrder> effectiveOrdersByIsNew = getEffectiveOrdersNumMonth(new Date(), serverName);
+        List<DataResultSet> list = ordersDataStatisticsMapper.getEffectiveOrdersNumByIsNew(serverName, isNew);
+        Map<String, DataResultSet> map = list.stream().collect(Collectors.toMap(DataResultSet::getDateStr, Function.identity()));
+        effectiveOrdersByIsNew.stream().forEach(n ->{
+            DataResultSet result = map.get(n.getDateStr());
+            if (result != null){
+                n.setIncrRate(new BigDecimal((double)(result.getNum())/(n.getNum()+ n.getStuNum()))
+                        .setScale(4,BigDecimal.ROUND_HALF_UP).doubleValue());
+                n.setNum(result.getNum());
+            }else{
+                n.setNum(0);
+                n.setIncrRate(0d);
+            }
+        });
+        return effectiveOrdersByIsNew;
+    }
+
+    /**
+     * 计算增长率
+     * @param pre
+     * @param now
+     * @return
+     */
+    public double getIncrRate(DataResultSet pre,DataResultSet now){
+        if(pre.getNum() == 0){
+            return 0;
+        }else{
+            return new BigDecimal((double)(now.getNum()-pre.getNum())/pre.getNum())
+                    .setScale(4,BigDecimal.ROUND_HALF_UP).doubleValue();
+        }
     }
 
     public List<OrdersStatisticsData> dataPackaging(Map<String, Long> gmvMap,

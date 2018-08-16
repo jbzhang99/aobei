@@ -120,4 +120,49 @@
 	AND t.client_id = #{client}
 	AND (t.status_active = '5' OR t.r_status = '3')
   </select>
+
+  <!-- 有效订单数据统计 -->
+  <select id="getEffectiveOrdersNumMonth" resultType="custom.bean.DataResultSet">
+    SELECT CONCAT(DATE_FORMAT(t.create_datetime,'%Y/%m'),'月') AS dateStr, COUNT(*) AS num
+    FROM pay_order t WHERE create_datetime &lt;= #{nowDateTime}
+    AND (status_active = '5' OR status_active = '3') AND proxyed = #{proxyed}
+    <if test="serverName != null">
+      AND name LIKE CONCAT('%',#{serverName},'%')
+    </if>
+    GROUP BY dateStr
+    ORDER BY dateStr;
+  </select>
+
+  <!--顾客/学员下单各次数顾客/学员数量统计-->
+  <select id="PurchaseNumSum" resultType="custom.bean.DataResultSet">
+    SELECT CONCAT(t.num,'次')  AS dateStr ,COUNT(uid) AS num FROM
+      (SELECT COUNT(*) AS num ,uid FROM pay_order
+        WHERE create_datetime BETWEEN #{startDateTime} AND #{endDateTime}
+        AND (status_active = '5' OR status_active = '3')
+        AND proxyed = #{proxyed}
+        GROUP BY uid
+        ORDER BY uid
+      )t
+    GROUP BY t.num
+    ORDER BY t.num
+  </select>
+
+  <!--新老用户有效订单数据统计-->
+  <select id="getEffectiveOrdersNumByIsNew" resultType="custom.bean.DataResultSet">
+    SELECT
+      DATE_FORMAT(p.create_datetime,'%Y/%m月') AS dateStr,COUNT(*) AS num
+    FROM pay_order p LEFT JOIN customer c ON (p.uid = c.customer_id)
+      WHERE (p.status_active = '3' OR p.status_active = '5')
+        <if test="isNew == 1">
+          AND DATE_FORMAT(p.create_datetime,'%Y/%m月') = DATE_FORMAT(c.create_datetime,'%Y/%m月')
+        </if>
+        <if test="isNew == 0">
+          AND DATE_FORMAT(p.create_datetime,'%Y/%m月') != DATE_FORMAT(c.create_datetime,'%Y/%m月')
+        </if>
+        <if test="serverName != null">
+          AND p.name LIKE CONCAT('%',#{serverName},'%')
+        </if>
+    GROUP BY dateStr
+    ORDER BY dateStr
+  </select>
 </mapper>

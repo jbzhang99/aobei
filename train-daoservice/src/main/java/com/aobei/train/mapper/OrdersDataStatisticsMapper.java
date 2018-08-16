@@ -40,4 +40,10 @@ public interface OrdersDataStatisticsMapper {
     List<DataResultSet> getOrdersNumMap(@Param("startDateTime") Date startDateTime, @Param("endDateTime") Date endDateTime);
 
     Long getOrdersGmvByClient(@Param("startDateTime") Date startDateTime, @Param("endDateTime") Date endDateTime,@Param("client") String client);
+
+    List<DataResultSet> getEffectiveOrdersNumMonth(@Param("nowDateTime") Date nowDateTime,@Param("serverName") String serverName,@Param("proxyed") int proxyed);
+
+    List<DataResultSet> PurchaseNumSum(@Param("startDateTime") Date startDateTime, @Param("endDateTime") Date endDateTime,@Param("proxyed") int proxyed);
+
+    List<DataResultSet> getEffectiveOrdersNumByIsNew(@Param("serverName") String serverName,@Param("isNew") int isNew);
 }

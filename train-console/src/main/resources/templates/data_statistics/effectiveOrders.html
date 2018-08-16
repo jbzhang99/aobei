@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html layout:decorate="~{base_layout}">
+<!-- <html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"> -->
+<head>
+    <meta charset="UTF-8"></meta>
+    <title>有效订单统计</title>
+    <link th:href="@{/js/jquery-date-range-picker/daterangepicker.min.css}" rel="stylesheet"/>
+    <style type="text/css">
+        #inputDay{
+            width: 200px;
+        }
+
+        #inputDayStu{
+            width: 200px;
+        }
+
+        .main_charts{
+            padding: 5px;
+        }
+
+        .main_charts .panel{}
+
+        .main_charts .panel .panel-heading i{
+            cursor: pointer;
+        }
+
+        .module{
+            float: left;padding: 5px;
+        }
+
+        .main_module{
+            overflow: hidden;
+        }
+    </style>
+    <script TYPE="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+    <script TYPE="text/javascript" th:src="@{/js/jquery-date-range-picker/jquery.daterangepicker.min.js}"></script>
+    <script TYPE="text/javascript" th:src="@{/js/echarts.min.js}"></script>
+    <script type="text/javascript" th:inline="javascript">
+        $(function(){
+            // 按日
+            $('#inputDay').dateRangePicker({
+                autoClose: true,
+                showShortcuts: false,
+                startOfWeek: 'monday',
+                separator:'  至  ',
+                language: 'cn',
+                setValue: function(s){
+                    if(!$(this).is(':disabled') && s != $(this).val()){
+                        $(this).val(s);
+                    }
+                },
+                startDate: '2018-01-01',
+                endDate: moment().format('YYYY-MM-DD')
+            });
+
+            $('#inputDayStu').dateRangePicker({
+                autoClose: true,
+                showShortcuts: false,
+                startOfWeek: 'monday',
+                separator:'  至  ',
+                language: 'cn',
+                setValue: function(s){
+                    if(!$(this).is(':disabled') && s != $(this).val()){
+                        $(this).val(s);
+                    }
+                },
+                startDate: '2018-01-01',
+                endDate: moment().format('YYYY-MM-DD')
+            });
+
+            // 初始化页面加载
+            (function init(){
+                // 初始化值
+                $('#inputDay').val([
+                    moment().format('YYYY-MM-01'),
+                    '  至  ',
+                    moment().format('YYYY-MM-DD')].join('')
+                );
+                $('#inputDayStu').val([
+                    moment().format('YYYY-MM-01'),
+                    '  至  ',
+                    moment().format('YYYY-MM-DD')].join('')
+                );
+                initCharts();
+            })();
+            var startDate = moment().format('YYYY-MM-01');
+            var endDate = moment().format('YYYY-MM-DD');
+            var data = {type:3,startDate:startDate,endDate:endDate}
+
+            doCharts(data);
+
+            $("#btn_1").click(function(){
+                var serverName = $("#serverName_1").val();
+                data = {serverName:serverName};
+                effectiveOrders(data);
+            });
+
+            $("#btn_2").click(function(){
+                var startDate;
+                var endDate;
+                var dateStr = $("#inputDay").val().split('  至  ');
+                startDate = dateStr[0];
+                endDate = dateStr[1];
+                data = {startDate:startDate,endDate:endDate};
+                customerPurchaseNumSum(data);
+            });
+
+            $("#btn_3").click(function(){
+                var serverName = $("#serverName_2").val();
+                data = {serverName:serverName};
+                getEffectiveOrderByCus(data);
+            });
+
+            $("#btn_4").click(function(){
+                var startDate;
+                var endDate;
+                var dateStr = $("#inputDay").val().split('  至  ');
+                startDate = dateStr[0];
+                endDate = dateStr[1];
+                data = {startDate:startDate,endDate:endDate};
+                studentPurchaseNumSum(data);
+            });
+        });
+
+        /**
+         * 初始化图表
+         */
+        function initCharts(){getEffectiveOrderByCus
+            window.CHARTS  = {
+                effectiveOrders : echarts.init(document.getElementById('effectiveOrders'),'dark'),
+                customerPurchaseNumSum : echarts.init(document.getElementById('customerPurchaseNumSum'),'dark'),
+                getEffectiveOrderByCus : echarts.init(document.getElementById('getEffectiveOrderByCus'),'dark'),
+                studentPurchaseNumSum : echarts.init(document.getElementById('studentPurchaseNumSum'),'dark')
+            };
+        }
+
+        /**
+         * 执行操作
+         * @param data
+         * type 类型  3 按月
+         * startDate 开始日期
+         * endDate 结束日期
+         */
+        function doCharts(data){
+            effectiveOrders(data);
+            customerPurchaseNumSum(data);
+            studentPurchaseNumSum(data);
+            getEffectiveOrderByCus(data);
+        }
+
+
+        /**
+         * 有效订单数量统计
+         * @param data
+         */
+        function effectiveOrders(requestData) {
+            CHARTS.effectiveOrders.showLoading();
+            var option = {
+                title: {
+                    text: '有效订单量'
+                },
+                color: ['#efa51c','#246de8'],
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+                        type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                    }
+                },
+                legend: {
+                    data:['顾客','员工','增长率']
+                },
+                xAxis: {
+                    data: []
+                },
+                dataZoom: {
+                    xAxisIndex: [0],
+                    show: true,
+                    realtime: true,
+                    bottom: 'auto',
+                    height: 20,
+                    zoomLock: true,
+                    startValue: moment().subtract(2,'months').format('YYYY/MM月'),
+                    endValue: moment().format('YYYY/MM月')
+                },
+                yAxis: {},
+                series: [{
+                        name: '顾客',
+                        type: 'bar',
+                        barWidth: 40,
+                        stack: '数量',
+                        data: [],
+                        itemStyle: {
+                            color: '#efa51c'
+                        }
+                    },
+                    {
+                        name: '员工',
+                        type: 'bar',
+                        barWidth: 40,
+                        stack: '数量',
+                        data: [],
+                        itemStyle: {
+                            color: '#246de8'
+                        }
+                    },
+                    {
+                        name: '增长率',
+                        type: 'line',
+                        data: [],
+                        tooltip: {
+                            trigger: 'item',
+                            formatter: '{b}:\n{c}%'
+                        },
+                        itemStyle: {
+                            color: '#a53839'
+                        }
+                    }]
+
+            };
+            $.getJSON([[@{/data_statistics/orders/getData}]],requestData, function (data) {
+                var xAxis_data = [];
+                var series_data = [];
+                var series_data_stu = [];
+                var incrRate = [];
+                $.each(data, function (i, n) {
+                    xAxis_data.push(n.dateStr);
+                    series_data.push(n.num);
+                    incrRate.push(n.incrRate * 100);
+                    series_data_stu.push(n.stuNum);
+                });
+                option.xAxis.data = xAxis_data;
+                option.series[0].data = series_data;
+                option.series[1].data = series_data_stu;
+                option.series[2].data = incrRate;
+                CHARTS.effectiveOrders.hideLoading();
+                // 使用刚指定的配置项和数据显示图表。
+                CHARTS.effectiveOrders.setOption(option);
+            });
+        }
+
+
+        /**
+         * 顾客购买次数占比统计
+         * @param data
+         */
+        function customerPurchaseNumSum(requestData) {
+            CHARTS.customerPurchaseNumSum.showLoading();
+            var option = {
+                title : {
+                    text: '顾客购买次数占比',
+                    x:'center'
+                },
+                tooltip : {
+                    trigger: 'item',
+                    formatter: "{a} <br/>{b} : {c} ({d}%)"
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    data: ['1','2','3','4','5',]
+                },
+                series : [
+                    {
+                        name: '购买次数',
+                        type: 'pie',
+                        radius : '55%',
+                        center: ['50%', '60%'],
+                        data:[
+                            {value:12, name:'1'},
+                            {value:14, name:'2'},
+                            {value:10, name:'3'},
+                            {value:8, name:'4'},
+                            {value:6, name:'5'}
+                        ],
+                        itemStyle: {
+                            emphasis: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
+            };
+
+            $.getJSON([[@{/data_statistics/orders/customerPurchaseNumSum}]],requestData, function (data) {
+                var legend_data = [];
+                var series_data = [];
+                $.each(data,function(i,n){
+                    series_data.push({name:n.dateStr,value:n.num});
+                    legend_data.push(n.dateStr);
+                });
+                option.series[0].data = series_data;
+                option.legend.data = legend_data;
+                CHARTS.customerPurchaseNumSum.hideLoading();
+                // 使用刚指定的配置项和数据显示图表。
+                CHARTS.customerPurchaseNumSum.setOption(option);
+            });
+        }
+
+        /**
+         * 员工购买次数占比统计
+         * @param data
+         */
+        function studentPurchaseNumSum(requestData) {
+            CHARTS.studentPurchaseNumSum.showLoading();
+            var option = {
+                title : {
+                    text: '员工购买次数占比',
+                    x:'center'
+                },
+                tooltip : {
+                    trigger: 'item',
+                    formatter: "{a} <br/>{b} : {c} ({d}%)"
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    data: ['1','2','3','4','5',]
+                },
+                series : [
+                    {
+                        name: '购买次数',
+                        type: 'pie',
+                        radius : '55%',
+                        center: ['50%', '60%'],
+                        data:[
+                            {value:16, name:'1'},
+                            {value:45, name:'2'},
+                            {value:30, name:'3'},
+                            {value:23, name:'4'},
+                            {value:25, name:'5'}
+                        ],
+                        itemStyle: {
+                            emphasis: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
+            };
+
+             $.getJSON([[@{/data_statistics/orders/studentPurchaseNumSum}]],requestData, function (data) {
+                 var legend_data = [];
+                 var series_data = [];
+                 $.each(data,function(i,n){
+                     series_data.push({name:n.dateStr,value:n.num});
+                     legend_data.push(n.dateStr);
+                 });
+                 option.series[0].data = series_data;
+                 option.legend.data = legend_data;
+                 CHARTS.studentPurchaseNumSum.hideLoading();
+                 // 使用刚指定的配置项和数据显示图表。
+                 CHARTS.studentPurchaseNumSum.setOption(option);
+             });
+        }
+
+        /**
+         * 新老用户有效订单数
+         * @param data
+         */
+        function getEffectiveOrderByCus(requestData) {
+            CHARTS.getEffectiveOrderByCus.showLoading();
+            var option = {
+                title: {
+                    text: '新老用户有效订单数'
+                },
+                color: ['#efa51c','#246de8'],
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+                        type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                    }
+                },
+                legend: {
+                    data:['老用户','新用户','老用户有效订单比','新用户有效订单比'],
+                    top:'30'
+                },
+                xAxis: {
+                    data: []
+                },
+                dataZoom: {
+                    xAxisIndex: [0],
+                    show: true,
+                    realtime: true,
+                    bottom: 'auto',
+                    height: 20,
+                    zoomLock: true,
+                    startValue: moment().subtract(2,'months').format('YYYY/MM月'),
+                    endValue: moment().format('YYYY/MM月')
+                },
+                yAxis: {},
+                series: [{
+                        name: '老用户',
+                        type: 'line',
+                        data: [],
+                        areaStyle: {
+                            color: '#efa51c'
+                        }
+                    },
+                    {
+                        name: '新用户',
+                        type: 'line',
+                        data: [],
+                        areaStyle: {
+                            color: '#246de8'
+                        }
+                    },
+                    {
+                        name: '老用户有效订单比',
+                        type: 'line',
+                        data: [],
+                        tooltip: {
+                            trigger: 'item',
+                            formatter: '{b}:\n{c}%'
+                        },
+                        itemStyle: {
+                            color: '#a57d5e'
+                        }
+                    },
+                    {
+                        name: '新用户有效订单比',
+                        type: 'line',
+                        data: [],
+                        tooltip: {
+                            trigger: 'item',
+                            formatter: '{b}:\n{c}%'
+                        },
+                        itemStyle: {
+                            color: '#5d4ea5'
+                        }
+                    }]
+
+            };
+            $.getJSON([[@{/data_statistics/orders/getEffectiveOrderByCus}]],requestData, function (data) {
+                var newCusOrders = data["newCusOrders"];
+                var oldCusOrders = data["oldCusOrders"];
+                var xAxis_data = [];
+                var series_data_new = [];
+                var series_data_new_rate = [];
+                var series_data_old = [];
+                var series_data_old_rate = [];
+                $.each(newCusOrders,function(i,n){
+                    series_data_new.push(n.num);
+                    xAxis_data.push(n.dateStr);
+                    series_data_new_rate.push(n.incrRate * 100);
+                });
+                $.each(oldCusOrders,function(i,n){
+                    series_data_old.push(n.num);
+                    series_data_old_rate.push(n.incrRate * 100);
+                });
+                option.xAxis.data = xAxis_data;
+                option.series[0].data = series_data_old;
+                option.series[1].data = series_data_new;
+                option.series[2].data = series_data_old_rate;
+                option.series[3].data = series_data_new_rate;
+                CHARTS.getEffectiveOrderByCus.hideLoading();
+                // 使用刚指定的配置项和数据显示图表。
+                CHARTS.getEffectiveOrderByCus.setOption(option);
+            });
+        }
+    </script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+
+    <!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+    <div class="page_content_bar form-inline">
+
+        <!--/* 面包屑  */-->
+        <ol class="breadcrumb clearfix">
+            <li class="active">有效订单数统计</li>
+        </ol>
+    </div>
+
+    <!--/* 页面部分二              页面主内容  */-->
+    <div class="page_content_main" data-sidea="side_68">
+
+        <div class="main_charts">
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="form-inline">
+                                <div class="form-group"  style="margin-right: 20px">
+                                    <label>服务名称：</label>
+                                    <input type="text" name="serverName" id="serverName_1" class="form-control input-sm">
+                                </div>
+                                <button id="btn_1" class="btn btn-primary btn-sm">查询</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div style="height:300px;" class="main_module">
+                                <div class="module" id="effectiveOrders" style="width:526px;height:300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="form-inline">
+                                <div class="form-group"  style="margin-right: 20px">
+                                    <label>下单时间：</label>
+                                    <input type="text" id="inputDay" placeholder="请选择日期" readonly class="form-control input-sm inputDate active">
+                                </div>
+                                <button id="btn_2" class="btn btn-primary btn-sm">查询</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div style="height:300px;" class="main_module">
+                                <div class="module" id="customerPurchaseNumSum" style="width:526px;height:300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main_charts">
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="form-inline">
+                                <div class="form-group"  style="margin-right: 20px">
+                                    <label>服务名称：</label>
+                                    <input type="text" name="serverName" id="serverName_2" class="form-control input-sm">
+                                </div>
+                                <button id="btn_3" class="btn btn-primary btn-sm">查询</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div style="height:300px;" class="main_module">
+                                <div class="module" id="getEffectiveOrderByCus" style="width:526px;height:300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="form-inline">
+                                <div class="form-group"  style="margin-right: 20px">
+                                    <label>下单时间：</label>
+                                    <input type="text" id="inputDayStu" placeholder="请选择日期" readonly class="form-control input-sm inputDate active">
+                                </div>
+                                <button id="btn_4" class="btn btn-primary btn-sm">查询</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div style="height:300px;" class="main_module">
+                                <div class="module" id="studentPurchaseNumSum" style="width:526px;height:300px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

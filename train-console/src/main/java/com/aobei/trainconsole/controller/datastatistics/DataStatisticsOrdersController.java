@@ -7,6 +7,7 @@ import com.aobei.train.service.OrdersDataStatisticsService;
 import com.aobei.train.service.bean.OrdersStatisticsData;
 import custom.bean.AreaData;
 import custom.bean.DataResultSet;
+import custom.bean.EffectiveOrder;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -116,6 +117,71 @@ public class DataStatisticsOrdersController {
         endDate = endDateBoundary(endDate);
         List<AreaData<Long>> list = ordersDataStatisticsService.getOrdersNumMap(startDate, endDate);
         return list;
+    }
+
+    /**
+     * 跳转到有效订单数据统计页面
+     * @return
+     */
+    @GetMapping("/effectiveOrders")
+    public String effectiveOrders(){
+        return "data_statistics/effectiveOrders";
+    }
+
+    /**
+     * 有效订单查询
+     * @param serverName
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/getData")
+    public Object getData(String serverName){
+        List<EffectiveOrder> list = ordersDataStatisticsService.getEffectiveOrdersNumMonth(new Date(), serverName);
+        return list;
+    }
+
+    /**
+     * 顾客购买次数占比统计
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/customerPurchaseNumSum")
+    public Object customerPurchaseNumSum(@DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+                                         @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){
+        endDate = endDateBoundary(endDate);
+        return ordersDataStatisticsService.purchaseNumSum(startDate,endDate,0);
+    }
+
+    /**
+     * 员工购买次数占比统计
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/studentPurchaseNumSum")
+    public Object studentPurchaseNumSum(@DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+                                         @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){
+        endDate = endDateBoundary(endDate);
+        return ordersDataStatisticsService.purchaseNumSum(startDate,endDate,1);
+    }
+
+    /**
+     * 新老顾客有效订单查询
+     * @param serverName
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping("/getEffectiveOrderByCus")
+    public Object getEffectiveOrderByCus(String serverName){
+        Map<String,List<EffectiveOrder>> map = new HashMap<>();
+        List<EffectiveOrder> newCusOrders = ordersDataStatisticsService.getEffectiveOrdersNumByIsNew(serverName,1);
+        List<EffectiveOrder> oldCusOrders = ordersDataStatisticsService.getEffectiveOrdersNumByIsNew(serverName,0);
+        map.put("newCusOrders",newCusOrders);
+        map.put("oldCusOrders",oldCusOrders);
+        return map;
     }
 
     /**

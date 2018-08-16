@@ -3,6 +3,7 @@ package com.aobei.train.service;
 import com.aobei.train.service.bean.OrdersStatisticsData;
 import custom.bean.AreaData;
 import custom.bean.DataResultSet;
+import custom.bean.EffectiveOrder;
 
 import java.util.Date;
 import java.util.List;
@@ -78,4 +79,28 @@ public interface OrdersDataStatisticsService {
      * @return
      */
     Long getOrdersGmvByClient(Date startDateTime, Date endDateTime,String client);
+
+    /**
+     * 查询当前时间点之前的有效订单 / 根据服务名称模糊查询
+     * @param nowDateTime
+     * @return
+     */
+    List<EffectiveOrder> getEffectiveOrdersNumMonth(Date nowDateTime, String serverName);
+
+    /**
+     * 顾客/学员下单各次数顾客/学员数量统计
+     * @param startDateTime
+     * @param endDateTime
+     * @param proxyed
+     * @return
+     */
+    List<DataResultSet> purchaseNumSum(Date startDateTime, Date endDateTime,int proxyed);
+
+    /**
+     * 根据 isNew 统计 新老顾客有效订单
+     * @param isNew  1 新顾客  0 老顾客
+     * @param serverName
+     * @return
+     */
+    List<EffectiveOrder> getEffectiveOrdersNumByIsNew(String serverName,int isNew);
 }
