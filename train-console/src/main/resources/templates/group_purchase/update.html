@@ -1,0 +1,394 @@
+<!DOCTYPE HTML>
+<!--/* 引入模板页面  */-->
+<html layout:decorate="~{base_layout}" xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>拼团活动管理</title>
+
+<link th:href="@{/css/bootstrap-select.min.css}" rel="stylesheet" />
+<link th:href="@{/css/bootstrapValidator.min.css}" rel="stylesheet" />
+<link th:href="@{/js/jquery-date-range-picker/daterangepicker.min.css}" rel="stylesheet"/>
+<style type="text/css">
+	#inputDay{
+		width: 453px;
+	}
+</style>
+<script th:src="@{/js/bootstrap-select.js}"></script>
+<script th:src="@{/js/jquery.validate.js}"></script>
+<script th:src="@{/js/additional-methods.js}"></script>
+<script th:src="@{/js/messages_zh.js}"></script>
+<script th:src="@{/js/jquery.form.min.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/moment-with-locales.js}"></script>
+<script TYPE="text/javascript" th:src="@{/js/jquery-date-range-picker/jquery.daterangepicker.min.js}"></script>
+
+	<script th:inline="javascript">
+	$(function(){
+        $('#inputDay').dateRangePicker({
+            format: 'YYYY-MM-DD HH:mm:ss',
+            autoClose: true,
+            showShortcuts: false,
+            startOfWeek: 'monday',
+            separator: '  至  ',
+            language: 'cn',
+            time: {
+                enabled: true
+            },
+            setValue: function (s,s1,s2) {
+                if (!$(this).is(':disabled') && s != $(this).val()) {
+                    var d2 = moment(s2,'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD HH:mm') + ':59';
+                    $(this).val(s1 + '  至  ' + d2);
+                	$('#startTime').val(s1);
+                    $('#endTime').val(d2);
+                }
+            },
+            startDate: moment().format('YYYY-MM-DD 00:00:00'),
+            endDate: moment().add(3,'months').format('YYYY-MM-DD 23:59:59')
+        });
+
+	    // 判断是否为添加数据
+		var isInsert = $('#group_purchase_id').val() == '';
+
+       $('#form1').validate({
+		   debug:false,
+           rules: {
+                inputDay: {
+                    required : true
+                },
+                productId: {
+                    required : true
+                },
+                groupLimit: {
+                    required : true,
+                    digits : true,
+					range:[1,200]
+                },
+               duration: {
+                   required : true,
+                   digits : true,
+                   range:[1,24 * 30]
+               },
+               successLimit: {
+                   required : true,
+                   digits : true,
+                   range:[1,200]
+               },
+               orderNum: {
+                   required : false,
+                   digits : true,
+                   range:[0,2000]
+               },
+               groupPrice: {
+                   required : true,
+                   range:[0.01,9999],
+				   pattern:/^\d+(\.\d{1,2})?$/
+               },
+               baseSuccessNum: {
+                   required : false,
+                   range:[0,10000]
+               },
+               description:{
+                   required : true,
+                   rangelength:[1,50]
+			   },
+               rightInfo:{
+                   required : true,
+                   rangelength:[1,200]
+               },
+               groupPurchaseInfo:{
+                   required : true,
+                   rangelength:[1,200]
+               }
+            },
+		   messages:{
+               groupPrice:{
+                   pattern:'请输入有效的金额'
+			   }
+		   },
+           submitHandler:function (form) {
+				$('#groupPrice').val($('#groupPriceTemp').val()*100);
+               form.submit();
+           },
+           errorElement: "em",
+           errorPlacement: function ( error, element ) {
+               error.addClass( "help-block" );
+               if ( element.prop( "type" ) === "checkbox" ) {
+                   error.insertAfter( element.parent( "label" ) );
+               } else {
+                   error.insertAfter( element );
+               }
+           },
+           highlight: function ( element, errorClass, validClass ) {
+               $( element ).parent().addClass( "has-error" ).removeClass( "has-success" );
+           },
+           unhighlight: function (element, errorClass, validClass) {
+               $( element ).parent().addClass( "has-success" ).removeClass( "has-error" );
+           }
+        });
+	});
+	
+
+</script>
+</head>
+<body>
+<!--/* 申明模板填充  */-->
+<div layout:fragment="content">
+
+	<!--/* 页面部分一 （可以省略）           topbar 固定条  */-->
+	<div class="page_content_bar">
+
+		<!--/* 面包屑  */-->
+		<ol class="breadcrumb clearfix">
+            <li><a th:href="@{/group_purchase/list(p=${param.p})}">拼团活动管理</a></li>
+            <li>[[${param.id}? '编辑':'添加']]</li>
+		</ol>
+
+	</div>
+	<!--/* 页面部分二              页面主内容  */-->
+	<div class="page_content_main" data-sidea="side_70">
+
+	<!-- 动态 -->
+			<form id="form1" class="form-horizontal" action="#" th:action="@{/group_purchase/update}"  method="post">
+				<input type="hidden" name="id" id="group_purchase_id" th:value="${groupPurchase?.id}">
+				<input th:if="${groupPurchase!=null}" type="hidden" name="startTime" id="startTime" th:value="${#calendars.format(groupPurchase.startTime,'yyyy-MM-dd HH:mm:ss')}">
+				<input th:if="${groupPurchase!=null}" type="hidden" name="endTime" id="endTime" th:value="${#calendars.format(groupPurchase.endTime,'yyyy-MM-dd HH:mm:ss')}">
+				<input th:if="${groupPurchase==null}" type="hidden" name="startTime" id="startTime">
+				<input th:if="${groupPurchase==null}" type="hidden" name="endTime" id="endTime">
+
+				<input type="hidden" name="groupPrice" id="groupPrice" th:value="${groupPurchase?.groupPrice}">
+
+				<input type="hidden" name="mts" th:value="${application.mts}">
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label">
+						<span style="color: red;">* </span>
+						活动时间
+					</label>
+					<div class="col-sm-6">
+						<input th:if="${groupPurchase != null}" type="text" id="inputDay" name="inputDay" placeholder="请选择日期"
+							   th:value="${#strings.concat(#calendars.format(groupPurchase.startTime,'yyyy-MM-dd HH:mm:ss'),' 至 ',#calendars.format(groupPurchase.endTime,'yyyy-MM-dd HH:mm:ss'))}"
+							   readonly class="form-control">
+						<input th:if="${groupPurchase == null}" type="text" id="inputDay" name="inputDay" placeholder="请选择日期"
+							   readonly class="form-control">
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="organizerCondition">
+						<span style="color: red;">* </span>
+						团长开团身份
+					</label>
+					<div class="col-sm-2">
+						<select class="form-control" id="organizerCondition" name="organizerCondition">
+							<option value="0" th:selected="${groupPurchase?.organizerCondition} == 0?'selected'">无限制</option>
+							<option value="1" th:selected="${groupPurchase?.organizerCondition} == 1?'selected'">新用户</option>
+							<option value="2" th:selected="${groupPurchase?.organizerCondition} == 2?'selected'">老用户</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="memberCondition">
+						<span style="color: red;">* </span>
+						团员参团身份
+					</label>
+					<div class="col-sm-2">
+						<select class="form-control" id="memberCondition" name="memberCondition">
+							<option value="0" th:selected="${groupPurchase?.memberCondition} == 0?'selected'">无限制</option>
+							<option value="1" th:selected="${groupPurchase?.memberCondition} == 1?'selected'">新用户</option>
+							<option value="2" th:selected="${groupPurchase?.memberCondition} == 2?'selected'">老用户</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="allowNaturalGrouping">
+						<span style="color: red;">* </span>
+						是否允许自然流量拼团
+					</label>
+					<div class="col-sm-2">
+						<select class="form-control" id="allowNaturalGrouping" name="allowNaturalGrouping">
+							<option value="0" th:selected="${groupPurchase?.allowNaturalGrouping} == 0?'selected'">不允许</option>
+							<option value="1" th:selected="${groupPurchase?.allowNaturalGrouping} == 1?'selected'">允许</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="organizerCouponId">
+						团长权益
+					</label>
+					<div class="col-sm-3">
+						<select class="form-control" id="organizerCouponId" name="organizerCouponId">
+							<option value="0">请选择优惠卷</option>
+							<th:block th:each="item : ${coupons}">
+								<option th:value="${item.coupon_id}" th:selected="${groupPurchase?.organizerCouponId} == ${item.coupon_id} ?'selected'">[[${item.name}]]</option>
+							</th:block>
+						</select>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="memberCouponId">
+						团员权益
+					</label>
+					<div class="col-sm-3">
+						<select class="form-control" id="memberCouponId" name="memberCouponId">
+							<option value="0">请选择优惠卷</option>
+							<th:block th:each="item : ${coupons}">
+								<option th:value="${item.coupon_id}" th:selected="${groupPurchase?.memberCouponId} == ${item.coupon_id} ?'selected'">[[${item.name}]]</option>
+							</th:block>
+						</select>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="productId">
+						<span style="color: red;">* </span>
+						商品名称
+					</label>
+					<div class="col-sm-2">
+						<select class="form-control" id="productId" name="productId">
+							<th:block th:each="item : ${products}">
+							<option th:value="${item.product_id}" th:selected="${groupPurchase?.productId} == ${item.product_id} ?'selected'">[[${item.name}]]</option>
+							</th:block>
+						</select>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="groupLimit">
+						<span style="color: red;">* </span>
+						成团最大数量
+					</label>
+					<div class="col-sm-2">
+						<input class="form-control" id="groupLimit"
+								  name="groupLimit" th:value="${groupPurchase?.groupLimit}"/>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="duration">
+						<span style="color: red;">* </span>
+						拼团参与时间
+					</label>
+					<div class="col-sm-2">
+						<input class="form-control" id="duration"
+							   name="duration" placeholder="单位：小时" th:value="${groupPurchase?.duration}"/>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="successLimit">
+						<span style="color: red;">* </span>
+						单位成团人数
+					</label>
+					<div class="col-sm-2">
+						<input class="form-control" id="successLimit"
+							   name="successLimit" th:value="${groupPurchase?.successLimit}"/>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="showIndex1">
+						<span style="color: red;">* </span>
+						是否在首页展示
+					</label>
+					<div class="col-sm-2">
+						<th:block th:unless="${groupPurchase == null}">
+							<label class="radio-inline">
+								<input type="radio" name="showIndex" id="showIndex1" value="0" th:checked="${groupPurchase.showIndex} == 1?'checked'"> 是
+							</label>
+							<label class="radio-inline">
+								<input type="radio" name="showIndex" id="showIndex2" value="1" th:checked="${groupPurchase.showIndex} == 0?'checked'"> 否
+							</label>
+						</th:block>
+						<th:block th:if="${groupPurchase == null}">
+							<label class="radio-inline">
+								<input type="radio" name="showIndex" id="showIndex1" value="0" checked="checked"> 是
+							</label>
+							<label class="radio-inline">
+								<input type="radio" name="showIndex" id="showIndex2" value="1"> 否
+							</label>
+						</th:block>
+
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="orderNum">
+						首页展现顺序
+					</label>
+					<div class="col-sm-2">
+						<input class="form-control" id="orderNum"
+							   name="orderNum" th:value="${groupPurchase?.orderNum}"/>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="groupPriceTemp">
+						<span style="color: red;">* </span>
+						拼团价格
+					</label>
+					<div class="col-sm-2">
+						<input th:if="${groupPurchase != null}" class="form-control" id="groupPriceTemp"
+							   name="groupPriceTemp" th:value="${#numbers.formatDecimal(groupPurchase.groupPrice*0.01,0,2,'POINT')}"/>
+						<input th:if="${groupPurchase == null}" class="form-control" id="groupPriceTemp"
+							   name="groupPriceTemp"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="baseSuccessNum">
+						灌水数
+					</label>
+					<div class="col-sm-2">
+						<input class="form-control" id="baseSuccessNum"
+							   name="baseSuccessNum" th:value="${groupPurchase?.baseSuccessNum}"/>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="description">
+						<span style="color: red;">* </span>
+						活动概述
+					</label>
+					<div class="col-sm-5">
+						<textarea class="form-control" id="description"
+								  name="description"  placeholder="请输入活动概述">[[${groupPurchase?.description}]]</textarea>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="rightInfo">
+						<span style="color: red;">* </span>
+						权益说明
+					</label>
+					<div class="col-sm-5">
+						<textarea class="form-control" id="rightInfo"
+								  name="rightInfo"  placeholder="请输入权益说明">[[${groupPurchase?.rightInfo}]]</textarea>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="col-sm-3 control-label" for="groupPurchaseInfo">
+						<span style="color: red;">* </span>
+						玩法说明
+					</label>
+					<div class="col-sm-5">
+						<textarea class="form-control" id="groupPurchaseInfo"
+								  name="groupPurchaseInfo"  placeholder="请输入玩法说明">[[${groupPurchase?.groupPurchaseInfo}]]</textarea>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<div class="col-sm-9 col-sm-offset-4">
+						<button type="submit" id="subBtn" class="btn btn-primary" >确定</button>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<a th:href="@{/group_purchase/list(p=${param.p})}" class="btn btn-primary">取消</a>
+					</div>
+				</div>
+			</form>
+	</div>
+
+
+	</div>
+</body>
+</html>

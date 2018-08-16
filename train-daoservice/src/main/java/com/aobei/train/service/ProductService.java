@@ -41,4 +41,9 @@ public interface ProductService extends MbgReadBLOBsService<Long, Product, Produ
 
 	List<ProductWithCoupon> xStreamProduct(List<Product> list, Long customer_id);
 
+	/**
+	 * 获取单品SKU 的商品id
+	 * @return
+	 */
+	List<Long> xSelectSingleSkuProduct();
 }
