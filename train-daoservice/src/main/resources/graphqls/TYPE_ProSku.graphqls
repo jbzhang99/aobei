@@ -56,5 +56,17 @@ type ProSku{
 
     #默认sku   1 是 0 否
     default_sku : Int
+
+    #约定结算基准价
+    settlement_base_price : Int
+
+    #预约日期类型：0按长期，1按星期  2按日期
+    booking_date_type : Int
+
+    #按星期    [1,2,3,4,5,6,7]   周一从1开始
+    service_cycle : String
+
+    #按日期  [{m:"8",d:"1,2,4,23,24"},{m:"9",d:"3,4,5"}] m:月份  d：m月份内不可用的日期
+    service_date : String
 }
 

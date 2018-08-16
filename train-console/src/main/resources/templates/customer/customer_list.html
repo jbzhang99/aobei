@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <!--/* 引入模板页面  */-->
-<html layout:decorate="~{base_layout}">
+<html layout:decorate="~{base_layout}" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
 <meta charset="UTF-8">
 <title>顾客信息列表页</title>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/bootstrap-datetimepicker.zh-CN.js}"></script>
 <script type="text/javascript" th:inline="javascript">
 	$(function(){
+        ymd();
 		var locked = [[${locked}]];
 		if(locked != null){
 			$(".locked option").each(function(){
@@ -14,20 +17,51 @@
 				}
 			});
 		}
+        var channel = [[${channel}]];
+        if(channel != null){
+            $(".channel option").each(function(){
+                if($(this).val() == channel){
+                    $(this).prop("selected",true);
+                }
+            });
+        }
+        var client = [[${client}]];
+        if(client != null){
+            $(".client option").each(function(){
+                if($(this).val() == client){
+                    $(this).prop("selected",true);
+                }
+            });
+        }
 		
 		$(".query").click(function(){
 			var locked = $(".locked").val();
 			var phone = $(".phone").val();
+			var channel=$(".channel").val();
+            var client=$(".client").val();
+            var begin_date=$(".begin_date").val();
+            var end_date=$(".end_date").val();
+            if(begin_date != '' && end_date != ''){
+                if(end_date < begin_date){
+                    reset();
+                    alertify.alert("查询结束时间不得小于查询开始时间！");
+                    return;
+                }
+            }else if(begin_date != '' || end_date != ''){
+                reset();
+                alertify.alert("查询开始、结束时间不可以有空值！");
+                return;
+            }
 			var regex = /^1(3|4|5|7|8)\d{9}$/;
 			if(phone){
 				if(regex.test(phone)){
-					window.location.href = "/customermanager/goto_customer_list?locked="+locked+"&phone="+phone;
+					window.location.href = "/customermanager/goto_customer_list?locked="+locked+"&phone="+phone+"&channel="+channel+"&client="+client+"&begin_date="+begin_date+"&end_date="+end_date;
 				}else{
 					reset();
 					alertify.alert("手机号码格式不正确！");
 				}
 			}else{
-				window.location.href = "/customermanager/goto_customer_list?locked="+locked;
+				window.location.href = "/customermanager/goto_customer_list?locked="+locked+"&channel="+channel+"&client="+client+"&begin_date="+begin_date+"&end_date="+end_date;
 			}
 		});
 	});
@@ -113,9 +147,50 @@
 						</select>
 					</div>
 					<div class="form-group" style="margin-right: 20px">
+						<label>渠道来源：</label>
+						<select class="form-control input-sm channel">
+							<option value=''>请选择</option>
+							<th:block th:each="channel:${channelList}">
+								<option th:value="${channel.channel_id}" th:text="${channel.channel_name}"></option>
+							</th:block>
+						</select>
+					</div>
+					<div class="form-group" style="margin-right: 20px">
+						<label>终端：</label>
+						<select class="form-control input-sm client">
+							<option value=''>请选择</option>
+							<option value='h5_custom'>H5</option>
+							<option value='wx_m_custom'>微信小程序</option>
+							<option value='i_custom'>ios</option>
+							<option value='a_custom'>安卓</option>
+						</select>
+					</div>
+					<div class="form-group" style="margin-right: 20px">
 						<label>手机号：</label> <input type="text" name="phone"
 							th:if="${phone != '' or phone != null}" th:value="${phone}"
 							class="form-control phone input-sm">
+					</div>
+					<br/>
+					<br/>
+					<div class="form-group">
+						<label>注册时间：</label>
+						<div class="input-group date datetimepicker1">
+							<input class="form-control begin_date input-sm" type="text" name="begin_date"
+								   th:if="${begin_date != ''}"
+								   th:value="${#dates.format(begin_date,'yyyy-MM-dd')}" style="width: 130px;" />
+							<span class="input-group-addon" style="width: 50px; height: 30px;">
+								<span class="glyphicon glyphicon-calendar"></span>
+							</span>
+						</div>
+						<label>~</label>
+						<div class="input-group date datetimepicker1">
+							<input class="form-control end_date input-sm" type="text" name="end_date"
+								   th:if="${end_date != ''}"
+								   th:value="${#dates.format(end_date,'yyyy-MM-dd')}" style="width: 130px;" />
+							<span class="input-group-addon" style="width: 50px; height: 30px;">
+								<span class="glyphicon glyphicon-calendar"></span>
+							</span>
+						</div>
 					</div>
 					<button class="btn btn-primary query btn-sm">查询</button>
 				</div>
@@ -129,6 +204,8 @@
 				<thead>
 					<tr>
 						<th>顾客手机号</th>
+						<th>渠道来源</th>
+						<th>终端</th>
 						<th sec:authorize="hasRole('ROLE_CUSTOMER_EDIT')">顾客状态</th>
 						<th>注册时间</th>
 						<th sec:authorize="hasRole('ROLE_CUSTOMER_BROWSE')">服务地址</th>
@@ -138,6 +215,17 @@
 				<tbody id="tbody_contents">
 					<tr th:each="customer:${customers}">
 						<td style="vertical-align: middle" th:text="${customer.phone}"></td>
+						<td>
+							<th:block th:each="channel:${channelList}" th:if="${channel.channel_id eq customer.channel_id}">
+								<span th:text="${channel.channel_name}"></span>
+							</th:block>
+						</td>
+						<td>
+							<th:block th:if="${customer.client_id eq 'h5_custom'}"><span>H5</span></th:block>
+							<th:block th:if="${customer.client_id eq 'wx_m_custom'}"><span>微信小程序</span></th:block>
+							<th:block th:if="${customer.client_id eq 'i_custom'}"><span>ios</span></th:block>
+							<th:block th:if="${customer.client_id eq 'a_custom'}"><span>安卓</span></th:block>
+						</td>
 						<td sec:authorize="hasRole('ROLE_CUSTOMER_EDIT')" style="vertical-align: middle" th:switch="${customer.locked}">
 							<th:block th:case="0">
 								<a class="btn btn-link btn-xs" style="outline: none"
@@ -187,8 +275,8 @@
 			</div>
 		</div>
 		<div
-			th:include="~{tags/pagination::p1(@{/customermanager/goto_customer_list(locked=${locked},phone=${phone})},${page.total}
-					,${page.pageSize},${page.pageNo},${page.totalPage},right,p)}">
+			th:include="~{tags/pagination::p1(@{/customermanager/goto_customer_list(locked=${locked},phone=${phone},channel=${channel},client=${client},begin_date=${#dates.format(begin_date,'yyyy-MM-dd')},end_date=${#dates.format(end_date,'yyyy-MM-dd')})},${page.total},
+			${page.pageSize},${page.pageNo},${page.totalPage},right,p)}">
 		</div>
 	</div>
 </div>
